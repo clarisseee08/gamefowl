@@ -92,7 +92,11 @@
                         };
 
                         // Inline, so it beats the layout's zebra stripe on every row.
-                        $cell = $state === 'Overdue' ? ' style="background-color: #fef2f2;"' : '';
+                        // Already inside @php, so this is plain PHP - Blade's {{ }} does
+                        // not apply here and would be emitted as literal text.
+                        $cell = $state === 'Overdue'
+                            ? ' style="background-color: '.config('gfms-brand.alert_wash').';"'
+                            : '';
                     @endphp
                     <tr>
                         <td{!! $cell !!}>{{ $row['band_number'] }}</td>

@@ -403,7 +403,14 @@ final class HealthComplianceReportTest extends TestCase
         $this->assertStringContainsString('page-number', $html);
 
         // Overdue shading is inline so it outranks the layout's zebra stripe.
-        $this->assertStringContainsString('background-color: #fef2f2;', $html);
+        // Asserted against the config rather than a literal: the point of the
+        // test is that the shading is INLINE, not that the palette is any
+        // particular colour, and hard-coding the hex made a palette change look
+        // like a broken report.
+        $this->assertStringContainsString(
+            'background-color: '.config('gfms-brand.alert_wash').';',
+            $html
+        );
 
         // CSS 2.1 only - dompdf silently ignores these, which is worse than an error.
         $this->assertStringNotContainsString('display:flex', str_replace(' ', '', $html));
