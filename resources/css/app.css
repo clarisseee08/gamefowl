@@ -181,7 +181,10 @@
     .input-error { @apply border-alert focus:border-alert focus:ring-alert/25; }
 
     .label { @apply block text-[13px] font-medium tracking-[0.01em] text-ink-80; }
-    .help { @apply mt-1 text-[12px] leading-snug text-ink-48; }
+    /* ink-80 (7.31:1), not ink-48 (4.77:1). Help text sits under Console form
+       fields, and the Console floor is 7:1 because it is read outdoors - my own
+       token table says ink-48 is Catalog-only, and this was breaking that rule. */
+    .help { @apply mt-1 text-[12px] leading-snug text-ink-80; }
     .error { @apply mt-1 text-[13px] text-alert; }
 
     /* Cards separate by ground inversion and a hairline. No shadow anywhere:

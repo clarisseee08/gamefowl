@@ -273,9 +273,13 @@
     {{-- Delete confirmation. Names the bird explicitly and says what is kept,
          because "Are you sure?" tells a worried user nothing. --}}
     @if ($confirmingDeletion)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4" x-data x-trap.noscroll="true" @keydown.escape.window=".querySelector('.btn-secondary')?.click()" role="dialog" aria-modal="true">
-            <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-                <h2 class="text-[24px] font-semibold tracking-[-0.015em] leading-[1.2] text-ink">Delete {{ $bird->name }}?</h2>
+        {{-- The escape handler read ".querySelector(...)" - a bare leading dot, which
+             is invalid JS, so Escape silently did nothing on this dialog. It needs
+             $el. Nothing caught it because a broken key handler throws in the browser,
+             not in the test suite. --}}
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 p-4" x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()" role="dialog" aria-modal="true" aria-labelledby="delete-bird-title">
+            <div class="w-full max-w-md rounded-[4px] border border-rule-strong bg-canvas p-6">
+                <h2 id="delete-bird-title" class="text-[22px] font-semibold tracking-[-0.01em] leading-[1.2] text-ink">Delete {{ $bird->name }}?</h2>
                 <p class="mt-2 text-sm text-ink-80">
                     This will remove <strong>{{ $bird->name }} ({{ $bird->displayBand() }})</strong>
                     from the active records. Its health, breeding and performance history is kept

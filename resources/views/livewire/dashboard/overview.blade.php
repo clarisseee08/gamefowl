@@ -18,7 +18,7 @@
         ] as $i => [$label, $value, $hint])
             <div class="card p-5 {{ $i === 3 && $this->overdueCount > 0 ? 'ring-2 ring-alert/20' : '' }}">
                 <p class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48">{{ $label }}</p>
-                <p class="mt-1 text-[40px] font-semibold tracking-[-0.022em] leading-[1.08] {{ $i === 3 && $this->overdueCount > 0 ? 'text-alert' : 'text-ink' }}">
+                <p class="datum mt-1 text-[40px] font-semibold leading-[1.08] {{ $i === 3 && $this->overdueCount > 0 ? 'text-alert' : 'text-ink' }}">
                     {{ $value }}
                 </p>
                 <p class="mt-1 text-xs text-ink-48">{{ $hint }}</p>
@@ -40,9 +40,9 @@
                     <ul class="mt-4 space-y-2">
                         @foreach ($rows as $row)
                             @php $enum = $row->{$field}; @endphp
-                            <li class="flex items-center justify-between gap-3">
+                            <li class="flex items-center justify-between gap-3 border-b border-hairline py-1.5 last:border-0">
                                 <span class="badge {{ $enum->badgeClasses() }}">{{ $enum->label() }}</span>
-                                <span class="text-sm font-semibold text-ink">{{ number_format($row->total) }}</span>
+                                <span class="datum text-[15px] font-medium text-ink">{{ number_format($row->total) }}</span>
                             </li>
                         @endforeach
                     </ul>
@@ -55,11 +55,19 @@
             @if ($this->byBloodline->isEmpty())
                 <p class="mt-3 text-sm text-ink-48">No bloodlines recorded yet.</p>
             @else
+                {{-- The one card on this screen whose subject IS bloodline was the one
+                     card not using the band colours. A keeper reads their flock as
+                     "mostly Sweater" - the swatch makes that legible without counting. --}}
                 <ul class="mt-4 space-y-2">
                     @foreach ($this->byBloodline as $row)
-                        <li class="flex items-center justify-between gap-3">
-                            <span class="truncate text-sm text-ink-80">{{ $row->bloodline }}</span>
-                            <span class="text-sm font-semibold text-ink">{{ number_format($row->total) }}</span>
+                        <li class="flex items-center justify-between gap-3 border-b border-hairline py-1.5 last:border-0">
+                            <span class="flex min-w-0 items-center gap-2.5">
+                                <span class="h-3.5 w-3.5 shrink-0 rounded-[3px]"
+                                      style="background-color: {{ \App\Support\BandTag::hex($row->bloodline) }}"
+                                      aria-hidden="true"></span>
+                                <span class="truncate text-[15px] text-ink">{{ $row->bloodline }}</span>
+                            </span>
+                            <span class="datum text-[15px] font-medium text-ink">{{ number_format($row->total) }}</span>
                         </li>
                     @endforeach
                 </ul>
@@ -93,9 +101,9 @@
                 ['Overall Fertility', $breeding['fertility'] !== null ? $breeding['fertility'].'%' : 'No data'],
                 ['Overall Hatch Rate', $breeding['hatch'] !== null ? $breeding['hatch'].'%' : 'No data'],
             ] as [$label, $value])
-                <div class="rounded-lg bg-pearl p-4">
-                    <p class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48">{{ $label }}</p>
-                    <p class="mt-1 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">{{ $value }}</p>
+                <div class="rounded-[4px] border border-hairline bg-pearl p-4">
+                    <p class="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-48">{{ $label }}</p>
+                    <p class="datum mt-1 text-[34px] font-semibold leading-[1.12] text-ink">{{ $value }}</p>
                 </div>
             @endforeach
         </div>
@@ -117,7 +125,7 @@
                             : 0;
                     @endphp
                     <div class="flex w-16 flex-col items-center gap-2">
-                        <span class="text-[12px] font-medium tabular-nums {{ $month['fertility'] !== null ? 'text-ink-80' : 'text-ink-48' }}">
+                        <span class="datum text-[12px] font-medium {{ $month['fertility'] !== null ? 'text-ink-80' : 'text-ink-48' }}">
                             {{ $month['fertility'] !== null ? $month['fertility'].'%' : '—' }}
                         </span>
 
@@ -132,7 +140,7 @@
                             @endif
                         </div>
 
-                        <span class="text-[12px] text-ink-48">{{ Str::before($month['label'], ' ') }}</span>
+                        <span class="datum text-[12px] text-ink-48">{{ Str::before($month['label'], ' ') }}</span>
                     </div>
                 @endforeach
             </div>
@@ -161,18 +169,22 @@
                 </p>
             @else
                 <ul class="mt-4 divide-y divide-divider">
+                    {{-- Overdue rows carry a severity stripe. Without it, "141 days
+                         overdue" and "due in 29 days" differ only by the wash on a pill,
+                         and on a phone in daylight that difference disappears - which is
+                         exactly when this list is read. --}}
                     @foreach ($this->overdueVaccinations as $record)
-                        <li class="flex items-center justify-between gap-3 py-2.5">
+                        <li class="flex items-center justify-between gap-3 border-l-2 border-alert py-2.5 pl-3">
                             <div class="min-w-0">
-                                <p class="truncate text-sm font-medium text-ink">
+                                <p class="truncate text-[15px] font-medium text-ink">
                                     {{ $record->broodcock?->name ?? 'Unknown bird' }}
                                 </p>
-                                <p class="truncate text-xs text-ink-48">
+                                <p class="truncate text-[12px] text-ink-48">
                                     {{ $record->record_type->label() }}
                                     @if ($record->product_name) &middot; {{ $record->product_name }} @endif
                                 </p>
                             </div>
-                            <span class="badge shrink-0 bg-alert-wash text-alert ring-alert/20">
+                            <span class="badge datum shrink-0 bg-alert-wash text-alert ring-alert/20">
                                 {{ abs((int) $record->daysUntilDue()) }} days overdue
                             </span>
                         </li>
