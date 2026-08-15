@@ -201,3 +201,60 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - To filter on a particular test name: `php artisan test --compact --filter=testName` (recommended after making a change to a related file).
 
 </laravel-boost-guidelines>
+
+---
+
+# GFMS — project rules
+
+This is a gamefowl breeding-farm record system built as a BS Information Systems
+capstone, evaluated against ISO/IEC 25010 and defended to an academic panel.
+It is functionally complete. Treat it as production code someone's grade depends on.
+
+## Design
+
+**Read `.claude/skills/gamefowl-design-system/SKILL.md` before touching any UI.**
+Live component reference at `/design`. Full rationale in `docs/design-brief.md`.
+
+The short version:
+
+- **Colour means bloodline and nothing else.** Everything else is ink, rule, and
+  paper. No stock Tailwind palette classes — no `blue-500`, no `gray-600`.
+- **Registry data is monospaced.** Every band number, date, weight, count, rate
+  and percentage gets `.datum`. Digits must align in a column.
+- **Console minimums** (staff screens, used outdoors on phones): 7:1 contrast,
+  44px touch targets, 16px inputs. Catalog is 4.5:1.
+- No shadows, no gradients, no `backdrop-blur`, no `font-bold`, nothing under 11px.
+- The CSS class vocabulary (`.badge-ok`, `.btn-primary`, `.input`) is a contract
+  shared with five PHP enums. Restyle what a class resolves to; do not rename it.
+
+## Constraints that are not negotiable
+
+- **Never commit `.env`.** It holds a live Supabase password. It is gitignored;
+  keep it that way. `.env.example` carries placeholders only.
+- **Laravel migrations own the schema.** Never create or alter a table in the
+  Supabase Studio editor.
+- **Do not install the Supabase CLI. Do not use Docker.**
+- No features, no schema changes, no business-logic edits during design work. If
+  a screen needs data it does not have, say so and stop rather than adding a column.
+
+## Testing
+
+- `php artisan test` must stay green. 461 tests.
+- **Visible copy is the test API** — 117 assertions target copy and data, zero
+  target CSS class names. Restyling is safe; *rewording* breaks tests. Change
+  copy and its test in the same commit.
+- Query-count tests are the performance guard. A reskin that adds a per-row
+  lookup or ships full-size images into a grid fails regardless of appearance.
+- Run `npm run build`, not just `npm run dev` — dynamic Tailwind class names
+  work in dev and vanish from a production build.
+
+## Stack specifics that get this wrong from memory
+
+- **Livewire 4**, not 3: `Route::livewire()`, self-closing component tags,
+  class-based components registered in `config/livewire.php`.
+- **Tailwind v4 CSS-first**: `@theme{}` in `resources/css/app.css`. There is no
+  `tailwind.config.js` and no PostCSS.
+- **PHPUnit 11**, not Pest — Pest needs PHP 8.3+ and this runs 8.2.
+- **dompdf is a CSS 2.1 engine.** `resources/views/reports/pdf/` cannot use
+  custom properties, `oklch()`, flex or grid. It reads plain hex from
+  `config/gfms-brand.php`.
