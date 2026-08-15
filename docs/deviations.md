@@ -145,3 +145,255 @@ Logged in the order they were discovered.
   either.
 - **Defense answer:** "We used PHPUnit, the test framework Laravel ships with, so there is
   a single test command for the whole project."
+
+---
+
+## Deviations found during implementation
+
+Everything above was found during setup. What follows was found while building —
+including several defects the test suite caught.
+
+---
+
+### Pedigree eager-loading made the page slower, not faster
+
+- **Spec said:** "Eager-load the three levels; do not N+1 it."
+- **What I did instead:** Followed that literally at first —
+  `with(['sire.sire.sire', 'sire.sire.dam', 'dam.dam.dam', ...])`, 14 relation
+  paths. A query-count test measured **45 queries** for one pedigree page.
+  Laravel issues **one query per relation path**, so nested eager loading cannot
+  help a binary ancestor tree — it is 2 + 4 + 8 = 14 queries by construction, no
+  better than walking it lazily. Rewrote it to load the tree **breadth-first**:
+  collect the parent ids of the current level, fetch that whole level in one
+  `whereIn`, repeat. Now **4 queries**, regardless of how complete the pedigree is.
+- **Why:** Performance efficiency is an ISO 25010 characteristic, and every query
+  is a round trip to Tokyo. `PedigreePerformanceTest` asserts the query count, so
+  the regression cannot return silently.
+- **Defense answer:** "Nested eager loading issues one query per relation path, so
+  we load the family tree one generation at a time instead — four queries instead
+  of forty-five, and a test fails if anyone changes it back."
+
+---
+
+### Livewire computed properties only cache on property access
+
+- **Spec said:** Nothing — this is a framework subtlety.
+- **What I did instead:** Blade templates initially called `$this->generations()`
+  and `$this->bird()` as methods. A `#[Computed]` property is cached only when
+  read as a **property**; calling it as a method re-runs the query every time.
+  Fixed across the pedigree and detail views.
+- **Why:** Found by the same query-count test. It was multiplying every page's
+  query count by the number of times the template referenced the value.
+- **Defense answer:** "Livewire caches a computed property only when you read it
+  as a property, so our templates read them that way."
+
+---
+
+### PostgreSQL-only SQL had to be made portable for the test suite
+
+- **Spec said:** "Database-level check constraints, not just form validation."
+- **What I did instead:** Kept all 20 CHECK constraints, but wrapped the raw
+  `ALTER TABLE … ADD CONSTRAINT` statements in
+  `if (DB::getDriverName() === 'pgsql')`. SQLite — which `phpunit.xml` uses for
+  the in-memory test database — cannot add a constraint through `ALTER TABLE`, so
+  the schema could not be built for tests at all. Separately, search scopes moved
+  from `ilike` (PostgreSQL-only) to
+  `whereLike($col, $term, caseSensitive: false)`, which Laravel 12 compiles to
+  `ILIKE` on PostgreSQL and `LIKE` on SQLite.
+- **Why:** Without this the entire suite could not run. The constraints are still
+  real in production; Form Request validation enforces the same rules in tests.
+- **Defense answer:** "The database constraints are PostgreSQL-specific, so they
+  are applied only on PostgreSQL — our tests run on SQLite for speed, where the
+  same rules are enforced by the application's validation."
+
+---
+
+### Soft-deleted mortality rows still occupied the unique index
+
+- **Spec said:** `mortality_records.broodcock_id` is unique, and soft deletes are
+  used everywhere.
+- **What I did instead:** Those two rules conflict. The unique index is a plain
+  index, so a soft-deleted row **still occupies the slot** — once a mortality
+  record was deleted, that bird's death could never be recorded again: validation
+  would pass and the INSERT would then hit the constraint. `RecordMortality` now
+  revives the trashed row instead of inserting, and the uniqueness rule is scoped
+  with `->whereNull('deleted_at')`.
+- **Why:** Correctness — without it, "delete" was not actually reversible.
+- **Defense answer:** "A soft-deleted row still occupies a unique index, so
+  re-recording a death restores the previous record rather than inserting a
+  duplicate the database would reject."
+
+---
+
+### `nullOnDelete()` does not fire on a soft delete
+
+- **Spec said:** "Every FK gets … the right `onDelete` behavior."
+- **What I did instead:** A soft delete never issues a `DELETE`, so the foreign
+  key action never runs and `pen_id` would keep pointing at a hidden row. Deleting
+  a pen now explicitly nulls its birds' `pen_id` and soft-deletes the pen inside
+  one transaction.
+- **Why:** Otherwise the confirmation dialog's promise — "the birds in this pen
+  will become unassigned" — was simply false.
+- **Defense answer:** "Foreign key actions only run on a real delete, so our soft
+  delete unassigns the birds explicitly rather than relying on the database."
+
+---
+
+### Livewire type coercion turned "no value" into a meaningful zero
+
+- **Spec said:** Pen capacity is an integer.
+- **What I did instead:** Held it as a string on the form component. Livewire
+  coerces `null` back to `0` when rehydrating a typed `int` property, so clearing
+  the capacity box silently became "capacity 0" — which in this domain means *no
+  limit*. The `required` rule never fired and the pen quietly lost its limit.
+- **Why:** An empty box must stay distinguishable from a deliberate zero.
+- **Defense answer:** "A typed integer property let the framework turn 'the user
+  erased the limit' into 'this pen has no limit' without an error, so the field is
+  validated as text and converted once on save."
+
+---
+
+### A stale model instance could leave a bird with no primary photo
+
+- **Spec said:** Exactly one photo per bird is primary.
+- **What I did instead:** Found by a test that promotes photos in rotation and
+  asserts after *every* promotion that exactly one row carries the flag. With a
+  stale instance `is_primary` was already `true` in memory, so Eloquent's dirty
+  check wrote nothing while the previous primary was still demoted — leaving the
+  bird with **zero** primary photos. Fixed with a `refresh()` before the swap.
+- **Why:** A real bug, caught only because the test checked the invariant after
+  each step rather than once at the end.
+- **Defense answer:** "Eloquent skips a write when the model already holds the new
+  value, so the record is refreshed before the swap to guarantee exactly one
+  primary photo."
+
+---
+
+### Flash messages are invisible to a Livewire update
+
+- **Spec said:** Confirmation and feedback on destructive actions.
+- **What I did instead:** Several modules hold their status message on the
+  component instead of `session()->flash()`. A Livewire update re-renders only
+  that component, not the layout that prints flash messages, so a flashed
+  confirmation would not appear until the next full page load. Forms that redirect
+  still use flash, because a redirect *is* a full page load.
+- **Why:** Feedback the user never sees at the moment they act is not feedback.
+- **Defense answer:** "A Livewire update re-renders only the component, so in-place
+  confirmations are rendered by the component itself; flash messages are used only
+  where the action ends in a redirect."
+
+---
+
+### Report filters were implemented, tested, and unreachable
+
+- **Spec said:** Each report is parameterised by date range and filters.
+- **What I did instead:** `ReportController` narrowed the request with an explicit
+  `$request->only([...])` allow-list, and four keys were missing from it
+  (`compliance`, `broodcock_id`, `sire_id`, `dam_id`). Those filters worked and had
+  passing tests but could never be supplied over HTTP. Two independent report
+  authors reported it; the allow-list was widened and now carries a comment saying
+  to keep it in sync.
+- **Why:** A tested feature no user can reach is not a feature. The allow-list
+  itself stays — a report must never receive an arbitrary request key.
+- **Defense answer:** "Report filters are restricted to an explicit allow-list so
+  no unexpected input reaches a query; the list had gaps, which our integration
+  tests now cover."
+
+---
+
+### Aggregate rates are computed from totals, never averaged
+
+- **Spec said:** "`fertility_rate` and `hatch_rate` are computed accessors."
+- **What I did instead:** Extended that rule to every aggregate. A farm-wide or
+  per-bloodline rate is `SUM(fertile) / SUM(set)`, never the mean of each mating's
+  percentage — averaging percentages weights a 2-egg mating the same as a 200-egg
+  one. Asserted by test in three separate places: 2/2 fertile plus 50/100 fertile
+  is **51.0%**, not the naive **75%**.
+- **Why:** The naive figure is not a rounding difference; it is a different and
+  wrong number, and exactly what a panel statistician would probe.
+- **Defense answer:** "Farm-wide rates are calculated from the total eggs, not by
+  averaging each mating's percentage, because that would let a two-egg mating count
+  as much as a two-hundred-egg one."
+
+---
+
+### "No data" is reported as null, never as zero
+
+- **Spec said:** Nothing explicit.
+- **What I did instead:** Every rate returns `null` rather than `0` when its
+  denominator is zero, and the UI renders that as "No data" or a dash. A bird with
+  no contests has a win rate of *null*, not 0%; a month with no matings shows a
+  dash, not a 0% bar.
+- **Why:** "Never competed" and "lost every fight" are completely different claims
+  about a bird, and a customer buying breeding stock cares about the difference.
+- **Defense answer:** "A missing figure is displayed as 'no data' rather than zero,
+  because a bird that never competed is not a bird that lost every fight."
+
+---
+
+### The mortality rate uses a stated proxy denominator, not an invented one
+
+- **Spec said:** "Mortality (rate by period, cause breakdown)."
+- **What I did instead:** A true mortality rate needs an average flock size over
+  the period, and the schema **cannot** reconstruct one: it records a dated event
+  when a bird hatches and when it dies, but **none when a bird is sold or
+  transferred out**, so no past-day headcount is recoverable. Rather than invent a
+  denominator or silently present a count as a rate, the report uses *deaths in
+  range ÷ (birds on the farm today + birds that died within the range)*, labels it
+  "Mortality Rate (proxy)", and prints the denominator in words on the PDF itself.
+- **Why:** Presenting a count as a rate, or dividing by a made-up number, unravels
+  under a single panel question.
+- **Defense answer:** "We report a clearly-labelled proxy rate and state its
+  denominator on the report itself, because the system does not record when a bird
+  leaves the farm, so a true average flock size would be a guess."
+
+---
+
+### Report templates cannot use Tailwind at all
+
+- **Spec said:** PDF export via `barryvdh/laravel-dompdf`.
+- **What I did instead:** Wrote the five report templates in hand-written CSS 2.1
+  with table-based layout, sharing one `_layout.blade.php`. dompdf supports neither
+  flexbox nor CSS grid and cannot parse Tailwind v4's output at all — v4 is built
+  on CSS custom properties and `oklch()` colours. The application stylesheet is
+  deliberately not linked from any report template.
+- **Why:** A template referencing an unsupported feature throws at render time
+  rather than degrading. Every report has a test asserting the output really begins
+  with `%PDF`.
+- **Defense answer:** "The PDF engine only understands CSS 2.1, so the report
+  templates use table-based layout and their own stylesheet rather than the
+  application's Tailwind styles."
+
+---
+
+### Photo deletion commits the database row before removing the file
+
+- **Spec said:** Nothing explicit; the ordering was left open.
+- **What I did instead:** The database row is committed first, then the file is
+  removed. Object-storage deletes are not transactional and cannot be undone, so
+  "delete the file, roll back the row on failure" can leave a row whose file is
+  already gone — a permanently broken image and an audit trail that lies.
+  Committing first can only leave an unreferenced file, which no query finds and no
+  screen reaches.
+- **Why:** Given two imperfect failure modes, the one that costs storage beats the
+  one that costs data integrity.
+- **Defense answer:** "Deleting a file cannot be rolled back, so we commit the
+  record first — the worst case is an orphaned file nobody can reach, rather than a
+  record pointing at a file that no longer exists."
+
+---
+
+### Registration is disabled, and 2FA / passkeys were removed
+
+- **Spec said:** Three fixed roles, with accounts seeded for the demo.
+- **What I did instead:** Disabled `Features::registration()` in Fortify entirely —
+  a private farm system must not let anyone create their own account — and removed
+  the two-factor-authentication and passkey features Fortify installs by default,
+  along with their migrations. `CreateNewUser` is retained for Fortify's contract
+  and hard-codes the `customer` role, so even if registration were re-enabled
+  nobody could grant themselves privilege.
+- **Why:** 2FA and WebAuthn appear nowhere in the thesis scope and would add
+  roughly fifteen dependencies and two tables the researchers would have to defend.
+- **Defense answer:** "Accounts are created by the owner, so self-registration is
+  switched off; and we removed the two-factor and passkey features because they are
+  outside the scope our paper describes."
