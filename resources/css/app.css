@@ -1,7 +1,16 @@
 @import 'tailwindcss';
 
-/* Tailwind v4 is CSS-first: there is no tailwind.config.js. Content sources
-   are declared here instead of a `content: []` array. */
+/* Self-hosted, no CDN. A demo in a provincial venue cannot depend on Google
+   Fonts resolving, and the previous stack declared 'SF Pro' - which ships only
+   on Apple platforms, so every Windows machine silently rendered Segoe UI. */
+@import '@fontsource/fira-sans/latin-400.css';
+@import '@fontsource/fira-sans/latin-500.css';
+@import '@fontsource/fira-sans/latin-600.css';
+@import '@fontsource/fira-code/latin-400.css';
+@import '@fontsource/fira-code/latin-500.css';
+
+/* Tailwind v4 is CSS-first: there is no tailwind.config.js. Content sources are
+   declared here instead of a `content: []` array. */
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
@@ -9,74 +18,75 @@
 
 /*
  * ---------------------------------------------------------------------------
- * Visual world: Apple (see DESIGN.md), expressed at Operate volume.
+ * GFMS — the field-ledger world.  Full rationale: docs/design-brief.md
  * ---------------------------------------------------------------------------
  *
- * DESIGN.md describes Apple's MARKETING surfaces - full-bleed product tiles,
- * 80px section rhythm, one viewport per idea. This is not that surface. GFMS is
- * an Operate tool: farm staff completing data entry, often one-handed on a
- * phone. So we take Apple's design LANGUAGE at the density Apple itself uses
- * for System Settings and App Store Connect - same type scale, same single
- * accent, same restraint - and not the gallery spacing.
+ * Dark ink on pale paper, hairline rules, and colour spent in exactly ONE
+ * place: the band tag. The Console is used outdoors in Philippine daylight, so
+ * high contrast is a legibility requirement rather than a style preference.
  *
- * The rules carried over verbatim from DESIGN.md:
- *   - ONE interactive colour. Action Blue #0066cc. Nothing else is clickable-blue.
- *   - NO decorative gradients anywhere.
- *   - NO shadows on chrome. Apple uses exactly one shadow and reserves it for
- *     product photography. Elevation here comes from surface-colour change and
- *     backdrop-blur instead.
- *   - Hairline borders, not boxes with weight.
- *   - Pill radius IS the action signal. 18px for utility cards, 8px compact.
+ * COLOUR SOURCE OF TRUTH IS config/gfms-brand.php, not this file. The PDF
+ * report templates cannot read a custom property (dompdf is a CSS 2.1 engine),
+ * so they read that PHP config directly and this @theme block mirrors the same
+ * values. tests/Unit/BrandTokensAreMirroredTest.php asserts the two agree.
  *
- * Light mode only, and that is a use-scene decision rather than a default:
- * these users are outdoors in Philippine daylight. Maximum contrast against
- * glare beats a dark theme nobody can read in a coop at noon.
+ * NOTE ON TOKEN NAMES: the names below are deliberately unchanged from the
+ * previous visual world even though every VALUE changed. The class vocabulary
+ * (.badge-ok, .btn-primary, .input, .card ...) is a contract consumed by five
+ * PHP enums' badgeClasses() and ~1,300 call sites across the Blade views.
+ * Renaming it would force an all-or-nothing lockstep migration with an
+ * invisible broken intermediate state, and would buy nothing: semantic names
+ * describe MEANING, and the meaning is not what is being reskinned.
  */
 
 @theme {
-    /* Apple ships SF Pro on its own platforms and falls back everywhere else.
-       For an internal farm tool that honesty is correct - we are not shipping a
-       4MB webfont over a rural connection to style a data table. */
-    --font-sans: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI',
-        system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
-    --font-display: 'SF Pro Display', -apple-system, BlinkMacSystemFont,
-        'Segoe UI', system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-sans: 'Fira Sans', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'Fira Code', ui-monospace, 'Cascadia Mono', Menlo, monospace;
 
-    /* The one interactive colour. */
-    --color-action: #0066cc;
-    --color-action-hover: #0071e3;
-    --color-action-wash: #e8f1fb;
+    /* Ground and ink */
+    --color-canvas: #ffffff;      /* raised surface */
+    --color-parchment: #faf9f7;   /* app background */
+    --color-pearl: #f1efea;       /* table heads, wells */
 
-    /* Ink */
-    --color-ink: #1d1d1f;
-    --color-ink-80: #333333;
-    --color-ink-48: #6e6e73;
+    --color-ink: #1a1917;         /* 16.70:1 on parchment */
+    --color-ink-80: #55534d;      /*  7.31:1 - passes the Console 7:1 floor */
+    --color-ink-48: #726f66;      /*  4.77:1 - Catalog only, never Console body */
 
-    /* Surfaces - elevation is a surface change, never a shadow. */
-    --color-canvas: #ffffff;
-    --color-parchment: #f5f5f7;
-    --color-pearl: #fafafc;
+    --color-hairline: #e3e0da;
+    --color-divider: #e3e0da;
+    --color-rule-strong: #cfcbc2;   /* dense console tables, where a hairline disappears */
 
-    /* Hairlines */
-    --color-hairline: #e0e0e0;
-    --color-divider: #f0f0f0;
+    /* The one interactive colour: blue-black ledger ink, 12.45:1 on parchment.
+       Chromatically distant from every band colour, so "clickable" can never
+       be mistaken for a bloodline. */
+    --color-action: #16324f;
+    --color-action-hover: #1e4468;
+    --color-action-wash: #e9eef4;
 
-    /* Semantic status. Deliberately separate from the accent: Apple keeps
-       system colours distinct from the interactive blue, so a red badge never
-       reads as a link. Desaturated to sit quietly in a dense table. */
-    --color-ok: #1d7a4c;
-    --color-ok-wash: #e7f4ed;
+    /* Semantic status - separate from the accent AND from the band palette */
+    --color-ok: #1b6b44;
+    --color-ok-wash: #e6f1eb;
     --color-warn: #8a5a12;
-    --color-warn-wash: #fbf1e1;
-    --color-alert: #b3261e;
-    --color-alert-wash: #fbeaea;
-    --color-info: #1f4f8f;
-    --color-info-wash: #e9f0fa;
-    --color-neutral: #67676d;   /* 4.94:1 on --color-neutral-wash; #6e6e73 measured 4.46 and failed AA */
-    --color-neutral-wash: #f0f0f2;
+    --color-warn-wash: #f8efdf;
+    --color-alert: #a32219;
+    --color-alert-wash: #f7e8e7;
+    --color-info: #2a4e7a;
+    --color-info-wash: #e9eef4;
+    --color-neutral: #5e5b55;
+    --color-neutral-wash: #efede9;
 
-    --radius-compact: 8px;
-    --radius-card: 18px;
+    /* The band palette - the ONLY chroma in the system. These are the anodised
+       colours poultry leg bands are actually sold in. All six carry white text
+       at >= 4.5:1. */
+    --color-band-crimson: #b3202c;
+    --color-band-cobalt: #1b4f9c;
+    --color-band-forest: #1e6b45;
+    --color-band-amber: #9a5b08;
+    --color-band-plum: #6a3080;
+    --color-band-slate: #41525e;
+
+    --radius-control: 6px;
+    --radius-card: 4px;
 }
 
 @layer base {
@@ -92,115 +102,84 @@
         -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Apple's type voice is the negative tracking on large sizes. Below ~24px
-       it goes back to normal - tightening body copy would only hurt legibility
-       for the people actually using this. */
-    h1,
-    h2 {
-        font-family: var(--font-display);
-        letter-spacing: -0.022em;
-        text-wrap: balance;
-    }
-
-    h3,
-    h4 {
-        font-family: var(--font-display);
+    h1, h2, h3, h4 {
+        font-weight: 600;
         letter-spacing: -0.01em;
         text-wrap: balance;
     }
 
-    /* WCAG 2.5.5: 44px minimum on touch. Apple's own floor is the same number,
-       so the brief and the accessibility requirement agree here. */
-    @media (pointer: coarse) {
-        button,
-        [role='button'],
-        a.btn,
-        .btn,
-        input[type='submit'] {
-            min-height: 44px;
-        }
+    /* 44px is unconditional, NOT behind @media (pointer: coarse) - that query
+       does not match a desktop browser at a narrow viewport, which is exactly
+       where an audit measures it. */
+    button, [role='button'], a.btn, .btn, input[type='submit'] {
+        min-height: 44px;
     }
 
     :focus-visible {
         outline: 2px solid var(--color-action);
         outline-offset: 2px;
-        border-radius: 8px;
+        border-radius: 4px;
     }
 
+    /* Removes TRAVEL while preserving the state change. A blanket 0.01ms kill
+       destroys useful feedback and is itself an accessibility defect. */
     @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
+        *, *::before, *::after {
             animation-duration: 0.01ms !important;
-            transition-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-property: opacity, color, background-color, border-color !important;
+            transition-duration: 120ms !important;
         }
     }
 }
 
-/* The pill radius is the action signal, so the shared button base is a real
-   utility - Tailwind v4 only lets @apply reference utilities, not classes
-   declared in @layer components. */
+/*
+ * Registry data. Every band number, date, weight, egg count, rate and
+ * percentage carries this. Proportional digits do not align in a column, and a
+ * weight column that does not align is the fastest way to look amateur.
+ */
+@utility datum {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+    letter-spacing: -0.01em;
+}
+
 @utility btn {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full
-           px-[22px] py-[11px] text-[17px] font-normal leading-none
+    @apply inline-flex min-h-11 items-center justify-center gap-2
+           rounded-[6px] px-4 py-2.5 text-[15px] font-medium leading-none
            transition-colors duration-150
            focus:outline-none disabled:cursor-not-allowed disabled:opacity-40;
 }
 
 @layer components {
-    .btn-primary {
-        @apply btn bg-action text-white hover:bg-action-hover;
-    }
+    /* A key, not a marketing pill. */
+    .btn-primary { @apply btn bg-action text-white hover:bg-action-hover; }
+    .btn-secondary { @apply btn border border-hairline bg-canvas text-ink hover:bg-pearl; }
+    .btn-danger { @apply btn bg-alert text-white hover:opacity-90; }
+    .btn-quiet { @apply btn bg-transparent text-action hover:bg-action-wash; }
 
-    /* Apple's secondary action is blue text on white with a hairline ring -
-       never a grey filled button, which would read as disabled. */
-    .btn-secondary {
-        @apply btn bg-canvas text-action ring-1 ring-hairline ring-inset hover:bg-pearl;
-    }
-
-    /* Destructive actions are the one place system red outranks the accent. */
-    .btn-danger {
-        @apply btn bg-alert text-white hover:opacity-90;
-    }
-
-    .btn-quiet {
-        @apply btn bg-transparent text-action hover:bg-action-wash;
-    }
-
-    /* Inputs sit on white with a hairline. No inner shadow, no filled grey. */
+    /* 16px floor - below that iOS zooms the page on focus and one-handed entry
+       falls apart. */
     .input {
-        @apply block w-full rounded-[8px] border-0 bg-canvas px-3.5 py-2.5
-               text-[17px] text-ink ring-1 ring-hairline ring-inset
+        @apply block w-full rounded-[4px] border border-hairline bg-canvas
+               px-3 py-2.5 text-[16px] text-ink
                placeholder:text-ink-48
-               focus:ring-2 focus:ring-action focus:ring-inset;
+               focus:border-action focus:outline-none focus:ring-2 focus:ring-action/25;
     }
 
-    .input-error {
-        @apply ring-alert focus:ring-alert;
-    }
+    .input-error { @apply border-alert focus:border-alert focus:ring-alert/25; }
 
-    .label {
-        @apply block text-[14px] font-medium text-ink-80;
-    }
+    .label { @apply block text-[13px] font-medium tracking-[0.01em] text-ink-80; }
+    .help { @apply mt-1 text-[12px] leading-snug text-ink-48; }
+    .error { @apply mt-1 text-[13px] text-alert; }
 
-    .help {
-        @apply mt-1 text-[12px] leading-snug text-ink-48;
-    }
+    /* Cards separate by ground inversion and a hairline. No shadow anywhere:
+       depth is not how this system communicates hierarchy. */
+    .card { @apply rounded-[4px] border border-hairline bg-canvas; }
 
-    .error {
-        @apply mt-1 text-[14px] text-alert;
-    }
-
-    /* A card is a surface change plus a hairline. No shadow - DESIGN.md
-       reserves the system's single shadow for product photography, and a farm
-       record is not a product render. */
-    .card {
-        @apply rounded-[18px] bg-canvas ring-1 ring-hairline;
-    }
-
-    /* Badges carry status, so they use the semantic scale, never the accent. */
     .badge {
-        @apply inline-flex items-center rounded-full px-2.5 py-1
+        @apply inline-flex items-center gap-1.5 rounded-[2px] px-2 py-1
                text-[12px] font-medium leading-none;
     }
 
@@ -210,25 +189,50 @@
     .badge-info { @apply bg-info-wash text-info; }
     .badge-neutral { @apply bg-neutral-wash text-neutral; }
 
-    /* Sticky bars get depth from backdrop-blur, which is how Apple does it -
-       the content scrolling underneath supplies the contrast, not a shadow. */
+    /*
+     * `.frosted` is retained as a NAME because the layout consumes it, but it
+     * is no longer frosted. backdrop-filter costs real GPU on the low-end
+     * Android these keepers carry, and a translucent bar smears into unreadable
+     * grey under direct sunlight. A solid bar with a hairline does the same job
+     * for free and stays legible outdoors.
+     */
     .frosted {
-        background-color: color-mix(in srgb, var(--color-canvas) 72%, transparent);
-        backdrop-filter: saturate(180%) blur(20px);
-        -webkit-backdrop-filter: saturate(180%) blur(20px);
+        background-color: var(--color-parchment);
+        border-bottom: 1px solid var(--color-hairline);
     }
 
-    /* Laravel's stock paginator renders 38px controls - below the 44px floor.
-       Styling it here keeps the fix in one place rather than publishing and
-       maintaining a fork of the framework's pagination views. */
-    nav[role='navigation'] a,
-    nav[role='navigation'] span[aria-current],
-    nav[role='navigation'] span[aria-disabled] span {
-        @apply inline-flex min-h-11 items-center justify-center;
+    .table-hairline tbody tr + tr { border-top: 1px solid var(--color-divider); }
+
+    /*
+     * THE SIGNATURE - the band tag.
+     *
+     * Modelled on the anodised aluminium ring a gamefowl actually wears: a
+     * filled capsule carrying the band number in mono. It is the only capsule
+     * in the system and the only place colour is spent; if a second pill
+     * appears on screen the signature is dead.
+     *
+     * Colour comes from App\Support\BandTag (curated map + deterministic hash
+     * fallback), so a bloodline nobody anticipated still renders correctly.
+     */
+    .band-tag {
+        @apply inline-flex items-center gap-1.5 rounded-full py-1 pl-1.5 pr-2.5
+               text-[12px] font-medium leading-none text-white;
     }
 
-    /* Table rows separated by hairlines only. */
-    .table-hairline tbody tr + tr {
-        border-top: 1px solid var(--color-divider);
+    .band-tag .band-code {
+        @apply rounded-full bg-white/25 px-1.5 py-0.5 text-[11px] font-semibold
+               tracking-[0.04em];
+    }
+
+    .band-tag .band-number {
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* A bird with no band is NOT an error - birds are banded at an age, not at
+       hatch. It gets its own honest state, never a blank cell or a dash. */
+    .band-tag-none {
+        @apply inline-flex items-center gap-1.5 rounded-full border border-dashed
+               border-hairline px-2.5 py-1 text-[12px] leading-none text-ink-48;
     }
 }
