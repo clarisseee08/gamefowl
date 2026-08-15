@@ -308,16 +308,6 @@ final class MortalityReport implements ReportDefinition
 
         $label = 'Mortality Rate (proxy)';
 
-        $sentence = sprintf(
-            '%s ÷ %s = %s birds on the farm today (%s) plus %s that died within this range (%s).',
-            'deaths in range',
-            'population at risk',
-            number_format($survivors),
-            $this->birdFilterPhrase(),
-            number_format($diedInRange),
-            $this->birdFilterPhrase(),
-        );
-
         $caveat = 'This is a PROXY, not a true mortality rate. A true rate divides deaths by the '
             .'AVERAGE FLOCK SIZE over the period. The system records a dated event when a bird '
             .'enters the flock and when it dies, but no dated event when a bird is sold, '
@@ -347,13 +337,19 @@ final class MortalityReport implements ReportDefinition
             'denominator' => $denominator,
             'percentage' => $percentage,
             'is_proxy' => true,
+            // Spelled out so a panel member can check the arithmetic without
+            // reading any code: numerator, denominator, and what each is.
             'denominator_sentence' => sprintf(
-                '%s ÷ %s = %s%%. Population at risk is %s: %s',
-                number_format($deaths).' death'.($deaths === 1 ? '' : 's').' in range',
-                number_format($denominator).' birds at risk',
-                $percentage,
+                '%s %s in range ÷ %s birds at risk = %s%%. The population at risk is the %s '
+                .'%s still on the farm today plus the %s that died within this date range (%s).',
+                number_format($deaths),
+                $deaths === 1 ? 'death' : 'deaths',
                 number_format($denominator),
-                $sentence,
+                $percentage,
+                number_format($survivors),
+                $survivors === 1 ? 'bird' : 'birds',
+                number_format($diedInRange),
+                $this->birdFilterPhrase(),
             ),
             'caveat' => $caveat,
         ];

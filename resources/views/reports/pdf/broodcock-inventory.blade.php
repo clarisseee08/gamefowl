@@ -16,7 +16,10 @@
      * breakdowns - which are grouped in SQL, not counted off $rows - are
      * fetched from the definition itself.
      */
-    $report = app(App\Reports\BroodcockInventoryReport::class);
+    // ReportController passes the configured report instance in as $report.
+    // The container lookup is only a fallback for rendering this view directly
+    // (as the tests do) without going through the controller.
+    $report = $report ?? app(App\Reports\BroodcockInventoryReport::class);
     $statusBreakdown = $report->statusBreakdown();
     $bloodlineBreakdown = $report->bloodlineBreakdown();
 @endphp

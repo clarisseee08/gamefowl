@@ -7,6 +7,7 @@ namespace Tests\Feature\Reports;
 use App\Models\BreedingRecord;
 use App\Models\Broodcock;
 use App\Reports\BreedingPerformanceReport;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -464,5 +465,42 @@ final class BreedingPerformanceReportTest extends TestCase
         foreach (['oklch(', 'display:flex', 'display: flex', 'grid-template', 'var(--'] as $forbidden) {
             $this->assertStringNotContainsString($forbidden, $html, "The PDF template must be CSS 2.1 only; found {$forbidden}.");
         }
+    }
+
+    /**
+     * dompdf is run for real here, not mocked.
+     *
+     * A template can render perfectly valid HTML and still crash dompdf - an
+     * unsupported property, a missing glyph, a table too wide for the page. The
+     * only way to know the report is deliverable is to produce actual PDF bytes.
+     */
+    public function test_dompdf_produces_a_real_pdf_from_the_template(): void
+    {
+        [$sire, $dam] = $this->pair('Sweater');
+        $this->mating($sire, $dam, set: 2, fertile: 2, hatched: 2);
+        $this->mating($sire, $dam, set: 100, fertile: 50, hatched: 25);
+
+        // Enough pairs to push onto a second page, so the repeating <thead> and
+        // the fixed footer are exercised rather than assumed.
+        foreach (range(1, 40) as $i) {
+            [$s, $d] = $this->pair($i % 2 === 0 ? 'Kelso' : 'Grey');
+            $this->mating($s, $d, set: $i, fertile: intdiv($i, 2), hatched: intdiv($i, 4));
+        }
+
+        $report = $this->report();
+
+        $bytes = Pdf::loadView($report->pdfView(), [
+            'title' => $report->title(),
+            'subtitle' => $report->description(),
+            'filterSummary' => $report->filterSummary(),
+            'columns' => $report->columns(),
+            'rows' => $report->rows(),
+            'summary' => $report->summary(),
+            'generatedAt' => now(),
+            'generatedBy' => 'Test Owner',
+        ])->setPaper('a4', 'landscape')->output();
+
+        $this->assertStringStartsWith('%PDF', $bytes, 'dompdf did not return a PDF.');
+        $this->assertGreaterThan(4096, strlen($bytes), 'The PDF is too small to contain both tables.');
     }
 }

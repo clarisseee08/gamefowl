@@ -17,7 +17,10 @@
      * rather than a table silently computed over unfiltered data - a per-bird
      * win rate that does not match the rows above it is worse than no table.
      */
-    $report = app(\App\Reports\PerformanceHistoryReport::class);
+    // ReportController passes the configured report instance in as $report.
+    // The container lookup is only a fallback for rendering this view directly
+    // (as the tests do) without going through the controller.
+    $report = $report ?? app(\App\Reports\PerformanceHistoryReport::class);
     $perBird = $report->filterSummary() === $filterSummary
         ? $report->perBirdSummary()
         : null;

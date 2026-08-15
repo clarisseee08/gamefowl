@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\BroodcockPhotoController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ReportController;
 use App\Livewire\Breeding;
 use App\Livewire\Broodcocks;
 use App\Livewire\Catalog;
@@ -11,6 +12,7 @@ use App\Livewire\Health;
 use App\Livewire\Mortality;
 use App\Livewire\Pens;
 use App\Livewire\Performance;
+use App\Livewire\Reports;
 use App\Livewire\Users;
 use Illuminate\Support\Facades\Route;
 
@@ -98,6 +100,19 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         // The broodcock is optional so the form can be reached either from the
         // mortality list or straight from a bird's page.
         Route::livewire('/create/{broodcock?}', Mortality\Form::class)->name('create');
+    });
+
+    /*
+     * Reports - internal only.
+     *
+     * The CSV and PDF endpoints are plain GET routes rather than Livewire
+     * actions because a file download cannot be delivered through a Livewire
+     * update. ReportController authorizes, exports and writes the audit row.
+     */
+    Route::prefix('reports')->name('reports.')->group(function (): void {
+        Route::livewire('/', Reports\Index::class)->name('index');
+        Route::get('/{report}/csv', [ReportController::class, 'csv'])->name('csv');
+        Route::get('/{report}/pdf', [ReportController::class, 'pdf'])->name('pdf');
     });
 
     /*

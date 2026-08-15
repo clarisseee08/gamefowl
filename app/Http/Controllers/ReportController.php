@@ -68,6 +68,11 @@ class ReportController extends Controller
         $this->recordGeneration($request, $definition, 'pdf', $rows->count());
 
         $pdf = Pdf::loadView($definition->pdfView(), [
+            // The report itself, so a template that needs a second
+            // aggregation (per-bird summaries, by-bloodline totals) can call
+            // the report's own method instead of resolving it out of the
+            // container or duplicating the tally in Blade.
+            'report' => $definition,
             'title' => $definition->title(),
             'subtitle' => $definition->description(),
             'filterSummary' => $definition->filterSummary(),
@@ -90,8 +95,21 @@ class ReportController extends Controller
         // see, so generation is gated by ReportPolicy::create().
         $this->authorize('create', Report::class);
 
+        // Explicit allow-list rather than $request->all(): a report must never
+        // receive an arbitrary key it might pass into a query.
+        //
+        // Keep this in sync when a report adds a filter - two reports shipped
+        // with filters that were implemented and tested but silently
+        // unreachable because their key was missing from this list.
         return $this->registry->make($report)->withFilters(
-            $request->only(['from', 'to', 'status', 'class', 'sex', 'bloodline', 'breed', 'pen_id', 'record_type', 'event_type', 'result', 'cause'])
+            $request->only([
+                'from', 'to',
+                'status', 'class', 'sex', 'bloodline', 'breed', 'pen_id',
+                'record_type', 'compliance',
+                'event_type', 'result', 'broodcock_id',
+                'sire_id', 'dam_id',
+                'cause',
+            ])
         );
     }
 
