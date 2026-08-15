@@ -1,0 +1,226 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Livewire\Broodcocks;
+
+use App\Enums\BroodcockClass;
+use App\Enums\BroodcockStatus;
+use App\Enums\Sex;
+use App\Http\Requests\StoreBroodcockRequest;
+use App\Models\Broodcock;
+use App\Models\Pen;
+use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
+use Livewire\Component;
+
+final class Form extends Component
+{
+    public ?Broodcock $broodcock = null;
+
+    // Form state. Kept as individual public properties rather than an array so
+    // wire:model binding and validation error keys line up with the rule names.
+    public ?string $band_number = null;
+
+    public string $name = '';
+
+    public ?string $breed = null;
+
+    public ?string $bloodline = null;
+
+    public string $class = '';
+
+    public string $sex = '';
+
+    public ?string $date_hatched = null;
+
+    public ?string $date_acquired = null;
+
+    public ?string $weight = null;
+
+    public ?string $color = null;
+
+    public ?string $comb_type = null;
+
+    public ?string $leg_color = null;
+
+    public ?string $distinguishing_marks = null;
+
+    public string $status = '';
+
+    public ?string $sire_id = null;
+
+    public ?string $dam_id = null;
+
+    public ?string $pen_id = null;
+
+    public ?string $notes = null;
+
+    public function mount(?Broodcock $broodcock = null): void
+    {
+        if ($broodcock?->exists) {
+            $this->authorize('update', $broodcock);
+            $this->broodcock = $broodcock;
+
+            $this->fill([
+                'band_number' => $broodcock->band_number,
+                'name' => $broodcock->name,
+                'breed' => $broodcock->breed,
+                'bloodline' => $broodcock->bloodline,
+                'class' => $broodcock->class->value,
+                'sex' => $broodcock->sex->value,
+                'date_hatched' => $broodcock->date_hatched?->toDateString(),
+                'date_acquired' => $broodcock->date_acquired?->toDateString(),
+                'weight' => $broodcock->weight,
+                'color' => $broodcock->color,
+                'comb_type' => $broodcock->comb_type,
+                'leg_color' => $broodcock->leg_color,
+                'distinguishing_marks' => $broodcock->distinguishing_marks,
+                'status' => $broodcock->status->value,
+                'sire_id' => $broodcock->sire_id ? (string) $broodcock->sire_id : null,
+                'dam_id' => $broodcock->dam_id ? (string) $broodcock->dam_id : null,
+                'pen_id' => $broodcock->pen_id ? (string) $broodcock->pen_id : null,
+                'notes' => $broodcock->notes,
+            ]);
+
+            return;
+        }
+
+        $this->authorize('create', Broodcock::class);
+        $this->class = BroodcockClass::Ordinary->value;
+        $this->sex = Sex::Male->value;
+        $this->status = BroodcockStatus::Active->value;
+    }
+
+    public function isEditing(): bool
+    {
+        return $this->broodcock?->exists ?? false;
+    }
+
+    /** @return array<string, mixed> */
+    protected function rules(): array
+    {
+        return StoreBroodcockRequest::rulesFor($this->broodcock);
+    }
+
+    /** @return array<string, string> */
+    protected function validationAttributes(): array
+    {
+        return StoreBroodcockRequest::attributeNames();
+    }
+
+    /** @return array<string, string> */
+    protected function messages(): array
+    {
+        return StoreBroodcockRequest::messageOverrides();
+    }
+
+    /** Validate a single field as soon as the user leaves it. */
+    public function updated(string $property): void
+    {
+        $this->validateOnly($property);
+    }
+
+    public function save(): void
+    {
+        $data = $this->validate();
+
+        // Normalise empty strings from <select> and <input> to real nulls, so
+        // "no sire selected" is stored as NULL rather than 0 or ''.
+        foreach (['band_number', 'breed', 'bloodline', 'date_hatched', 'date_acquired', 'weight',
+            'color', 'comb_type', 'leg_color', 'distinguishing_marks', 'sire_id', 'dam_id',
+            'pen_id', 'notes'] as $nullable) {
+            if (($data[$nullable] ?? null) === '') {
+                $data[$nullable] = null;
+            }
+        }
+
+        // A single-table write, but wrapped anyway: the activity-log entry is
+        // written by an Eloquent event in the same request, and the two should
+        // succeed or fail together.
+        $saved = DB::transaction(function () use ($data): Broodcock {
+            if ($this->isEditing()) {
+                $this->broodcock->update($data);
+
+                return $this->broodcock;
+            }
+
+            return Broodcock::create($data);
+        });
+
+        session()->flash('success', $this->isEditing()
+            ? "Changes to {$saved->name} have been saved."
+            : "{$saved->name} has been added to the farm records.");
+
+        $this->redirectRoute('broodcocks.show', $saved, navigate: true);
+    }
+
+    /**
+     * Candidate sires: male birds that are still breeding-eligible, plus the
+     * currently-selected sire even if it has since been retired - otherwise
+     * editing an old record would silently drop its pedigree.
+     *
+     * @return Collection<int, Broodcock>
+     */
+    #[Computed]
+    public function sireOptions(): Collection
+    {
+        return $this->parentOptions(Sex::Male, $this->sire_id);
+    }
+
+    /** @return Collection<int, Broodcock> */
+    #[Computed]
+    public function damOptions(): Collection
+    {
+        return $this->parentOptions(Sex::Female, $this->dam_id);
+    }
+
+    /** @return Collection<int, Broodcock> */
+    private function parentOptions(Sex $sex, ?string $currentlySelected): Collection
+    {
+        return Broodcock::query()
+            ->where('sex', $sex->value)
+            ->when($this->broodcock?->exists, fn ($q) => $q->whereKeyNot($this->broodcock->id))
+            ->where(function ($q) use ($currentlySelected): void {
+                $q->breedingEligible();
+
+                if ($currentlySelected !== null && $currentlySelected !== '') {
+                    $q->orWhere('id', $currentlySelected);
+                }
+            })
+            ->orderBy('name')
+            ->get(['id', 'name', 'band_number', 'bloodline']);
+    }
+
+    /** @return Collection<int, Pen> */
+    #[Computed]
+    public function pens(): Collection
+    {
+        return Pen::query()->orderBy('code')->get(['id', 'code', 'name']);
+    }
+
+    /** @return array<int, BroodcockClass> */
+    public function classOptions(): array
+    {
+        return BroodcockClass::cases();
+    }
+
+    /** @return array<int, Sex> */
+    public function sexOptions(): array
+    {
+        return Sex::cases();
+    }
+
+    /** @return array<int, BroodcockStatus> */
+    public function statusOptions(): array
+    {
+        return BroodcockStatus::cases();
+    }
+
+    public function render(): View
+    {
+        return view('livewire.broodcocks.form');
+    }
+}
