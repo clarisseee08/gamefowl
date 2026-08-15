@@ -2,7 +2,7 @@
     {{-- Livewire re-renders only this component, so the confirmation lives
          here rather than in the layout's session flash. --}}
     @if ($statusMessage !== '')
-        <div class="mb-6 flex items-start justify-between gap-4 rounded-[4px] bg-ok-wash px-4 py-3 text-[15px] text-ok"
+        <div class="mb-6 flex items-start justify-between gap-4 rounded-[4px] bg-ok-wash px-3 py-3 text-[15px] text-ok"
              role="status">
             <p>{{ $statusMessage }}</p>
             <button type="button" wire:click="dismissStatus" class="-my-3 shrink-0 font-medium underline">
@@ -195,7 +195,7 @@
                 <table class="table-hairline min-w-full">
                     <thead class="border-b border-rule-strong bg-pearl">
                         <tr>
-                            <th scope="col" class="px-4 py-2 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                            <th scope="col" class="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
                                 Bird
                             </th>
                             @foreach ([
@@ -223,10 +223,10 @@
                                     </button>
                                 </th>
                             @endforeach
-                            <th scope="col" class="px-4 py-2 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                            <th scope="col" class="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
                                 Duration
                             </th>
-                            <th scope="col" class="px-4 py-2 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                            <th scope="col" class="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
                                 <button type="button" wire:click="sort('rating')"
                                         class="-mx-1 inline-flex items-center gap-1 rounded-[4px] px-1 uppercase tracking-[0.06em] hover:text-ink">
                                     Rating
@@ -238,27 +238,45 @@
                                     @endif
                                 </button>
                             </th>
-                            <th scope="col" class="px-4 py-2 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                            {{-- Shown only where there is room for it. Nine columns overrun
+                                 the card at laptop widths, and truncating this one produced
+                                 "Mari" - which reads as a broken table rather than a shortened
+                                 name. Of the nine it is the least load-bearing, and the phone
+                                 card still carries it at every width. --}}
+                            <th scope="col" class="hidden px-3 py-2 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 2xl:table-cell">
                                 Recorded By
                             </th>
-                            <th scope="col" class="px-4 py-2 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                            {{-- Sticky. Nine columns do not fit a 1280px card, so the table
+                                 scrolls - and the column that fell off the right edge was the
+                                 one carrying Edit and Delete. Pinning it keeps the actions
+                                 reachable without scrolling. --}}
+                            <th scope="col" class="sticky right-0 z-10 border-l border-hairline bg-pearl px-3 py-2 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
                                 <span class="sr-only">Actions</span>
                             </th>
                         </tr>
                     </thead>
                     <tbody class="bg-canvas">
                         @foreach ($this->records as $record)
-                            <tr class="hover:bg-pearl">
-                                <td class="whitespace-nowrap px-4 py-3 text-[15px] font-medium text-ink">
+                            <tr class="group hover:bg-pearl">
+                                {{-- The band tag is possible here now: bloodline was added to
+                                     this component's eager-load select list. Before that,
+                                     reading it threw under Model::shouldBeStrict(). --}}
+                                <td class="whitespace-nowrap px-3 py-3 text-[15px] font-medium text-ink">
                                     @if ($record->broodcock !== null)
-                                        <a href="{{ route('broodcocks.show', $record->broodcock) }}" class="text-action hover:underline">
-                                            {{ $record->broodcock->displayName() }}
+                                        <a href="{{ route('broodcocks.show', $record->broodcock) }}"
+                                           class="inline-flex items-center gap-2 text-action hover:underline">
+                                            <x-band-tag :bloodline="$record->broodcock->bloodline"
+                                                        :band="$record->broodcock->band_number" size="xs" />
+                                            {{-- name only: displayName() appends the band in
+                                                 parentheses, which the tag beside it already
+                                                 shows. --}}
+                                            {{ $record->broodcock->name }}
                                         </a>
                                     @else
                                         <span class="font-normal text-ink-80">Bird removed</span>
                                     @endif
                                 </td>
-                                <td class="datum whitespace-nowrap px-4 py-3 text-[15px] text-ink">
+                                <td class="datum whitespace-nowrap px-3 py-3 text-[15px] text-ink">
                                     {{ $record->event_date->format('d M Y') }}
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3">
@@ -271,10 +289,10 @@
                                         {{ $record->result->label() }}
                                     </span>
                                 </td>
-                                <td class="datum whitespace-nowrap px-4 py-3 text-right text-[15px] text-ink">
+                                <td class="datum whitespace-nowrap px-3 py-3 text-right text-[15px] text-ink">
                                     {{ $record->weight !== null ? $record->weight.' kg' : '—' }}
                                 </td>
-                                <td class="datum whitespace-nowrap px-4 py-3 text-right text-[15px] text-ink">
+                                <td class="datum whitespace-nowrap px-3 py-3 text-right text-[15px] text-ink">
                                     {{ $record->durationLabel() ?? '—' }}
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3">
@@ -295,10 +313,11 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-3 text-[15px] text-ink-80">
+                                <td class="hidden max-w-[11rem] truncate px-3 py-3 text-[15px] text-ink-80 2xl:table-cell"
+                                    title="{{ $record->recordedBy?->full_name }}">
                                     {{ $record->recordedBy?->full_name ?? '—' }}
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-3 text-right text-[15px]">
+                                <td class="sticky right-0 whitespace-nowrap border-l border-hairline bg-canvas px-3 py-3 text-right text-[15px] group-hover:bg-pearl">
                                     <div class="flex items-center justify-end gap-4">
                                         @can('update', $record)
                                             {{-- min-h-11 by hand: the base rule only sizes
