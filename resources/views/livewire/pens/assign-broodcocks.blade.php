@@ -6,7 +6,7 @@
 
     <div class="mb-8 border-b border-hairline pb-6">
         <a href="{{ route('pens.show', $pen) }}" wire:navigate class="inline-flex min-h-11 items-center text-[13px] font-medium text-action hover:underline">
-            &larr; Back to Pen {{ $pen->code }}
+            &larr; Back to Pen <span class="datum ml-1">{{ $pen->code }}</span>
         </a>
         <h1 class="mt-1 text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">
             Assign Birds - Pen <span class="datum font-medium">{{ $pen->code }}</span>
@@ -83,11 +83,14 @@
                     @foreach ($this->available as $bird)
                         <li wire:key="available-{{ $bird->id }}">
                             <label class="flex cursor-pointer items-start gap-3 px-4 py-3.5 hover:bg-pearl">
+                                {{-- accent-color, not a ring: there is no forms plugin in this project,
+                                     so a native checkbox would otherwise paint itself the browser's
+                                     own blue - the one colour this system cannot afford to show. --}}
                                 <input
                                     type="checkbox"
                                     value="{{ $bird->id }}"
                                     wire:model.live="selected"
-                                    class="mt-0.5 h-6 w-6 shrink-0 rounded-[3px] border-rule-strong text-action focus:ring-action"
+                                    class="mt-0.5 h-6 w-6 shrink-0 cursor-pointer accent-action"
                                 >
                                 <span class="min-w-0 flex-1">
                                     <span class="block text-[15px] font-medium leading-snug text-ink">{{ $bird->name }}</span>

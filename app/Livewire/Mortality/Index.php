@@ -125,7 +125,7 @@ final class Index extends Component
         return $this->filtered()
             // Eager-loaded: the table shows the bird and the recorder on every
             // row, and strict mode turns a missed relation into an exception.
-            ->with(['broodcock:id,name,band_number,date_hatched', 'recordedBy:id,full_name'])
+            ->with(['broodcock:id,name,band_number,bloodline,date_hatched', 'recordedBy:id,full_name'])
             ->orderByDesc('date_of_death')
             ->orderByDesc('id')
             ->paginate((int) config('gfms.per_page', 15));
@@ -205,7 +205,7 @@ final class Index extends Component
             return null;
         }
 
-        return MortalityRecord::with('broodcock:id,name,band_number')
+        return MortalityRecord::with('broodcock:id,name,band_number,bloodline')
             ->find($this->confirmingDeleteId);
     }
 

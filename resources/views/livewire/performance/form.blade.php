@@ -2,10 +2,11 @@
      labels and their fields visually paired on a wide screen. --}}
 <div class="mx-auto max-w-3xl">
     <div class="mb-8 border-b border-rule-strong pb-6">
-        <a href="{{ route('performance.index') }}" class="inline-flex items-center text-[13px] font-medium text-action hover:underline">
+        <a href="{{ route('performance.index') }}"
+           class="-mt-2 inline-flex min-h-11 items-center text-[13px] font-medium text-action hover:underline">
             &larr; Back to performance records
         </a>
-        <h1 class="mt-1 text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">
+        <h1 class="text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">
             {{ $this->isEditing() ? 'Edit Performance Record' : 'Add a Performance Record' }}
         </h1>
         <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-ink-80">

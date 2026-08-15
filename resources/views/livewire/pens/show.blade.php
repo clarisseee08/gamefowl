@@ -54,14 +54,16 @@
 
                 <div class="px-5 py-3.5">
                     <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Birds Inside Now</dt>
-                    <dd class="datum mt-1 text-[32px] font-medium leading-[1.1] tracking-[-0.02em] text-ink">{{ $occupancy }}</dd>
+                    <dd class="mt-1">
+                        <span class="datum block text-[32px] font-medium leading-[1.1] tracking-[-0.02em] text-ink">{{ $occupancy }}</span>
 
-                    @if ($percent !== null)
-                        <div class="mt-2 h-[6px] w-full overflow-hidden rounded-[2px] bg-pearl" aria-hidden="true">
-                            <div class="h-full {{ $occupancy > $pen->capacity ? 'bg-alert' : ($percent >= 80 ? 'bg-warn' : 'bg-action') }}"
-                                 style="width: {{ $percent }}%"></div>
-                        </div>
-                    @endif
+                        @if ($percent !== null)
+                            <span class="mt-2 block h-[6px] w-full overflow-hidden rounded-[2px] bg-pearl" aria-hidden="true">
+                                <span class="block h-full {{ $occupancy > $pen->capacity ? 'bg-alert' : ($percent >= 80 ? 'bg-warn' : 'bg-ink') }}"
+                                      style="width: {{ $percent }}%"></span>
+                            </span>
+                        @endif
+                    </dd>
                 </div>
 
                 <div class="px-5 py-3.5">

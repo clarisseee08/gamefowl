@@ -137,7 +137,7 @@
                                 @endif
                             </td>
 
-                            <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
+                            <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
                                 <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Status</span>
                                 <span class="badge {{ $stateClasses }}">{{ $state }}</span>
                             </td>

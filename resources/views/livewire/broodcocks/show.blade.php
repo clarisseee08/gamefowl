@@ -48,7 +48,7 @@
                     <div class="mt-2 flex flex-wrap gap-1.5">
                         <span class="badge {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
                         <span class="badge {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
-                        <span class="badge badge-quiet">{{ $bird->sex->farmTerm() }}</span>
+                        <span class="badge badge-neutral">{{ $bird->sex->farmTerm() }}</span>
                     </div>
                 </div>
             </div>

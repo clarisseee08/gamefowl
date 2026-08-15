@@ -90,12 +90,12 @@
                                     <td class="block sm:table-cell sm:px-4 sm:py-3">
                                         <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Bird</span>
                                         <p class="text-[15px] font-medium leading-snug text-ink">{{ $record->broodcock->name }}</p>
-                                        <div class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                                        <div class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap">
                                             <x-band-tag :bloodline="$record->broodcock->bloodline"
                                                         :band="$record->broodcock->band_number"
                                                         size="xs" />
                                             @if ($record->broodcock->bloodline)
-                                                <span class="text-[12px] text-ink-80">{{ $record->broodcock->bloodline }}</span>
+                                                <span class="text-[12px] text-ink-80 sm:whitespace-nowrap">{{ $record->broodcock->bloodline }}</span>
                                             @endif
                                         </div>
                                     </td>
@@ -117,8 +117,11 @@
 
                                     <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
                                         <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">How Late</span>
+                                        {{-- One flex child, not two: `.badge` carries a gap,
+                                             and a bare text node beside the datum span would
+                                             pick it up on top of the word space. --}}
                                         <span class="badge badge-alert">
-                                            <span class="datum">{{ $daysLate }}</span> {{ Str::plural('day', $daysLate) }} late
+                                            <span class="whitespace-nowrap"><span class="datum">{{ $daysLate }}</span> {{ Str::plural('day', $daysLate) }} late</span>
                                         </span>
                                     </td>
 
@@ -137,9 +140,11 @@
                     </table>
                 </div>
 
-                <div class="border-t border-hairline bg-pearl px-4 py-2.5">
-                    {{ $this->overdue->links() }}
-                </div>
+                @if ($this->overdue->hasPages())
+                    <div class="border-t border-hairline bg-pearl px-4 py-2.5">
+                        {{ $this->overdue->links() }}
+                    </div>
+                @endif
             @endif
         </div>
     </section>
@@ -184,12 +189,12 @@
                                     <td class="block sm:table-cell sm:px-4 sm:py-3">
                                         <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Bird</span>
                                         <p class="text-[15px] font-medium leading-snug text-ink">{{ $record->broodcock->name }}</p>
-                                        <div class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                                        <div class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap">
                                             <x-band-tag :bloodline="$record->broodcock->bloodline"
                                                         :band="$record->broodcock->band_number"
                                                         size="xs" />
                                             @if ($record->broodcock->bloodline)
-                                                <span class="text-[12px] text-ink-80">{{ $record->broodcock->bloodline }}</span>
+                                                <span class="text-[12px] text-ink-80 sm:whitespace-nowrap">{{ $record->broodcock->bloodline }}</span>
                                             @endif
                                         </div>
                                     </td>
@@ -215,7 +220,7 @@
                                             @if ($daysLeft === 0)
                                                 Today
                                             @else
-                                                <span class="datum">{{ $daysLeft }}</span> {{ Str::plural('day', $daysLeft) }}
+                                                <span class="whitespace-nowrap"><span class="datum">{{ $daysLeft }}</span> {{ Str::plural('day', $daysLeft) }}</span>
                                             @endif
                                         </span>
                                     </td>
@@ -235,9 +240,11 @@
                     </table>
                 </div>
 
-                <div class="border-t border-hairline bg-pearl px-4 py-2.5">
-                    {{ $this->dueSoon->links() }}
-                </div>
+                @if ($this->dueSoon->hasPages())
+                    <div class="border-t border-hairline bg-pearl px-4 py-2.5">
+                        {{ $this->dueSoon->links() }}
+                    </div>
+                @endif
             @endif
         </div>
     </section>

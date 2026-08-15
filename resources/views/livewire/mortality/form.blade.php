@@ -9,11 +9,11 @@
 <div class="mx-auto max-w-2xl">
     <div class="mb-8 border-b border-rule-strong pb-6">
         <a href="{{ route('mortality.index') }}" wire:navigate
-           class="inline-flex items-center gap-1 text-[13px] font-medium text-action hover:underline">
+           class="-mt-2 inline-flex min-h-11 items-center gap-1 text-[13px] font-medium text-action hover:underline">
             &larr; Back to Mortality Records
         </a>
 
-        <h1 class="mt-1 text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">Record a Death</h1>
+        <h1 class="text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">Record a Death</h1>
         <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-ink-80">
             Fill this in when a bird dies. The bird will be marked as
             <strong class="font-medium text-ink">deceased</strong> and will no longer appear in the active flock
@@ -185,34 +185,36 @@
              aria-modal="true"
              aria-labelledby="confirm-mortality-title"
              wire:keydown.escape="cancelConfirmation">
-            <div class="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
-                <h2 id="confirm-mortality-title" class="text-lg font-semibold text-ink">
+            <div class="card w-full max-w-lg p-6">
+                <h2 id="confirm-mortality-title" class="text-[22px] font-semibold leading-[1.2] tracking-[-0.01em] text-ink">
                     Record the death of {{ $this->selectedBird->displayName() }}?
                 </h2>
 
-                <dl class="mt-4 space-y-2 rounded-lg bg-pearl p-4 text-sm">
-                    <div class="flex justify-between gap-4">
+                {{-- A read-back of exactly what is about to be written, laid out
+                     as a ledger stub: labels left, values right, dates in mono. --}}
+                <dl class="mt-4 divide-y divide-hairline rounded-[4px] border border-hairline bg-pearl px-4 text-[15px]">
+                    <div class="flex justify-between gap-4 py-2.5">
                         <dt class="text-ink-80">Date of death</dt>
-                        <dd class="font-medium text-ink">
+                        <dd class="datum font-medium text-ink">
                             {{ \Illuminate\Support\Carbon::parse($date_of_death)->format('d M Y') }}
                         </dd>
                     </div>
-                    <div class="flex justify-between gap-4">
+                    <div class="flex justify-between gap-4 py-2.5">
                         <dt class="text-ink-80">Cause</dt>
                         <dd class="font-medium text-ink">{{ $cause_of_death }}</dd>
                     </div>
-                    <div class="flex justify-between gap-4">
+                    <div class="flex justify-between gap-4 py-2.5">
                         <dt class="text-ink-80">Disposal</dt>
                         <dd class="font-medium text-ink">{{ $disposal_method ?: 'Not recorded' }}</dd>
                     </div>
                 </dl>
 
-                <p class="mt-4 text-sm text-ink-80">
-                    {{ $this->selectedBird->name }} will be marked as <strong>deceased</strong> and
+                <p class="mt-4 rounded-[4px] bg-alert-wash px-3 py-2.5 text-[15px] leading-relaxed text-alert">
+                    {{ $this->selectedBird->name }} will be marked as <strong class="font-medium">deceased</strong> and
                     removed from the active flock and from breeding. Only the farm owner can undo this.
                 </p>
 
-                <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <div class="mt-6 flex flex-col-reverse gap-3 border-t border-hairline pt-5 sm:flex-row sm:justify-end">
                     <button type="button" wire:click="cancelConfirmation" class="btn-secondary">
                         Go Back and Check
                     </button>

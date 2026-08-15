@@ -124,7 +124,7 @@ final class Index extends Component
             return;
         }
 
-        $record = PerformanceRecord::query()->with('broodcock:id,name,band_number')->findOrFail($this->confirmingDeleteId);
+        $record = PerformanceRecord::query()->with('broodcock:id,name,band_number,bloodline')->findOrFail($this->confirmingDeleteId);
 
         $this->authorize('delete', $record);
 
@@ -156,7 +156,7 @@ final class Index extends Component
         }
 
         return PerformanceRecord::query()
-            ->with('broodcock:id,name,band_number')
+            ->with('broodcock:id,name,band_number,bloodline')
             ->find($this->confirmingDeleteId);
     }
 
@@ -175,7 +175,7 @@ final class Index extends Component
             // Every row prints the bird and the recorder. Without these two
             // eager loads the page fires 2 extra queries per row, and each one
             // is a network round trip to Supabase.
-            ->with(['broodcock:id,name,band_number', 'recordedBy:id,full_name'])
+            ->with(['broodcock:id,name,band_number,bloodline', 'recordedBy:id,full_name'])
             ->when($this->search !== '', fn ($query) => $query->whereHas(
                 'broodcock',
                 fn ($birds) => $birds->search($this->search),

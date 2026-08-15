@@ -161,12 +161,12 @@
                                     {{-- The band tag is the bird's real identifier: the anodised
                                          ring it wears. Its bloodline is spelled out beside it so
                                          the encoding never depends on colour alone. --}}
-                                    <div class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                                    <div class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap">
                                         <x-band-tag :bloodline="$record->broodcock->bloodline"
                                                     :band="$record->broodcock->band_number"
                                                     size="xs" />
                                         @if ($record->broodcock->bloodline)
-                                            <span class="text-[12px] text-ink-80">{{ $record->broodcock->bloodline }}</span>
+                                            <span class="text-[12px] text-ink-80 sm:whitespace-nowrap">{{ $record->broodcock->bloodline }}</span>
                                         @endif
                                     </div>
                                 </td>
@@ -210,7 +210,7 @@
                                     @endif
                                 </td>
 
-                                <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
+                                <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
                                     <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Status</span>
                                     <span class="badge {{ $stateClasses }}">{{ $state }}</span>
                                 </td>
@@ -220,8 +220,16 @@
                                         @can('update', $record)
                                             <a href="{{ route('health.edit', $record) }}" wire:navigate class="btn-secondary">Edit</a>
                                         @endcan
+                                        {{-- Deliberately NOT the filled .btn-danger, following the
+                                             rule set on the broodcock detail page: a solid crimson
+                                             control sits within a shade of the crimson BAND colour,
+                                             and repeated down fifteen rows it out-shouts the band
+                                             tags that colour is reserved for. The filled variant is
+                                             kept for the confirmation dialog, where destroying the
+                                             record IS the primary action. --}}
                                         @can('delete', $record)
-                                            <button type="button" wire:click="confirmDelete({{ $record->id }})" class="btn-danger">
+                                            <button type="button" wire:click="confirmDelete({{ $record->id }})"
+                                                    class="btn-secondary text-alert hover:border-alert">
                                                 Delete
                                             </button>
                                         @endcan
@@ -233,9 +241,11 @@
                 </table>
             </div>
 
-            <div class="border-t border-hairline bg-pearl px-4 py-2.5">
-                {{ $this->rows->links() }}
-            </div>
+            @if ($this->rows->hasPages())
+                <div class="border-t border-hairline bg-pearl px-4 py-2.5">
+                    {{ $this->rows->links() }}
+                </div>
+            @endif
         @endif
     </div>
 

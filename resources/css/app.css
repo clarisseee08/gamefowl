@@ -8,6 +8,10 @@
 @import '@fontsource/fira-sans/latin-600.css';
 @import '@fontsource/fira-code/latin-400.css';
 @import '@fontsource/fira-code/latin-500.css';
+/* 600 is loaded because headline figures are .datum AND font-semibold. Without
+   the real weight the browser synthesises bold by smearing the 500, which is
+   visibly worse at 32-44px - exactly the sizes the dashboard uses. */
+@import '@fontsource/fira-code/latin-600.css';
 
 /* Tailwind v4 is CSS-first: there is no tailwind.config.js. Content sources are
    declared here instead of a `content: []` array. */

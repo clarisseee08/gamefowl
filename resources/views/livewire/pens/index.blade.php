@@ -25,7 +25,7 @@
                 wire:model.live.debounce.400ms="search"
                 placeholder="Type a pen code, name, or location"
                 autocomplete="off"
-                class="input mt-1"
+                class="input mt-1.5"
             >
             <p class="help">For example: P-01, Breeding Pen, or North Yard.</p>
         </div>
@@ -61,15 +61,13 @@
                 <div wire:key="pen-card-{{ $pen->id }}" class="card p-4">
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                            <a href="{{ route('pens.show', $pen) }}" wire:navigate class="datum text-[19px] font-medium leading-[1.2] tracking-[-0.01em] text-action hover:underline">
+                            <a href="{{ route('pens.show', $pen) }}" wire:navigate class="datum text-[18px] font-medium leading-[1.2] tracking-[-0.01em] text-action hover:underline">
                                 {{ $pen->code }}
                             </a>
                             <p class="mt-0.5 text-[15px] leading-snug text-ink">{{ $pen->name }}</p>
                             <p class="text-[13px] leading-snug text-ink-80">{{ $pen->location ?? 'No location recorded' }}</p>
                         </div>
-                        <span class="badge {{ $pen->isFull() ? 'badge-warn' : 'badge-ok' }} shrink-0">
-                            <span class="datum">{{ $occupancy }}</span> {{ $occupancy === 1 ? 'bird' : 'birds' }}
-                        </span>
+                        <span class="badge datum shrink-0 {{ $pen->isFull() ? 'badge-warn' : 'badge-ok' }}">{{ $occupancy }} {{ $occupancy === 1 ? 'bird' : 'birds' }}</span>
                     </div>
 
                     <div class="mt-3 border-t border-hairline pt-3">
@@ -77,7 +75,7 @@
                             <p class="datum text-[13px] text-ink-80">No limit set</p>
                         @else
                             <div class="h-[6px] w-full overflow-hidden rounded-[2px] bg-pearl" aria-hidden="true">
-                                <div class="h-full {{ $occupancy > $pen->capacity ? 'bg-alert' : ($percent >= 80 ? 'bg-warn' : 'bg-action') }}"
+                                <div class="h-full {{ $occupancy > $pen->capacity ? 'bg-alert' : ($percent >= 80 ? 'bg-warn' : 'bg-ink') }}"
                                      style="width: {{ $percent }}%"></div>
                             </div>
                             <p class="datum mt-1.5 text-[13px] {{ $remaining === 0 ? 'text-alert' : 'text-ink-80' }}">
@@ -98,7 +96,7 @@
                             <a href="{{ route('pens.edit', $pen) }}" wire:navigate class="btn-secondary">Edit</a>
                         @endcan
                         @can('delete', $pen)
-                            <button type="button" wire:click="confirmDelete({{ $pen->id }})" class="btn-danger">Delete</button>
+                            <button type="button" wire:click="confirmDelete({{ $pen->id }})" class="btn-secondary text-alert hover:border-alert">Delete</button>
                         @endcan
                     </div>
                 </div>
@@ -148,7 +146,7 @@
                                         <span class="datum text-[13px] text-ink-80">No limit</span>
                                     @else
                                         <div class="h-[6px] w-full overflow-hidden rounded-[2px] bg-pearl" aria-hidden="true">
-                                            <div class="h-full {{ $occupancy > $pen->capacity ? 'bg-alert' : ($percent >= 80 ? 'bg-warn' : 'bg-action') }}"
+                                            <div class="h-full {{ $occupancy > $pen->capacity ? 'bg-alert' : ($percent >= 80 ? 'bg-warn' : 'bg-ink') }}"
                                                  style="width: {{ $percent }}%"></div>
                                         </div>
                                         <p class="datum mt-1.5 text-[13px] {{ $remaining === 0 ? 'text-alert' : 'text-ink-80' }}">
@@ -168,7 +166,7 @@
                                             <a href="{{ route('pens.edit', $pen) }}" wire:navigate class="btn-secondary">Edit</a>
                                         @endcan
                                         @can('delete', $pen)
-                                            <button type="button" wire:click="confirmDelete({{ $pen->id }})" class="btn-danger">Delete</button>
+                                            <button type="button" wire:click="confirmDelete({{ $pen->id }})" class="btn-secondary text-alert hover:border-alert">Delete</button>
                                         @endcan
                                     </div>
                                 </td>

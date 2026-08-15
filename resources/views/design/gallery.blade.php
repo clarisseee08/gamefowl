@@ -221,7 +221,11 @@
             <h2 class="text-[22px] font-semibold tracking-[-0.01em] text-ink">Patterns</h2>
 
             <div class="card mt-6 overflow-hidden">
-                <table class="min-w-full">
+                {{-- .table-hairline is a DESCENDANT selector (.table-hairline tbody tr+tr),
+                     so it belongs on the table. It was on the tbody here, which meant the
+                     reference gallery's own table had no row rules - the one table in the
+                     app that exists to show what a table should look like. --}}
+                <table class="table-hairline min-w-full">
                     <thead class="bg-pearl">
                         <tr>
                             @foreach (['Band', 'Name', 'Bloodline', 'Weight', 'Status'] as $h)
@@ -229,7 +233,7 @@
                             @endforeach
                         </tr>
                     </thead>
-                    <tbody class="table-hairline">
+                    <tbody>
                         @foreach ([['Sweater','SW-4001','Haring Agila','2.85'],['Hatch','HA-3120','Bantay','3.07'],['Kelso','KE-2088','Tandang','2.64']] as [$bl,$bn,$nm,$wt])
                             <tr>
                                 <td class="px-3 py-2.5"><x-band-tag :bloodline="$bl" :band="$bn" size="xs" /></td>

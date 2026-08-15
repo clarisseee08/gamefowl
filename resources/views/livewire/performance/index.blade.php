@@ -178,7 +178,7 @@
                             <a href="{{ route('performance.edit', $record) }}" class="btn-secondary flex-1">Edit</a>
                         @endcan
                         @can('delete', $record)
-                            <button type="button" wire:click="confirmDelete({{ $record->id }})" class="btn-danger flex-1">
+                            <button type="button" wire:click="confirmDelete({{ $record->id }})" class="btn-secondary text-alert hover:border-alert flex-1">
                                 Delete
                             </button>
                         @endcan
@@ -190,7 +190,9 @@
         {{-- Desktop: table --}}
         <div class="card hidden overflow-hidden sm:block">
             <div class="overflow-x-auto">
-                <table class="min-w-full">
+                {{-- .table-hairline resolves to `.table-hairline tbody tr + tr`,
+                     so it belongs on the table, not the tbody. --}}
+                <table class="table-hairline min-w-full">
                     <thead class="border-b border-rule-strong bg-pearl">
                         <tr>
                             <th scope="col" class="px-4 py-2 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
@@ -244,7 +246,7 @@
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="table-hairline bg-canvas">
+                    <tbody class="bg-canvas">
                         @foreach ($this->records as $record)
                             <tr class="hover:bg-pearl">
                                 <td class="whitespace-nowrap px-4 py-3 text-[15px] font-medium text-ink">
@@ -299,7 +301,10 @@
                                 <td class="whitespace-nowrap px-4 py-3 text-right text-[15px]">
                                     <div class="flex items-center justify-end gap-4">
                                         @can('update', $record)
-                                            <a href="{{ route('performance.edit', $record) }}" class="font-medium text-action hover:underline">
+                                            {{-- min-h-11 by hand: the base rule only sizes
+                                                 buttons, and this action is a link. --}}
+                                            <a href="{{ route('performance.edit', $record) }}"
+                                               class="inline-flex min-h-11 items-center font-medium text-action hover:underline">
                                                 Edit<span class="sr-only">, {{ $record->event_type->label() }} record</span>
                                             </a>
                                         @endcan

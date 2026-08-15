@@ -146,7 +146,7 @@ final class Form extends Component
     public function eligibleBirds(): Collection
     {
         return Broodcock::query()
-            ->select(['id', 'name', 'band_number', 'date_hatched', 'status'])
+            ->select(['id', 'name', 'band_number', 'bloodline', 'date_hatched', 'status'])
             ->whereNot('status', BroodcockStatus::Deceased->value)
             ->whereDoesntHave('mortalityRecord')
             ->when($this->birdSearch !== '', fn (Builder $query) => $query->search($this->birdSearch))
@@ -163,7 +163,7 @@ final class Form extends Component
         }
 
         return Broodcock::query()
-            ->select(['id', 'name', 'band_number', 'date_hatched', 'status'])
+            ->select(['id', 'name', 'band_number', 'bloodline', 'date_hatched', 'status'])
             ->find((int) $this->broodcock_id);
     }
 

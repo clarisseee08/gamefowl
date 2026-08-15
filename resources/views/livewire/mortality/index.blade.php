@@ -84,7 +84,7 @@
         <div class="card mb-6 p-5">
             <h2 class="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
                 Causes of Death
-                <span class="normal-case tracking-normal text-ink-80">
+                <span class="text-[12px] font-normal normal-case tracking-normal text-ink-80">
                     ({{ $this->hasFilters() ? 'for the records you are filtering' : 'all records' }})
                 </span>
             </h2>
@@ -229,7 +229,9 @@
         {{-- Desktop --}}
         <div class="card hidden overflow-hidden sm:block">
             <div class="overflow-x-auto">
-                <table class="min-w-full text-[15px]">
+                {{-- .table-hairline resolves to `.table-hairline tbody tr + tr`,
+                     so it belongs on the table, not the tbody. --}}
+                <table class="table-hairline min-w-full text-[15px]">
                     <thead class="border-b border-rule-strong bg-pearl text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
                         <tr>
                             <th scope="col" class="px-4 py-2">Bird</th>
@@ -243,14 +245,23 @@
                             @endif
                         </tr>
                     </thead>
-                    <tbody class="table-hairline bg-canvas">
+                    <tbody class="bg-canvas">
                         @foreach ($this->rows as $record)
                             <tr wire:key="row-{{ $record->id }}" class="hover:bg-pearl">
                                 <td class="px-4 py-3">
                                     <p class="font-medium text-ink">{{ $record->broodcock?->name ?? 'Unknown bird' }}</p>
                                     {{-- "Not yet banded" is a real state, never a blank cell -
-                                         displayBand() already says so in words. --}}
-                                    <p class="datum mt-0.5 text-[13px] text-ink-80">{{ $record->broodcock?->displayBand() ?? '-' }}</p>
+                                         the band tag says so in words. bloodline is now in the
+                                         eager-load select list, so this no longer trips
+                                         shouldBeStrict(). --}}
+                                    <div class="mt-1">
+                                        @if ($record->broodcock)
+                                            <x-band-tag :bloodline="$record->broodcock->bloodline"
+                                                        :band="$record->broodcock->band_number" size="xs" />
+                                        @else
+                                            <span class="datum text-[13px] text-ink-80">-</span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="datum whitespace-nowrap px-4 py-3 text-ink">
                                     {{ $record->date_of_death->format('d M Y') }}
