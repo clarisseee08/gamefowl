@@ -14,7 +14,7 @@
     {{-- One field per ruled row, the way a paper record sheet is laid out.
          Spacing is not uniform: rows are tight, the section rules do the
          separating. --}}
-    <form wire:submit="save" class="card divide-y divide-hairline">
+    <form wire:submit="save" class="card divide-y divide-hairline overflow-hidden">
         @csrf
 
         <div class="px-5 py-5">
@@ -49,7 +49,7 @@
         </div>
 
         <div class="px-5 py-5">
-            <label for="location" class="label">Location <span class="font-normal text-ink-48">(optional)</span></label>
+            <label for="location" class="label">Location <span class="font-normal text-ink-80">(optional)</span></label>
             <input
                 id="location"
                 type="text"
@@ -74,7 +74,7 @@
                 required
                 class="datum input mt-1.5 max-w-[10rem] @error('capacity') input-error @enderror"
             >
-            <p class="help">How many birds this pen can hold. Enter <strong class="font-medium text-ink-80">0</strong> if there is no set limit.</p>
+            <p class="help">How many birds this pen can hold. Enter <strong class="datum font-medium text-ink">0</strong> if there is no set limit.</p>
             @error('capacity')
                 <p class="error">{{ $message }}</p>
             @enderror
@@ -90,7 +90,7 @@
         </div>
 
         <div class="px-5 py-5">
-            <label for="notes" class="label">Notes <span class="font-normal text-ink-48">(optional)</span></label>
+            <label for="notes" class="label">Notes <span class="font-normal text-ink-80">(optional)</span></label>
             <textarea
                 id="notes"
                 rows="4"

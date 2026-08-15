@@ -14,7 +14,7 @@
         <div class="mt-1 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
                 <h1 class="text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">
-                    Pen <span class="datum">{{ $pen->code }}</span>
+                    Pen <span class="datum font-medium">{{ $pen->code }}</span>
                 </h1>
                 <p class="mt-2 text-[17px] leading-snug text-ink-80">{{ $pen->name }}</p>
             </div>
@@ -54,7 +54,7 @@
 
                 <div class="px-5 py-3.5">
                     <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Birds Inside Now</dt>
-                    <dd class="datum mt-1 text-[32px] font-semibold leading-[1.1] tracking-[-0.02em] text-ink">{{ $occupancy }}</dd>
+                    <dd class="datum mt-1 text-[32px] font-medium leading-[1.1] tracking-[-0.02em] text-ink">{{ $occupancy }}</dd>
 
                     @if ($percent !== null)
                         <div class="mt-2 h-[6px] w-full overflow-hidden rounded-[2px] bg-pearl" aria-hidden="true">

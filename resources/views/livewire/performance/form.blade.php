@@ -1,24 +1,26 @@
-<div>
-    <div class="mb-10">
-        <a href="{{ route('performance.index') }}" class="text-sm font-medium text-action hover:underline">
+{{-- A data-entry column, not a full-bleed page: measured line length keeps the
+     labels and their fields visually paired on a wide screen. --}}
+<div class="mx-auto max-w-3xl">
+    <div class="mb-8 border-b border-rule-strong pb-6">
+        <a href="{{ route('performance.index') }}" class="inline-flex items-center text-[13px] font-medium text-action hover:underline">
             &larr; Back to performance records
         </a>
-        <h1 class="mt-2 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">
+        <h1 class="mt-1 text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">
             {{ $this->isEditing() ? 'Edit Performance Record' : 'Add a Performance Record' }}
         </h1>
-        <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
+        <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-ink-80">
             Fields marked with <span class="text-alert">*</span> are required. Everything
             else can be filled in later.
         </p>
     </div>
 
-    <form wire:submit="save" class="space-y-10">
+    <form wire:submit="save" class="space-y-6">
         {{-- What happened --}}
-        <section class="card p-8">
-            <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">The Event</h2>
-            <p class="mt-3 text-[17px] leading-relaxed text-ink-48">Which bird, when, and what kind of event it was.</p>
+        <section class="card p-6">
+            <h2 class="text-[22px] font-semibold leading-[1.25] tracking-[-0.01em] text-ink">The Event</h2>
+            <p class="mt-1 max-w-[65ch] text-[15px] leading-relaxed text-ink-80">Which bird, when, and what kind of event it was.</p>
 
-            <div class="mt-8 grid gap-6 sm:grid-cols-2">
+            <div class="mt-6 grid gap-5 border-t border-hairline pt-6 sm:grid-cols-2">
                 <div class="sm:col-span-2">
                     <label for="broodcock_id" class="label">Bird <span class="text-alert">*</span></label>
                     <select id="broodcock_id" wire:model.live="broodcock_id"
@@ -54,11 +56,11 @@
         </section>
 
         {{-- Outcome --}}
-        <section class="card p-8">
-            <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">How the Bird Did</h2>
-            <p class="mt-3 text-[17px] leading-relaxed text-ink-48">Measurements taken and, for a contest, the outcome.</p>
+        <section class="card p-6">
+            <h2 class="text-[22px] font-semibold leading-[1.25] tracking-[-0.01em] text-ink">How the Bird Did</h2>
+            <p class="mt-1 max-w-[65ch] text-[15px] leading-relaxed text-ink-80">Measurements taken and, for a contest, the outcome.</p>
 
-            <div class="mt-8 grid gap-6 sm:grid-cols-2">
+            <div class="mt-6 grid gap-5 border-t border-hairline pt-6 sm:grid-cols-2">
                 {{-- A weigh-in or conditioning session has no winner, so the
                      selector is not merely disabled - it is absent, and the
                      server forces "Not applicable" regardless of what is sent. --}}
@@ -75,10 +77,10 @@
                         @error('result') <p class="error">{{ $message }}</p> @enderror
                     </div>
                 @else
-                    <div class="sm:col-span-2 rounded-lg bg-pearl p-4 ring-1 ring-hairline">
-                        <p class="text-sm text-ink-80">
+                    <div class="sm:col-span-2 rounded-[4px] border border-hairline bg-pearl px-4 py-3">
+                        <p class="text-[15px] leading-relaxed text-ink-80">
                             A
-                            <strong>{{ $this->eventTypeLabel() }}</strong>
+                            <strong class="font-medium text-ink">{{ $this->eventTypeLabel() }}</strong>
                             has no winner or loser, so no result is recorded for it.
                             It will not count towards this bird's win rate.
                         </p>
@@ -110,21 +112,30 @@
                         Tap a star again to clear the rating.
                     </p>
 
-                    <div class="mt-2 flex items-center gap-2" role="group" aria-labelledby="rating-label">
+                    {{-- Ink stars, not amber. Colour in this system means bloodline,
+                         so "chosen" is drawn as a filled shape against an outlined
+                         one - which also survives a monochrome printout. --}}
+                    <div class="mt-2 flex flex-wrap items-center gap-1" role="group" aria-labelledby="rating-label">
                         @for ($star = 1; $star <= 5; $star++)
                             <button type="button"
                                     wire:click="setRating({{ $star }})"
                                     aria-pressed="{{ (int) $rating === $star ? 'true' : 'false' }}"
-                                    class="rounded-lg p-2 transition hover:bg-warn-wash focus-visible:ring-2 focus-visible:ring-action">
+                                    class="inline-flex h-11 w-11 items-center justify-center rounded-[4px] transition-colors hover:bg-pearl focus-visible:ring-2 focus-visible:ring-action">
                                 <span class="sr-only">{{ $star }} {{ Str::plural('star', $star) }}</span>
-                                <svg class="h-8 w-8 {{ $rating !== null && $star <= (int) $rating ? 'text-warn' : 'text-ink-48' }}"
-                                     fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                                    <path d="M10 1.5l2.6 5.27 5.82.85-4.21 4.1.99 5.79L10 14.78l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85L10 1.5z"/>
+                                <svg class="h-7 w-7 {{ $rating !== null && $star <= (int) $rating ? 'text-ink' : 'text-ink-48' }}"
+                                     viewBox="0 0 20 20" aria-hidden="true"
+                                     fill="{{ $rating !== null && $star <= (int) $rating ? 'currentColor' : 'none' }}"
+                                     stroke="currentColor"
+                                     stroke-width="{{ $rating !== null && $star <= (int) $rating ? '0' : '1.25' }}">
+                                    <path stroke-linejoin="round" d="M10 1.5l2.6 5.27 5.82.85-4.21 4.1.99 5.79L10 14.78l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85L10 1.5z"/>
                                 </svg>
                             </button>
                         @endfor
 
-                        <span class="ml-2 text-sm text-ink-80">
+                        <span @class([
+                            'ml-2 text-[15px] text-ink-80',
+                            'datum' => $rating !== null && $rating !== '',
+                        ])>
                             {{ $rating !== null && $rating !== '' ? $rating.' of 5' : 'Not rated' }}
                         </span>
                     </div>
@@ -137,13 +148,13 @@
         {{-- Internal notes. Customers can read performance history but must
              never see remarks - the policy is the gate, this is the courtesy. --}}
         @if (auth()->user()?->isInternal())
-            <section class="card p-8">
-                <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Remarks</h2>
-                <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
+            <section class="card p-6">
+                <h2 class="text-[22px] font-semibold leading-[1.25] tracking-[-0.01em] text-ink">Remarks</h2>
+                <p class="mt-1 max-w-[65ch] text-[15px] leading-relaxed text-ink-80">
                     Notes for farm staff only. Customers never see these.
                 </p>
 
-                <div class="mt-6">
+                <div class="mt-6 border-t border-hairline pt-6">
                     <label for="remarks" class="label">Remarks</label>
                     <textarea id="remarks" rows="4" wire:model.live.blur="remarks"
                               placeholder="e.g. Tired in the last minute, needs more conditioning."
@@ -153,7 +164,7 @@
             </section>
         @endif
 
-        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <div class="flex flex-col-reverse gap-3 border-t border-rule-strong pt-6 sm:flex-row sm:justify-end">
             <a href="{{ route('performance.index') }}" class="btn-secondary">Cancel</a>
             <button type="submit" class="btn-primary" wire:loading.attr="disabled" wire:target="save">
                 <span wire:loading.remove wire:target="save">

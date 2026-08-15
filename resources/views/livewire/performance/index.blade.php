@@ -90,20 +90,20 @@
 
     {{-- Results --}}
     @if ($this->records->isEmpty())
-        <div class="card p-12 text-center">
-            <svg class="mx-auto h-12 w-12 text-ink-48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <div class="card px-6 py-12 text-center">
+            <svg class="mx-auto h-8 w-8 text-ink-48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
             </svg>
 
             @if ($this->hasActiveFilters())
-                <h3 class="mt-4 text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">No records match your filters</h3>
-                <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
+                <h3 class="mt-4 text-[18px] font-medium text-ink">No records match your filters</h3>
+                <p class="mx-auto mt-2 max-w-[52ch] text-[15px] leading-relaxed text-ink-80">
                     Try a different date range, or clear the filters to see everything.
                 </p>
                 <button type="button" wire:click="clearFilters" class="btn-secondary mt-6">Clear filters</button>
             @else
-                <h3 class="mt-4 text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">No performance records yet</h3>
-                <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
+                <h3 class="mt-4 text-[18px] font-medium text-ink">No performance records yet</h3>
+                <p class="mx-auto mt-2 max-w-[52ch] text-[15px] leading-relaxed text-ink-80">
                     Record a sparring session, derby, conditioning session or weigh-in and it will
                     appear here and on the bird's own timeline.
                 </p>
@@ -116,15 +116,15 @@
         </div>
     @else
         {{-- Mobile: cards. Farm staff are mostly on phones. --}}
-        <div class="space-y-3 sm:hidden">
+        <div class="space-y-2.5 sm:hidden">
             @foreach ($this->records as $record)
-                <div class="card p-6">
+                <div class="card p-4">
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                            <p class="truncate font-semibold text-ink">
+                            <p class="truncate text-[15px] font-medium text-ink">
                                 {{ $record->broodcock?->displayName() ?? 'Bird removed' }}
                             </p>
-                            <p class="text-sm text-ink-80">{{ $record->event_date->format('d M Y') }}</p>
+                            <p class="datum mt-0.5 text-[13px] text-ink-80">{{ $record->event_date->format('d M Y') }}</p>
                         </div>
                         <div class="flex shrink-0 flex-col items-end gap-1">
                             <span class="badge {{ $record->event_type->badgeClasses() }}">
@@ -138,27 +138,33 @@
                         </div>
                     </div>
 
-                    <dl class="mt-3 grid grid-cols-3 gap-2 text-sm">
+                    <dl class="mt-3.5 grid grid-cols-3 gap-3 border-t border-hairline pt-3">
                         <div>
-                            <dt class="text-xs text-ink-48">Weight</dt>
-                            <dd class="text-ink">{{ $record->weight !== null ? $record->weight.' kg' : '—' }}</dd>
+                            <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Weight</dt>
+                            <dd class="datum mt-1 text-[15px] text-ink">{{ $record->weight !== null ? $record->weight.' kg' : '—' }}</dd>
                         </div>
                         <div>
-                            <dt class="text-xs text-ink-48">Duration</dt>
-                            <dd class="text-ink">{{ $record->durationLabel() ?? '—' }}</dd>
+                            <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Duration</dt>
+                            <dd class="datum mt-1 text-[15px] text-ink">{{ $record->durationLabel() ?? '—' }}</dd>
                         </div>
                         <div>
-                            <dt class="text-xs text-ink-48">Rating</dt>
-                            <dd>
+                            <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Rating</dt>
+                            <dd class="mt-1">
                                 @if ($record->rating === null)
-                                    <span class="text-ink-48">Not rated</span>
+                                    <span class="text-[13px] text-ink-80">Not rated</span>
                                 @else
+                                    {{-- Ink stars, not amber: colour in this system means
+                                         bloodline, so a rating is drawn with fill and
+                                         outline instead of hue. --}}
                                     <span class="inline-flex items-center gap-0.5" role="img"
                                           aria-label="{{ $record->rating }} out of 5 stars">
                                         @for ($star = 1; $star <= 5; $star++)
-                                            <svg class="h-4 w-4 {{ $star <= $record->rating ? 'text-warn' : 'text-ink-48' }}"
-                                                 fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                                                <path d="M10 1.5l2.6 5.27 5.82.85-4.21 4.1.99 5.79L10 14.78l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85L10 1.5z"/>
+                                            <svg class="h-4 w-4 {{ $star <= $record->rating ? 'text-ink' : 'text-ink-48' }}"
+                                                 viewBox="0 0 20 20" aria-hidden="true"
+                                                 fill="{{ $star <= $record->rating ? 'currentColor' : 'none' }}"
+                                                 stroke="currentColor"
+                                                 stroke-width="{{ $star <= $record->rating ? '0' : '1.25' }}">
+                                                <path stroke-linejoin="round" d="M10 1.5l2.6 5.27 5.82.85-4.21 4.1.99 5.79L10 14.78l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85L10 1.5z"/>
                                             </svg>
                                         @endfor
                                     </span>
@@ -184,10 +190,10 @@
         {{-- Desktop: table --}}
         <div class="card hidden overflow-hidden sm:block">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-divider">
-                    <thead class="bg-pearl">
+                <table class="min-w-full">
+                    <thead class="border-b border-rule-strong bg-pearl">
                         <tr>
-                            <th scope="col" class="px-6 py-4 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                            <th scope="col" class="px-4 py-2 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
                                 Bird
                             </th>
                             @foreach ([
@@ -196,94 +202,109 @@
                                 'result' => 'Result',
                                 'weight' => 'Weight',
                             ] as $column => $heading)
-                                <th scope="col" class="px-6 py-4 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-ink-80">
-                                    <button type="button" wire:click="sort('{{ $column }}')" class="inline-flex items-center gap-1 hover:text-ink">
+                                {{-- Numeric columns are right-aligned so the mono digits
+                                     stack into a single readable column. --}}
+                                <th scope="col" @class([
+                                    'px-4 py-2 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80',
+                                    'text-right' => $column === 'weight',
+                                    'text-left' => $column !== 'weight',
+                                ])>
+                                    <button type="button" wire:click="sort('{{ $column }}')"
+                                            class="-mx-1 inline-flex items-center gap-1 rounded-[4px] px-1 uppercase tracking-[0.06em] hover:text-ink">
                                         {{ $heading }}
                                         @if ($sortBy === $column)
-                                            <span aria-hidden="true">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                            <svg class="h-3 w-3 shrink-0 text-action" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+                                                <path d="{{ $sortDirection === 'asc' ? 'M6 3l3.5 5h-7z' : 'M6 9L2.5 4h7z' }}"/>
+                                            </svg>
                                             <span class="sr-only">sorted {{ $sortDirection === 'asc' ? 'ascending' : 'descending' }}</span>
                                         @endif
                                     </button>
                                 </th>
                             @endforeach
-                            <th scope="col" class="px-6 py-4 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                            <th scope="col" class="px-4 py-2 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
                                 Duration
                             </th>
-                            <th scope="col" class="px-6 py-4 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-ink-80">
-                                <button type="button" wire:click="sort('rating')" class="inline-flex items-center gap-1 hover:text-ink">
+                            <th scope="col" class="px-4 py-2 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                                <button type="button" wire:click="sort('rating')"
+                                        class="-mx-1 inline-flex items-center gap-1 rounded-[4px] px-1 uppercase tracking-[0.06em] hover:text-ink">
                                     Rating
                                     @if ($sortBy === 'rating')
-                                        <span aria-hidden="true">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                        <svg class="h-3 w-3 shrink-0 text-action" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+                                            <path d="{{ $sortDirection === 'asc' ? 'M6 3l3.5 5h-7z' : 'M6 9L2.5 4h7z' }}"/>
+                                        </svg>
                                         <span class="sr-only">sorted {{ $sortDirection === 'asc' ? 'ascending' : 'descending' }}</span>
                                     @endif
                                 </button>
                             </th>
-                            <th scope="col" class="px-6 py-4 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                            <th scope="col" class="px-4 py-2 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
                                 Recorded By
                             </th>
-                            <th scope="col" class="px-6 py-4 text-right text-[12px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                            <th scope="col" class="px-4 py-2 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
                                 <span class="sr-only">Actions</span>
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-divider bg-white">
+                    <tbody class="table-hairline bg-canvas">
                         @foreach ($this->records as $record)
                             <tr class="hover:bg-pearl">
-                                <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-ink">
+                                <td class="whitespace-nowrap px-4 py-3 text-[15px] font-medium text-ink">
                                     @if ($record->broodcock !== null)
                                         <a href="{{ route('broodcocks.show', $record->broodcock) }}" class="text-action hover:underline">
                                             {{ $record->broodcock->displayName() }}
                                         </a>
                                     @else
-                                        <span class="text-ink-48">Bird removed</span>
+                                        <span class="font-normal text-ink-80">Bird removed</span>
                                     @endif
                                 </td>
-                                <td class="whitespace-nowrap px-6 py-4 text-sm text-ink-80">
+                                <td class="datum whitespace-nowrap px-4 py-3 text-[15px] text-ink">
                                     {{ $record->event_date->format('d M Y') }}
                                 </td>
-                                <td class="whitespace-nowrap px-6 py-4">
+                                <td class="whitespace-nowrap px-4 py-3">
                                     <span class="badge {{ $record->event_type->badgeClasses() }}">
                                         {{ $record->event_type->label() }}
                                     </span>
                                 </td>
-                                <td class="whitespace-nowrap px-6 py-4">
+                                <td class="whitespace-nowrap px-4 py-3">
                                     <span class="badge {{ $record->result->badgeClasses() }}">
                                         {{ $record->result->label() }}
                                     </span>
                                 </td>
-                                <td class="whitespace-nowrap px-6 py-4 text-sm text-ink-80">
+                                <td class="datum whitespace-nowrap px-4 py-3 text-right text-[15px] text-ink">
                                     {{ $record->weight !== null ? $record->weight.' kg' : '—' }}
                                 </td>
-                                <td class="whitespace-nowrap px-6 py-4 text-sm text-ink-80">
+                                <td class="datum whitespace-nowrap px-4 py-3 text-right text-[15px] text-ink">
                                     {{ $record->durationLabel() ?? '—' }}
                                 </td>
-                                <td class="whitespace-nowrap px-6 py-4">
+                                <td class="whitespace-nowrap px-4 py-3">
                                     @if ($record->rating === null)
-                                        <span class="text-sm text-ink-48">Not rated</span>
+                                        <span class="text-[13px] text-ink-80">Not rated</span>
                                     @else
                                         <span class="inline-flex items-center gap-0.5" role="img"
                                               aria-label="{{ $record->rating }} out of 5 stars">
                                             @for ($star = 1; $star <= 5; $star++)
-                                                <svg class="h-4 w-4 {{ $star <= $record->rating ? 'text-warn' : 'text-ink-48' }}"
-                                                     fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                                                    <path d="M10 1.5l2.6 5.27 5.82.85-4.21 4.1.99 5.79L10 14.78l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85L10 1.5z"/>
+                                                <svg class="h-4 w-4 {{ $star <= $record->rating ? 'text-ink' : 'text-ink-48' }}"
+                                                     viewBox="0 0 20 20" aria-hidden="true"
+                                                     fill="{{ $star <= $record->rating ? 'currentColor' : 'none' }}"
+                                                     stroke="currentColor"
+                                                     stroke-width="{{ $star <= $record->rating ? '0' : '1.25' }}">
+                                                    <path stroke-linejoin="round" d="M10 1.5l2.6 5.27 5.82.85-4.21 4.1.99 5.79L10 14.78l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85L10 1.5z"/>
                                                 </svg>
                                             @endfor
                                         </span>
                                     @endif
                                 </td>
-                                <td class="whitespace-nowrap px-6 py-4 text-sm text-ink-80">
+                                <td class="whitespace-nowrap px-4 py-3 text-[15px] text-ink-80">
                                     {{ $record->recordedBy?->full_name ?? '—' }}
                                 </td>
-                                <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
-                                    <div class="flex items-center justify-end gap-3">
+                                <td class="whitespace-nowrap px-4 py-3 text-right text-[15px]">
+                                    <div class="flex items-center justify-end gap-4">
                                         @can('update', $record)
                                             <a href="{{ route('performance.edit', $record) }}" class="font-medium text-action hover:underline">
                                                 Edit<span class="sr-only">, {{ $record->event_type->label() }} record</span>
                                             </a>
                                         @endcan
                                         @can('delete', $record)
-                                            <button type="button" wire:click="confirmDelete({{ $record->id }})" class="font-medium text-alert hover:text-alert">
+                                            <button type="button" wire:click="confirmDelete({{ $record->id }})" class="font-medium text-alert hover:underline">
                                                 Delete<span class="sr-only">, {{ $record->event_type->label() }} record</span>
                                             </button>
                                         @endcan
@@ -296,7 +317,7 @@
             </div>
         </div>
 
-        <div class="mt-4">
+        <div class="mt-5 border-t border-hairline pt-4">
             {{ $this->records->links() }}
         </div>
     @endif
@@ -305,27 +326,27 @@
          event and the date - so nobody deletes the wrong one by muscle memory. --}}
     @if ($this->recordPendingDeletion !== null)
         @php($pending = $this->recordPendingDeletion)
-        <div class="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-4 sm:items-center" x-data x-trap.noscroll="true" @keydown.escape.window=".querySelector('.btn-secondary')?.click()"
+        <div class="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-4 sm:items-center" x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()"
              role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title"
              wire:keydown.escape="cancelDelete">
             <div class="card w-full max-w-lg p-6">
-                <h2 id="delete-dialog-title" class="text-[24px] font-semibold tracking-[-0.015em] leading-[1.2] text-ink">
+                <h2 id="delete-dialog-title" class="text-[22px] font-semibold leading-[1.2] tracking-[-0.01em] text-ink">
                     Delete this performance record?
                 </h2>
 
-                <p class="mt-2 text-sm text-ink-80">
+                <p class="mt-3 text-[15px] leading-relaxed text-ink-80">
                     You are about to delete the
-                    <strong>{{ $pending->event_type->label() }}</strong> record for
-                    <strong>{{ $pending->broodcock?->displayName() ?? 'this bird' }}</strong>
-                    dated <strong>{{ $pending->event_date->format('d M Y') }}</strong>.
+                    <strong class="font-medium text-ink">{{ $pending->event_type->label() }}</strong> record for
+                    <strong class="font-medium text-ink">{{ $pending->broodcock?->displayName() ?? 'this bird' }}</strong>
+                    dated <strong class="datum font-medium text-ink">{{ $pending->event_date->format('d M Y') }}</strong>.
                 </p>
 
-                <p class="mt-2 text-sm text-ink-80">
+                <p class="mt-2 text-[15px] leading-relaxed text-ink-80">
                     It will be removed from the bird's timeline and from its win rate.
                     The farm owner can restore it later if this was a mistake.
                 </p>
 
-                <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <div class="mt-6 flex flex-col-reverse gap-3 border-t border-hairline pt-5 sm:flex-row sm:justify-end">
                     <button type="button" wire:click="cancelDelete" class="btn-secondary sm:w-auto">
                         No, keep it
                     </button>

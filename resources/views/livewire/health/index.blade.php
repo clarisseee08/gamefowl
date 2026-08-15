@@ -212,7 +212,7 @@
                                 <span class="badge {{ $stateClasses }}">{{ $state }}</span>
                             </td>
 
-                            <td class="mt-4 block border-t border-hairline pt-3 sm:mt-0 sm:table-cell sm:border-0 sm:px-4 sm:py-3 sm:pt-3 sm:text-right sm:whitespace-nowrap">
+                            <td class="mt-4 block border-t border-hairline pt-3 sm:mt-0 sm:table-cell sm:border-0 sm:px-4 sm:py-3 sm:text-right sm:whitespace-nowrap">
                                 <div class="flex gap-2 sm:justify-end">
                                     @can('update', $record)
                                         <a href="{{ route('health.edit', $record) }}" wire:navigate class="btn-secondary">Edit</a>

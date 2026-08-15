@@ -24,16 +24,31 @@
 
         <div class="mt-3 sm:flex sm:items-start sm:justify-between">
             <div class="flex items-start gap-4">
-                <x-photo-thumb :photo="$bird->primaryPhoto" :alt="'Photo of '.$bird->name"
-                               class="h-20 w-20 shrink-0 rounded-xl ring-1 ring-hairline" />
+                @if ($bird->primaryPhoto)
+                    <x-photo-thumb :photo="$bird->primaryPhoto" :alt="'Photo of '.$bird->name"
+                                   class="h-20 w-20 shrink-0 rounded-[6px] ring-1 ring-hairline" />
+                @else
+                    {{-- Same treatment as the catalogue grid: an empty bordered box says
+                         nothing, so the tile carries the bloodline instead. --}}
+                    <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-[6px] ring-1 ring-hairline"
+                         style="background-color: {{ \App\Support\BandTag::hex($bird->bloodline) }}14"
+                         aria-hidden="true">
+                        <span class="text-[24px] font-medium leading-none opacity-80"
+                              style="color: {{ \App\Support\BandTag::hex($bird->bloodline) }}">{{ \App\Support\BandTag::code($bird->bloodline) }}</span>
+                    </div>
+                @endif
 
                 <div>
-                    <h1 class="text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">{{ $bird->name }}</h1>
-                    <p class="text-sm text-ink-80">{{ $bird->displayBand() }}</p>
+                    {{-- The band leads. This is the bird's identity page, and the band
+                         is the identifier both a keeper and a buyer actually use. --}}
+                    <x-band-tag :bloodline="$bird->bloodline" :band="$bird->band_number" />
+
+                    <h1 class="mt-2 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">{{ $bird->name }}</h1>
+
                     <div class="mt-2 flex flex-wrap gap-1.5">
                         <span class="badge {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
                         <span class="badge {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
-                        <span class="badge bg-parchment text-ink-80 ring-hairline">{{ $bird->sex->farmTerm() }}</span>
+                        <span class="badge badge-quiet">{{ $bird->sex->farmTerm() }}</span>
                     </div>
                 </div>
             </div>
@@ -46,7 +61,14 @@
                 @endcan
 
                 @can('delete', $bird)
-                    <button type="button" wire:click="confirmDeletion" class="btn-danger">Delete</button>
+                    {{-- Deliberately NOT the filled .btn-danger here. A solid crimson
+                         button is within a shade of the crimson band colour, and in this
+                         system colour means bloodline - a filled crimson control on a
+                         bird's own page reads as identity. The filled variant is kept for
+                         the confirmation modal, where destroying the record IS the
+                         primary action and nothing else competes with it. --}}
+                    <button type="button" wire:click="confirmDeletion"
+                            class="btn-secondary text-alert hover:border-alert">Delete</button>
                 @endcan
             </div>
         </div>
@@ -86,41 +108,47 @@
         <div class="grid gap-6 lg:grid-cols-3">
             <div class="card p-6 lg:col-span-2">
                 <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Details</h2>
-                <dl class="mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2">
+                {{-- A ruled ledger rather than thirteen floating pairs. Label left,
+                     value right, hairline between: the rhythm of the printed record
+                     book this system replaces, and it gives the eye a single column
+                     to run down instead of a zig-zag across a two-column grid.
+                     The boolean marks a registry value - it renders in mono with
+                     tabular figures so dates and weights align down the column. --}}
+                <dl class="mt-4 divide-y divide-hairline border-t border-hairline">
                     @foreach ([
-                        'Band Number' => $bird->displayBand(),
-                        'Name' => $bird->name,
-                        'Sex' => $bird->sex->label(),
-                        'Breed' => $bird->breed ?: 'Not recorded',
-                        'Bloodline' => $bird->bloodline ?: 'Not recorded',
-                        'Class' => $bird->class->label(),
-                        'Age' => $bird->ageLabel() ?? 'Unknown (no hatch date)',
-                        'Date Hatched' => $bird->date_hatched?->format('j F Y') ?? 'Not recorded',
-                        'Date Acquired' => $bird->date_acquired?->format('j F Y') ?? 'Not recorded',
-                        'Weight' => $bird->weight ? $bird->weight.' kg' : 'Not recorded',
-                        'Colour' => $bird->color ?: 'Not recorded',
-                        'Comb Type' => $bird->comb_type ?: 'Not recorded',
-                        'Leg Colour' => $bird->leg_color ?: 'Not recorded',
-                    ] as $label => $value)
-                        <div>
-                            <dt class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48">{{ $label }}</dt>
-                            <dd class="mt-0.5 text-sm text-ink">{{ $value }}</dd>
+                        ['Band Number', $bird->displayBand(), true],
+                        ['Name', $bird->name, false],
+                        ['Sex', $bird->sex->label(), false],
+                        ['Breed', $bird->breed ?: 'Not recorded', false],
+                        ['Bloodline', $bird->bloodline ?: 'Not recorded', false],
+                        ['Class', $bird->class->label(), false],
+                        ['Age', $bird->ageLabel() ?? 'Unknown (no hatch date)', true],
+                        ['Date Hatched', $bird->date_hatched?->format('j F Y') ?? 'Not recorded', true],
+                        ['Date Acquired', $bird->date_acquired?->format('j F Y') ?? 'Not recorded', true],
+                        ['Weight', $bird->weight ? $bird->weight.' kg' : 'Not recorded', true],
+                        ['Colour', $bird->color ?: 'Not recorded', false],
+                        ['Comb Type', $bird->comb_type ?: 'Not recorded', false],
+                        ['Leg Colour', $bird->leg_color ?: 'Not recorded', false],
+                    ] as [$label, $value, $isDatum])
+                        <div class="flex items-baseline justify-between gap-6 py-2.5">
+                            <dt class="shrink-0 text-[13px] text-ink-48">{{ $label }}</dt>
+                            <dd class="{{ $isDatum ? 'datum' : '' }} text-right text-[15px] text-ink">{{ $value }}</dd>
                         </div>
                     @endforeach
 
                     @if ($bird->distinguishing_marks)
-                        <div class="sm:col-span-2">
-                            <dt class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48">Distinguishing Marks</dt>
-                            <dd class="mt-0.5 text-sm text-ink">{{ $bird->distinguishing_marks }}</dd>
+                        <div class="py-2.5">
+                            <dt class="text-[13px] text-ink-48">Distinguishing Marks</dt>
+                            <dd class="mt-1 text-[15px] text-ink">{{ $bird->distinguishing_marks }}</dd>
                         </div>
                     @endif
 
                     {{-- Internal notes are never rendered for a customer. This is
                          a Policy check, not just a CSS hide. --}}
                     @if ($canSeeInternal && $bird->notes)
-                        <div class="sm:col-span-2">
-                            <dt class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48">Internal Notes</dt>
-                            <dd class="mt-0.5 whitespace-pre-line text-sm text-ink">{{ $bird->notes }}</dd>
+                        <div class="py-2.5">
+                            <dt class="text-[13px] text-ink-48">Internal Notes</dt>
+                            <dd class="mt-1 whitespace-pre-line text-[15px] text-ink">{{ $bird->notes }}</dd>
                         </div>
                     @endif
                 </dl>

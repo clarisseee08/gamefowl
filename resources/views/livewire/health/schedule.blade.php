@@ -119,7 +119,7 @@
                                     </span>
                                 </td>
 
-                                <td class="mt-4 block border-t border-hairline pt-3 sm:mt-0 sm:table-cell sm:border-0 sm:px-4 sm:py-3 sm:pt-3 sm:text-right sm:whitespace-nowrap">
+                                <td class="mt-4 block border-t border-hairline pt-3 sm:mt-0 sm:table-cell sm:border-0 sm:px-4 sm:py-3 sm:text-right sm:whitespace-nowrap">
                                     @can('create', \App\Models\HealthRecord::class)
                                         <a href="{{ route('health.create', ['broodcock' => $record->broodcock_id]) }}"
                                            wire:navigate
@@ -215,7 +215,7 @@
                                     </span>
                                 </td>
 
-                                <td class="mt-4 block border-t border-hairline pt-3 sm:mt-0 sm:table-cell sm:border-0 sm:px-4 sm:py-3 sm:pt-3 sm:text-right sm:whitespace-nowrap">
+                                <td class="mt-4 block border-t border-hairline pt-3 sm:mt-0 sm:table-cell sm:border-0 sm:px-4 sm:py-3 sm:text-right sm:whitespace-nowrap">
                                     @can('create', \App\Models\HealthRecord::class)
                                         <a href="{{ route('health.create', ['broodcock' => $record->broodcock_id]) }}"
                                            wire:navigate

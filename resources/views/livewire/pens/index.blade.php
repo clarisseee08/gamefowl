@@ -61,7 +61,7 @@
                 <div wire:key="pen-card-{{ $pen->id }}" class="card p-4">
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                            <a href="{{ route('pens.show', $pen) }}" wire:navigate class="datum text-[19px] font-semibold leading-[1.2] tracking-[-0.01em] text-action hover:underline">
+                            <a href="{{ route('pens.show', $pen) }}" wire:navigate class="datum text-[19px] font-medium leading-[1.2] tracking-[-0.01em] text-action hover:underline">
                                 {{ $pen->code }}
                             </a>
                             <p class="mt-0.5 text-[15px] leading-snug text-ink">{{ $pen->name }}</p>
