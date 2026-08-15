@@ -245,7 +245,7 @@
     {{-- Delete confirmation. Names the bird explicitly and says what is kept,
          because "Are you sure?" tells a worried user nothing. --}}
     @if ($confirmingDeletion)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4" x-data x-trap.noscroll="true" @keydown.escape.window=".querySelector('.btn-secondary')?.click()" role="dialog" aria-modal="true">
             <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
                 <h2 class="text-[24px] font-semibold tracking-[-0.015em] leading-[1.2] text-ink">Delete {{ $bird->name }}?</h2>
                 <p class="mt-2 text-sm text-ink-80">

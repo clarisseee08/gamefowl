@@ -246,7 +246,7 @@
     {{-- Delete confirmation, naming the exact record. --}}
     @if ($this->recordPendingDeletion !== null)
         @php($pending = $this->recordPendingDeletion)
-        <div class="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-4 sm:items-center"
+        <div class="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-4 sm:items-center" x-data x-trap.noscroll="true" @keydown.escape.window=".querySelector('.btn-secondary')?.click()"
              role="dialog" aria-modal="true" aria-labelledby="timeline-delete-title"
              wire:keydown.escape="cancelDelete">
             <div class="card w-full max-w-lg p-6">

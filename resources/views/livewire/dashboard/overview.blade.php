@@ -148,7 +148,7 @@
             <div class="flex items-center justify-between">
                 <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Vaccinations Needing Attention</h2>
                 @if (Route::has('health.schedule'))
-                    <a href="{{ route('health.schedule') }}" class="text-sm font-medium text-action hover:underline">
+                    <a href="{{ route('health.schedule') }}" class="inline-flex min-h-11 items-center text-sm font-medium text-action hover:underline">
                         Full schedule
                     </a>
                 @endif

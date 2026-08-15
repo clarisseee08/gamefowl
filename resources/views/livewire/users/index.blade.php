@@ -119,7 +119,7 @@
     {{-- Confirmation. Names the person and says exactly what happens to their
          records, because "Are you sure?" answers nothing. --}}
     @if ($this->pendingUser)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4" x-data x-trap.noscroll="true" @keydown.escape.window=".querySelector('.btn-secondary')?.click()" role="dialog" aria-modal="true">
             <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
                 <h2 class="text-[24px] font-semibold tracking-[-0.015em] leading-[1.2] text-ink">
                     {{ $this->pendingUser->is_active ? 'Deactivate' : 'Reactivate' }} {{ $this->pendingUser->full_name }}?

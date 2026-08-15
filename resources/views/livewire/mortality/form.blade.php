@@ -181,7 +181,7 @@
     ---------------------------------------------------------------- --}}
     @if ($confirming && $this->selectedBird)
         <div class="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-4 sm:items-center"
-             role="dialog"
+             x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()" role="dialog"
              aria-modal="true"
              aria-labelledby="confirm-mortality-title"
              wire:keydown.escape="cancelConfirmation">

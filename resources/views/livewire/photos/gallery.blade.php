@@ -143,7 +143,7 @@
          x-cloak
          x-transition.opacity
          class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-         role="dialog"
+         x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()" role="dialog"
          aria-modal="true"
          aria-label="Enlarged photo"
          x-on:click.self="open = false">

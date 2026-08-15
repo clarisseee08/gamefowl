@@ -76,7 +76,7 @@
 
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="text-[12px] text-action hover:underline">
+                            <button type="submit" class="inline-flex min-h-11 items-center px-1 text-[12px] text-action hover:underline">
                                 Sign out
                             </button>
                         </form>
@@ -84,7 +84,7 @@
                         <button type="button"
                                 @click="mobileOpen = ! mobileOpen"
                                 :aria-expanded="mobileOpen ? 'true' : 'false'"
-                                class="-mr-1 rounded-full p-2 text-ink-80 hover:bg-pearl lg:hidden"
+                                class="-mr-1 inline-flex h-11 w-11 items-center justify-center rounded-full text-ink-80 hover:bg-pearl lg:hidden"
                                 aria-label="Toggle navigation">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.75"
                                  viewBox="0 0 24 24" aria-hidden="true">

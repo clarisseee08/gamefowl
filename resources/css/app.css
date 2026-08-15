@@ -72,7 +72,7 @@
     --color-alert-wash: #fbeaea;
     --color-info: #1f4f8f;
     --color-info-wash: #e9f0fa;
-    --color-neutral: #6e6e73;
+    --color-neutral: #67676d;   /* 4.94:1 on --color-neutral-wash; #6e6e73 measured 4.46 and failed AA */
     --color-neutral-wash: #f0f0f2;
 
     --radius-compact: 8px;
@@ -141,7 +141,7 @@
    utility - Tailwind v4 only lets @apply reference utilities, not classes
    declared in @layer components. */
 @utility btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-full
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full
            px-[22px] py-[11px] text-[17px] font-normal leading-none
            transition-colors duration-150
            focus:outline-none disabled:cursor-not-allowed disabled:opacity-40;
@@ -216,6 +216,15 @@
         background-color: color-mix(in srgb, var(--color-canvas) 72%, transparent);
         backdrop-filter: saturate(180%) blur(20px);
         -webkit-backdrop-filter: saturate(180%) blur(20px);
+    }
+
+    /* Laravel's stock paginator renders 38px controls - below the 44px floor.
+       Styling it here keeps the fix in one place rather than publishing and
+       maintaining a fork of the framework's pagination views. */
+    nav[role='navigation'] a,
+    nav[role='navigation'] span[aria-current],
+    nav[role='navigation'] span[aria-disabled] span {
+        @apply inline-flex min-h-11 items-center justify-center;
     }
 
     /* Table rows separated by hairlines only. */

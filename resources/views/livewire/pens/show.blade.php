@@ -153,7 +153,7 @@
 
     @if ($confirmingDelete)
         <div class="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-4 sm:items-center"
-             role="dialog"
+             x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()" role="dialog"
              aria-modal="true"
              aria-labelledby="delete-pen-title">
             <div class="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
