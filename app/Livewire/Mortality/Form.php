@@ -76,6 +76,12 @@ final class Form extends Component
     public function review(): void
     {
         $this->validateForm();
+
+        // Refuse a bird the policy would not accept before showing a dialog
+        // that promises to record its death. save() checks this again - never
+        // trust that this step ran.
+        $this->authorize('recordMortality', Broodcock::findOrFail((int) $this->broodcock_id));
+
         $this->confirming = true;
     }
 

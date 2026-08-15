@@ -14,11 +14,19 @@
                 This bird already has the most photos allowed ({{ $maxPerBird }}).
                 Delete one below before adding another.
             @else
-                You can add {{ $this->remainingSlots }}
-                {{ Str::plural('more photo', $this->remainingSlots) }}.
+                You can add {{ $this->remainingSlots }} {{ Str::plural('more photo', $this->remainingSlots) }}.
             @endif
         </p>
     </div>
+
+    @if ($status !== '')
+        <div class="mb-4 flex items-start gap-2 rounded-lg bg-brand-50 p-4 text-sm text-brand-800 ring-1 ring-brand-200" role="status">
+            <svg class="mt-0.5 h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+            </svg>
+            <span>{{ $status }}</span>
+        </div>
+    @endif
 
     {{-- The whole form is one Alpine scope so the progress bar can listen to
          Livewire's upload events. Alpine ships inside Livewire - no extra JS. --}}

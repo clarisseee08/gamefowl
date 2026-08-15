@@ -39,8 +39,7 @@ final class MortalityRecordTest extends TestCase
         if (! Route::has('mortality.index')) {
             Route::middleware(['web', 'auth', 'active'])->group(function (): void {
                 Route::livewire('/mortality', Index::class)->name('mortality.index');
-                Route::livewire('/mortality/record', Form::class)->name('mortality.create');
-                Route::livewire('/mortality/record/{broodcock}', Form::class)->name('mortality.record');
+                Route::livewire('/mortality/create/{broodcock?}', Form::class)->name('mortality.create');
             });
 
             // Names are indexed when the application boots, which already

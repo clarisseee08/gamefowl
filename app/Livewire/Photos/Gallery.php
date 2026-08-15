@@ -24,6 +24,13 @@ final class Gallery extends Component
 
     public string $captionDraft = '';
 
+    /**
+     * Shown inside this component. A session flash would not appear until the
+     * next full page load, because a Livewire update re-renders only this
+     * component and not the layout that displays flashed messages.
+     */
+    public string $status = '';
+
     public function mount(Broodcock $broodcock): void
     {
         $this->authorize('viewAny', BroodcockPhoto::class);
@@ -64,7 +71,7 @@ final class Gallery extends Component
 
         unset($this->photos);
 
-        session()->flash('success', 'Main photo updated.');
+        $this->status = 'Main photo updated.';
     }
 
     public function delete(int $photoId, DeletePhoto $deletePhoto): void
@@ -77,7 +84,10 @@ final class Gallery extends Component
 
         unset($this->photos);
 
-        session()->flash('success', 'Photo deleted.');
+        // Frees a slot on the upload component sharing this page.
+        $this->dispatch('photos-updated');
+
+        $this->status = 'Photo deleted.';
     }
 
     public function startEditingCaption(int $photoId): void
@@ -88,6 +98,7 @@ final class Gallery extends Component
 
         $this->editingCaptionFor = $photoId;
         $this->captionDraft = (string) $photo->caption;
+        $this->status = '';
         $this->resetErrorBag('captionDraft');
     }
 
@@ -121,7 +132,7 @@ final class Gallery extends Component
 
         unset($this->photos);
 
-        session()->flash('success', 'Description saved.');
+        $this->status = 'Description saved.';
     }
 
     /**

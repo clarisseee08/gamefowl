@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
@@ -26,6 +27,15 @@ final class Upload extends Component
     public array $photos = [];
 
     public string $caption = '';
+
+    /**
+     * Shown inside this component rather than flashed to the session.
+     *
+     * A Livewire update re-renders only this component, so a session flash
+     * would not surface in the layout until the next full page load - by which
+     * time it is confusing rather than reassuring.
+     */
+    public string $status = '';
 
     public function mount(Broodcock $broodcock): void
     {
@@ -43,11 +53,20 @@ final class Upload extends Component
      */
     public function updatedPhotos(): void
     {
+        $this->status = '';
+
         $this->validateOnly('photos.*', $this->rules(), StoreBroodcockPhotoRequest::messagesFor());
 
         if (count($this->photos) > $this->remainingSlots) {
             $this->addError('photos', $this->tooManyMessage());
         }
+    }
+
+    /** Deleting a photo elsewhere on the page frees up a slot here. */
+    #[On('photos-updated')]
+    public function refreshCounts(): void
+    {
+        $this->clearCounts();
     }
 
     /** Drop one file from the pending list before anything is saved. */
@@ -85,13 +104,23 @@ final class Upload extends Component
         $saved = count($this->photos);
 
         $this->reset(['photos', 'caption']);
-        unset($this->photoCount);
+        $this->clearCounts();
 
         $this->dispatch('photos-updated');
 
-        session()->flash('success', $saved === 1
+        $this->status = $saved === 1
             ? 'Photo saved.'
-            : "{$saved} photos saved.");
+            : "{$saved} photos saved.";
+    }
+
+    /**
+     * All three counts are cached per request and all three are derived from
+     * the same query, so forgetting one of them leaves the screen telling
+     * someone they have room for a photo they have just used up.
+     */
+    private function clearCounts(): void
+    {
+        unset($this->photoCount, $this->remainingSlots, $this->isFull);
     }
 
     /** @return array<string, array<int, string>> */

@@ -209,6 +209,46 @@ final class PhotoUploadTest extends TestCase
         $this->assertSame(2, $bird->photos()->count());
     }
 
+    /**
+     * The confirmation has to render inside the component. A Livewire update
+     * does not re-render the layout, so a session flash would sit unseen until
+     * the next full page load.
+     */
+    public function test_a_confirmation_is_shown_in_the_component_after_saving(): void
+    {
+        $staff = User::factory()->staff()->create();
+        $bird = Broodcock::factory()->create();
+
+        Livewire::actingAs($staff)
+            ->test(Upload::class, ['broodcock' => $bird])
+            ->set('photos', [
+                UploadedFile::fake()->image('a.jpg'),
+                UploadedFile::fake()->image('b.jpg'),
+            ])
+            ->call('save')
+            ->assertSet('status', '2 photos saved.')
+            ->assertSee('2 photos saved.');
+    }
+
+    /** The "you can add N more" counter must not be stale after a save. */
+    public function test_the_remaining_slot_count_updates_after_saving(): void
+    {
+        config(['gfms.photos.max_per_broodcock' => 5]);
+
+        $staff = User::factory()->staff()->create();
+        $bird = Broodcock::factory()->create();
+
+        Livewire::actingAs($staff)
+            ->test(Upload::class, ['broodcock' => $bird])
+            ->assertSee('You can add 5 more photos')
+            ->set('photos', [
+                UploadedFile::fake()->image('a.jpg'),
+                UploadedFile::fake()->image('b.jpg'),
+            ])
+            ->call('save')
+            ->assertSee('You can add 3 more photos');
+    }
+
     // -----------------------------------------------------------------
     // Removing a pending file before it is saved
     // -----------------------------------------------------------------

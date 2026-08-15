@@ -16,6 +16,15 @@
         </h2>
     </div>
 
+    @if ($status !== '')
+        <div class="mb-4 flex items-start gap-2 rounded-lg bg-brand-50 p-4 text-sm text-brand-800 ring-1 ring-brand-200" role="status">
+            <svg class="mt-0.5 h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+            </svg>
+            <span>{{ $status }}</span>
+        </div>
+    @endif
+
     @if ($this->photos->isEmpty())
         {{-- Empty state that says what to do next, never a blank box. --}}
         <div class="card flex flex-col items-center px-6 py-10 text-center">

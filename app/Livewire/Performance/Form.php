@@ -64,8 +64,16 @@ final class Form extends Component
 
         // Arriving from a bird's page pre-selects that bird - the commonest
         // path, and one less thing for staff to get wrong.
-        if ($broodcock?->exists) {
-            $this->broodcock_id = (string) $broodcock->id;
+        //
+        // Accepted either as a route segment (/performance/create/{broodcock})
+        // or as a query string (?broodcock=12), so the link from the timeline
+        // works whichever shape the route table takes.
+        $preselected = $broodcock?->exists === true
+            ? $broodcock->id
+            : request()->integer('broodcock');
+
+        if ($preselected > 0 && Broodcock::query()->whereKey($preselected)->exists()) {
+            $this->broodcock_id = (string) $preselected;
         }
 
         $this->event_date = now()->toDateString();

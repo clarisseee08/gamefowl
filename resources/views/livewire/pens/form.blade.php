@@ -19,7 +19,7 @@
             <input
                 id="code"
                 type="text"
-                wire:model.blur="code"
+                wire:model="code"
                 required
                 autocomplete="off"
                 class="input mt-1 @error('code') input-error @enderror"
@@ -35,7 +35,7 @@
             <input
                 id="name"
                 type="text"
-                wire:model.blur="name"
+                wire:model="name"
                 required
                 class="input mt-1 @error('name') input-error @enderror"
             >
@@ -50,7 +50,7 @@
             <input
                 id="location"
                 type="text"
-                wire:model.blur="location"
+                wire:model="location"
                 class="input mt-1 @error('location') input-error @enderror"
             >
             <p class="help">Where on the farm this pen is, for example "North Yard".</p>
@@ -91,7 +91,7 @@
             <textarea
                 id="notes"
                 rows="4"
-                wire:model.blur="notes"
+                wire:model="notes"
                 class="input mt-1 @error('notes') input-error @enderror"
             ></textarea>
             <p class="help">Anything worth remembering about this pen, such as repairs needed or shade cover.</p>
