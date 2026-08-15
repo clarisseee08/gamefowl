@@ -184,9 +184,11 @@ Created by `php artisan db:seed`. **All three use the password `password`.**
 
 1. Sign in as **owner** → the dashboard shows flock counts, overdue
    vaccinations and the breeding trend.
-2. **Broodcocks → any bird → Family Tree** — the three-generation pedigree.
-   This is the feature that distinguishes the system from the prior arts in
-   Appendix B.
+2. **Broodcocks → search `SW-4001` (Haring Agila) → Family Tree** — the
+   three-generation pedigree, with **all 14 ancestor slots filled**. This is the
+   feature that distinguishes the system from the prior arts in Appendix B.
+   Other birds are deliberately left with gaps, so the "Not recorded" state is
+   visible too.
 3. **Breeding → a record with unregistered chicks → Register chicks** — the
    offspring appear as bird records with their sire and dam already filled in,
    so the family tree grows as a by-product of normal data entry.
@@ -296,6 +298,41 @@ be in front of the panel.
 ---
 
 ## Troubleshooting
+
+### `no connection to the server` partway through a migration or seed
+
+The connection to Supabase can drop during a long run — a full
+`migrate:fresh --seed` is around a minute of continuous work against a database
+in Tokyo, and the pooler will sometimes close a connection held that long. It is
+not a data problem, and it is not your fault.
+
+**Both commands are safe to simply run again.** Migrations skip what has already
+been applied, and every seeder carries a guard that skips a table it has already
+populated, so re-running resumes rather than duplicating:
+
+```bash
+php artisan migrate --force     # repeat until it reports nothing left to run
+php artisan db:seed --force     # repeat until it completes
+```
+
+`DatabaseSeeder` already reconnects and retries each seeder up to three times on
+a dropped connection. On a bad link you may still need a few passes.
+
+**If a run was interrupted, it can leave a transaction open** holding locks that
+block the next attempt — which looks like the seed hanging for ~40 seconds and
+then dying. Clear it with:
+
+```sql
+select pg_terminate_backend(pid)
+from pg_stat_activity
+where datname = 'postgres'
+  and pid <> pg_backend_pid()
+  and state = 'idle in transaction';
+```
+
+Run that from the Supabase SQL editor. It only affects stuck connections.
+
+### Other problems
 
 | Symptom | Cause |
 |---|---|
