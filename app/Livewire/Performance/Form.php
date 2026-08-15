@@ -113,6 +113,12 @@ final class Form extends Component
         return PerformanceEventType::tryFrom($this->event_type)?->hasContestResult() ?? false;
     }
 
+    /** Plain label for the chosen event type, used in the explanatory notice. */
+    public function eventTypeLabel(): string
+    {
+        return PerformanceEventType::tryFrom($this->event_type)?->label() ?? 'event of this kind';
+    }
+
     /**
      * Changing the event type to a weigh-in or conditioning session clears any
      * win/loss already chosen. Without this, picking "Derby / Win" and then

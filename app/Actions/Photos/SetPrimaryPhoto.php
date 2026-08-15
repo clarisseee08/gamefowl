@@ -20,6 +20,14 @@ final class SetPrimaryPhoto
     public function handle(BroodcockPhoto $photo): BroodcockPhoto
     {
         return DB::transaction(function () use ($photo): BroodcockPhoto {
+            // Re-read before comparing. A model handed to this action can be
+            // stale - Livewire rehydrates from a snapshot, and another member
+            // of staff may have promoted something since. If the in-memory
+            // copy still said is_primary = true, Eloquent's dirty check would
+            // decide there was nothing to save and quietly write nothing,
+            // leaving the bird with no primary photo at all.
+            $photo->refresh();
+
             BroodcockPhoto::query()
                 ->where('broodcock_id', $photo->broodcock_id)
                 ->where('is_primary', true)

@@ -34,6 +34,13 @@ final class BroodcockTimeline extends Component
     /** Record queued for deletion, held only long enough to show the dialog. */
     public ?int $confirmingDeleteId = null;
 
+    /**
+     * Confirmation shown after a delete. Held on the component rather than
+     * flashed: this component is embedded in a bigger page, and Livewire
+     * re-renders only this subtree, so a session flash would go unseen.
+     */
+    public string $statusMessage = '';
+
     public function mount(Broodcock $broodcock): void
     {
         $this->authorize('viewAny', PerformanceRecord::class);
@@ -128,7 +135,12 @@ final class BroodcockTimeline extends Component
         // means the stats above the timeline reflect the deletion immediately.
         unset($this->summary, $this->events, $this->totalEvents);
 
-        session()->flash('success', "The {$type} record for {$this->broodcock->displayName()} on {$date} has been removed.");
+        $this->statusMessage = "The {$type} record for {$this->broodcock->displayName()} on {$date} has been removed.";
+    }
+
+    public function dismissStatus(): void
+    {
+        $this->statusMessage = '';
     }
 
     #[Computed]

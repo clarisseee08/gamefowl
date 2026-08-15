@@ -6,7 +6,6 @@ namespace App\Livewire\Performance;
 
 use App\Enums\PerformanceEventType;
 use App\Enums\PerformanceResult;
-use App\Models\Broodcock;
 use App\Models\PerformanceRecord;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -42,6 +41,15 @@ final class Index extends Component
 
     /** Record queued for deletion, held only long enough to show the dialog. */
     public ?int $confirmingDeleteId = null;
+
+    /**
+     * Confirmation shown after a delete.
+     *
+     * Held on the component rather than flashed to the session: Livewire
+     * re-renders only this component, so a session flash would sit in the
+     * layout unnoticed until the next full page load.
+     */
+    public string $statusMessage = '';
 
     /** Columns a user may sort by - never interpolate raw input into SQL. */
     private const SORTABLE = ['event_date', 'event_type', 'result', 'weight', 'rating', 'created_at'];
@@ -129,9 +137,14 @@ final class Index extends Component
 
         $this->confirmingDeleteId = null;
 
-        session()->flash('success', "The {$record->event_type->label()} record for {$name} on {$date} has been removed.");
+        $this->statusMessage = "The {$record->event_type->label()} record for {$name} on {$date} has been removed.";
 
         $this->resetPage();
+    }
+
+    public function dismissStatus(): void
+    {
+        $this->statusMessage = '';
     }
 
     /** The record awaiting confirmation, so the dialog can name it. */
@@ -175,17 +188,6 @@ final class Index extends Component
             // swap places between pages and a row is silently skipped.
             ->orderBy('id', 'desc')
             ->paginate(config('gfms.per_page'));
-    }
-
-    /**
-     * How many birds have any performance history at all. Drives the empty
-     * state: "no records yet" and "no records match your filters" are
-     * different problems and need different instructions.
-     */
-    #[Computed]
-    public function birdsWithRecords(): int
-    {
-        return Broodcock::query()->whereHas('performanceRecords')->count();
     }
 
     /** @return array<int, PerformanceEventType> */

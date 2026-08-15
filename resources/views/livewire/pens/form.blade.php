@@ -76,7 +76,8 @@
                 <p class="error">{{ $message }}</p>
             @enderror
 
-            @if ($this->isEditing() && $capacity !== null && $capacity > 0 && $capacity < $this->currentOccupancy)
+            @php $typedCapacity = $this->capacityValue(); @endphp
+            @if ($this->isEditing() && $typedCapacity !== null && $typedCapacity > 0 && $typedCapacity < $this->currentOccupancy)
                 <p class="mt-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 ring-1 ring-amber-200" role="status">
                     This pen already holds {{ $this->currentOccupancy }}
                     {{ $this->currentOccupancy === 1 ? 'bird' : 'birds' }}, which is more than the capacity you entered.

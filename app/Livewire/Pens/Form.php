@@ -30,7 +30,13 @@ final class Form extends Component
 
     public string $location = '';
 
-    public ?int $capacity = 0;
+    /**
+     * Held as a string, not an int. Livewire coerces null into 0 when it
+     * rehydrates a typed int property, which would turn "the user cleared the
+     * capacity box" into "this pen has no limit" without a word of warning.
+     * As a string the field stays empty and the `required` rule fires.
+     */
+    public string $capacity = '0';
 
     public string $notes = '';
 
@@ -48,13 +54,19 @@ final class Form extends Component
         $this->code = $pen->code;
         $this->name = $pen->name;
         $this->location = (string) $pen->location;
-        $this->capacity = $pen->capacity;
+        $this->capacity = (string) $pen->capacity;
         $this->notes = (string) $pen->notes;
     }
 
     public function isEditing(): bool
     {
         return $this->penId !== null;
+    }
+
+    /** The capacity as typed so far, or null while the box is empty or not a number. */
+    public function capacityValue(): ?int
+    {
+        return is_numeric($this->capacity) ? (int) $this->capacity : null;
     }
 
     /**

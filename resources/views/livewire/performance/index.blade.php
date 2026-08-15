@@ -1,4 +1,16 @@
 <div>
+    {{-- Livewire re-renders only this component, so the confirmation lives
+         here rather than in the layout's session flash. --}}
+    @if ($statusMessage !== '')
+        <div class="mb-6 flex items-start justify-between gap-4 rounded-lg bg-brand-50 p-4 text-sm text-brand-800 ring-1 ring-brand-200"
+             role="status">
+            <p>{{ $statusMessage }}</p>
+            <button type="button" wire:click="dismissStatus" class="shrink-0 font-medium underline">
+                Dismiss
+            </button>
+        </div>
+    @endif
+
     {{-- Header --}}
     <div class="mb-6 sm:flex sm:items-center sm:justify-between">
         <div>
