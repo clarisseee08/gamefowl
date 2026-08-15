@@ -1,9 +1,13 @@
 {{--
-    Laravel's stock Tailwind paginator ships bg-white, border-gray-300 and six
-    shades of text-gray-*. None of those exist in this design system, and the
-    paginator renders on the catalogue, the broodcock table, health, pens,
-    performance and mortality - so the single most-repeated component in the app
-    was the one component not using the system.
+    Laravel's stock Tailwind paginator ships a white ground, a grey border and
+    six shades of grey text from the default palette. None of those exist in this
+    design system, and the paginator renders on the catalogue, the broodcock
+    table, health, pens, performance and mortality - so the single most-repeated
+    component in the app was the one component not using the system.
+
+    Deliberately not naming those classes literally here: Tailwind v4 scans this
+    file as a content source and does not know a comment from markup, so writing
+    them out would generate the very utilities this file exists to stop using.
 
     Rewritten on the tokens. Page numbers are .datum so they align, and the
     current page is marked by ink weight and a filled ground rather than colour,

@@ -1,4 +1,12 @@
-@import 'tailwindcss';
+/* source(none) disables Tailwind v4's automatic project-wide content detection,
+   so the sources below are the WHOLE content set.
+
+   This is not tidiness. Auto-detection scans every file in the project and
+   cannot tell prose from markup, so docs/design-brief.md - the document whose
+   anti-pattern list names bg-gray-100 and border-slate-200 as forbidden - was
+   compiling those exact utilities into the production bundle. The rule against
+   them was generating them. */
+@import 'tailwindcss' source(none);
 
 /* Self-hosted, no CDN. A demo in a provincial venue cannot depend on Google
    Fonts resolving, and the previous stack declared 'SF Pro' - which ships only
@@ -15,10 +23,15 @@
 
 /* Tailwind v4 is CSS-first: there is no tailwind.config.js. Content sources are
    declared here instead of a `content: []` array. */
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+/* The framework's own paginator views are NO LONGER a content source. They are
+   superseded by resources/views/vendor/pagination/, and scanning them was
+   compiling the stock grey palette into the bundle for markup that never
+   renders. */
+@source '../views/**/*.blade.php';
+@source '../js/**/*.js';
+/* storage/framework/views is deliberately NOT scanned: it holds COMPILED Blade,
+   so it duplicates the source above while also retaining stale markup from
+   templates that have since changed. */
 
 /*
  * ---------------------------------------------------------------------------
