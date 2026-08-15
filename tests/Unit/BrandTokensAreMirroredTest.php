@@ -69,6 +69,27 @@ final class BrandTokensAreMirroredTest extends TestCase
         }
     }
 
+    /**
+     * A token is only legible against a specific GROUND, and this system has
+     * three. ink_faint clears 4.5:1 on parchment and canvas but measures 4.37:1
+     * on pearl - found by measuring the pedigree screen, where the root card
+     * sits on pearl, not by reading the palette. This pins the combination down
+     * so the next person does not rediscover it on a different screen.
+     */
+    public function test_ink_faint_is_legible_on_light_grounds_and_not_on_pearl(): void
+    {
+        $b = $this->brand();
+
+        foreach (['paper', 'card'] as $ground) {
+            $this->assertGreaterThanOrEqual(4.5, $this->contrast($b['ink_faint'], $b[$ground]),
+                "ink_faint should be usable on {$ground}.");
+        }
+
+        $this->assertLessThan(4.5, $this->contrast($b['ink_faint'], $b['sunk']),
+            'ink_faint now passes on pearl. If the palette changed deliberately, delete this '
+            .'assertion and the warning in SKILL.md together - otherwise the documented rule is wrong.');
+    }
+
     /** Console body text must clear 7:1 on the app background (outdoor glare). */
     public function test_console_ink_clears_the_seven_to_one_floor(): void
     {

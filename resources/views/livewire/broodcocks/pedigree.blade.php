@@ -88,7 +88,11 @@
                                                 {{-- The root is the subject of the tree, not
                                                      somebody's parent - calling it "Sire"
                                                      here is just wrong. It gets its plain sex. --}}
-                                                <p class="mt-0.5 truncate text-[12px] text-ink-48">
+                                                {{-- ink-80, not ink-48. The root card sits on
+                                                     pearl rather than canvas, and ink-48
+                                                     measures 4.37:1 there - it clears 4.5:1 on
+                                                     parchment but not on the darker ground. --}}
+                                                <p class="mt-0.5 truncate text-[12px] text-ink-80">
                                                     {{ $index === 0 ? $ancestor->sex->label() : $ancestor->sex->parentTerm() }}@if ($ancestor->bloodline) &middot; {{ $ancestor->bloodline }}@endif
                                                 </p>
                                             </a>
