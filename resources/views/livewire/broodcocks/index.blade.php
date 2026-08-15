@@ -153,11 +153,14 @@
         <div class="card hidden overflow-hidden sm:block">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-divider">
+                    {{-- The Photo column is gone. It spent the leftmost and most valuable
+                         column in the table on the word "None" for nearly every bird,
+                         because a working farm photographs very few of them. The band tag
+                         takes that position instead: it is the identifier a keeper
+                         actually scans for, and it carries the bloodline as colour so a
+                         thirty-row table can be read by bloodline without reading it. --}}
                     <thead class="bg-pearl">
-                        <tr>
-                            <th scope="col" class="px-6 py-4 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-ink-80">
-                                Photo
-                            </th>
+                        <tr class="border-b border-rule-strong">
                             @foreach ([
                                 'band_number' => 'Band Number',
                                 'name' => 'Name',
@@ -168,9 +171,14 @@
                                 'status' => 'Status',
                                 'date_hatched' => 'Age',
                             ] as $column => $heading)
-                                <th scope="col" class="px-6 py-4 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                                <th scope="col" class="px-4 py-2.5 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
                                     @if (in_array($column, ['band_number','name','breed','bloodline','class','status','date_hatched'], true))
-                                        <button type="button" wire:click="sort('{{ $column }}')" class="inline-flex items-center gap-1 hover:text-ink">
+                                        {{-- `uppercase` is repeated here on purpose. Tailwind's
+                                             preflight sets `button { text-transform: none }`, so a
+                                             sort button silently drops the transform from its own
+                                             <th> - which is why Sex (the one unsortable column)
+                                             was the only header rendering in caps. --}}
+                                        <button type="button" wire:click="sort('{{ $column }}')" class="inline-flex items-center gap-1 uppercase tracking-[0.06em] hover:text-ink">
                                             {{ $heading }}
                                             @if ($sortBy === $column)
                                                 <span aria-hidden="true">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
@@ -182,36 +190,33 @@
                                     @endif
                                 </th>
                             @endforeach
-                            <th scope="col" class="px-6 py-4 text-right text-[12px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                            <th scope="col" class="px-4 py-2.5 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
                                 <span class="sr-only">Actions</span>
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-divider bg-white">
+                    <tbody class="divide-y divide-divider bg-canvas">
                         @foreach ($this->broodcocks as $bird)
                             <tr class="hover:bg-pearl">
-                                <td class="px-6 py-4">
-                                    <x-photo-thumb :photo="$bird->primaryPhoto" :alt="$bird->name"
-                                                   placeholder="None" class="h-10 w-10 rounded-lg" />
+                                <td class="whitespace-nowrap px-4 py-2.5">
+                                    <x-band-tag :bloodline="$bird->bloodline" :band="$bird->band_number" size="xs" />
                                 </td>
-                                <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-ink">
-                                    {{ $bird->displayBand() }}
-                                </td>
-                                <td class="whitespace-nowrap px-6 py-4 text-sm text-ink">{{ $bird->name }}</td>
-                                <td class="whitespace-nowrap px-6 py-4 text-sm text-ink-80">{{ $bird->sex->label() }}</td>
-                                <td class="whitespace-nowrap px-6 py-4 text-sm text-ink-80">{{ $bird->breed ?? '—' }}</td>
-                                <td class="whitespace-nowrap px-6 py-4 text-sm text-ink-80">{{ $bird->bloodline ?? '—' }}</td>
-                                <td class="whitespace-nowrap px-6 py-4">
+                                <td class="whitespace-nowrap px-4 py-2.5 text-[15px] font-medium text-ink">{{ $bird->name }}</td>
+                                <td class="whitespace-nowrap px-4 py-2.5 text-[15px] text-ink-80">{{ $bird->sex->label() }}</td>
+                                <td class="whitespace-nowrap px-4 py-2.5 text-[15px] text-ink-80">{{ $bird->breed ?? '—' }}</td>
+                                <td class="whitespace-nowrap px-4 py-2.5 text-[15px] text-ink-80">{{ $bird->bloodline ?? '—' }}</td>
+                                <td class="whitespace-nowrap px-4 py-2.5">
                                     <span class="badge {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
                                 </td>
-                                <td class="whitespace-nowrap px-6 py-4">
+                                <td class="whitespace-nowrap px-4 py-2.5">
                                     <span class="badge {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
                                 </td>
-                                <td class="whitespace-nowrap px-6 py-4 text-sm text-ink-80">
+                                <td class="datum whitespace-nowrap px-4 py-2.5 text-[14px] text-ink-80">
                                     {{ $bird->ageLabel() ?? 'Unknown' }}
                                 </td>
-                                <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
-                                    <a href="{{ route('broodcocks.show', $bird) }}" class="font-medium text-action hover:underline">
+                                <td class="whitespace-nowrap px-4 py-2.5 text-right">
+                                    <a href="{{ route('broodcocks.show', $bird) }}"
+                                       class="inline-flex min-h-11 items-center text-[15px] font-medium text-action hover:underline">
                                         View<span class="sr-only">, {{ $bird->name }}</span>
                                     </a>
                                 </td>
