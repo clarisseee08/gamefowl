@@ -8,16 +8,16 @@
      x-on:keydown.escape.window="open = false">
 
     <div class="mb-4 flex items-center justify-between gap-3">
-        <h2 class="text-lg font-semibold text-gray-900">
+        <h2 class="text-[24px] font-semibold tracking-[-0.015em] leading-[1.2] text-ink">
             Photos
             @if ($this->photos->isNotEmpty())
-                <span class="text-sm font-normal text-gray-500">({{ $this->photos->count() }})</span>
+                <span class="text-sm font-normal text-ink-48">({{ $this->photos->count() }})</span>
             @endif
         </h2>
     </div>
 
     @if ($status !== '')
-        <div class="mb-4 flex items-start gap-2 rounded-lg bg-brand-50 p-4 text-sm text-brand-800 ring-1 ring-brand-200" role="status">
+        <div class="mb-4 flex items-start gap-2 rounded-lg bg-ok-wash p-4 text-sm text-ok ring-1 ring-ok/20" role="status">
             <svg class="mt-0.5 h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
             </svg>
@@ -28,12 +28,12 @@
     @if ($this->photos->isEmpty())
         {{-- Empty state that says what to do next, never a blank box. --}}
         <div class="card flex flex-col items-center px-6 py-10 text-center">
-            <svg class="h-12 w-12 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+            <svg class="h-12 w-12 text-ink-48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round"
                       d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M18 9h.008v.008H18V9Zm2.25 9a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75h12A2.25 2.25 0 0 1 20.25 6v12Z"/>
             </svg>
-            <p class="mt-3 text-base font-semibold text-gray-900">No photos of this bird yet</p>
-            <p class="mt-1 max-w-sm text-sm text-gray-600">
+            <p class="mt-3 text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">No photos of this bird yet</p>
+            <p class="mt-1 max-w-sm text-sm text-ink-80">
                 @if ($canManage)
                     Use <strong>Add Photos</strong> above to take or choose a picture.
                     The first one you add becomes the main photo shown in lists.
@@ -55,7 +55,7 @@
                             class="group relative block w-full"
                             x-on:click="open = true; src = @js($src); label = @js($label)"
                             aria-label="Enlarge this photo">
-                        <span class="block aspect-square overflow-hidden bg-gray-100">
+                        <span class="block aspect-square overflow-hidden bg-parchment">
                             <img src="{{ $src }}"
                                  alt="{{ $label }}"
                                  loading="lazy"
@@ -63,7 +63,7 @@
                         </span>
 
                         @if ($photo->is_primary)
-                            <span class="badge absolute left-2 top-2 bg-brand-600 text-white ring-brand-700">
+                            <span class="badge absolute left-2 top-2 bg-action text-white ring-action">
                                 Main photo
                             </span>
                         @endif
@@ -95,12 +95,12 @@
                                 </div>
                             </div>
                         @else
-                            <p class="min-h-5 text-sm text-gray-700">
+                            <p class="min-h-5 text-sm text-ink-80">
                                 {{ $photo->caption ?: 'No description' }}
                             </p>
                         @endif
 
-                        <p class="text-xs text-gray-500">
+                        <p class="text-xs text-ink-48">
                             Added by {{ $photo->uploadedBy?->full_name ?? 'a removed account' }}
                         </p>
 

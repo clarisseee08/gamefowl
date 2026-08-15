@@ -1,25 +1,25 @@
 @php $rates = $this->previewRates; @endphp
 
 <div>
-    <div class="mb-6">
-        <a href="{{ route('breeding.index') }}" class="text-sm font-medium text-brand-700 hover:text-brand-800">
+    <div class="mb-10">
+        <a href="{{ route('breeding.index') }}" class="text-sm font-medium text-action hover:underline">
             &larr; Back to breeding records
         </a>
-        <h1 class="mt-2 text-2xl font-bold tracking-tight text-gray-900">
+        <h1 class="mt-2 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">
             {{ $this->isEditing() ? 'Edit Breeding Record' : 'Record a Mating' }}
         </h1>
     </div>
 
-    <form wire:submit="save" class="space-y-6">
-        <section class="card p-6">
-            <h2 class="text-base font-semibold text-gray-900">The Pair</h2>
-            <p class="mt-1 text-sm text-gray-600">
+    <form wire:submit="save" class="space-y-10">
+        <section class="card p-8">
+            <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">The Pair</h2>
+            <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
                 Only male birds can be chosen as the sire and only female birds as the dam.
             </p>
 
-            <div class="mt-6 grid gap-5 sm:grid-cols-2">
+            <div class="mt-8 grid gap-6 sm:grid-cols-2">
                 <div>
-                    <label for="sire_id" class="label">Sire (Father) <span class="text-rose-600">*</span></label>
+                    <label for="sire_id" class="label">Sire (Father) <span class="text-alert">*</span></label>
                     <select id="sire_id" wire:model.blur="sire_id" class="input mt-1 @error('sire_id') input-error @enderror">
                         <option value="">Choose a male bird</option>
                         @foreach ($this->sires as $bird)
@@ -33,7 +33,7 @@
                 </div>
 
                 <div>
-                    <label for="dam_id" class="label">Dam (Mother) <span class="text-rose-600">*</span></label>
+                    <label for="dam_id" class="label">Dam (Mother) <span class="text-alert">*</span></label>
                     <select id="dam_id" wire:model.blur="dam_id" class="input mt-1 @error('dam_id') input-error @enderror">
                         <option value="">Choose a female bird</option>
                         @foreach ($this->dams as $bird)
@@ -47,7 +47,7 @@
                 </div>
 
                 <div>
-                    <label for="mating_date" class="label">Mating Date <span class="text-rose-600">*</span></label>
+                    <label for="mating_date" class="label">Mating Date <span class="text-alert">*</span></label>
                     <input id="mating_date" type="date" wire:model.blur="mating_date" max="{{ today()->toDateString() }}"
                            class="input mt-1 @error('mating_date') input-error @enderror">
                     @error('mating_date') <p class="error">{{ $message }}</p> @enderror
@@ -55,14 +55,14 @@
             </div>
         </section>
 
-        <section class="card p-6">
-            <h2 class="text-base font-semibold text-gray-900">Egg Results</h2>
-            <p class="mt-1 text-sm text-gray-600">
+        <section class="card p-8">
+            <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Egg Results</h2>
+            <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
                 Enter the counts and the system works out the rates. Each number must be
                 equal to or smaller than the one before it.
             </p>
 
-            <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
                     <label for="eggs_set" class="label">Eggs Set</label>
                     <input id="eggs_set" type="number" min="0" inputmode="numeric" wire:model.live="eggs_set"
@@ -97,25 +97,25 @@
             </div>
 
             {{-- Live rate preview. These are always calculated, never typed. --}}
-            <div class="mt-6 grid gap-4 rounded-lg bg-gray-50 p-4 sm:grid-cols-2">
+            <div class="mt-8 grid gap-4 rounded-lg bg-pearl p-4 sm:grid-cols-2">
                 <div>
-                    <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Fertility Rate</p>
-                    <p class="mt-1 text-2xl font-bold text-gray-900">
+                    <p class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48">Fertility Rate</p>
+                    <p class="mt-1 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">
                         {{ $rates['fertility'] !== null ? $rates['fertility'].'%' : '—' }}
                     </p>
-                    <p class="text-xs text-gray-500">Fertile eggs ÷ eggs set</p>
+                    <p class="text-xs text-ink-48">Fertile eggs ÷ eggs set</p>
                 </div>
                 <div>
-                    <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Hatch Rate</p>
-                    <p class="mt-1 text-2xl font-bold text-gray-900">
+                    <p class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48">Hatch Rate</p>
+                    <p class="mt-1 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">
                         {{ $rates['hatch'] !== null ? $rates['hatch'].'%' : '—' }}
                     </p>
-                    <p class="text-xs text-gray-500">Hatched ÷ fertile eggs</p>
+                    <p class="text-xs text-ink-48">Hatched ÷ fertile eggs</p>
                 </div>
             </div>
         </section>
 
-        <section class="card p-6">
+        <section class="card p-8">
             <label for="notes" class="label">Notes</label>
             <textarea id="notes" rows="3" wire:model.blur="notes"
                       class="input mt-1 @error('notes') input-error @enderror"></textarea>

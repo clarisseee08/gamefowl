@@ -7,16 +7,16 @@
 --}}
 <div>
     @if ($statusMessage)
-        <div class="mb-6 flex items-start justify-between gap-4 rounded-lg bg-brand-50 p-4 text-sm text-brand-800 ring-1 ring-brand-200" role="status">
+        <div class="mb-6 flex items-start justify-between gap-4 rounded-lg bg-ok-wash p-4 text-sm text-ok ring-1 ring-ok/20" role="status">
             <p>{{ $statusMessage }}</p>
             <button type="button" wire:click="dismissStatus" class="shrink-0 font-semibold underline">Dismiss</button>
         </div>
     @endif
 
-    <div class="mb-6 sm:flex sm:items-end sm:justify-between">
+    <div class="mb-10 sm:flex sm:items-end sm:justify-between">
         <div>
-            <h1 class="text-2xl font-bold tracking-tight text-gray-900">Health Records</h1>
-            <p class="mt-1 text-sm text-gray-600">
+            <h1 class="text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">Health Records</h1>
+            <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
                 Vaccinations, medications, dewormings, treatments and check-ups for every bird.
             </p>
         </div>
@@ -81,11 +81,11 @@
         </div>
 
         <div class="mt-4 flex items-center justify-between gap-4">
-            <p class="text-sm text-gray-600" wire:loading.remove wire:target="search,recordType,broodcockId,dateFrom,dateTo">
+            <p class="text-sm text-ink-80" wire:loading.remove wire:target="search,recordType,broodcockId,dateFrom,dateTo">
                 Showing <strong>{{ number_format($this->rows->total()) }}</strong>
                 {{ Str::plural('record', $this->rows->total()) }}.
             </p>
-            <p class="text-sm text-gray-500" wire:loading wire:target="search,recordType,broodcockId,dateFrom,dateTo">
+            <p class="text-sm text-ink-48" wire:loading wire:target="search,recordType,broodcockId,dateFrom,dateTo">
                 Searching&hellip;
             </p>
 
@@ -99,8 +99,8 @@
         @if ($this->rows->isEmpty())
             {{-- Empty states say what to do next, never just "No results". --}}
             <div class="px-6 py-16 text-center">
-                <p class="text-base font-semibold text-gray-900">No health records found.</p>
-                <p class="mx-auto mt-2 max-w-md text-sm text-gray-600">
+                <p class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">No health records found.</p>
+                <p class="mx-auto mt-2 max-w-md text-sm text-ink-80">
                     @if ($this->search !== '' || $this->recordType !== '' || $this->broodcockId !== '' || $this->dateFrom !== '' || $this->dateTo !== '')
                         No record matches your filters. Try clearing them to see every record.
                     @else
@@ -117,76 +117,76 @@
             </div>
         @else
             <table class="w-full text-left text-sm">
-                <thead class="hidden bg-gray-50 text-xs uppercase tracking-wide text-gray-600 sm:table-header-group">
+                <thead class="hidden bg-pearl text-xs uppercase tracking-wide text-ink-80 sm:table-header-group">
                     <tr>
-                        <th scope="col" class="px-4 py-3 font-semibold">Bird</th>
-                        <th scope="col" class="px-4 py-3 font-semibold">Record Type</th>
-                        <th scope="col" class="px-4 py-3 font-semibold">Product</th>
-                        <th scope="col" class="px-4 py-3 font-semibold">Check-up Date</th>
-                        <th scope="col" class="px-4 py-3 font-semibold">Next Due Date</th>
-                        <th scope="col" class="px-4 py-3 font-semibold">Status</th>
-                        <th scope="col" class="px-4 py-3 text-right font-semibold">Actions</th>
+                        <th scope="col" class="px-6 py-4 font-semibold">Bird</th>
+                        <th scope="col" class="px-6 py-4 font-semibold">Record Type</th>
+                        <th scope="col" class="px-6 py-4 font-semibold">Product</th>
+                        <th scope="col" class="px-6 py-4 font-semibold">Check-up Date</th>
+                        <th scope="col" class="px-6 py-4 font-semibold">Next Due Date</th>
+                        <th scope="col" class="px-6 py-4 font-semibold">Status</th>
+                        <th scope="col" class="px-6 py-4 text-right font-semibold">Actions</th>
                     </tr>
                 </thead>
 
-                <tbody class="block divide-y divide-gray-200 sm:table-row-group">
+                <tbody class="block divide-y divide-divider sm:table-row-group">
                     @foreach ($this->rows as $record)
                         @php
                             $state = $record->scheduleState();
                             $stateClasses = match ($state) {
-                                'Overdue' => 'bg-rose-100 text-rose-800 ring-rose-600/20',
-                                'Due soon' => 'bg-amber-100 text-amber-800 ring-amber-600/20',
-                                'Scheduled' => 'bg-sky-100 text-sky-800 ring-sky-600/20',
-                                default => 'bg-gray-100 text-gray-700 ring-gray-500/20',
+                                'Overdue' => 'bg-alert-wash text-alert ring-alert/20',
+                                'Due soon' => 'bg-warn-wash text-warn ring-warn/20',
+                                'Scheduled' => 'bg-info-wash text-info ring-info/20',
+                                default => 'bg-parchment text-ink-80 ring-hairline',
                             };
                         @endphp
 
-                        <tr wire:key="record-{{ $record->id }}" class="block p-4 sm:table-row sm:p-0 sm:align-top sm:hover:bg-gray-50">
+                        <tr wire:key="record-{{ $record->id }}" class="block p-4 sm:table-row sm:p-0 sm:align-top sm:hover:bg-pearl">
                             <td class="block sm:table-cell sm:px-4 sm:py-3">
-                                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 sm:hidden">Bird</span>
-                                <p class="font-semibold text-gray-900">{{ $record->broodcock->name }}</p>
-                                <p class="text-xs text-gray-500">Band Number: {{ $record->broodcock->displayBand() }}</p>
+                                <span class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48 sm:hidden">Bird</span>
+                                <p class="font-semibold text-ink">{{ $record->broodcock->name }}</p>
+                                <p class="text-xs text-ink-48">Band Number: {{ $record->broodcock->displayBand() }}</p>
                             </td>
 
                             <td class="mt-2 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
-                                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 sm:hidden">Record Type</span>
+                                <span class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48 sm:hidden">Record Type</span>
                                 <span class="badge {{ $record->record_type->badgeClasses() }}">
                                     {{ $record->record_type->label() }}
                                 </span>
                             </td>
 
                             <td class="mt-2 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
-                                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 sm:hidden">Product</span>
-                                <p class="text-gray-900">{{ $record->product_name ?: '—' }}</p>
+                                <span class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48 sm:hidden">Product</span>
+                                <p class="text-ink">{{ $record->product_name ?: '—' }}</p>
                                 @if ($record->dosage)
-                                    <p class="text-xs text-gray-500">Dosage: {{ $record->dosage }}</p>
+                                    <p class="text-xs text-ink-48">Dosage: {{ $record->dosage }}</p>
                                 @endif
                                 @if ($record->condition)
-                                    <p class="text-xs text-gray-500">Condition: {{ $record->condition }}</p>
+                                    <p class="text-xs text-ink-48">Condition: {{ $record->condition }}</p>
                                 @endif
                                 {{-- Internal remarks. Customers are promised health STATUS,
                                      never the farm's private notes - the Policy decides. --}}
                                 @can('viewRemarks', $record)
                                     @if ($record->remarks)
-                                        <p class="mt-1 text-xs text-gray-500"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
+                                        <p class="mt-1 text-xs text-ink-48"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
                                     @endif
                                 @endcan
                             </td>
 
                             <td class="mt-2 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
-                                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 sm:hidden">Check-up Date</span>
-                                <span class="text-gray-900">{{ $record->checkup_date->format('d M Y') }}</span>
+                                <span class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48 sm:hidden">Check-up Date</span>
+                                <span class="text-ink">{{ $record->checkup_date->format('d M Y') }}</span>
                             </td>
 
                             <td class="mt-2 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
-                                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 sm:hidden">Next Due Date</span>
-                                <span class="text-gray-900">
+                                <span class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48 sm:hidden">Next Due Date</span>
+                                <span class="text-ink">
                                     {{ $record->next_due_date?->format('d M Y') ?? 'None' }}
                                 </span>
                             </td>
 
                             <td class="mt-2 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
-                                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 sm:hidden">Status</span>
+                                <span class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48 sm:hidden">Status</span>
                                 <span class="badge {{ $stateClasses }}">{{ $state }}</span>
                             </td>
 
@@ -207,7 +207,7 @@
                 </tbody>
             </table>
 
-            <div class="border-t border-gray-200 px-4 py-3">
+            <div class="border-t border-hairline px-4 py-3">
                 {{ $this->rows->links() }}
             </div>
         @endif
@@ -218,14 +218,14 @@
     @if ($this->recordPendingDeletion)
         @php $pending = $this->recordPendingDeletion; @endphp
 
-        <div class="fixed inset-0 z-50 flex items-end justify-center bg-gray-900/50 p-4 sm:items-center"
+        <div class="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-4 sm:items-center"
              role="dialog"
              aria-modal="true"
              aria-labelledby="delete-dialog-title">
             <div class="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
-                <h2 id="delete-dialog-title" class="text-lg font-bold text-gray-900">Delete this health record?</h2>
+                <h2 id="delete-dialog-title" class="text-lg font-semibold text-ink">Delete this health record?</h2>
 
-                <p class="mt-3 text-sm text-gray-700">
+                <p class="mt-3 text-sm text-ink-80">
                     You are about to delete the
                     <strong>{{ $pending->record_type->label() }}</strong> record for
                     <strong>{{ $pending->broodcock->name }}</strong>
@@ -233,7 +233,7 @@
                     dated <strong>{{ $pending->checkup_date->format('d M Y') }}</strong>.
                 </p>
 
-                <p class="mt-2 text-sm text-gray-600">
+                <p class="mt-2 text-sm text-ink-80">
                     The record is kept in the farm's history and can be restored by the owner,
                     but it will no longer appear in lists or reports.
                 </p>

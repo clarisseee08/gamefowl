@@ -25,3 +25,12 @@ Thumbs.db
 
 /.serena/
 /.claude/settings.local.json
+/.playwright-mcp/
+*.png
+
+# Agent tooling installed via npx (skills, design presets) - developer
+# environment, not thesis source. Remove these lines to commit them.
+/.agents/
+/.claude/skills/
+/skills-lock.json
+/apple/

@@ -1,26 +1,26 @@
 <div>
-    <div class="mb-6">
-        <a href="{{ route('broodcocks.index') }}" class="text-sm font-medium text-brand-700 hover:text-brand-800">
+    <div class="mb-10">
+        <a href="{{ route('broodcocks.index') }}" class="text-sm font-medium text-action hover:underline">
             &larr; Back to broodcocks
         </a>
-        <h1 class="mt-2 text-2xl font-bold tracking-tight text-gray-900">
+        <h1 class="mt-2 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">
             {{ $this->isEditing() ? 'Edit '.$broodcock->name : 'Add a Broodcock' }}
         </h1>
-        <p class="mt-1 text-sm text-gray-600">
-            Fields marked with <span class="text-rose-600">*</span> are required. Everything
+        <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
+            Fields marked with <span class="text-alert">*</span> are required. Everything
             else can be filled in later.
         </p>
     </div>
 
-    <form wire:submit="save" class="space-y-6">
+    <form wire:submit="save" class="space-y-10">
         {{-- Identification --}}
-        <section class="card p-6">
-            <h2 class="text-base font-semibold text-gray-900">Identification</h2>
-            <p class="mt-1 text-sm text-gray-600">Basic details used to recognise this bird.</p>
+        <section class="card p-8">
+            <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Identification</h2>
+            <p class="mt-3 text-[17px] leading-relaxed text-ink-48">Basic details used to recognise this bird.</p>
 
-            <div class="mt-6 grid gap-5 sm:grid-cols-2">
+            <div class="mt-8 grid gap-6 sm:grid-cols-2">
                 <div>
-                    <label for="name" class="label">Name <span class="text-rose-600">*</span></label>
+                    <label for="name" class="label">Name <span class="text-alert">*</span></label>
                     <input id="name" type="text" wire:model.blur="name"
                            class="input mt-1 @error('name') input-error @enderror">
                     @error('name') <p class="error">{{ $message }}</p> @enderror
@@ -36,7 +36,7 @@
                 </div>
 
                 <div>
-                    <label for="sex" class="label">Sex <span class="text-rose-600">*</span></label>
+                    <label for="sex" class="label">Sex <span class="text-alert">*</span></label>
                     <select id="sex" wire:model.live="sex" class="input mt-1 @error('sex') input-error @enderror">
                         @foreach ($this->sexOptions() as $option)
                             <option value="{{ $option->value }}">{{ $option->label() }} ({{ $option->farmTerm() }})</option>
@@ -46,7 +46,7 @@
                 </div>
 
                 <div>
-                    <label for="status" class="label">Status <span class="text-rose-600">*</span></label>
+                    <label for="status" class="label">Status <span class="text-alert">*</span></label>
                     <select id="status" wire:model.blur="status" class="input mt-1 @error('status') input-error @enderror">
                         @foreach ($this->statusOptions() as $option)
                             <option value="{{ $option->value }}">{{ $option->label() }}</option>
@@ -70,7 +70,7 @@
                 </div>
 
                 <div>
-                    <label for="class" class="label">Class <span class="text-rose-600">*</span></label>
+                    <label for="class" class="label">Class <span class="text-alert">*</span></label>
                     <select id="class" wire:model.blur="class" class="input mt-1 @error('class') input-error @enderror">
                         @foreach ($this->classOptions() as $option)
                             <option value="{{ $option->value }}">{{ $option->label() }} - {{ $option->description() }}</option>
@@ -82,14 +82,14 @@
         </section>
 
         {{-- Dates and appearance --}}
-        <section class="card p-6">
-            <h2 class="text-base font-semibold text-gray-900">Age and Appearance</h2>
-            <p class="mt-1 text-sm text-gray-600">
+        <section class="card p-8">
+            <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Age and Appearance</h2>
+            <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
                 The bird's age is worked out automatically from its hatch date, so it is
                 always up to date.
             </p>
 
-            <div class="mt-6 grid gap-5 sm:grid-cols-2">
+            <div class="mt-8 grid gap-6 sm:grid-cols-2">
                 <div>
                     <label for="date_hatched" class="label">Date Hatched</label>
                     <input id="date_hatched" type="date" wire:model.blur="date_hatched" max="{{ today()->toDateString() }}"
@@ -144,14 +144,14 @@
         </section>
 
         {{-- Pedigree --}}
-        <section class="card p-6">
-            <h2 class="text-base font-semibold text-gray-900">Parents (Pedigree)</h2>
-            <p class="mt-1 text-sm text-gray-600">
+        <section class="card p-8">
+            <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Parents (Pedigree)</h2>
+            <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
                 Recording the sire and dam is what lets the system build this bird's family
                 tree. Only male birds can be a sire and only female birds can be a dam.
             </p>
 
-            <div class="mt-6 grid gap-5 sm:grid-cols-2">
+            <div class="mt-8 grid gap-6 sm:grid-cols-2">
                 <div>
                     <label for="sire_id" class="label">Sire (Father)</label>
                     <select id="sire_id" wire:model.blur="sire_id" class="input mt-1 @error('sire_id') input-error @enderror">
@@ -181,10 +181,10 @@
         </section>
 
         {{-- Housing and notes --}}
-        <section class="card p-6">
-            <h2 class="text-base font-semibold text-gray-900">Housing and Notes</h2>
+        <section class="card p-8">
+            <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Housing and Notes</h2>
 
-            <div class="mt-6 space-y-5">
+            <div class="mt-8 space-y-5">
                 <div>
                     <label for="pen_id" class="label">Pen</label>
                     <select id="pen_id" wire:model.blur="pen_id" class="input mt-1 @error('pen_id') input-error @enderror">

@@ -1,17 +1,17 @@
 @php $breeding = $this->breeding; @endphp
 
 <div>
-    <div class="mb-6">
-        <a href="{{ route('breeding.index') }}" class="text-sm font-medium text-brand-700 hover:text-brand-800">
+    <div class="mb-10">
+        <a href="{{ route('breeding.index') }}" class="text-sm font-medium text-action hover:underline">
             &larr; Back to breeding records
         </a>
 
         <div class="mt-2 sm:flex sm:items-start sm:justify-between">
             <div>
-                <h1 class="text-2xl font-bold tracking-tight text-gray-900">
+                <h1 class="text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">
                     {{ $breeding->sire->name }} &times; {{ $breeding->dam->name }}
                 </h1>
-                <p class="mt-1 text-sm text-gray-600">
+                <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
                     Mated on {{ $breeding->mating_date->format('j F Y') }}
                     @if ($breeding->recordedBy)
                         &middot; recorded by {{ $breeding->recordedBy->full_name }}
@@ -26,7 +26,7 @@
     </div>
 
     {{-- Results --}}
-    <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    <div class="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         @foreach ([
             ['Eggs Set', $breeding->eggs_set],
             ['Fertile', $breeding->eggs_fertile],
@@ -34,33 +34,33 @@
             ['Fertility Rate', $breeding->fertilityRate() !== null ? $breeding->fertilityRate().'%' : '—'],
             ['Hatch Rate', $breeding->hatchRate() !== null ? $breeding->hatchRate().'%' : '—'],
         ] as [$label, $value])
-            <div class="card p-4">
-                <p class="text-xs font-medium uppercase tracking-wide text-gray-500">{{ $label }}</p>
-                <p class="mt-1 text-2xl font-bold text-gray-900">{{ $value }}</p>
+            <div class="card p-6">
+                <p class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48">{{ $label }}</p>
+                <p class="mt-1 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">{{ $value }}</p>
             </div>
         @endforeach
     </div>
 
     <div class="grid gap-6 lg:grid-cols-3">
         {{-- Parents --}}
-        <div class="card p-6">
-            <h2 class="text-base font-semibold text-gray-900">The Pair</h2>
+        <div class="card p-8">
+            <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">The Pair</h2>
             <div class="mt-4 space-y-4">
                 @foreach ([['Sire', $breeding->sire], ['Dam', $breeding->dam]] as [$label, $parent])
                     <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-gray-500">{{ $label }}</p>
-                        <a href="{{ route('broodcocks.show', $parent) }}" class="text-sm font-medium text-brand-700 hover:text-brand-800">
+                        <p class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48">{{ $label }}</p>
+                        <a href="{{ route('broodcocks.show', $parent) }}" class="text-sm font-medium text-action hover:underline">
                             {{ $parent->name }} ({{ $parent->band_number ?? 'no band' }})
                         </a>
-                        <p class="text-xs text-gray-500">{{ $parent->bloodline ?? 'Bloodline not recorded' }}</p>
+                        <p class="text-xs text-ink-48">{{ $parent->bloodline ?? 'Bloodline not recorded' }}</p>
                     </div>
                 @endforeach
             </div>
 
             @if ($breeding->notes)
-                <div class="mt-4 border-t border-gray-200 pt-4">
-                    <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Notes</p>
-                    <p class="mt-1 whitespace-pre-line text-sm text-gray-900">{{ $breeding->notes }}</p>
+                <div class="mt-4 border-t border-hairline pt-4">
+                    <p class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48">Notes</p>
+                    <p class="mt-1 whitespace-pre-line text-sm text-ink">{{ $breeding->notes }}</p>
                 </div>
             @endif
         </div>
@@ -69,8 +69,8 @@
         <div class="card p-6 lg:col-span-2">
             <div class="flex items-start justify-between">
                 <div>
-                    <h2 class="text-base font-semibold text-gray-900">Offspring</h2>
-                    <p class="mt-1 text-sm text-gray-600">
+                    <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Offspring</h2>
+                    <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
                         {{ $breeding->offspring_count }} of {{ $breeding->eggs_hatched }}
                         {{ Str::plural('chick', $breeding->eggs_hatched) }} registered as bird records.
                     </p>
@@ -89,9 +89,9 @@
                  chicks are created with sire_id and dam_id already set, so the
                  family tree is a by-product of normal data entry. --}}
             @if ($generating)
-                <div class="mt-4 rounded-lg bg-brand-50 p-4 ring-1 ring-brand-200">
-                    <h3 class="text-sm font-semibold text-brand-900">Register chicks from this hatch</h3>
-                    <p class="mt-1 text-sm text-brand-800">
+                <div class="mt-4 rounded-lg bg-ok-wash p-4 ring-1 ring-ok/20">
+                    <h3 class="text-sm font-semibold text-ok">Register chicks from this hatch</h3>
+                    <p class="mt-1 text-sm text-ok">
                         Each chick will be created with
                         <strong>{{ $breeding->sire->name }}</strong> as its sire and
                         <strong>{{ $breeding->dam->name }}</strong> as its dam, so it appears in the
@@ -148,9 +148,9 @@
             {{-- Existing offspring --}}
             <div class="mt-4">
                 @if ($this->offspring->isEmpty())
-                    <div class="rounded-lg border border-dashed border-gray-300 p-8 text-center">
-                        <p class="text-sm font-medium text-gray-900">No chicks registered yet</p>
-                        <p class="mt-1 text-sm text-gray-600">
+                    <div class="rounded-lg border border-dashed border-hairline p-8 text-center">
+                        <p class="text-sm font-medium text-ink">No chicks registered yet</p>
+                        <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
                             @if ($breeding->eggs_hatched > 0)
                                 {{ $breeding->eggs_hatched }} {{ Str::plural('egg', $breeding->eggs_hatched) }} hatched.
                                 Use the button above to add them as bird records.
@@ -160,14 +160,14 @@
                         </p>
                     </div>
                 @else
-                    <ul class="divide-y divide-gray-200">
+                    <ul class="divide-y divide-divider">
                         @foreach ($this->offspring as $child)
                             <li class="flex items-center justify-between py-3">
                                 <div>
-                                    <a href="{{ route('broodcocks.show', $child) }}" class="text-sm font-medium text-brand-700 hover:text-brand-800">
+                                    <a href="{{ route('broodcocks.show', $child) }}" class="text-sm font-medium text-action hover:underline">
                                         {{ $child->name }}
                                     </a>
-                                    <p class="text-xs text-gray-500">
+                                    <p class="text-xs text-ink-48">
                                         {{ $child->band_number ?? 'Not yet banded' }} &middot;
                                         {{ $child->sex->label() }} &middot;
                                         {{ $child->date_hatched?->format('j M Y') ?? 'Hatch date unknown' }}

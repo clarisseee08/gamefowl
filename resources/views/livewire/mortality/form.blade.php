@@ -7,21 +7,21 @@
     mark the wrong bird dead.
 --}}
 <div class="mx-auto max-w-2xl">
-    <div class="mb-6">
+    <div class="mb-10">
         <a href="{{ route('mortality.index') }}" wire:navigate
-           class="inline-flex items-center gap-1 py-2 text-sm font-medium text-gray-600 hover:text-gray-900">
+           class="inline-flex items-center gap-1 py-2 text-sm font-medium text-ink-80 hover:text-ink">
             &larr; Back to Mortality Records
         </a>
 
-        <h1 class="mt-2 text-2xl font-bold tracking-tight text-gray-900">Record a Death</h1>
-        <p class="mt-1 text-sm text-gray-600">
+        <h1 class="mt-2 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">Record a Death</h1>
+        <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
             Fill this in when a bird dies. The bird will be marked as
             <strong>deceased</strong> and will no longer appear in the active flock
             or in the list of birds you can breed.
         </p>
     </div>
 
-    <form wire:submit="review" class="card space-y-6 p-6">
+    <form wire:submit="review" class="card space-y-10 p-6">
         @csrf
 
         {{-- ---------------------------------------------------------------
@@ -39,7 +39,7 @@
         </div>
 
         <div>
-            <label for="broodcock_id" class="label">Which Bird Died? <span class="text-rose-600">*</span></label>
+            <label for="broodcock_id" class="label">Which Bird Died? <span class="text-alert">*</span></label>
 
             <select id="broodcock_id"
                     wire:model.live="broodcock_id"
@@ -74,7 +74,7 @@
              When
         ---------------------------------------------------------------- --}}
         <div>
-            <label for="date_of_death" class="label">Date of Death <span class="text-rose-600">*</span></label>
+            <label for="date_of_death" class="label">Date of Death <span class="text-alert">*</span></label>
             <input id="date_of_death"
                    type="date"
                    wire:model="date_of_death"
@@ -103,7 +103,7 @@
              Why
         ---------------------------------------------------------------- --}}
         <div>
-            <label for="cause_of_death" class="label">Cause of Death <span class="text-rose-600">*</span></label>
+            <label for="cause_of_death" class="label">Cause of Death <span class="text-alert">*</span></label>
             <input id="cause_of_death"
                    type="text"
                    list="cause-suggestions"
@@ -167,7 +167,7 @@
             <p class="help">Optional. Only farm staff can read this.</p>
         </div>
 
-        <div class="flex flex-col-reverse gap-3 border-t border-gray-200 pt-6 sm:flex-row sm:justify-end">
+        <div class="flex flex-col-reverse gap-3 border-t border-hairline pt-6 sm:flex-row sm:justify-end">
             <a href="{{ route('mortality.index') }}" wire:navigate class="btn-secondary">Cancel</a>
             <button type="submit" class="btn-primary" wire:loading.attr="disabled">
                 <span wire:loading.remove wire:target="review">Record This Death</span>
@@ -180,34 +180,34 @@
          Confirmation. Names the bird, and says plainly what will change.
     ---------------------------------------------------------------- --}}
     @if ($confirming && $this->selectedBird)
-        <div class="fixed inset-0 z-50 flex items-end justify-center bg-gray-900/50 p-4 sm:items-center"
+        <div class="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-4 sm:items-center"
              role="dialog"
              aria-modal="true"
              aria-labelledby="confirm-mortality-title"
              wire:keydown.escape="cancelConfirmation">
             <div class="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
-                <h2 id="confirm-mortality-title" class="text-lg font-bold text-gray-900">
+                <h2 id="confirm-mortality-title" class="text-lg font-semibold text-ink">
                     Record the death of {{ $this->selectedBird->displayName() }}?
                 </h2>
 
-                <dl class="mt-4 space-y-2 rounded-lg bg-gray-50 p-4 text-sm">
+                <dl class="mt-4 space-y-2 rounded-lg bg-pearl p-4 text-sm">
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600">Date of death</dt>
-                        <dd class="font-medium text-gray-900">
+                        <dt class="text-ink-80">Date of death</dt>
+                        <dd class="font-medium text-ink">
                             {{ \Illuminate\Support\Carbon::parse($date_of_death)->format('d M Y') }}
                         </dd>
                     </div>
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600">Cause</dt>
-                        <dd class="font-medium text-gray-900">{{ $cause_of_death }}</dd>
+                        <dt class="text-ink-80">Cause</dt>
+                        <dd class="font-medium text-ink">{{ $cause_of_death }}</dd>
                     </div>
                     <div class="flex justify-between gap-4">
-                        <dt class="text-gray-600">Disposal</dt>
-                        <dd class="font-medium text-gray-900">{{ $disposal_method ?: 'Not recorded' }}</dd>
+                        <dt class="text-ink-80">Disposal</dt>
+                        <dd class="font-medium text-ink">{{ $disposal_method ?: 'Not recorded' }}</dd>
                     </div>
                 </dl>
 
-                <p class="mt-4 text-sm text-gray-600">
+                <p class="mt-4 text-sm text-ink-80">
                     {{ $this->selectedBird->name }} will be marked as <strong>deceased</strong> and
                     removed from the active flock and from breeding. Only the farm owner can undo this.
                 </p>

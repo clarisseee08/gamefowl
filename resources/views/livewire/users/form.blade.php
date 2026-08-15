@@ -1,30 +1,30 @@
 <div>
-    <div class="mb-6">
-        <a href="{{ route('users.index') }}" class="text-sm font-medium text-brand-700 hover:text-brand-800">
+    <div class="mb-10">
+        <a href="{{ route('users.index') }}" class="text-sm font-medium text-action hover:underline">
             &larr; Back to user accounts
         </a>
-        <h1 class="mt-2 text-2xl font-bold tracking-tight text-gray-900">
+        <h1 class="mt-2 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">
             {{ $this->isEditing() ? 'Edit '.$full_name : 'Add a User' }}
         </h1>
-        <p class="mt-1 text-sm text-gray-600">
+        <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
             Accounts are created here — people cannot sign themselves up.
         </p>
     </div>
 
-    <form wire:submit="save" class="space-y-6">
-        <section class="card p-6">
-            <h2 class="text-base font-semibold text-gray-900">Person</h2>
+    <form wire:submit="save" class="space-y-10">
+        <section class="card p-8">
+            <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Person</h2>
 
-            <div class="mt-6 grid gap-5 sm:grid-cols-2">
+            <div class="mt-8 grid gap-6 sm:grid-cols-2">
                 <div>
-                    <label for="full_name" class="label">Full Name <span class="text-rose-600">*</span></label>
+                    <label for="full_name" class="label">Full Name <span class="text-alert">*</span></label>
                     <input id="full_name" type="text" wire:model.blur="full_name"
                            class="input mt-1 @error('full_name') input-error @enderror">
                     @error('full_name') <p class="error">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label for="email" class="label">Email Address <span class="text-rose-600">*</span></label>
+                    <label for="email" class="label">Email Address <span class="text-alert">*</span></label>
                     <input id="email" type="email" wire:model.blur="email" autocomplete="off"
                            class="input mt-1 @error('email') input-error @enderror">
                     <p class="help">They will use this to sign in.</p>
@@ -54,31 +54,31 @@
             </div>
         </section>
 
-        <section class="card p-6">
-            <h2 class="text-base font-semibold text-gray-900">What they are allowed to do</h2>
+        <section class="card p-8">
+            <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">What they are allowed to do</h2>
 
-            <div class="mt-6 space-y-3">
+            <div class="mt-8 space-y-3">
                 @foreach ($this->roleOptions() as $option)
                     <label class="flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition
-                                  {{ $role === $option->value ? 'border-brand-500 bg-brand-50' : 'border-gray-200 hover:bg-gray-50' }}">
+                                  {{ $role === $option->value ? 'border-action bg-ok-wash' : 'border-hairline hover:bg-pearl' }}">
                         <input type="radio" name="role" value="{{ $option->value }}" wire:model.live="role"
-                               class="mt-1 h-4 w-4 border-gray-300 text-brand-600 focus:ring-brand-600">
+                               class="mt-1 h-4 w-4 border-hairline text-action focus:ring-action">
                         <span>
-                            <span class="block text-sm font-medium text-gray-900">{{ $option->label() }}</span>
-                            <span class="block text-sm text-gray-600">{{ $option->description() }}</span>
+                            <span class="block text-sm font-medium text-ink">{{ $option->label() }}</span>
+                            <span class="block text-sm text-ink-80">{{ $option->description() }}</span>
                         </span>
                     </label>
                 @endforeach
                 @error('role') <p class="error">{{ $message }}</p> @enderror
             </div>
 
-            <div class="mt-6 border-t border-gray-200 pt-6">
+            <div class="mt-6 border-t border-hairline pt-6">
                 <label class="flex items-start gap-3">
                     <input type="checkbox" wire:model.live="is_active"
-                           class="mt-1 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-600">
+                           class="mt-1 h-4 w-4 rounded border-hairline text-action focus:ring-action">
                     <span>
-                        <span class="block text-sm font-medium text-gray-900">This person can sign in</span>
-                        <span class="block text-sm text-gray-600">
+                        <span class="block text-sm font-medium text-ink">This person can sign in</span>
+                        <span class="block text-sm text-ink-80">
                             Untick to deactivate the account. Their records are always kept.
                         </span>
                     </span>
@@ -87,9 +87,9 @@
             </div>
         </section>
 
-        <section class="card p-6">
-            <h2 class="text-base font-semibold text-gray-900">Password</h2>
-            <p class="mt-1 text-sm text-gray-600">
+        <section class="card p-8">
+            <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Password</h2>
+            <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
                 @if ($this->isEditing())
                     Leave both boxes empty to keep the current password unchanged.
                 @else
@@ -97,10 +97,10 @@
                 @endif
             </p>
 
-            <div class="mt-6 grid gap-5 sm:grid-cols-2">
+            <div class="mt-8 grid gap-6 sm:grid-cols-2">
                 <div>
                     <label for="password" class="label">
-                        Password @unless ($this->isEditing())<span class="text-rose-600">*</span>@endunless
+                        Password @unless ($this->isEditing())<span class="text-alert">*</span>@endunless
                     </label>
                     <input id="password" type="password" wire:model.blur="password" autocomplete="new-password"
                            class="input mt-1 @error('password') input-error @enderror">

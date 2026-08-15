@@ -17,23 +17,23 @@
 
 <div>
     {{-- Header --}}
-    <div class="mb-6">
-        <a href="{{ route('broodcocks.index') }}" class="text-sm font-medium text-brand-700 hover:text-brand-800">
+    <div class="mb-10">
+        <a href="{{ route('broodcocks.index') }}" class="text-sm font-medium text-action hover:underline">
             &larr; Back to broodcocks
         </a>
 
         <div class="mt-3 sm:flex sm:items-start sm:justify-between">
             <div class="flex items-start gap-4">
                 <x-photo-thumb :photo="$bird->primaryPhoto" :alt="'Photo of '.$bird->name"
-                               class="h-20 w-20 shrink-0 rounded-xl ring-1 ring-gray-200" />
+                               class="h-20 w-20 shrink-0 rounded-xl ring-1 ring-hairline" />
 
                 <div>
-                    <h1 class="text-2xl font-bold tracking-tight text-gray-900">{{ $bird->name }}</h1>
-                    <p class="text-sm text-gray-600">{{ $bird->displayBand() }}</p>
+                    <h1 class="text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">{{ $bird->name }}</h1>
+                    <p class="text-sm text-ink-80">{{ $bird->displayBand() }}</p>
                     <div class="mt-2 flex flex-wrap gap-1.5">
                         <span class="badge {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
                         <span class="badge {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
-                        <span class="badge bg-gray-100 text-gray-700 ring-gray-500/20">{{ $bird->sex->farmTerm() }}</span>
+                        <span class="badge bg-parchment text-ink-80 ring-hairline">{{ $bird->sex->farmTerm() }}</span>
                     </div>
                 </div>
             </div>
@@ -54,25 +54,25 @@
 
     {{-- Deceased banner --}}
     @if ($bird->isDeceased() && $bird->mortalityRecord)
-        <div class="mb-6 rounded-lg bg-rose-50 p-4 ring-1 ring-rose-200">
-            <p class="text-sm font-medium text-rose-900">
+        <div class="mb-6 rounded-lg bg-alert-wash p-4 ring-1 ring-alert/20">
+            <p class="text-sm font-medium text-alert">
                 This bird died on {{ $bird->mortalityRecord->date_of_death->format('j F Y') }}.
             </p>
             @if ($canSeeInternal)
-                <p class="mt-1 text-sm text-rose-800">Cause: {{ $bird->mortalityRecord->cause_of_death }}</p>
+                <p class="mt-1 text-sm text-alert">Cause: {{ $bird->mortalityRecord->cause_of_death }}</p>
             @endif
         </div>
     @endif
 
     {{-- Tabs --}}
-    <div class="mb-6 border-b border-gray-200">
+    <div class="mb-6 border-b border-hairline">
         <nav class="-mb-px flex flex-wrap gap-x-6" aria-label="Sections">
             @foreach ($tabs as $t)
                 <button type="button" wire:click="$set('tab', '{{ $t['key'] }}')"
                         @class([
                             'whitespace-nowrap border-b-2 px-1 py-3 text-sm font-medium transition',
-                            'border-brand-600 text-brand-700' => $tab === $t['key'],
-                            'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' => $tab !== $t['key'],
+                            'border-action text-action' => $tab === $t['key'],
+                            'border-transparent text-ink-48 hover:border-hairline hover:text-ink-80' => $tab !== $t['key'],
                         ])
                         @if ($tab === $t['key']) aria-current="page" @endif>
                     {{ $t['label'] }}
@@ -85,7 +85,7 @@
     @if ($tab === 'overview')
         <div class="grid gap-6 lg:grid-cols-3">
             <div class="card p-6 lg:col-span-2">
-                <h2 class="text-base font-semibold text-gray-900">Details</h2>
+                <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Details</h2>
                 <dl class="mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2">
                     @foreach ([
                         'Band Number' => $bird->displayBand(),
@@ -103,15 +103,15 @@
                         'Leg Colour' => $bird->leg_color ?: 'Not recorded',
                     ] as $label => $value)
                         <div>
-                            <dt class="text-xs font-medium uppercase tracking-wide text-gray-500">{{ $label }}</dt>
-                            <dd class="mt-0.5 text-sm text-gray-900">{{ $value }}</dd>
+                            <dt class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48">{{ $label }}</dt>
+                            <dd class="mt-0.5 text-sm text-ink">{{ $value }}</dd>
                         </div>
                     @endforeach
 
                     @if ($bird->distinguishing_marks)
                         <div class="sm:col-span-2">
-                            <dt class="text-xs font-medium uppercase tracking-wide text-gray-500">Distinguishing Marks</dt>
-                            <dd class="mt-0.5 text-sm text-gray-900">{{ $bird->distinguishing_marks }}</dd>
+                            <dt class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48">Distinguishing Marks</dt>
+                            <dd class="mt-0.5 text-sm text-ink">{{ $bird->distinguishing_marks }}</dd>
                         </div>
                     @endif
 
@@ -119,26 +119,26 @@
                          a Policy check, not just a CSS hide. --}}
                     @if ($canSeeInternal && $bird->notes)
                         <div class="sm:col-span-2">
-                            <dt class="text-xs font-medium uppercase tracking-wide text-gray-500">Internal Notes</dt>
-                            <dd class="mt-0.5 whitespace-pre-line text-sm text-gray-900">{{ $bird->notes }}</dd>
+                            <dt class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48">Internal Notes</dt>
+                            <dd class="mt-0.5 whitespace-pre-line text-sm text-ink">{{ $bird->notes }}</dd>
                         </div>
                     @endif
                 </dl>
             </div>
 
-            <div class="space-y-6">
-                <div class="card p-6">
-                    <h2 class="text-base font-semibold text-gray-900">Parents</h2>
+            <div class="space-y-10">
+                <div class="card p-8">
+                    <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Parents</h2>
                     <div class="mt-4 space-y-3">
                         @foreach ([['Sire (Father)', $bird->sire], ['Dam (Mother)', $bird->dam]] as [$label, $parent])
                             <div>
-                                <p class="text-xs font-medium uppercase tracking-wide text-gray-500">{{ $label }}</p>
+                                <p class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48">{{ $label }}</p>
                                 @if ($parent)
-                                    <a href="{{ route('broodcocks.show', $parent) }}" class="text-sm font-medium text-brand-700 hover:text-brand-800">
+                                    <a href="{{ route('broodcocks.show', $parent) }}" class="text-sm font-medium text-action hover:underline">
                                         {{ $parent->name }} ({{ $parent->displayBand() }})
                                     </a>
                                 @else
-                                    <p class="text-sm text-gray-500">Not recorded</p>
+                                    <p class="text-sm text-ink-48">Not recorded</p>
                                 @endif
                             </div>
                         @endforeach
@@ -149,17 +149,17 @@
                 </div>
 
                 @if ($canSeeInternal)
-                    <div class="card p-6">
-                        <h2 class="text-base font-semibold text-gray-900">Housing</h2>
-                        <p class="mt-2 text-sm text-gray-900">
+                    <div class="card p-8">
+                        <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Housing</h2>
+                        <p class="mt-2 text-sm text-ink">
                             @if ($bird->pen && Route::has('pens.show'))
-                                <a href="{{ route('pens.show', $bird->pen) }}" class="font-medium text-brand-700 hover:text-brand-800">
+                                <a href="{{ route('pens.show', $bird->pen) }}" class="font-medium text-action hover:underline">
                                     {{ $bird->pen->code }} &mdash; {{ $bird->pen->name }}
                                 </a>
                             @elseif ($bird->pen)
                                 <span class="font-medium">{{ $bird->pen->code }} &mdash; {{ $bird->pen->name }}</span>
                             @else
-                                <span class="text-gray-500">Not assigned to a pen</span>
+                                <span class="text-ink-48">Not assigned to a pen</span>
                             @endif
                         </p>
                     </div>
@@ -173,7 +173,7 @@
         @if (class_exists(App\Livewire\Photos\Gallery::class))
             <livewire:photos.gallery :broodcock="$bird" :key="'gallery-'.$bird->id" />
         @else
-            <div class="card p-8 text-center text-sm text-gray-500">The photo gallery is not available yet.</div>
+            <div class="card p-8 text-center text-sm text-ink-48">The photo gallery is not available yet.</div>
         @endif
     @endif
 
@@ -182,7 +182,7 @@
         @if (class_exists(App\Livewire\Health\BroodcockHealthHistory::class))
             <livewire:health.broodcock-health-history :broodcock="$bird" :key="'health-'.$bird->id" />
         @else
-            <div class="card p-8 text-center text-sm text-gray-500">The health history view is not available yet.</div>
+            <div class="card p-8 text-center text-sm text-ink-48">The health history view is not available yet.</div>
         @endif
     @endif
 
@@ -191,7 +191,7 @@
         @if (class_exists(App\Livewire\Performance\BroodcockTimeline::class))
             <livewire:performance.broodcock-timeline :broodcock="$bird" :key="'perf-'.$bird->id" />
         @else
-            <div class="card p-8 text-center text-sm text-gray-500">The performance timeline is not available yet.</div>
+            <div class="card p-8 text-center text-sm text-ink-48">The performance timeline is not available yet.</div>
         @endif
     @endif
 
@@ -200,38 +200,38 @@
         <div class="card overflow-hidden">
             @if ($this->offspring->isEmpty())
                 <div class="p-12 text-center">
-                    <h3 class="text-base font-semibold text-gray-900">No offspring recorded</h3>
-                    <p class="mt-1 text-sm text-gray-600">
+                    <h3 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">No offspring recorded</h3>
+                    <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
                         Offspring appear here once birds are recorded with {{ $bird->name }}
                         as their {{ $bird->sex->parentTerm() }}.
                     </p>
                 </div>
             @else
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                <table class="min-w-full divide-y divide-divider">
+                    <thead class="bg-pearl">
                         <tr>
                             @foreach (['Band Number', 'Name', 'Sex', 'Bloodline', 'Hatched', 'Status'] as $heading)
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
+                                <th scope="col" class="px-6 py-4 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-ink-80">
                                     {{ $heading }}
                                 </th>
                             @endforeach
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200 bg-white">
+                    <tbody class="divide-y divide-divider bg-white">
                         @foreach ($this->offspring as $child)
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-4 py-3 text-sm font-medium">
-                                    <a href="{{ route('broodcocks.show', $child) }}" class="text-brand-700 hover:text-brand-800">
+                            <tr class="hover:bg-pearl">
+                                <td class="px-6 py-4 text-sm font-medium">
+                                    <a href="{{ route('broodcocks.show', $child) }}" class="text-action hover:underline">
                                         {{ $child->displayBand() }}
                                     </a>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $child->name }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-600">{{ $child->sex->label() }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-600">{{ $child->bloodline ?? '—' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-600">
+                                <td class="px-6 py-4 text-sm text-ink">{{ $child->name }}</td>
+                                <td class="px-6 py-4 text-sm text-ink-80">{{ $child->sex->label() }}</td>
+                                <td class="px-6 py-4 text-sm text-ink-80">{{ $child->bloodline ?? '—' }}</td>
+                                <td class="px-6 py-4 text-sm text-ink-80">
                                     {{ $child->date_hatched?->format('j M Y') ?? '—' }}
                                 </td>
-                                <td class="px-4 py-3">
+                                <td class="px-6 py-4">
                                     <span class="badge {{ $child->status->badgeClasses() }}">{{ $child->status->label() }}</span>
                                 </td>
                             </tr>
@@ -245,10 +245,10 @@
     {{-- Delete confirmation. Names the bird explicitly and says what is kept,
          because "Are you sure?" tells a worried user nothing. --}}
     @if ($confirmingDeletion)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4" role="dialog" aria-modal="true">
             <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-                <h2 class="text-lg font-semibold text-gray-900">Delete {{ $bird->name }}?</h2>
-                <p class="mt-2 text-sm text-gray-600">
+                <h2 class="text-[24px] font-semibold tracking-[-0.015em] leading-[1.2] text-ink">Delete {{ $bird->name }}?</h2>
+                <p class="mt-2 text-sm text-ink-80">
                     This will remove <strong>{{ $bird->name }} ({{ $bird->displayBand() }})</strong>
                     from the active records. Its health, breeding and performance history is kept
                     and the deletion is recorded in the activity log, so this can be undone by

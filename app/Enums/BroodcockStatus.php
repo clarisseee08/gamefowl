@@ -52,12 +52,12 @@ enum BroodcockStatus: string
     public function badgeClasses(): string
     {
         return match ($this) {
-            self::Active => 'bg-emerald-100 text-emerald-800 ring-emerald-600/20',
-            self::Breeding => 'bg-violet-100 text-violet-800 ring-violet-600/20',
-            self::Resting => 'bg-sky-100 text-sky-800 ring-sky-600/20',
-            self::Retired => 'bg-gray-100 text-gray-700 ring-gray-500/20',
-            self::Sold => 'bg-orange-100 text-orange-800 ring-orange-600/20',
-            self::Deceased => 'bg-rose-100 text-rose-800 ring-rose-600/20',
+            self::Active => 'badge-ok',
+            self::Breeding => 'badge-info',
+            self::Resting => 'badge-neutral',
+            self::Retired => 'badge-neutral',
+            self::Sold => 'badge-warn',
+            self::Deceased => 'badge-alert',
         };
     }
 

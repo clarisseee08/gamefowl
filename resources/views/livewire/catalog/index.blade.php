@@ -1,7 +1,7 @@
 <div>
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold tracking-tight text-gray-900">Our Gamefowl</h1>
-        <p class="mt-1 text-sm text-gray-600">
+    <div class="mb-10">
+        <h1 class="text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">Our Gamefowl</h1>
+        <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
             Browse the birds currently on the farm. Tap any bird to see its photos,
             health record, family tree and performance history.
         </p>
@@ -9,7 +9,7 @@
 
     {{-- Filters. Fewer and plainer than the staff screen - a customer does not
          need to filter by pen or by internal status. --}}
-    <div class="card mb-6 p-4">
+    <div class="card mb-10 p-6">
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <div class="lg:col-span-2">
                 <label for="search" class="label">Search</label>
@@ -49,8 +49,8 @@
         </div>
 
         @if ($this->hasActiveFilters())
-            <div class="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
-                <p class="text-sm text-gray-600">
+            <div class="mt-4 flex items-center justify-between border-t border-hairline pt-4">
+                <p class="text-sm text-ink-80">
                     {{ number_format($this->birds->total()) }}
                     {{ Str::plural('bird', $this->birds->total()) }} found.
                 </p>
@@ -61,10 +61,10 @@
 
     @if ($this->birds->isEmpty())
         <div class="card p-12 text-center">
-            <h3 class="text-base font-semibold text-gray-900">
+            <h3 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">
                 {{ $this->hasActiveFilters() ? 'No birds match your search' : 'No birds are listed yet' }}
             </h3>
-            <p class="mt-1 text-sm text-gray-600">
+            <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
                 {{ $this->hasActiveFilters()
                     ? 'Try a different bloodline or clear the filters to see everything.'
                     : 'Please check back soon.' }}
@@ -83,29 +83,29 @@
                                    class="aspect-4/3 w-full" />
 
                     <div class="p-4">
-                        <h2 class="truncate font-semibold text-gray-900 group-hover:text-brand-700">
+                        <h2 class="truncate font-semibold text-ink group-hover:text-action">
                             {{ $bird->name }}
                         </h2>
-                        <p class="truncate text-sm text-gray-600">{{ $bird->displayBand() }}</p>
+                        <p class="truncate text-sm text-ink-80">{{ $bird->displayBand() }}</p>
 
                         <dl class="mt-3 space-y-1 text-sm">
                             <div class="flex justify-between gap-2">
-                                <dt class="text-gray-500">Bloodline</dt>
-                                <dd class="truncate font-medium text-gray-900">{{ $bird->bloodline ?: 'Not recorded' }}</dd>
+                                <dt class="text-ink-48">Bloodline</dt>
+                                <dd class="truncate font-medium text-ink">{{ $bird->bloodline ?: 'Not recorded' }}</dd>
                             </div>
                             <div class="flex justify-between gap-2">
-                                <dt class="text-gray-500">Breed</dt>
-                                <dd class="truncate font-medium text-gray-900">{{ $bird->breed ?: 'Not recorded' }}</dd>
+                                <dt class="text-ink-48">Breed</dt>
+                                <dd class="truncate font-medium text-ink">{{ $bird->breed ?: 'Not recorded' }}</dd>
                             </div>
                             <div class="flex justify-between gap-2">
-                                <dt class="text-gray-500">Age</dt>
-                                <dd class="font-medium text-gray-900">{{ $bird->ageLabel() ?? 'Unknown' }}</dd>
+                                <dt class="text-ink-48">Age</dt>
+                                <dd class="font-medium text-ink">{{ $bird->ageLabel() ?? 'Unknown' }}</dd>
                             </div>
                         </dl>
 
                         <div class="mt-3 flex flex-wrap gap-1.5">
                             <span class="badge {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
-                            <span class="badge bg-gray-100 text-gray-700 ring-gray-500/20">{{ $bird->sex->farmTerm() }}</span>
+                            <span class="badge bg-parchment text-ink-80 ring-hairline">{{ $bird->sex->farmTerm() }}</span>
                         </div>
                     </div>
                 </a>

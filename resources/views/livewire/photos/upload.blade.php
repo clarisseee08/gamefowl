@@ -7,8 +7,8 @@
 
 <div class="card p-5 sm:p-6">
     <div class="mb-4">
-        <h2 class="text-lg font-semibold text-gray-900">Add Photos</h2>
-        <p class="mt-1 text-sm text-gray-600">
+        <h2 class="text-[24px] font-semibold tracking-[-0.015em] leading-[1.2] text-ink">Add Photos</h2>
+        <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
             Photos of <strong>{{ $broodcock->displayName() }}</strong>.
             @if ($this->isFull)
                 This bird already has the most photos allowed ({{ $maxPerBird }}).
@@ -20,7 +20,7 @@
     </div>
 
     @if ($status !== '')
-        <div class="mb-4 flex items-start gap-2 rounded-lg bg-brand-50 p-4 text-sm text-brand-800 ring-1 ring-brand-200" role="status">
+        <div class="mb-4 flex items-start gap-2 rounded-lg bg-ok-wash p-4 text-sm text-ok ring-1 ring-ok/20" role="status">
             <svg class="mt-0.5 h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
             </svg>
@@ -42,18 +42,18 @@
              on a phone instead of the browser's small default file button. --}}
         <label @class([
             'flex w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-8 text-center transition',
-            'border-gray-300 bg-gray-50 hover:border-brand-500 hover:bg-brand-50' => ! $this->isFull,
-            'cursor-not-allowed border-gray-200 bg-gray-100 opacity-60' => $this->isFull,
+            'border-hairline bg-pearl hover:border-action hover:bg-ok-wash' => ! $this->isFull,
+            'cursor-not-allowed border-hairline bg-parchment opacity-60' => $this->isFull,
         ])>
-            <svg class="h-10 w-10 text-brand-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+            <svg class="h-10 w-10 text-action" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round"
                       d="M3 16.5V18a2.25 2.25 0 0 0 2.25 2.25h13.5A2.25 2.25 0 0 0 21 18v-1.5M16.5 7.5 12 3m0 0L7.5 7.5M12 3v13.5"/>
             </svg>
 
-            <span class="text-base font-semibold text-gray-900">
+            <span class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">
                 Tap to choose photos
             </span>
-            <span class="text-sm text-gray-600">
+            <span class="text-sm text-ink-80">
                 You can pick more than one. JPG, PNG or WEBP, up to {{ $maxMb }} MB each.
             </span>
 
@@ -68,14 +68,14 @@
         {{-- Upload progress. Farm staff are often on a slow phone connection;
              a page that looks frozen gets tapped again and again. --}}
         <div x-show="uploading" x-cloak class="mt-4" role="status" aria-live="polite">
-            <div class="flex items-center justify-between text-sm font-medium text-gray-700">
+            <div class="flex items-center justify-between text-sm font-medium text-ink-80">
                 <span>Uploading your photos&hellip;</span>
                 <span x-text="progress + '%'"></span>
             </div>
-            <div class="mt-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
-                <div class="h-3 rounded-full bg-brand-600 transition-all" :style="`width: ${progress}%`"></div>
+            <div class="mt-2 h-3 w-full overflow-hidden rounded-full bg-parchment">
+                <div class="h-3 rounded-full bg-action transition-all" :style="`width: ${progress}%`"></div>
             </div>
-            <p class="mt-1 text-xs text-gray-500">Please keep this page open until it finishes.</p>
+            <p class="mt-1 text-xs text-ink-48">Please keep this page open until it finishes.</p>
         </div>
 
         @error('photos')
@@ -85,20 +85,20 @@
         {{-- Preview before saving: what you picked, before it is committed. --}}
         @if (count($photos) > 0)
             <div class="mt-5">
-                <p class="text-sm font-medium text-gray-900">
+                <p class="text-sm font-medium text-ink">
                     Ready to save ({{ count($photos) }})
                 </p>
 
                 <ul class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                     @foreach ($photos as $index => $pending)
                         <li wire:key="pending-{{ $index }}" class="relative">
-                            <div class="aspect-square overflow-hidden rounded-lg bg-gray-100 ring-1 ring-gray-200">
+                            <div class="aspect-square overflow-hidden rounded-lg bg-parchment ring-1 ring-hairline">
                                 @if ($pending->isPreviewable())
                                     <img src="{{ $pending->temporaryUrl() }}"
                                          alt="Photo waiting to be saved"
                                          class="h-full w-full object-cover">
                                 @else
-                                    <div class="flex h-full w-full items-center justify-center px-2 text-center text-xs text-gray-500">
+                                    <div class="flex h-full w-full items-center justify-center px-2 text-center text-xs text-ink-48">
                                         No preview available
                                     </div>
                                 @endif
@@ -106,7 +106,7 @@
 
                             <button type="button"
                                     wire:click="removePending({{ $index }})"
-                                    class="absolute right-1.5 top-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow ring-1 ring-gray-300 hover:bg-rose-50 hover:text-rose-700"
+                                    class="absolute right-1.5 top-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-ink-80 shadow ring-1 ring-hairline hover:bg-alert-wash hover:text-alert"
                                     aria-label="Remove this photo from the list">
                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>

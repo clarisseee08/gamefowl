@@ -1,17 +1,17 @@
 <div class="mx-auto max-w-2xl">
-    <div class="mb-6">
-        <a href="{{ route('pens.index') }}" wire:navigate class="text-sm font-medium text-brand-700 hover:text-brand-800">
+    <div class="mb-10">
+        <a href="{{ route('pens.index') }}" wire:navigate class="text-sm font-medium text-action hover:underline">
             &larr; Back to Pens
         </a>
-        <h1 class="mt-2 text-2xl font-bold tracking-tight text-gray-900">
+        <h1 class="mt-2 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">
             {{ $this->isEditing() ? 'Edit Pen' : 'Add Pen' }}
         </h1>
-        <p class="mt-1 text-sm text-gray-600">
+        <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
             A pen is a physical housing unit on the farm. Give it a short code so it is easy to find later.
         </p>
     </div>
 
-    <form wire:submit="save" class="card space-y-6 p-6">
+    <form wire:submit="save" class="card space-y-10 p-6">
         @csrf
 
         <div>
@@ -46,7 +46,7 @@
         </div>
 
         <div>
-            <label for="location" class="label">Location <span class="font-normal text-gray-500">(optional)</span></label>
+            <label for="location" class="label">Location <span class="font-normal text-ink-48">(optional)</span></label>
             <input
                 id="location"
                 type="text"
@@ -78,7 +78,7 @@
 
             @php $typedCapacity = $this->capacityValue(); @endphp
             @if ($this->isEditing() && $typedCapacity !== null && $typedCapacity > 0 && $typedCapacity < $this->currentOccupancy)
-                <p class="mt-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 ring-1 ring-amber-200" role="status">
+                <p class="mt-2 rounded-lg bg-warn-wash p-3 text-sm text-warn ring-1 ring-warn/20" role="status">
                     This pen already holds {{ $this->currentOccupancy }}
                     {{ $this->currentOccupancy === 1 ? 'bird' : 'birds' }}, which is more than the capacity you entered.
                     You can still save - the pen will simply show as over capacity.
@@ -87,7 +87,7 @@
         </div>
 
         <div>
-            <label for="notes" class="label">Notes <span class="font-normal text-gray-500">(optional)</span></label>
+            <label for="notes" class="label">Notes <span class="font-normal text-ink-48">(optional)</span></label>
             <textarea
                 id="notes"
                 rows="4"
@@ -100,7 +100,7 @@
             @enderror
         </div>
 
-        <div class="flex flex-col-reverse gap-3 border-t border-gray-200 pt-6 sm:flex-row sm:justify-end">
+        <div class="flex flex-col-reverse gap-3 border-t border-hairline pt-6 sm:flex-row sm:justify-end">
             <a href="{{ $this->isEditing() ? route('pens.show', $penId) : route('pens.index') }}"
                wire:navigate
                class="btn-secondary">

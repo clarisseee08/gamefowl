@@ -13,7 +13,7 @@
     to a placeholder rather than throwing a RouteNotFoundException in the
     middle of a table.
 --}}
-<div {{ $attributes->merge(['class' => 'overflow-hidden bg-gray-100']) }}>
+<div {{ $attributes->merge(['class' => 'overflow-hidden bg-parchment']) }}>
     @if ($photo && Route::has('photos.show'))
         <img src="{{ route('photos.show', $photo) }}"
              alt="{{ $alt }}"
@@ -22,7 +22,7 @@
     @elseif ($photo && method_exists($photo, 'url') && $photo->url())
         <img src="{{ $photo->url() }}" alt="{{ $alt }}" loading="lazy" class="h-full w-full object-cover">
     @else
-        <div class="flex h-full w-full items-center justify-center px-1 text-center text-[10px] leading-tight text-gray-400">
+        <div class="flex h-full w-full items-center justify-center px-1 text-center text-[10px] leading-tight text-ink-48">
             {{ $placeholder }}
         </div>
     @endif

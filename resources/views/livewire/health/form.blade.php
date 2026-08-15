@@ -6,15 +6,15 @@
     staff, not developers.
 --}}
 <div class="mx-auto max-w-3xl">
-    <div class="mb-6">
-        <a href="{{ route('health.index') }}" wire:navigate class="text-sm font-medium text-brand-700 hover:text-brand-800">
+    <div class="mb-10">
+        <a href="{{ route('health.index') }}" wire:navigate class="text-sm font-medium text-action hover:underline">
             &larr; Back to Health Records
         </a>
 
-        <h1 class="mt-2 text-2xl font-bold tracking-tight text-gray-900">
+        <h1 class="mt-2 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">
             {{ $this->isEditing() ? 'Edit Health Record' : 'Add Health Record' }}
         </h1>
-        <p class="mt-1 text-sm text-gray-600">
+        <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
             Record a vaccination, medication, deworming, treatment or check-up for one bird.
         </p>
     </div>
@@ -24,7 +24,7 @@
     <form wire:submit="save" class="card p-6 sm:p-8">
         <div class="grid gap-6 sm:grid-cols-2">
             <div class="sm:col-span-2">
-                <label for="broodcock_id" class="label">Bird <span class="text-rose-600">*</span></label>
+                <label for="broodcock_id" class="label">Bird <span class="text-alert">*</span></label>
                 <select id="broodcock_id"
                         wire:model="broodcock_id"
                         @class(['input mt-1', 'input-error' => $errors->has('broodcock_id')])>
@@ -38,7 +38,7 @@
             </div>
 
             <div>
-                <label for="record_type" class="label">Record Type <span class="text-rose-600">*</span></label>
+                <label for="record_type" class="label">Record Type <span class="text-alert">*</span></label>
                 <select id="record_type"
                         wire:model.live="record_type"
                         @class(['input mt-1', 'input-error' => $errors->has('record_type')])>
@@ -83,7 +83,7 @@
             </div>
 
             <div>
-                <label for="checkup_date" class="label">Check-up Date <span class="text-rose-600">*</span></label>
+                <label for="checkup_date" class="label">Check-up Date <span class="text-alert">*</span></label>
                 <input id="checkup_date"
                        type="date"
                        wire:model.live="checkup_date"
@@ -106,7 +106,7 @@
                      leaving this blank is usually a mistake - but a one-off
                      booster legitimately has no follow-up. --}}
                 @if ($this->expectsNextDueDate && ! $next_due_date)
-                    <p class="mt-1 rounded-lg bg-amber-50 p-2 text-xs text-amber-800 ring-1 ring-amber-200">
+                    <p class="mt-1 rounded-lg bg-warn-wash p-2 text-xs text-warn ring-1 ring-warn/20">
                         A {{ $this->selectedTypeLabel }} usually needs a
                         follow-up. Adding a next due date puts this bird on the vaccination schedule
                         so nobody forgets. You can still save without one.
@@ -128,7 +128,7 @@
             </div>
         </div>
 
-        <div class="mt-8 flex flex-col-reverse gap-3 border-t border-gray-200 pt-6 sm:flex-row sm:justify-end">
+        <div class="mt-8 flex flex-col-reverse gap-3 border-t border-hairline pt-6 sm:flex-row sm:justify-end">
             <a href="{{ route('health.index') }}" wire:navigate class="btn-secondary">Cancel</a>
 
             <button type="submit" class="btn-primary" wire:loading.attr="disabled" wire:target="save">
