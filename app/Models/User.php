@@ -136,9 +136,12 @@ class User extends Authenticatable
         }
 
         $query->where(function (Builder $q) use ($term): void {
-            $q->where('full_name', 'ilike', "%{$term}%")
-                ->orWhere('email', 'ilike', "%{$term}%")
-                ->orWhere('position', 'ilike', "%{$term}%");
+            // whereLike(caseSensitive: false) compiles to ILIKE on Postgres and
+            // to LIKE on SQLite, so the same scope works in production and in
+            // the in-memory test database.
+            $q->whereLike('full_name', "%{$term}%", caseSensitive: false)
+                ->orWhereLike('email', "%{$term}%", caseSensitive: false)
+                ->orWhereLike('position', "%{$term}%", caseSensitive: false);
         });
     }
 }

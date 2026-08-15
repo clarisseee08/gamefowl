@@ -73,7 +73,9 @@ return [
     |
     */
 
-    'home' => '/home',
+    // Where Fortify sends a user after a successful sign-in. Laravel's stock
+    // value is '/home', which does not exist in this application.
+    'home' => '/dashboard',
 
     /*
     |--------------------------------------------------------------------------
@@ -159,22 +161,23 @@ return [
     | by removing them from this array. You're free to only remove some of
     | these features or you can even remove all of these if you need to.
     |
+    | GFMS notes:
+    |  - registration() is DISABLED. This is a private farm system with three
+    |    fixed roles; accounts are created by an owner in User Management. If
+    |    self-registration were enabled, anyone could create an account.
+    |  - twoFactorAuthentication() and passkeys() are DISABLED. Neither appears
+    |    in the thesis scope, and both add schema and a WebAuthn/2FA dependency
+    |    tail the researchers would have to defend at the panel.
+    |  - emailVerification() stays off: farm staff accounts are created by an
+    |    owner who already knows the person, and outbound mail is not
+    |    configured for the defense environment.
+    |
     */
 
     'features' => [
-        Features::registration(),
         Features::resetPasswords(),
-        // Features::emailVerification(),
         Features::updateProfileInformation(),
         Features::updatePasswords(),
-        Features::twoFactorAuthentication([
-            'confirm' => true,
-            'confirmPassword' => true,
-            // 'window' => 0,
-        ]),
-        Features::passkeys([
-            'confirmPassword' => true,
-        ]),
     ],
 
 ];

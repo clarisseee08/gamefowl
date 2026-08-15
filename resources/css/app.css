@@ -1,11 +1,113 @@
 @import 'tailwindcss';
 
+/* Tailwind v4 is CSS-first: there is no tailwind.config.js. Content sources
+   are declared here instead of a `content: []` array. */
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+        Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+    /* Farm green. Used for primary actions and the main navigation. */
+    --color-brand-50: oklch(0.97 0.02 155);
+    --color-brand-100: oklch(0.94 0.04 155);
+    --color-brand-200: oklch(0.88 0.07 155);
+    --color-brand-300: oklch(0.8 0.11 155);
+    --color-brand-400: oklch(0.71 0.14 155);
+    --color-brand-500: oklch(0.63 0.15 155);
+    --color-brand-600: oklch(0.53 0.13 155);
+    --color-brand-700: oklch(0.44 0.11 155);
+    --color-brand-800: oklch(0.37 0.09 155);
+    --color-brand-900: oklch(0.31 0.07 155);
+}
+
+/*
+ * Accessibility / usability baseline.
+ *
+ * The intended users are farm staff working on phones, often outdoors and not
+ * highly technical. Touch targets are therefore made generous globally rather
+ * than relying on every screen to remember.
+ */
+@layer base {
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        @apply bg-gray-50 text-gray-900 antialiased;
+    }
+
+    /* WCAG 2.5.5 target size: 44px minimum on touch devices. */
+    @media (pointer: coarse) {
+        button,
+        [role='button'],
+        a.btn,
+        input[type='submit'] {
+            min-height: 44px;
+        }
+    }
+
+    /* Always show a visible focus ring - never remove it without replacing it. */
+    :focus-visible {
+        @apply outline-2 outline-offset-2 outline-brand-600;
+    }
+}
+
+/* Tailwind v4 only lets @apply reference real utilities, so the shared button
+   base is registered with @utility rather than declared in @layer components.
+   That is what makes `@apply btn` legal in the variants below. */
+@utility btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5
+           text-sm font-semibold transition focus:outline-none
+           focus-visible:ring-2 focus-visible:ring-offset-2
+           disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+@layer components {
+    .btn-primary {
+        @apply btn bg-brand-600 text-white hover:bg-brand-700 focus-visible:ring-brand-600;
+    }
+
+    .btn-secondary {
+        @apply btn bg-white text-gray-700 ring-1 ring-gray-300 ring-inset
+               hover:bg-gray-50 focus-visible:ring-brand-600;
+    }
+
+    .btn-danger {
+        @apply btn bg-rose-600 text-white hover:bg-rose-700 focus-visible:ring-rose-600;
+    }
+
+    .input {
+        @apply block w-full rounded-lg border-0 px-3 py-2.5 text-gray-900
+               ring-1 ring-gray-300 ring-inset placeholder:text-gray-400
+               focus:ring-2 focus:ring-brand-600 focus:ring-inset sm:text-sm;
+    }
+
+    .input-error {
+        @apply ring-rose-500 focus:ring-rose-500;
+    }
+
+    .label {
+        @apply block text-sm font-medium text-gray-900;
+    }
+
+    .help {
+        @apply mt-1 text-xs text-gray-500;
+    }
+
+    .error {
+        @apply mt-1 text-sm text-rose-600;
+    }
+
+    .card {
+        @apply rounded-xl bg-white shadow-sm ring-1 ring-gray-200;
+    }
+
+    .badge {
+        @apply inline-flex items-center rounded-md px-2 py-1 text-xs
+               font-medium ring-1 ring-inset;
+    }
 }

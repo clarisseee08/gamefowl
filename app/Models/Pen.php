@@ -87,9 +87,9 @@ class Pen extends Model
         }
 
         $query->where(function (Builder $q) use ($term): void {
-            $q->where('code', 'ilike', "%{$term}%")
-                ->orWhere('name', 'ilike', "%{$term}%")
-                ->orWhere('location', 'ilike', "%{$term}%");
+            $q->whereLike('code', "%{$term}%", caseSensitive: false)
+                ->orWhereLike('name', "%{$term}%", caseSensitive: false)
+                ->orWhereLike('location', "%{$term}%", caseSensitive: false);
         });
     }
 }

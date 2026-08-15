@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -12,34 +15,59 @@ use Illuminate\Support\Str;
  */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
-    protected static ?string $password;
+    protected $model = User::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    /** Hashing once and reusing keeps the test suite fast - bcrypt is slow by design. */
+    protected static ?string $password = null;
+
+    /** @return array<string, mixed> */
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'full_name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'role' => UserRole::Customer,
+            'contact_number' => fake()->numerify('09#########'),
+            'address' => fake()->address(),
+            'position' => null,
+            'is_active' => true,
             'remember_token' => Str::random(10),
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
+    public function owner(): static
+    {
+        return $this->state(fn () => [
+            'role' => UserRole::Owner,
+            'position' => 'Farm Owner',
+        ]);
+    }
+
+    public function staff(): static
+    {
+        return $this->state(fn () => [
+            'role' => UserRole::Staff,
+            'position' => 'Record Keeper',
+        ]);
+    }
+
+    public function customer(): static
+    {
+        return $this->state(fn () => [
+            'role' => UserRole::Customer,
+            'position' => null,
+        ]);
+    }
+
+    public function inactive(): static
+    {
+        return $this->state(fn () => ['is_active' => false]);
+    }
+
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
+        return $this->state(fn () => ['email_verified_at' => null]);
     }
 }

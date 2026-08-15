@@ -95,8 +95,23 @@ return [
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
+
+            // CRITICAL SAFETY SETTING. Laravel scopes dropAllTables() (used by
+            // migrate:fresh and db:wipe) to the schemas listed here. Keeping
+            // this as 'public' alone is what guarantees those commands cannot
+            // touch Supabase's own auth / storage / realtime / vault schemas.
+            // Never add a Supabase schema to this list.
             'search_path' => 'public',
+
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+
+            // Surfaces in pg_stat_activity, so a runaway connection can be
+            // traced back to this app rather than to an anonymous client.
+            'application_name' => env('DB_APPLICATION_NAME', 'gfms-laravel'),
+
+            // Belt-and-braces alongside search_path, in case PostGIS is ever
+            // enabled on this project.
+            'dont_drop' => ['spatial_ref_sys'],
         ],
 
         'sqlsrv' => [

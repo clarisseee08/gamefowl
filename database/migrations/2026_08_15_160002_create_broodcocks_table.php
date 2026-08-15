@@ -69,17 +69,22 @@ return new class extends Migration
             $table->index(['status', 'created_at']);
         });
 
-        DB::statement('alter table broodcocks add constraint broodcocks_weight_non_negative check (weight is null or weight >= 0)');
+        // SQLite (the test database) cannot ADD CONSTRAINT via ALTER TABLE.
+        // These are PostgreSQL-level guarantees; the same rules are enforced by
+        // Form Request validation on every write.
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('alter table broodcocks add constraint broodcocks_weight_non_negative check (weight is null or weight >= 0)');
 
-        // A bird cannot be its own parent. (Deeper cycles are prevented in the
-        // application layer, where the full ancestor chain is available.)
-        DB::statement('alter table broodcocks add constraint broodcocks_not_own_sire check (sire_id is null or sire_id <> id)');
-        DB::statement('alter table broodcocks add constraint broodcocks_not_own_dam check (dam_id is null or dam_id <> id)');
+            // A bird cannot be its own parent. (Deeper cycles are prevented in
+            // the application layer, where the full ancestor chain is known.)
+            DB::statement('alter table broodcocks add constraint broodcocks_not_own_sire check (sire_id is null or sire_id <> id)');
+            DB::statement('alter table broodcocks add constraint broodcocks_not_own_dam check (dam_id is null or dam_id <> id)');
 
-        // A bird cannot be both parents of the same offspring.
-        DB::statement('alter table broodcocks add constraint broodcocks_distinct_parents check (sire_id is null or dam_id is null or sire_id <> dam_id)');
+            // A bird cannot be both parents of the same offspring.
+            DB::statement('alter table broodcocks add constraint broodcocks_distinct_parents check (sire_id is null or dam_id is null or sire_id <> dam_id)');
 
-        DB::statement('alter table broodcocks add constraint broodcocks_hatched_before_acquired check (date_hatched is null or date_acquired is null or date_hatched <= date_acquired)');
+            DB::statement('alter table broodcocks add constraint broodcocks_hatched_before_acquired check (date_hatched is null or date_acquired is null or date_hatched <= date_acquired)');
+        }
     }
 
     public function down(): void

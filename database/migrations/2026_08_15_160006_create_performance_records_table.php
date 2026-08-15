@@ -46,8 +46,11 @@ return new class extends Migration
             $table->index(['broodcock_id', 'event_date']);
         });
 
-        DB::statement('alter table performance_records add constraint performance_rating_range check (rating is null or (rating >= 1 and rating <= 5))');
-        DB::statement('alter table performance_records add constraint performance_weight_non_negative check (weight is null or weight >= 0)');
+        // SQLite (the test database) cannot ADD CONSTRAINT via ALTER TABLE.
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('alter table performance_records add constraint performance_rating_range check (rating is null or (rating >= 1 and rating <= 5))');
+            DB::statement('alter table performance_records add constraint performance_weight_non_negative check (weight is null or weight >= 0)');
+        }
     }
 
     public function down(): void

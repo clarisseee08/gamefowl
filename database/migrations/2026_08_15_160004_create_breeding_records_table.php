@@ -43,15 +43,18 @@ return new class extends Migration
             $table->index(['sire_id', 'dam_id']);
         });
 
-        // The egg funnel can only narrow: hatched <= fertile <= set.
-        DB::statement('alter table breeding_records add constraint breeding_fertile_lte_set check (eggs_fertile <= eggs_set)');
-        DB::statement('alter table breeding_records add constraint breeding_hatched_lte_fertile check (eggs_hatched <= eggs_fertile)');
+        // SQLite (the test database) cannot ADD CONSTRAINT via ALTER TABLE.
+        if (DB::getDriverName() === 'pgsql') {
+            // The egg funnel can only narrow: hatched <= fertile <= set.
+            DB::statement('alter table breeding_records add constraint breeding_fertile_lte_set check (eggs_fertile <= eggs_set)');
+            DB::statement('alter table breeding_records add constraint breeding_hatched_lte_fertile check (eggs_hatched <= eggs_fertile)');
 
-        // Offspring actually registered can never exceed the number hatched.
-        DB::statement('alter table breeding_records add constraint breeding_offspring_lte_hatched check (offspring_count <= eggs_hatched)');
+            // Offspring actually registered can never exceed the number hatched.
+            DB::statement('alter table breeding_records add constraint breeding_offspring_lte_hatched check (offspring_count <= eggs_hatched)');
 
-        // A bird cannot be mated with itself.
-        DB::statement('alter table breeding_records add constraint breeding_distinct_parents check (sire_id <> dam_id)');
+            // A bird cannot be mated with itself.
+            DB::statement('alter table breeding_records add constraint breeding_distinct_parents check (sire_id <> dam_id)');
+        }
     }
 
     public function down(): void

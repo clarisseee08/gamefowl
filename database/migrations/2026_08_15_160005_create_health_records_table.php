@@ -43,7 +43,10 @@ return new class extends Migration
             $table->index(['broodcock_id', 'checkup_date']);
         });
 
-        DB::statement('alter table health_records add constraint health_next_due_after_checkup check (next_due_date is null or next_due_date >= checkup_date)');
+        // SQLite (the test database) cannot ADD CONSTRAINT via ALTER TABLE.
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('alter table health_records add constraint health_next_due_after_checkup check (next_due_date is null or next_due_date >= checkup_date)');
+        }
     }
 
     public function down(): void

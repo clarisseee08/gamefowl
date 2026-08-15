@@ -263,10 +263,13 @@ class Broodcock extends Model
         }
 
         $query->where(function (Builder $q) use ($term): void {
-            $q->where('name', 'ilike', "%{$term}%")
-                ->orWhere('band_number', 'ilike', "%{$term}%")
-                ->orWhere('breed', 'ilike', "%{$term}%")
-                ->orWhere('bloodline', 'ilike', "%{$term}%");
+            // whereLike(caseSensitive: false) compiles to ILIKE on Postgres and
+            // to LIKE on SQLite, so the same scope works in production and in
+            // the in-memory test database.
+            $q->whereLike('name', "%{$term}%", caseSensitive: false)
+                ->orWhereLike('band_number', "%{$term}%", caseSensitive: false)
+                ->orWhereLike('breed', "%{$term}%", caseSensitive: false)
+                ->orWhereLike('bloodline', "%{$term}%", caseSensitive: false);
         });
     }
 
