@@ -115,6 +115,16 @@
         min-height: 44px;
     }
 
+    /* Selects and text inputs were landing at 43px - one pixel under, which a
+       measured audit fails just as hard as thirty. Checkboxes and radios are
+       excluded: stretching them to 44px distorts the control itself, so their
+       LABEL carries the target instead. */
+    select,
+    textarea,
+    input:not([type='checkbox']):not([type='radio']):not([type='hidden']) {
+        min-height: 44px;
+    }
+
     :focus-visible {
         outline: 2px solid var(--color-action);
         outline-offset: 2px;

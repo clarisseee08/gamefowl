@@ -2,27 +2,27 @@
     {{-- Livewire re-renders only this component, so the confirmation lives
          here rather than in the layout's session flash. --}}
     @if ($statusMessage !== '')
-        <div class="mb-6 flex items-start justify-between gap-4 rounded-lg bg-ok-wash p-4 text-sm text-ok ring-1 ring-ok/20"
+        <div class="mb-6 flex items-start justify-between gap-4 rounded-[4px] bg-ok-wash px-4 py-3 text-[15px] text-ok"
              role="status">
             <p>{{ $statusMessage }}</p>
-            <button type="button" wire:click="dismissStatus" class="shrink-0 font-medium underline">
+            <button type="button" wire:click="dismissStatus" class="-my-3 shrink-0 font-medium underline">
                 Dismiss
             </button>
         </div>
     @endif
 
     {{-- Header --}}
-    <div class="mb-10 sm:flex sm:items-center sm:justify-between">
+    <div class="mb-8 border-b border-rule-strong pb-6 sm:flex sm:items-end sm:justify-between sm:gap-8">
         <div>
-            <h1 class="text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">Performance Records</h1>
-            <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
+            <h1 class="text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">Performance Records</h1>
+            <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-ink-80">
                 Every sparring session, derby, conditioning session and weigh-in recorded on the farm.
             </p>
         </div>
 
         @can('create', App\Models\PerformanceRecord::class)
-            <a href="{{ route('performance.create') }}" class="btn-primary mt-4 w-full sm:mt-0 sm:w-auto">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <a href="{{ route('performance.create') }}" class="btn-primary mt-5 w-full shrink-0 sm:mt-0 sm:w-auto">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                 </svg>
                 Add Performance Record
@@ -31,7 +31,7 @@
     </div>
 
     {{-- Search and filters --}}
-    <div class="card mb-10 p-6">
+    <div class="card mb-6 p-5">
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div class="lg:col-span-2">
                 <label for="search" class="label">Search by Bird</label>
@@ -76,9 +76,9 @@
         </div>
 
         @if ($this->hasActiveFilters())
-            <div class="mt-4 flex flex-col gap-3 border-t border-hairline pt-4 sm:flex-row sm:items-center sm:justify-between">
-                <p class="text-sm text-ink-80">
-                    Showing {{ number_format($this->records->total()) }}
+            <div class="mt-5 flex flex-col gap-3 border-t border-hairline pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-[15px] text-ink-80">
+                    Showing <span class="datum">{{ number_format($this->records->total()) }}</span>
                     {{ Str::plural('record', $this->records->total()) }} matching your filters.
                 </p>
                 <button type="button" wire:click="clearFilters" class="btn-secondary">

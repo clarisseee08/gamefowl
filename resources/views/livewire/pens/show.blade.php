@@ -6,17 +6,17 @@
         $percent = $pen->capacity > 0 ? min(100, (int) round($occupancy / $pen->capacity * 100)) : null;
     @endphp
 
-    <div class="mb-10">
-        <a href="{{ route('pens.index') }}" wire:navigate class="text-sm font-medium text-action hover:underline">
+    <div class="mb-8 border-b border-hairline pb-6">
+        <a href="{{ route('pens.index') }}" wire:navigate class="inline-flex min-h-11 items-center text-[13px] font-medium text-action hover:underline">
             &larr; Back to Pens
         </a>
 
-        <div class="mt-2 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div class="mt-1 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-                <h1 class="text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">
-                    Pen {{ $pen->code }}
+                <h1 class="text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">
+                    Pen <span class="datum">{{ $pen->code }}</span>
                 </h1>
-                <p class="mt-3 text-[17px] leading-relaxed text-ink-48">{{ $pen->name }}</p>
+                <p class="mt-2 text-[17px] leading-snug text-ink-80">{{ $pen->name }}</p>
             </div>
 
             <div class="flex flex-wrap gap-2">
@@ -32,55 +32,57 @@
     </div>
 
     <div class="grid gap-6 lg:grid-cols-3">
-        <div class="card p-6 lg:col-span-1">
-            <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Pen Information</h2>
+        {{-- The pen's own record. Field name on the left in label type, value
+             below it; every figure is mono so the column reads as a ledger. --}}
+        <div class="card lg:col-span-1">
+            <div class="border-b border-hairline px-5 py-4">
+                <h2 class="text-[18px] font-medium leading-[1.3] text-ink">Pen Information</h2>
+            </div>
 
-            <dl class="mt-4 space-y-4 text-sm">
-                <div>
-                    <dt class="font-medium text-ink-48">Location</dt>
-                    <dd class="mt-0.5 text-ink">{{ $pen->location ?? 'No location recorded' }}</dd>
+            <dl class="divide-y divide-hairline">
+                <div class="px-5 py-3.5">
+                    <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Location</dt>
+                    <dd class="mt-1 text-[15px] text-ink">{{ $pen->location ?? 'No location recorded' }}</dd>
                 </div>
 
-                <div>
-                    <dt class="font-medium text-ink-48">Capacity</dt>
-                    <dd class="mt-0.5 text-ink">
+                <div class="px-5 py-3.5">
+                    <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Capacity</dt>
+                    <dd class="datum mt-1 text-[15px] text-ink">
                         {{ $pen->capacity > 0 ? $pen->capacity.' birds' : 'No limit' }}
                     </dd>
                 </div>
 
-                <div>
-                    <dt class="font-medium text-ink-48">Birds Inside Now</dt>
-                    <dd class="mt-0.5 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">{{ $occupancy }}</dd>
+                <div class="px-5 py-3.5">
+                    <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Birds Inside Now</dt>
+                    <dd class="datum mt-1 text-[32px] font-semibold leading-[1.1] tracking-[-0.02em] text-ink">{{ $occupancy }}</dd>
+
+                    @if ($percent !== null)
+                        <div class="mt-2 h-[6px] w-full overflow-hidden rounded-[2px] bg-pearl" aria-hidden="true">
+                            <div class="h-full {{ $occupancy > $pen->capacity ? 'bg-alert' : ($percent >= 80 ? 'bg-warn' : 'bg-action') }}"
+                                 style="width: {{ $percent }}%"></div>
+                        </div>
+                    @endif
                 </div>
 
-                <div>
-                    <dt class="font-medium text-ink-48">Space Left</dt>
-                    <dd class="mt-0.5 text-ink">
+                <div class="px-5 py-3.5">
+                    <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Space Left</dt>
+                    <dd class="datum mt-1 text-[15px] text-ink">
                         @if ($remaining === null)
                             No limit
                         @elseif ($occupancy > $pen->capacity)
-                            <span class="font-semibold text-alert">Over capacity by {{ $occupancy - $pen->capacity }}</span>
+                            <span class="font-medium text-alert">Over capacity by {{ $occupancy - $pen->capacity }}</span>
                         @elseif ($remaining === 0)
-                            <span class="font-semibold text-alert">Full</span>
+                            <span class="font-medium text-alert">Full</span>
                         @else
                             {{ $remaining }} {{ $remaining === 1 ? 'space' : 'spaces' }}
                         @endif
                     </dd>
                 </div>
 
-                @if ($percent !== null)
-                    <div>
-                        <div class="h-2.5 w-full overflow-hidden rounded-full bg-parchment">
-                            <div class="h-full rounded-full {{ $occupancy > $pen->capacity ? 'bg-alert' : ($percent >= 80 ? 'bg-warn-wash' : 'bg-action') }}"
-                                 style="width: {{ $percent }}%"></div>
-                        </div>
-                    </div>
-                @endif
-
                 @if ($pen->notes)
-                    <div>
-                        <dt class="font-medium text-ink-48">Notes</dt>
-                        <dd class="mt-0.5 whitespace-pre-line text-ink">{{ $pen->notes }}</dd>
+                    <div class="px-5 py-3.5">
+                        <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Notes</dt>
+                        <dd class="mt-1 whitespace-pre-line text-[15px] leading-relaxed text-ink">{{ $pen->notes }}</dd>
                     </div>
                 @endif
             </dl>
@@ -88,31 +90,34 @@
 
         <div class="lg:col-span-2">
             <div class="card overflow-hidden">
-                <div class="border-b border-hairline px-4 py-4 sm:px-6">
-                    <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Birds In This Pen</h2>
-                    <p class="mt-0.5 text-sm text-ink-80">
+                <div class="border-b border-hairline px-4 py-4 sm:px-5">
+                    <h2 class="text-[18px] font-medium leading-[1.3] text-ink">Birds In This Pen</h2>
+                    <p class="mt-1 text-[13px] text-ink-80">
                         Every bird currently housed in pen {{ $pen->code }}.
                     </p>
                 </div>
 
                 @if ($this->birds->isEmpty())
                     <div class="p-10 text-center">
-                        <p class="text-base font-medium text-ink">This pen is empty.</p>
-                        <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
+                        <p class="text-[15px] font-medium text-ink">This pen is empty.</p>
+                        <p class="mx-auto mt-2 max-w-[52ch] text-[13px] leading-relaxed text-ink-80">
                             Click "Assign Birds" above to move birds into this pen.
                         </p>
                         @can('update', $pen)
-                            <a href="{{ route('pens.assign', $pen) }}" wire:navigate class="btn-primary mt-4">Assign Birds</a>
+                            <a href="{{ route('pens.assign', $pen) }}" wire:navigate class="btn-primary mt-5">Assign Birds</a>
                         @endcan
                     </div>
                 @else
                     {{-- Cards on a phone, table from sm: upward. --}}
-                    <ul class="divide-y divide-divider sm:hidden">
+                    <ul class="divide-y divide-hairline sm:hidden">
                         @foreach ($this->birds as $bird)
-                            <li wire:key="bird-card-{{ $bird->id }}" class="p-4">
-                                <p class="text-sm font-semibold text-ink">{{ $bird->name }}</p>
-                                <p class="text-sm text-ink-80">Band Number: {{ $bird->displayBand() }}</p>
-                                <p class="mt-1 flex items-center gap-2 text-sm text-ink-80">
+                            <li wire:key="bird-card-{{ $bird->id }}" class="px-4 py-3.5">
+                                <p class="text-[15px] font-medium leading-snug text-ink">{{ $bird->name }}</p>
+                                <div class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                                    <span class="text-[13px] text-ink-80">Band Number:</span>
+                                    <x-band-tag :bloodline="$bird->bloodline" :band="$bird->band_number" size="xs" />
+                                </div>
+                                <p class="mt-1.5 flex flex-wrap items-center gap-2 text-[13px] text-ink-80">
                                     <span>{{ $bird->sex->label() }}</span>
                                     <span class="badge {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
                                 </p>
@@ -120,28 +125,32 @@
                         @endforeach
                     </ul>
 
-                    <table class="hidden min-w-full divide-y divide-divider sm:table">
-                        <thead class="bg-pearl">
-                            <tr>
-                                <th scope="col" class="px-6 py-4 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-ink-80">Name</th>
-                                <th scope="col" class="px-6 py-4 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-ink-80">Band Number</th>
-                                <th scope="col" class="px-6 py-4 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-ink-80">Sex</th>
-                                <th scope="col" class="px-6 py-4 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-ink-80">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-divider bg-white">
-                            @foreach ($this->birds as $bird)
-                                <tr wire:key="bird-{{ $bird->id }}">
-                                    <td class="px-6 py-4 text-sm font-medium text-ink">{{ $bird->name }}</td>
-                                    <td class="px-6 py-4 text-sm text-ink-80">{{ $bird->displayBand() }}</td>
-                                    <td class="px-6 py-4 text-sm text-ink-80">{{ $bird->sex->label() }}</td>
-                                    <td class="px-6 py-4">
-                                        <span class="badge {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
-                                    </td>
+                    <div class="hidden overflow-x-auto sm:block">
+                        <table class="min-w-full">
+                            <thead class="border-b border-rule-strong bg-pearl">
+                                <tr>
+                                    <th scope="col" class="px-4 py-3 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Name</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Band Number</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Sex</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Status</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody class="table-hairline bg-canvas">
+                                @foreach ($this->birds as $bird)
+                                    <tr wire:key="bird-{{ $bird->id }}" class="hover:bg-pearl">
+                                        <td class="px-4 py-3 text-[15px] font-medium text-ink">{{ $bird->name }}</td>
+                                        <td class="whitespace-nowrap px-4 py-3">
+                                            <x-band-tag :bloodline="$bird->bloodline" :band="$bird->band_number" size="xs" />
+                                        </td>
+                                        <td class="whitespace-nowrap px-4 py-3 text-[15px] text-ink-80">{{ $bird->sex->label() }}</td>
+                                        <td class="whitespace-nowrap px-4 py-3">
+                                            <span class="badge {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
 
                     <div class="border-t border-hairline px-4 py-3">
                         {{ $this->birds->links() }}
@@ -156,21 +165,21 @@
              x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()" role="dialog"
              aria-modal="true"
              aria-labelledby="delete-pen-title">
-            <div class="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
-                <h2 id="delete-pen-title" class="text-[24px] font-semibold tracking-[-0.015em] leading-[1.2] text-ink">
+            <div class="card w-full max-w-lg border-rule-strong p-6">
+                <h2 id="delete-pen-title" class="text-[22px] font-semibold leading-[1.25] tracking-[-0.01em] text-ink">
                     Delete pen {{ $pen->code }} - {{ $pen->name }}?
                 </h2>
 
-                <p class="mt-3 text-sm text-ink-80">
+                <p class="mt-3 max-w-[58ch] text-[15px] leading-relaxed text-ink-80">
                     @if ($occupancy === 0)
                         This pen is empty. It will be removed from the list.
                     @else
                         The {{ $occupancy }} {{ $occupancy === 1 ? 'bird' : 'birds' }} in this pen will become unassigned.
-                        <strong>No birds are deleted</strong> - you can move them into another pen afterwards.
+                        <strong class="font-medium text-ink">No birds are deleted</strong> - you can move them into another pen afterwards.
                     @endif
                 </p>
 
-                <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <div class="mt-6 flex flex-col-reverse gap-2 border-t border-hairline pt-5 sm:flex-row sm:justify-end">
                     <button type="button" wire:click="cancelDelete" class="btn-secondary">Keep this pen</button>
                     <button type="button" wire:click="delete" class="btn-danger">Yes, delete this pen</button>
                 </div>

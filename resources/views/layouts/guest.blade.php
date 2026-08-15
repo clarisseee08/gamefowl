@@ -8,9 +8,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="h-full bg-canvas">
-    {{-- Sign-in is the one screen in this system that earns Apple's marketing
-         spacing rather than Operate density: there is exactly one task, nobody
-         is scanning, and the farm's name should land before the form does.
+    {{-- Sign-in is the one screen in this system that earns generous spacing
+         rather than Console density: there is exactly one task, nobody is
+         scanning, and the farm's name should land before the form does.
 
          No card and no logo tile. On a single-purpose screen a bordered box
          around the only content is chrome for its own sake, and "GF" in a

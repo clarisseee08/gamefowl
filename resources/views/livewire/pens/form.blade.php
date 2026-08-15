@@ -1,20 +1,23 @@
 <div class="mx-auto max-w-2xl">
-    <div class="mb-10">
-        <a href="{{ route('pens.index') }}" wire:navigate class="text-sm font-medium text-action hover:underline">
+    <div class="mb-8 border-b border-hairline pb-6">
+        <a href="{{ route('pens.index') }}" wire:navigate class="inline-flex min-h-11 items-center text-[13px] font-medium text-action hover:underline">
             &larr; Back to Pens
         </a>
-        <h1 class="mt-2 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">
+        <h1 class="mt-1 text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">
             {{ $this->isEditing() ? 'Edit Pen' : 'Add Pen' }}
         </h1>
-        <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
+        <p class="mt-2 max-w-[62ch] text-[15px] leading-relaxed text-ink-80">
             A pen is a physical housing unit on the farm. Give it a short code so it is easy to find later.
         </p>
     </div>
 
-    <form wire:submit="save" class="card space-y-10 p-6">
+    {{-- One field per ruled row, the way a paper record sheet is laid out.
+         Spacing is not uniform: rows are tight, the section rules do the
+         separating. --}}
+    <form wire:submit="save" class="card divide-y divide-hairline">
         @csrf
 
-        <div>
+        <div class="px-5 py-5">
             <label for="code" class="label">Pen Code</label>
             <input
                 id="code"
@@ -22,7 +25,7 @@
                 wire:model="code"
                 required
                 autocomplete="off"
-                class="input mt-1 @error('code') input-error @enderror"
+                class="datum input mt-1.5 @error('code') input-error @enderror"
             >
             <p class="help">A short label written on the pen itself, for example P-01.</p>
             @error('code')
@@ -30,14 +33,14 @@
             @enderror
         </div>
 
-        <div>
+        <div class="px-5 py-5">
             <label for="name" class="label">Pen Name</label>
             <input
                 id="name"
                 type="text"
                 wire:model="name"
                 required
-                class="input mt-1 @error('name') input-error @enderror"
+                class="input mt-1.5 @error('name') input-error @enderror"
             >
             <p class="help">What the pen is used for, for example "Breeding Pen A".</p>
             @error('name')
@@ -45,13 +48,13 @@
             @enderror
         </div>
 
-        <div>
+        <div class="px-5 py-5">
             <label for="location" class="label">Location <span class="font-normal text-ink-48">(optional)</span></label>
             <input
                 id="location"
                 type="text"
                 wire:model="location"
-                class="input mt-1 @error('location') input-error @enderror"
+                class="input mt-1.5 @error('location') input-error @enderror"
             >
             <p class="help">Where on the farm this pen is, for example "North Yard".</p>
             @error('location')
@@ -59,7 +62,7 @@
             @enderror
         </div>
 
-        <div>
+        <div class="px-5 py-5">
             <label for="capacity" class="label">Capacity</label>
             <input
                 id="capacity"
@@ -69,16 +72,16 @@
                 inputmode="numeric"
                 wire:model.live.blur="capacity"
                 required
-                class="input mt-1 @error('capacity') input-error @enderror"
+                class="datum input mt-1.5 max-w-[10rem] @error('capacity') input-error @enderror"
             >
-            <p class="help">How many birds this pen can hold. Enter <strong>0</strong> if there is no set limit.</p>
+            <p class="help">How many birds this pen can hold. Enter <strong class="font-medium text-ink-80">0</strong> if there is no set limit.</p>
             @error('capacity')
                 <p class="error">{{ $message }}</p>
             @enderror
 
             @php $typedCapacity = $this->capacityValue(); @endphp
             @if ($this->isEditing() && $typedCapacity !== null && $typedCapacity > 0 && $typedCapacity < $this->currentOccupancy)
-                <p class="mt-2 rounded-lg bg-warn-wash p-3 text-sm text-warn ring-1 ring-warn/20" role="status">
+                <p class="mt-3 max-w-[62ch] rounded-[4px] border border-warn/25 bg-warn-wash px-3 py-2.5 text-[13px] leading-relaxed text-warn" role="status">
                     This pen already holds {{ $this->currentOccupancy }}
                     {{ $this->currentOccupancy === 1 ? 'bird' : 'birds' }}, which is more than the capacity you entered.
                     You can still save - the pen will simply show as over capacity.
@@ -86,13 +89,13 @@
             @endif
         </div>
 
-        <div>
+        <div class="px-5 py-5">
             <label for="notes" class="label">Notes <span class="font-normal text-ink-48">(optional)</span></label>
             <textarea
                 id="notes"
                 rows="4"
                 wire:model="notes"
-                class="input mt-1 @error('notes') input-error @enderror"
+                class="input mt-1.5 @error('notes') input-error @enderror"
             ></textarea>
             <p class="help">Anything worth remembering about this pen, such as repairs needed or shade cover.</p>
             @error('notes')
@@ -100,7 +103,7 @@
             @enderror
         </div>
 
-        <div class="flex flex-col-reverse gap-3 border-t border-hairline pt-6 sm:flex-row sm:justify-end">
+        <div class="flex flex-col-reverse gap-3 bg-pearl px-5 py-4 sm:flex-row sm:justify-end">
             <a href="{{ $this->isEditing() ? route('pens.show', $penId) : route('pens.index') }}"
                wire:navigate
                class="btn-secondary">

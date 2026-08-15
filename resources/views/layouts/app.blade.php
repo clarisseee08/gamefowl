@@ -47,13 +47,16 @@
         <header class="frosted sticky top-0 z-40 border-b border-hairline">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex h-12 items-center justify-between gap-6">
+                    {{-- inline-flex + min-h-11 so the wordmark is a full 44px tap
+                         target, not a 26px text run. It is the home link on a phone. --}}
                     <a href="{{ route('dashboard') }}"
-                       class="shrink-0 text-[17px] font-semibold tracking-[-0.01em] text-ink">
+                       class="inline-flex min-h-11 shrink-0 items-center text-[17px] font-semibold tracking-[-0.01em] text-ink">
                         {{ config('gfms.farm.name') }}
                     </a>
 
-                    {{-- Desktop nav. 12px nav-link per the type ramp; Apple's
-                         global bar is deliberately smaller than body copy. --}}
+                    {{-- Desktop nav, set below body size on purpose: the bar is a
+                         standing index you navigate by position, not something you
+                         read, so it should not compete with the record on the page. --}}
                     <nav class="hidden flex-1 items-center gap-1 lg:flex" aria-label="Main">
                         @foreach ($nav as $item)
                             <a href="{{ route($item['route']) }}"

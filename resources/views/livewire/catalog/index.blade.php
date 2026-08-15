@@ -9,9 +9,11 @@
 
     {{-- Filters. Fewer and plainer than the staff screen - a customer does not
          need to filter by pen or by internal status. --}}
-    <div class="card mb-10 p-6">
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            <div class="lg:col-span-2">
+    {{-- Two-up on phones. Stacked, this block filled the entire first screen and
+         a customer scrolled past four controls before seeing a single bird. --}}
+    <div class="card mb-8 p-4 sm:mb-10 sm:p-6">
+        <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
+            <div class="col-span-2">
                 <label for="search" class="label">Search</label>
                 <input id="search" type="search" wire:model.live.debounce.300ms="search"
                        placeholder="Name, band number or breed" class="input mt-1">
@@ -37,7 +39,7 @@
                 </select>
             </div>
 
-            <div>
+            <div class="col-span-2 lg:col-span-1">
                 <label for="sex" class="label">Type</label>
                 <select id="sex" wire:model.live="sex" class="input mt-1">
                     <option value="">Cocks and hens</option>
@@ -77,35 +79,56 @@
         <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             @foreach ($this->birds as $bird)
                 <a href="{{ route('broodcocks.show', $bird) }}"
-                   class="card group overflow-hidden transition hover:shadow-md">
-                    <x-photo-thumb :photo="$bird->primaryPhoto" :alt="'Photo of '.$bird->name"
-                                   placeholder="No photo yet"
-                                   class="aspect-4/3 w-full" />
+                   class="card group overflow-hidden transition hover:border-ink-48">
+                    @if ($bird->primaryPhoto)
+                        <x-photo-thumb :photo="$bird->primaryPhoto" :alt="'Photo of '.$bird->name"
+                                       class="aspect-4/5 w-full" />
+                    @else
+                        {{-- Most birds on a working farm have no photo, so this well is
+                             the largest element on the page and it was showing nothing.
+                             Filling it with the bloodline's band colour turns the dead
+                             space into the strongest scanning signal in the grid: you can
+                             read the bloodline mix of a page at arm's length. --}}
+                        <div class="relative flex aspect-4/5 w-full flex-col items-center justify-center gap-2"
+                             style="background-color: {{ \App\Support\BandTag::hex($bird->bloodline) }}0f">
+                            {{-- Held at 38px on purpose: large enough to scan a page of
+                                 bloodlines at arm's length, quiet enough that the band tag
+                                 below stays the signature. --}}
+                            <span class="text-[38px] font-medium leading-none tracking-[-0.01em] opacity-80"
+                                  style="color: {{ \App\Support\BandTag::hex($bird->bloodline) }}"
+                                  aria-hidden="true">{{ \App\Support\BandTag::code($bird->bloodline) }}</span>
+                            <span class="text-[12px] text-ink-48">No photo yet</span>
+                        </div>
+                    @endif
 
-                    <div class="p-4">
-                        <h2 class="truncate font-semibold text-ink group-hover:text-action">
+                    <div class="border-t border-hairline p-4">
+                        {{-- Identity first: the band is how a keeper and a buyer both
+                             refer to the bird, so it leads rather than trailing the name
+                             as grey subtext. --}}
+                        <x-band-tag :bloodline="$bird->bloodline" :band="$bird->band_number" size="xs" />
+
+                        <h2 class="mt-2.5 truncate text-[17px] font-medium leading-snug text-ink group-hover:text-action">
                             {{ $bird->name }}
                         </h2>
-                        <p class="truncate text-sm text-ink-80">{{ $bird->displayBand() }}</p>
 
-                        <dl class="mt-3 space-y-1 text-sm">
-                            <div class="flex justify-between gap-2">
-                                <dt class="text-ink-48">Bloodline</dt>
-                                <dd class="truncate font-medium text-ink">{{ $bird->bloodline ?: 'Not recorded' }}</dd>
+                        <dl class="mt-3 space-y-1.5 text-[14px]">
+                            <div class="flex justify-between gap-3">
+                                <dt class="shrink-0 text-ink-48">Bloodline</dt>
+                                <dd class="truncate text-ink">{{ $bird->bloodline ?: 'Not recorded' }}</dd>
                             </div>
-                            <div class="flex justify-between gap-2">
-                                <dt class="text-ink-48">Breed</dt>
-                                <dd class="truncate font-medium text-ink">{{ $bird->breed ?: 'Not recorded' }}</dd>
+                            <div class="flex justify-between gap-3">
+                                <dt class="shrink-0 text-ink-48">Breed</dt>
+                                <dd class="truncate text-ink">{{ $bird->breed ?: 'Not recorded' }}</dd>
                             </div>
-                            <div class="flex justify-between gap-2">
-                                <dt class="text-ink-48">Age</dt>
-                                <dd class="font-medium text-ink">{{ $bird->ageLabel() ?? 'Unknown' }}</dd>
+                            <div class="flex justify-between gap-3">
+                                <dt class="shrink-0 text-ink-48">Age</dt>
+                                <dd class="datum text-ink">{{ $bird->ageLabel() ?? 'Unknown' }}</dd>
                             </div>
                         </dl>
 
-                        <div class="mt-3 flex flex-wrap gap-1.5">
+                        <div class="mt-3.5 flex flex-wrap gap-1.5 border-t border-hairline pt-3.5">
                             <span class="badge {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
-                            <span class="badge bg-parchment text-ink-80 ring-hairline">{{ $bird->sex->farmTerm() }}</span>
+                            <span class="badge badge-quiet">{{ $bird->sex->farmTerm() }}</span>
                         </div>
                     </div>
                 </a>

@@ -4,25 +4,30 @@
     Validation messages sit directly under the field they belong to and are
     written in plain sentences, because the people filling this in are farm
     staff, not developers.
+
+    Console surface: the `.input` floor is 16px so iOS never zooms the page on
+    focus, and every control clears 44px because this is filled in one-handed,
+    outdoors, with a bird in the other hand.
 --}}
 <div class="mx-auto max-w-3xl">
-    <div class="mb-10">
-        <a href="{{ route('health.index') }}" wire:navigate class="text-sm font-medium text-action hover:underline">
+    <div class="mb-8 border-b border-rule-strong pb-6">
+        <a href="{{ route('health.index') }}" wire:navigate
+           class="inline-flex min-h-11 items-center text-[13px] font-medium text-action hover:underline">
             &larr; Back to Health Records
         </a>
 
-        <h1 class="mt-2 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">
+        <h1 class="mt-1 text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">
             {{ $this->isEditing() ? 'Edit Health Record' : 'Add Health Record' }}
         </h1>
-        <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
+        <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-ink-80">
             Record a vaccination, medication, deworming, treatment or check-up for one bird.
         </p>
     </div>
 
     {{-- wire:submit posts through Livewire, which carries the CSRF token on
          every request automatically. --}}
-    <form wire:submit="save" class="card p-6 sm:p-8">
-        <div class="grid gap-6 sm:grid-cols-2">
+    <form wire:submit="save" class="card overflow-hidden">
+        <div class="grid gap-6 p-5 sm:grid-cols-2 sm:p-8">
             <div class="sm:col-span-2">
                 <label for="broodcock_id" class="label">Bird <span class="text-alert">*</span></label>
                 <select id="broodcock_id"
@@ -36,6 +41,10 @@
                 @error('broodcock_id') <p class="error">{{ $message }}</p> @enderror
                 <p class="help">Birds are listed by name, with the band number in brackets.</p>
             </div>
+
+            {{-- A rule, not a gap: the record's identity is settled above, its
+                 substance below. --}}
+            <div class="border-t border-hairline sm:col-span-2"></div>
 
             <div>
                 <label for="record_type" class="label">Record Type <span class="text-alert">*</span></label>
@@ -67,7 +76,7 @@
                        type="text"
                        wire:model="dosage"
                        placeholder="e.g. 0.5 ml"
-                       @class(['input mt-1', 'input-error' => $errors->has('dosage')])>
+                       @class(['input datum mt-1', 'input-error' => $errors->has('dosage')])>
                 @error('dosage') <p class="error">{{ $message }}</p> @enderror
             </div>
 
@@ -82,13 +91,15 @@
                 <p class="help">How the bird was on the day.</p>
             </div>
 
+            <div class="border-t border-hairline sm:col-span-2"></div>
+
             <div>
                 <label for="checkup_date" class="label">Check-up Date <span class="text-alert">*</span></label>
                 <input id="checkup_date"
                        type="date"
                        wire:model.live="checkup_date"
                        max="{{ today()->toDateString() }}"
-                       @class(['input mt-1', 'input-error' => $errors->has('checkup_date')])>
+                       @class(['input datum mt-1', 'input-error' => $errors->has('checkup_date')])>
                 @error('checkup_date') <p class="error">{{ $message }}</p> @enderror
                 <p class="help">The day this was actually done. It cannot be in the future.</p>
             </div>
@@ -99,14 +110,14 @@
                        type="date"
                        wire:model="next_due_date"
                        min="{{ $checkup_date ?: today()->toDateString() }}"
-                       @class(['input mt-1', 'input-error' => $errors->has('next_due_date')])>
+                       @class(['input datum mt-1', 'input-error' => $errors->has('next_due_date')])>
                 @error('next_due_date') <p class="error">{{ $message }}</p> @enderror
 
                 {{-- A nudge, not a rule. Vaccinations and dewormings recur, so
                      leaving this blank is usually a mistake - but a one-off
                      booster legitimately has no follow-up. --}}
                 @if ($this->expectsNextDueDate && ! $next_due_date)
-                    <p class="mt-1 rounded-lg bg-warn-wash p-2 text-xs text-warn ring-1 ring-warn/20">
+                    <p class="mt-2 rounded-[4px] border-l-2 border-warn bg-warn-wash px-3 py-2 text-[12px] leading-snug text-warn">
                         A {{ $this->selectedTypeLabel }} usually needs a
                         follow-up. Adding a next due date puts this bird on the vaccination schedule
                         so nobody forgets. You can still save without one.
@@ -115,6 +126,8 @@
                     <p class="help">Leave blank if no follow-up is needed.</p>
                 @endif
             </div>
+
+            <div class="border-t border-hairline sm:col-span-2"></div>
 
             <div class="sm:col-span-2">
                 <label for="remarks" class="label">Remarks</label>
@@ -128,7 +141,9 @@
             </div>
         </div>
 
-        <div class="mt-8 flex flex-col-reverse gap-3 border-t border-hairline pt-6 sm:flex-row sm:justify-end">
+        {{-- The action bar is sunk, so the form's edge is unmistakable on a
+             phone where the card runs to the fold. --}}
+        <div class="flex flex-col-reverse gap-3 border-t border-hairline bg-pearl px-5 py-4 sm:flex-row sm:justify-end sm:px-8">
             <a href="{{ route('health.index') }}" wire:navigate class="btn-secondary">Cancel</a>
 
             <button type="submit" class="btn-primary" wire:loading.attr="disabled" wire:target="save">
