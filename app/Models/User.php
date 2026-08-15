@@ -1,49 +1,144 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRole;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    use LogsActivity;
+    use Notifiable;
+    use SoftDeletes;
+
+    /** @var list<string> */
     protected $fillable = [
-        'name',
+        'full_name',
         'email',
         'password',
+        'role',
+        'contact_number',
+        'address',
+        'position',
+        'is_active',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
+    /** @var list<string> */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    /** @return array<string, string> */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => UserRole::class,
+            'is_active' => 'boolean',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            // Never log the password hash, even though it is a real change.
+            ->logOnly(['full_name', 'email', 'role', 'contact_number', 'address', 'position', 'is_active'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->useLogName('user');
+    }
+
+    // -----------------------------------------------------------------
+    // Roles
+    // -----------------------------------------------------------------
+
+    public function isOwner(): bool
+    {
+        return $this->role === UserRole::Owner;
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->role === UserRole::Staff;
+    }
+
+    public function isCustomer(): bool
+    {
+        return $this->role === UserRole::Customer;
+    }
+
+    /** Owner or staff - i.e. someone who works at the farm. */
+    public function isInternal(): bool
+    {
+        return $this->role->isInternal();
+    }
+
+    // -----------------------------------------------------------------
+    // Relationships
+    // -----------------------------------------------------------------
+
+    /** @return HasMany<BroodcockPhoto, $this> */
+    public function uploadedPhotos(): HasMany
+    {
+        return $this->hasMany(BroodcockPhoto::class, 'uploaded_by');
+    }
+
+    /** @return HasMany<HealthRecord, $this> */
+    public function healthRecords(): HasMany
+    {
+        return $this->hasMany(HealthRecord::class, 'recorded_by');
+    }
+
+    /** @return HasMany<Report, $this> */
+    public function reports(): HasMany
+    {
+        return $this->hasMany(Report::class, 'generated_by');
+    }
+
+    // -----------------------------------------------------------------
+    // Scopes
+    // -----------------------------------------------------------------
+
+    /** @param Builder<User> $query */
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('is_active', true);
+    }
+
+    /** @param Builder<User> $query */
+    public function scopeRole(Builder $query, UserRole $role): void
+    {
+        $query->where('role', $role);
+    }
+
+    /** @param Builder<User> $query */
+    public function scopeSearch(Builder $query, ?string $term): void
+    {
+        $term = trim((string) $term);
+
+        if ($term === '') {
+            return;
+        }
+
+        $query->where(function (Builder $q) use ($term): void {
+            $q->where('full_name', 'ilike', "%{$term}%")
+                ->orWhere('email', 'ilike', "%{$term}%")
+                ->orWhere('position', 'ilike', "%{$term}%");
+        });
     }
 }

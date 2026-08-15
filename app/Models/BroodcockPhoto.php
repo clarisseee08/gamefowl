@@ -1,0 +1,82 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use Database\Factories\BroodcockPhotoFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
+
+class BroodcockPhoto extends Model
+{
+    /** @use HasFactory<BroodcockPhotoFactory> */
+    use HasFactory;
+
+    use LogsActivity;
+
+    /** @var list<string> */
+    protected $fillable = [
+        'broodcock_id',
+        'path',
+        'disk',
+        'caption',
+        'is_primary',
+        'uploaded_by',
+    ];
+
+    /** @return array<string, string> */
+    protected function casts(): array
+    {
+        return [
+            'is_primary' => 'boolean',
+        ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['broodcock_id', 'path', 'caption', 'is_primary'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->useLogName('photo');
+    }
+
+    /**
+     * A URL the browser can render.
+     *
+     * The Supabase bucket is private, so signed temporary URLs are used where
+     * the driver supports them, falling back to a plain URL for the local
+     * public disk.
+     */
+    public function url(int $minutes = 30): ?string
+    {
+        $disk = Storage::disk($this->disk);
+
+        if (! $disk->exists($this->path)) {
+            return null;
+        }
+
+        if ($disk->providesTemporaryUrls()) {
+            return $disk->temporaryUrl($this->path, now()->addMinutes($minutes));
+        }
+
+        return $disk->url($this->path);
+    }
+
+    /** @return BelongsTo<Broodcock, $this> */
+    public function broodcock(): BelongsTo
+    {
+        return $this->belongsTo(Broodcock::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function uploadedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'uploaded_by');
+    }
+}
