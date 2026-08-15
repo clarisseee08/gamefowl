@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\BroodcockPhotoController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DesignGalleryController;
 use App\Http\Controllers\ReportController;
 use App\Livewire\Breeding;
 use App\Livewire\Broodcocks;
@@ -135,4 +136,12 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         Route::livewire('/{pen}/assign', Pens\AssignBroodcocks::class)->name('assign');
         Route::livewire('/{pen}', Pens\Show::class)->name('show');
     });
+
+    /*
+     * The component gallery. Not a feature - it is the reference the interface
+     * is built against, and the page to walk a panel through when asked to
+     * justify the visual decisions. Internal-only; the controller re-checks
+     * rather than trusting the group, since this sits outside the policy layer.
+     */
+    Route::get('/design', DesignGalleryController::class)->name('design');
 });
