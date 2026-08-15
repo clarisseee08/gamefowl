@@ -124,110 +124,114 @@
                 </div>
             </div>
         @else
-            <table class="w-full text-left">
-                <thead class="hidden bg-pearl sm:table-header-group">
-                    <tr class="border-b border-rule-strong">
-                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Bird</th>
-                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Record Type</th>
-                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Product</th>
-                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Check-up Date</th>
-                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Next Due Date</th>
-                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Status</th>
-                        <th scope="col" class="px-4 py-2.5 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody class="block divide-y divide-divider sm:table-row-group">
-                    @foreach ($this->rows as $record)
-                        @php
-                            $state = $record->scheduleState();
-                            // The five status washes are the only colour besides a band,
-                            // and the word itself carries the state - never hue alone.
-                            $stateClasses = match ($state) {
-                                'Overdue' => 'badge-alert',
-                                'Due soon' => 'badge-warn',
-                                'Scheduled' => 'badge-info',
-                                default => 'badge-neutral',
-                            };
-                        @endphp
-
-                        <tr wire:key="record-{{ $record->id }}" class="block p-4 sm:table-row sm:p-0 sm:align-top sm:hover:bg-pearl">
-                            <td class="block sm:table-cell sm:px-4 sm:py-3">
-                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Bird</span>
-                                <p class="text-[15px] font-medium leading-snug text-ink">{{ $record->broodcock->name }}</p>
-                                {{-- The band tag is the bird's real identifier: the anodised
-                                     ring it wears. Its bloodline is spelled out beside it so
-                                     the encoding never depends on colour alone. --}}
-                                <div class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-                                    <x-band-tag :bloodline="$record->broodcock->bloodline"
-                                                :band="$record->broodcock->band_number"
-                                                size="xs" />
-                                    @if ($record->broodcock->bloodline)
-                                        <span class="text-[12px] text-ink-80">{{ $record->broodcock->bloodline }}</span>
-                                    @endif
-                                </div>
-                            </td>
-
-                            <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
-                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Record Type</span>
-                                <span class="badge {{ $record->record_type->badgeClasses() }}">
-                                    {{ $record->record_type->label() }}
-                                </span>
-                            </td>
-
-                            <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
-                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Product</span>
-                                <p class="text-[15px] leading-snug text-ink">{{ $record->product_name ?: '—' }}</p>
-                                @if ($record->dosage)
-                                    <p class="mt-0.5 text-[12px] text-ink-80">Dosage: <span class="datum">{{ $record->dosage }}</span></p>
-                                @endif
-                                @if ($record->condition)
-                                    <p class="mt-0.5 text-[12px] text-ink-80">Condition: {{ $record->condition }}</p>
-                                @endif
-                                {{-- Internal remarks. Customers are promised health STATUS,
-                                     never the farm's private notes - the Policy decides. --}}
-                                @can('viewRemarks', $record)
-                                    @if ($record->remarks)
-                                        <p class="mt-1.5 max-w-[40ch] border-l-2 border-hairline pl-2 text-[12px] leading-snug text-ink-80"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
-                                    @endif
-                                @endcan
-                            </td>
-
-                            <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
-                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Check-up Date</span>
-                                <span class="datum text-[15px] text-ink">{{ $record->checkup_date->format('d M Y') }}</span>
-                            </td>
-
-                            <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
-                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Next Due Date</span>
-                                @if ($record->next_due_date)
-                                    <span class="datum text-[15px] text-ink">{{ $record->next_due_date->format('d M Y') }}</span>
-                                @else
-                                    <span class="text-[15px] text-ink-80">None</span>
-                                @endif
-                            </td>
-
-                            <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
-                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Status</span>
-                                <span class="badge {{ $stateClasses }}">{{ $state }}</span>
-                            </td>
-
-                            <td class="mt-4 block border-t border-hairline pt-3 sm:mt-0 sm:table-cell sm:border-0 sm:px-4 sm:py-3 sm:text-right sm:whitespace-nowrap">
-                                <div class="flex gap-2 sm:justify-end">
-                                    @can('update', $record)
-                                        <a href="{{ route('health.edit', $record) }}" wire:navigate class="btn-secondary">Edit</a>
-                                    @endcan
-                                    @can('delete', $record)
-                                        <button type="button" wire:click="confirmDelete({{ $record->id }})" class="btn-danger">
-                                            Delete
-                                        </button>
-                                    @endcan
-                                </div>
-                            </td>
+            {{-- The card clips, so a table wider than the page scrolls inside its
+                 own container rather than losing its last column. --}}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="hidden bg-pearl sm:table-header-group">
+                        <tr class="border-b border-rule-strong">
+                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Bird</th>
+                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Record Type</th>
+                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Product</th>
+                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Check-up Date</th>
+                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Next Due Date</th>
+                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Status</th>
+                            <th scope="col" class="px-4 py-2.5 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Actions</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+
+                    <tbody class="block divide-y divide-divider sm:table-row-group">
+                        @foreach ($this->rows as $record)
+                            @php
+                                $state = $record->scheduleState();
+                                // The five status washes are the only colour besides a band,
+                                // and the word itself carries the state - never hue alone.
+                                $stateClasses = match ($state) {
+                                    'Overdue' => 'badge-alert',
+                                    'Due soon' => 'badge-warn',
+                                    'Scheduled' => 'badge-info',
+                                    default => 'badge-neutral',
+                                };
+                            @endphp
+
+                            <tr wire:key="record-{{ $record->id }}" class="block p-4 sm:table-row sm:p-0 sm:align-top sm:hover:bg-pearl">
+                                <td class="block sm:table-cell sm:px-4 sm:py-3">
+                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Bird</span>
+                                    <p class="text-[15px] font-medium leading-snug text-ink">{{ $record->broodcock->name }}</p>
+                                    {{-- The band tag is the bird's real identifier: the anodised
+                                         ring it wears. Its bloodline is spelled out beside it so
+                                         the encoding never depends on colour alone. --}}
+                                    <div class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                                        <x-band-tag :bloodline="$record->broodcock->bloodline"
+                                                    :band="$record->broodcock->band_number"
+                                                    size="xs" />
+                                        @if ($record->broodcock->bloodline)
+                                            <span class="text-[12px] text-ink-80">{{ $record->broodcock->bloodline }}</span>
+                                        @endif
+                                    </div>
+                                </td>
+
+                                <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
+                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Record Type</span>
+                                    <span class="badge {{ $record->record_type->badgeClasses() }}">
+                                        {{ $record->record_type->label() }}
+                                    </span>
+                                </td>
+
+                                <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
+                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Product</span>
+                                    <p class="text-[15px] leading-snug text-ink">{{ $record->product_name ?: '—' }}</p>
+                                    @if ($record->dosage)
+                                        <p class="mt-0.5 text-[12px] text-ink-80">Dosage: <span class="datum">{{ $record->dosage }}</span></p>
+                                    @endif
+                                    @if ($record->condition)
+                                        <p class="mt-0.5 text-[12px] text-ink-80">Condition: {{ $record->condition }}</p>
+                                    @endif
+                                    {{-- Internal remarks. Customers are promised health STATUS,
+                                         never the farm's private notes - the Policy decides. --}}
+                                    @can('viewRemarks', $record)
+                                        @if ($record->remarks)
+                                            <p class="mt-1.5 max-w-[40ch] border-l-2 border-hairline pl-2 text-[12px] leading-snug text-ink-80"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
+                                        @endif
+                                    @endcan
+                                </td>
+
+                                <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
+                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Check-up Date</span>
+                                    <span class="datum text-[15px] text-ink">{{ $record->checkup_date->format('d M Y') }}</span>
+                                </td>
+
+                                <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
+                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Next Due Date</span>
+                                    @if ($record->next_due_date)
+                                        <span class="datum text-[15px] text-ink">{{ $record->next_due_date->format('d M Y') }}</span>
+                                    @else
+                                        <span class="text-[15px] text-ink-80">None</span>
+                                    @endif
+                                </td>
+
+                                <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
+                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Status</span>
+                                    <span class="badge {{ $stateClasses }}">{{ $state }}</span>
+                                </td>
+
+                                <td class="mt-4 block border-t border-hairline pt-3 sm:mt-0 sm:table-cell sm:border-0 sm:px-4 sm:py-3 sm:text-right sm:whitespace-nowrap">
+                                    <div class="flex gap-2 sm:justify-end">
+                                        @can('update', $record)
+                                            <a href="{{ route('health.edit', $record) }}" wire:navigate class="btn-secondary">Edit</a>
+                                        @endcan
+                                        @can('delete', $record)
+                                            <button type="button" wire:click="confirmDelete({{ $record->id }})" class="btn-danger">
+                                                Delete
+                                            </button>
+                                        @endcan
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
 
             <div class="border-t border-hairline bg-pearl px-4 py-2.5">
                 {{ $this->rows->links() }}

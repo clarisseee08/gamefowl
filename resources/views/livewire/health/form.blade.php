@@ -44,7 +44,7 @@
 
             {{-- A rule, not a gap: the record's identity is settled above, its
                  substance below. --}}
-            <div class="border-t border-hairline sm:col-span-2"></div>
+            <hr class="border-hairline sm:col-span-2">
 
             <div>
                 <label for="record_type" class="label">Record Type <span class="text-alert">*</span></label>
@@ -91,7 +91,7 @@
                 <p class="help">How the bird was on the day.</p>
             </div>
 
-            <div class="border-t border-hairline sm:col-span-2"></div>
+            <hr class="border-hairline sm:col-span-2">
 
             <div>
                 <label for="checkup_date" class="label">Check-up Date <span class="text-alert">*</span></label>
@@ -127,7 +127,7 @@
                 @endif
             </div>
 
-            <div class="border-t border-hairline sm:col-span-2"></div>
+            <hr class="border-hairline sm:col-span-2">
 
             <div class="sm:col-span-2">
                 <label for="remarks" class="label">Remarks</label>

@@ -65,8 +65,8 @@
             <button type="button" wire:click="clearFilters" class="btn-secondary mt-6">Clear filters</button>
         </div>
     @else
-        {{-- Phone: one record per card. A nine-column table on a 390px screen is
-             a horizontal scrollbar, and this is read one-handed in a pen. --}}
+        {{-- Phone: one record per card. A seven-column table on a 390px screen
+             is a horizontal scrollbar, and this is read one-handed in a pen. --}}
         <ul class="space-y-3 sm:hidden">
             @foreach ($this->users as $person)
                 <li wire:key="user-card-{{ $person->id }}" class="card p-4">
@@ -98,7 +98,7 @@
                         <dd class="datum text-[15px] text-ink-80">{{ $person->contact_number ?? '—' }}</dd>
                     </dl>
 
-                    @if (auth()->user()?->can('update', $person) || auth()->user()?->can('deactivate', $person))
+                    @canany(['update', 'deactivate'], $person)
                         <div class="mt-3 flex flex-wrap items-center gap-x-5 border-t border-hairline pt-2">
                             @can('update', $person)
                                 <a href="{{ route('users.edit', $person) }}"
@@ -113,7 +113,7 @@
                                 </button>
                             @endcan
                         </div>
-                    @endif
+                    @endcanany
                 </li>
             @endforeach
         </ul>
@@ -136,7 +136,7 @@
                     </thead>
                     <tbody class="table-hairline">
                         @foreach ($this->users as $person)
-                            <tr wire:key="user-row-{{ $person->id }}" class="hover:bg-parchment">
+                            <tr wire:key="user-row-{{ $person->id }}" class="transition-colors duration-100 hover:bg-pearl">
                                 <td class="whitespace-nowrap px-4 py-3 text-[15px] font-medium text-ink">
                                     {{ $person->full_name }}
                                     @if ($person->is(auth()->user()))

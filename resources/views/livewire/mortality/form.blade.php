@@ -7,21 +7,21 @@
     mark the wrong bird dead.
 --}}
 <div class="mx-auto max-w-2xl">
-    <div class="mb-10">
+    <div class="mb-8 border-b border-rule-strong pb-6">
         <a href="{{ route('mortality.index') }}" wire:navigate
-           class="inline-flex items-center gap-1 py-2 text-sm font-medium text-ink-80 hover:text-ink">
+           class="inline-flex items-center gap-1 text-[13px] font-medium text-action hover:underline">
             &larr; Back to Mortality Records
         </a>
 
-        <h1 class="mt-2 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">Record a Death</h1>
-        <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
+        <h1 class="mt-1 text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">Record a Death</h1>
+        <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-ink-80">
             Fill this in when a bird dies. The bird will be marked as
-            <strong>deceased</strong> and will no longer appear in the active flock
+            <strong class="font-medium text-ink">deceased</strong> and will no longer appear in the active flock
             or in the list of birds you can breed.
         </p>
     </div>
 
-    <form wire:submit="review" class="card space-y-10 p-6">
+    <form wire:submit="review" class="card space-y-6 p-6">
         @csrf
 
         {{-- ---------------------------------------------------------------
@@ -73,7 +73,7 @@
         {{-- ---------------------------------------------------------------
              When
         ---------------------------------------------------------------- --}}
-        <div>
+        <div class="border-t border-hairline pt-6">
             <label for="date_of_death" class="label">Date of Death <span class="text-alert">*</span></label>
             <input id="date_of_death"
                    type="date"
@@ -102,7 +102,7 @@
         {{-- ---------------------------------------------------------------
              Why
         ---------------------------------------------------------------- --}}
-        <div>
+        <div class="border-t border-hairline pt-6">
             <label for="cause_of_death" class="label">Cause of Death <span class="text-alert">*</span></label>
             <input id="cause_of_death"
                    type="text"
@@ -167,7 +167,7 @@
             <p class="help">Optional. Only farm staff can read this.</p>
         </div>
 
-        <div class="flex flex-col-reverse gap-3 border-t border-hairline pt-6 sm:flex-row sm:justify-end">
+        <div class="flex flex-col-reverse gap-3 border-t border-rule-strong pt-6 sm:flex-row sm:justify-end">
             <a href="{{ route('mortality.index') }}" wire:navigate class="btn-secondary">Cancel</a>
             <button type="submit" class="btn-primary" wire:loading.attr="disabled">
                 <span wire:loading.remove wire:target="review">Record This Death</span>

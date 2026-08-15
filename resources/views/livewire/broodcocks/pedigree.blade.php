@@ -52,44 +52,61 @@
     {{-- The chart. Scrolls horizontally on small screens rather than
          squashing - a pedigree bracket is inherently wide. --}}
     <div class="card overflow-x-auto p-4 sm:p-6">
-        <div class="flex min-w-max gap-4">
+        <div class="flex min-w-max items-stretch gap-7">
             @foreach ($generations as $index => $column)
-                <div class="flex flex-col justify-around gap-2" style="min-width: 12rem;">
-                    <p class="mb-1 text-center text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48">
+                <div class="flex flex-col" style="min-width: 13rem;">
+                    <p class="mb-3 text-center text-[11px] font-medium uppercase tracking-[0.06em] text-ink-48">
                         {{ $labels[$index] ?? 'Generation '.$index }}
                     </p>
 
-                    @foreach ($column as $ancestor)
-                        @if ($ancestor)
-                            <a href="{{ route('broodcocks.show', $ancestor) }}"
-                               @class([
-                                   'block rounded-lg border p-3 transition hover:shadow-md',
-                                   'border-hairline bg-ok-wash' => $index === 0,
-                                   'border-info/20 bg-info-wash' => $index > 0 && $ancestor->sex === App\Enums\Sex::Male,
-                                   'border-alert/20 bg-alert-wash' => $index > 0 && $ancestor->sex === App\Enums\Sex::Female,
-                               ])>
-                                <p class="truncate text-sm font-semibold text-ink">{{ $ancestor->name }}</p>
-                                <p class="truncate text-xs text-ink-80">{{ $ancestor->displayBand() }}</p>
-                                @if ($ancestor->bloodline)
-                                    <p class="mt-1 truncate text-xs text-ink-48">{{ $ancestor->bloodline }}</p>
-                                @endif
-                                <span class="mt-1 inline-block text-xs text-ink-48">
-                                    {{ $ancestor->sex->parentTerm() }}
-                                </span>
-                            </a>
-                        @else
-                            <div class="rounded-lg border border-dashed border-hairline bg-pearl p-3 text-center">
-                                <p class="text-xs text-ink-48">Not recorded</p>
+                    <div class="flex flex-1 flex-col justify-around gap-2">
+                        {{-- Ancestors are chunked into sire/dam pairs so each pair can
+                             carry one bracket spine back toward its descendant. Without
+                             the bracket you cannot tell which grandparent belongs to
+                             which parent, which is the question this screen exists to
+                             answer. Generation 0 is the bird itself and has no pair. --}}
+                        @php
+                            $cards = $column instanceof \Illuminate\Support\Collection ? $column->all() : (array) $column;
+                            $pairs = array_chunk($cards, $index === 0 ? 1 : 2);
+                        @endphp
+                        @foreach ($pairs as $pair)
+                            <div @class(['ped-branch' => $index > 0, 'flex flex-col justify-around gap-2' => $index === 0])>
+                                @foreach ($pair as $ancestor)
+                                    <div @class(['ped-node' => $index > 0])>
+                                        @if ($ancestor)
+                                            <a href="{{ route('broodcocks.show', $ancestor) }}"
+                                               @class([
+                                                   'block rounded-[4px] border p-3 transition hover:border-ink-48',
+                                                   'border-rule-strong bg-pearl' => $index === 0,
+                                                   'border-hairline bg-canvas' => $index > 0,
+                                               ])>
+                                                <x-band-tag :bloodline="$ancestor->bloodline"
+                                                            :band="$ancestor->band_number" size="xs" />
+                                                <p class="mt-2 truncate text-[15px] font-medium leading-snug text-ink">
+                                                    {{ $ancestor->name }}
+                                                </p>
+                                                {{-- The root is the subject of the tree, not
+                                                     somebody's parent - calling it "Sire"
+                                                     here is just wrong. It gets its plain sex. --}}
+                                                <p class="mt-0.5 truncate text-[12px] text-ink-48">
+                                                    {{ $index === 0 ? $ancestor->sex->label() : $ancestor->sex->parentTerm() }}@if ($ancestor->bloodline) &middot; {{ $ancestor->bloodline }}@endif
+                                                </p>
+                                            </a>
+                                        @else
+                                            <div class="ped-empty">Not recorded</div>
+                                        @endif
+                                    </div>
+                                @endforeach
                             </div>
-                        @endif
-                    @endforeach
+                        @endforeach
+                    </div>
                 </div>
             @endforeach
         </div>
     </div>
 
-    <p class="mt-4 text-xs text-ink-48">
-        Blue cards are male ancestors (sires), pink cards are female ancestors (dams).
-        Click any bird to open its own record.
+    <p class="mt-4 text-[13px] text-ink-48">
+        In every pair the sire is above the dam, and each card says which.
+        Card colour is the bloodline band, not the sex. Click any bird to open its own record.
     </p>
 </div>

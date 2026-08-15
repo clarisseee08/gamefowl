@@ -246,3 +246,67 @@
                border-hairline px-2.5 py-1 text-[12px] leading-none text-ink-48;
     }
 }
+
+/* ── Pedigree bracket ────────────────────────────────────────────────────────
+   A pedigree chart whose cards float in unconnected columns is not a chart -
+   you cannot tell which grandparent belongs to which parent, which is the one
+   question the screen exists to answer. These draw the bracket in CSS so the
+   lines cost no markup, no SVG and no layout pass.
+
+   The previous version encoded sex as blue and pink card fills. That broke the
+   system's central rule - colour means bloodline - and it was redundant, since
+   every card already states Sire or Dam in text. Structure carries it now:
+   sire sits above dam in every pair, and the label says which. */
+@layer components {
+    /* flex:1 on both the pair and the node is what makes the bracket line up.
+       Each generation doubles in count, so proportional distribution puts a
+       pair's midpoint exactly on its descendant's midpoint at every depth.
+       justify-content alone drifts as soon as the counts differ per column. */
+    .ped-branch {
+        position: relative;
+        display: flex;
+        flex: 1 1 0;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .ped-node {
+        display: flex;
+        flex: 1 1 0;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    /* The spine: one vertical rule linking a pair back toward its descendant. */
+    .ped-branch::before {
+        content: '';
+        position: absolute;
+        left: -0.85rem;
+        top: 25%;
+        bottom: 25%;
+        border-left: 1px solid var(--color-hairline);
+    }
+
+    /* The rung: from the spine across to each card. */
+    .ped-node {
+        position: relative;
+    }
+
+    .ped-node::before {
+        content: '';
+        position: absolute;
+        left: -0.85rem;
+        width: 0.85rem;
+        top: 50%;
+        border-top: 1px solid var(--color-hairline);
+    }
+
+    /* An unrecorded ancestor should recede, not compete. On a young farm most
+       of a three-generation tree is legitimately empty, and at equal weight the
+       chart reads as broken rather than as young. */
+    .ped-empty {
+        @apply rounded-[4px] border border-dashed border-hairline
+               px-3 py-2.5 text-center text-[12px] text-ink-48;
+        opacity: 0.55;
+    }
+}
