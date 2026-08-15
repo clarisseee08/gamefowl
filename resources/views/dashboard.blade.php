@@ -1,18 +1,14 @@
 <x-layouts::app title="Dashboard">
     <div class="mb-8">
         <h1 class="text-2xl font-bold tracking-tight text-gray-900">
-            Welcome, {{ $user->full_name }}
+            Good {{ now()->hour < 12 ? 'morning' : (now()->hour < 18 ? 'afternoon' : 'evening') }},
+            {{ Str::before($user->full_name, ' ') }}
         </h1>
         <p class="mt-1 text-sm text-gray-600">
+            Here is how {{ config('gfms.farm.name') }} is doing today.
             You are signed in as <strong>{{ $user->role->label() }}</strong>.
-            {{ $user->role->description() }}
         </p>
     </div>
 
-    @if ($totalBroodcocks !== null)
-        <div class="card p-6">
-            <p class="text-sm font-medium text-gray-600">Total Broodcocks Recorded</p>
-            <p class="mt-2 text-4xl font-bold text-gray-900">{{ number_format($totalBroodcocks) }}</p>
-        </div>
-    @endif
+    <livewire:dashboard.overview />
 </x-layouts::app>

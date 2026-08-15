@@ -6,10 +6,12 @@ use App\Http\Controllers\BroodcockPhotoController;
 use App\Http\Controllers\DashboardController;
 use App\Livewire\Breeding;
 use App\Livewire\Broodcocks;
+use App\Livewire\Catalog;
 use App\Livewire\Health;
 use App\Livewire\Mortality;
 use App\Livewire\Pens;
 use App\Livewire\Performance;
+use App\Livewire\Users;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -40,6 +42,14 @@ Route::redirect('/', '/dashboard')->name('home');
 
 Route::middleware(['auth', 'active'])->group(function (): void {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+
+    /*
+     * Customer portal - the read-only catalogue.
+     *
+     * Open to every signed-in role (staff use it to see what a customer sees),
+     * but it is the only farm screen a customer has any reason to visit.
+     */
+    Route::livewire('/catalog', Catalog\Index::class)->name('catalog.index');
 
     /* Broodcocks - the central entity. Visible to every role. */
     Route::prefix('broodcocks')->name('broodcocks.')->group(function (): void {
@@ -88,6 +98,18 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         // The broodcock is optional so the form can be reached either from the
         // mortality list or straight from a bird's page.
         Route::livewire('/create/{broodcock?}', Mortality\Form::class)->name('create');
+    });
+
+    /*
+     * User management - OWNER ONLY.
+     *
+     * There is no self-registration anywhere in this system; every account is
+     * created here. UserPolicy denies staff and customers outright.
+     */
+    Route::prefix('users')->name('users.')->group(function (): void {
+        Route::livewire('/', Users\Index::class)->name('index');
+        Route::livewire('/create', Users\Form::class)->name('create');
+        Route::livewire('/{user}/edit', Users\Form::class)->name('edit');
     });
 
     /* Pens - internal only. */

@@ -14,7 +14,10 @@
         // advertises a screen the Policy would reject.
         $nav = collect([
             ['label' => 'Dashboard',   'route' => 'dashboard',    'internal' => true],
-            ['label' => 'Broodcocks',  'route' => 'broodcocks.index', 'internal' => false],
+            // The catalogue is where customers live; staff can see it too, to
+            // check what a customer sees.
+            ['label' => 'Catalogue',   'route' => 'catalog.index',    'internal' => false],
+            ['label' => 'Broodcocks',  'route' => 'broodcocks.index', 'internal' => true],
             ['label' => 'Health',      'route' => 'health.index',     'internal' => true],
             ['label' => 'Breeding',    'route' => 'breeding.index',   'internal' => true],
             ['label' => 'Performance', 'route' => 'performance.index','internal' => true],
