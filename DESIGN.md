@@ -1,61 +1,85 @@
 ---
-version: 1
-name: GFMS-field-ledger
-description: A registry interface built like a field ledger - dark ink on pale paper, hairline rules, no shadows and no gradients, with colour spent in exactly one place: the band tag. Modelled on the anodised aluminium leg band a gamefowl actually wears, it is the only capsule and the only chroma in the system. Console density is tuned for one-handed use outdoors in Philippine daylight, where 7:1 contrast is a legibility requirement rather than a style preference.
+version: 2
+name: GFMS-registry-software
+description: A gamefowl breeding registry that presents as a live product rather than a printed document. Tinted-neutral surfaces with a three-step elevation system, a peacock brand scale, and full semantic colour pairs for status. The console is a full-bleed application shell whose main region is the only scroll container. Colour still means bloodline and nothing else - the band tag, modelled on the anodised leg band a gamefowl actually wears, is the one identity channel and resolves its own foreground so every band stays legible. Console density is tuned for one-handed use outdoors in Philippine daylight, where 7:1 contrast is a legibility requirement rather than a style preference.
 
 colors:
-  action: "#16324f"
-  action-hover: "#1e4468"
-  action-wash: "#e9eef4"
-  ink: "#1a1917"
-  ink-80: "#55534d"
-  ink-48: "#726f66"
-  canvas: "#ffffff"
-  parchment: "#faf9f7"
-  pearl: "#f1efea"
-  hairline: "#e3e0da"
-  divider: "#e3e0da"
-  ok: "#1b6b44"
-  ok-wash: "#e6f1eb"
-  warn: "#8a5a12"
-  warn-wash: "#f8efdf"
-  alert: "#a32219"
-  alert-wash: "#f7e8e7"
-  info: "#2a4e7a"
-  info-wash: "#e9eef4"
-  neutral: "#5e5b55"
-  neutral-wash: "#efede9"
-  band-crimson: "#b3202c"
-  band-cobalt: "#1b4f9c"
-  band-forest: "#1e6b45"
-  band-amber: "#9a5b08"
-  band-plum: "#6a3080"
-  band-slate: "#41525e"
+  background: "#fbfbfa"
+  card: "#ffffff"
+  muted: "#f4f5f3"
+  popover: "#ffffff"
+  border: "#e4e6e2"
+  input: "#dfe2dd"
+  foreground: "#161c19"
+  muted-foreground: "#4e5550"
+  card-foreground: "#161c19"
+  popover-foreground: "#161c19"
+  primary-50: "#edf7f7"
+  primary-100: "#d2ecec"
+  primary-200: "#a6d8d9"
+  primary-400: "#35a0a6"
+  primary: "#0d6e75"
+  primary-600: "#0a5c62"
+  primary-700: "#08494e"
+  primary-900: "#052b2e"
+  primary-foreground: "#ffffff"
+  success: "#1f7a4d"
+  success-bg: "#e8f4ee"
+  warning: "#906308"
+  warning-bg: "#fbf3e2"
+  destructive: "#b3261e"
+  destructive-bg: "#fbeae9"
+  destructive-foreground: "#ffffff"
+  info: "#3c4a8a"
+  info-bg: "#eceef8"
+  band-ember: "#e8552e"
+  band-amber: "#f2a413"
+  band-jade: "#1f9e6b"
+  band-cobalt: "#1d5fd0"
+  band-plum: "#8e44ad"
+  band-rose: "#d6336c"
+  band-fg-light: "#ffffff"
+  band-fg-dark: "#10201b"
+  print-rule: "#e4e6e2"
+  print-rule-strong: "#c7cbc5"
+  print-zebra: "#f7f8f6"
 
 typography:
   display:
     fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
-    fontSize: 32px
+    fontSize: 30px
     fontWeight: 600
     lineHeight: 1.15
-    letterSpacing: -0.02em
+    letterSpacing: -0.015em
+  page-title:
+    fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
+    fontSize: 26px
+    fontWeight: 600
+    lineHeight: 1.2
+    letterSpacing: -0.015em
+  figure:
+    fontFamily: "Fira Code, ui-monospace, monospace"
+    fontSize: 34px
+    fontWeight: 600
+    lineHeight: 1.05
+    letterSpacing: -0.01em
+  figure-sm:
+    fontFamily: "Fira Code, ui-monospace, monospace"
+    fontSize: 28px
+    fontWeight: 600
+    lineHeight: 1
+    letterSpacing: -0.01em
   title:
     fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
-    fontSize: 22px
+    fontSize: 19px
     fontWeight: 600
-    lineHeight: 1.25
-    letterSpacing: -0.01em
+    lineHeight: 1.3
+    letterSpacing: -0.015em
   subtitle:
     fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
     fontSize: 18px
     fontWeight: 500
     lineHeight: 1.35
-    letterSpacing: 0
-  body:
-    fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
-    fontSize: 17px
-    fontWeight: 400
-    lineHeight: 1.55
     letterSpacing: 0
   input:
     fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
@@ -63,9 +87,15 @@ typography:
     fontWeight: 400
     lineHeight: 1.4
     letterSpacing: 0
-  body-console:
+  body:
     fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
     fontSize: 15px
+    fontWeight: 400
+    lineHeight: 1.5
+    letterSpacing: 0
+  body-dense:
+    fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
+    fontSize: 14px
     fontWeight: 400
     lineHeight: 1.45
     letterSpacing: 0
@@ -84,9 +114,9 @@ typography:
   micro:
     fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
     fontSize: 11px
-    fontWeight: 500
+    fontWeight: 600
     lineHeight: 1.2
-    letterSpacing: 0.06em
+    letterSpacing: 0.07em
   datum:
     fontFamily: "Fira Code, ui-monospace, monospace"
     fontSize: 15px
@@ -97,8 +127,10 @@ typography:
 rounded:
   none: 0px
   chip: 2px
-  sm: 4px
-  control: 6px
+  band: 3px
+  sm: 6px
+  md: 10px
+  lg: 14px
   full: 9999px
 
 spacing:
@@ -109,61 +141,68 @@ spacing:
   lg: 24px
   xl: 32px
   xxl: 48px
-  section: 64px
+  section: 56px
 ---
 
-# GFMS — Field Ledger
+# GFMS — Registry, running as software
 
-The full brief, with rationale and measured contrast ratios, lives in
-**`docs/design-brief.md`**. Colour values are owned by
+Replaces the "field ledger" direction. That direction was executed correctly —
+no elevation, one accent colour, print-derived austerity — and those are exactly
+the properties that made it read as a printed document rather than a product. It
+is preserved at the tag `design/field-ledger-v1`.
+
+The full record of what changed, why, and what was measured lives in
+**`docs/redesign-progress.md`**. Colour values are owned by
 **`config/gfms-brand.php`** so the PDF reports (dompdf, CSS 2.1 only) can read
 them without a stylesheet; `resources/css/app.css` mirrors that config and
-`tests/Unit/BrandTokensAreMirroredTest.php` asserts the two agree.
+`tests/Unit/BrandTokensAreMirroredTest.php` fails if the two drift.
 
-> This file replaces a previous `DESIGN.md` that was a reverse-engineered
-> analysis of apple.com's marketing pages. That world was built and then
-> deliberately retired: a single-accent gallery aesthetic is the right answer
-> for photographs of hardware and the wrong one for a livestock registry, where
-> bloodline is the primary organising fact and deserves to be encoded.
+## What carried over unchanged
 
-## Overview
+- **The band tag.** Subject-derived, functional, memorable — the best thing in
+  the app. Restyled, not redesigned.
+- **Bloodline resolution over free text.** `bloodline` is a nullable
+  `varchar(120)`, not an enum. Colour resolves through a curated map, then a
+  deterministic `crc32` fallback, so a bloodline nobody anticipated still
+  renders. "Not yet banded" is an honest state, never a blank cell.
+- **Monospace for registry data** with `tabular-nums`, so digits align down a
+  column.
+- **The pedigree connectors** and the removal of sex-as-colour.
+- **Colour means bloodline and nothing else.** Status uses the semantic pairs;
+  navigation uses the brand scale; the six band colours mean one thing.
 
-Two surfaces share one vocabulary and differ in density, not in kind.
+## What is new
 
-- **Catalog** (public) — photo-led, spacious, 17px body, ≥4.5:1, fixed 4:5 images.
-- **Console** (staff) — dense, scannable, 15px body, **≥7:1**, 16px input floor,
-  44px rows. Used one-handed, outdoors, in glare.
+- **Elevation**, three steps. It indicates interactivity or layering, never
+  decoration. Nothing lifts on its own.
+- **A full semantic palette.** Tinted status grounds are the point — this is
+  where "one accent only" is deliberately abandoned.
+- **Motion**: 120ms on colour and focus, 200ms on elevation, 260ms on entry.
+  `prefers-reduced-motion` strips travel and transform while preserving the
+  state change.
+- **A full-bleed application shell.** The main region is the only scroll
+  container in the console; the body never scrolls.
 
-## The signature
+## Rules that are enforced, not just written down
 
-The **band tag**: a filled capsule in the bloodline's anodised colour carrying a
-two-letter bloodline code and the band number in mono. It is the only capsule
-and the only chroma in the system.
+`tests/Unit/DesignSystemGuardTest.php`:
 
-`bloodline` is free text, not an enum, so colour resolves through
-`App\Support\BandTag` — a curated map for known stock, then a deterministic
-`crc32` fallback so an unanticipated bloodline still renders. An unbanded bird
-gets a dashed outline reading "Not yet banded", never a blank cell.
+1. No stock Tailwind palette class in any Blade view.
+2. None in the compiled bundle either — prose in a scanned file compiles just
+   like markup, and a design document's own anti-pattern list was generating the
+   utilities it forbade.
+3. No hardcoded hex outside `config/gfms-brand.php` and this theme layer.
+4. No colour of its own in any PDF template.
+5. No console view centres itself in a page-scale column.
 
-## Do
+`tests/Unit/BrandTokensAreMirroredTest.php` additionally asserts every band is
+legible with its resolved foreground, that the code chip's tint moves the ground
+away from the text rather than toward it, that console text clears 7:1 on all
+three surfaces, and that every semantic pair clears 4.5:1.
 
-- Take every colour from the tokens above.
-- Set every registry value — band numbers, dates, weights, egg counts, rates —
-  in `datum` (Fira Code, `tabular-nums`) so columns align.
-- Keep colour paired with a second channel: the code, the label, the dot.
-- Separate surfaces with a hairline and a ground change.
+## Band foregrounds are resolved, not fixed
 
-## Don't
-
-- Don't use a stock Tailwind palette class (`bg-gray-100`, `text-blue-600`).
-- Don't introduce a second accent; interactive means `action`.
-- Don't use a band colour for anything that is not a bloodline — it is an
-  identity channel, and borrowing it for status destroys the encoding.
-- Don't add a shadow. Depth is not how this system communicates hierarchy.
-- Don't use a gradient anywhere.
-- Don't round anything above 6px except the band tag. A second capsule kills
-  the signature.
-- Don't set a form control below 16px — iOS zooms the page on focus.
-- Don't use `font-weight: 700`. The ladder is 400 / 500 / 600.
-- Don't put a Tailwind class or custom property in `resources/views/reports/pdf/`.
-- Don't ship dark mode. Light only, chosen from the use scene.
+Three of the six bands cannot carry white text — amber measures **2.08:1**.
+Darkening them until white worked would have returned amber to the muted gold
+this direction replaced. So each tag picks the foreground that passes, which also
+covers whatever colour the hash hands an unanticipated bloodline.

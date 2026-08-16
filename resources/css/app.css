@@ -126,7 +126,8 @@
 }
 
 :root {
-    --ring-color: rgb(13 110 117 / 0.35);
+    --ring-color: rgb(13 110 117 / 0.35);          /* primary @ 35% */
+    --ring-color-destructive: rgb(179 38 30 / 0.25); /* destructive @ 25% */
     --t-fast: 120ms;
     --t-base: 200ms;
     --t-enter: 260ms;
@@ -242,7 +243,7 @@
     }
     .input:focus { box-shadow: 0 0 0 3px var(--ring-color); }
     .input-error { @apply border-destructive; }
-    .input-error:focus { box-shadow: 0 0 0 3px rgb(179 38 30 / 0.25); }
+    .input-error:focus { box-shadow: 0 0 0 3px var(--ring-color-destructive); }
 
     .label { @apply block text-[13px] font-medium tracking-[0.01em] text-foreground; }
     .help  { @apply mt-1 text-[12px] leading-snug text-muted-foreground; }
@@ -369,7 +370,10 @@
 
     /* Thin progress bars for compliance and hatch rates. */
     .meter { @apply h-1.5 w-full overflow-hidden rounded-full bg-muted; }
-    .meter > span { @apply block h-full rounded-full; transition: width var(--t-base) var(--ease-out-quart); }
+    /* No width transition. Animating width is layout thrash, and scaleX -
+       the usual substitute - squashes the bar's rounded caps. The meter is
+       set once per render, so the animation was buying nothing. */
+    .meter > span { @apply block h-full rounded-full; }
 
     /*
      * Pedigree bracket. A chart whose cards float in unconnected columns is not
