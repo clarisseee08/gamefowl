@@ -6,7 +6,7 @@
     lost an animal they cared for - a single mis-click should not be able to
     mark the wrong bird dead.
 --}}
-<div class="mx-auto max-w-2xl">
+<div class="max-w-2xl">
     <div class="mb-8 border-b border-border pb-6">
         <a href="{{ route('mortality.index') }}" wire:navigate
            class="-mt-2 inline-flex min-h-11 items-center gap-1 text-[13px] font-medium text-primary hover:underline">

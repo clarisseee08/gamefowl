@@ -9,7 +9,7 @@
     focus, and every control clears 44px because this is filled in one-handed,
     outdoors, with a bird in the other hand.
 --}}
-<div class="mx-auto max-w-3xl">
+<div class="max-w-3xl">
     <div class="mb-8 border-b border-border pb-6">
         <a href="{{ route('health.index') }}" wire:navigate
            class="inline-flex min-h-11 items-center text-[13px] font-medium text-primary hover:underline">

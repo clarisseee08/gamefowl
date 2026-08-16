@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-2xl">
+<div class="max-w-2xl">
     <div class="mb-8 border-b border-border pb-6">
         <a href="{{ route('pens.index') }}" wire:navigate class="inline-flex min-h-11 items-center text-[13px] font-medium text-primary hover:underline">
             &larr; Back to Pens

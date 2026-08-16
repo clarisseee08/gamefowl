@@ -1,6 +1,6 @@
 {{-- A data-entry column, not a full-bleed page: measured line length keeps the
      labels and their fields visually paired on a wide screen. --}}
-<div class="mx-auto max-w-3xl">
+<div class="max-w-3xl">
     <div class="mb-8 border-b border-border pb-6">
         <a href="{{ route('performance.index') }}"
            class="-mt-2 inline-flex min-h-11 items-center text-[13px] font-medium text-primary hover:underline">

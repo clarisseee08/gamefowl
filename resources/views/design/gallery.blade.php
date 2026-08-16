@@ -141,7 +141,7 @@
                         <x-band-tag :bloodline="$bl" :band="'SW-40'.str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT)" size="xs" />
                         <span class="text-[14px] text-foreground">{{ $bl }}</span>
                         <span class="datum ml-auto text-[11px] text-muted-foreground">
-                            {{ $hex }} · {{ strtoupper($fg) === '#FFFFFF' ? 'white' : 'ink' }} ·
+                            {{ $hex }} · {{ $fg === config('gfms-brand.band_foreground_light') ? 'white' : 'ink' }} ·
                             {{ number_format($ratio, 2) }}:1
                         </span>
                     </div>

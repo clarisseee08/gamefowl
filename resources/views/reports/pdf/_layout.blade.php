@@ -120,7 +120,7 @@
 
         table.data thead th {
             background-color: {{ $b['foreground'] }};
-            color: #ffffff;
+            color: {{ $b['card'] }};
             font-size: 8pt;
             font-weight: bold;
             text-align: left;
