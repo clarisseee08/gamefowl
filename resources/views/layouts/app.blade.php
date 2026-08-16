@@ -7,138 +7,91 @@
     <title>{{ $title ?? 'Dashboard' }} &middot; {{ config('gfms.farm.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="h-full">
-    @php
-        $user = auth()->user();
-        // Built server-side from the user's role so the navigation never
-        // advertises a screen the Policy would reject.
-        $nav = collect([
-            ['label' => 'Dashboard',   'route' => 'dashboard',         'internal' => true],
-            ['label' => 'Catalogue',   'route' => 'catalog.index',     'internal' => false],
-            ['label' => 'Broodcocks',  'route' => 'broodcocks.index',  'internal' => true],
-            ['label' => 'Health',      'route' => 'health.index',      'internal' => true],
-            ['label' => 'Breeding',    'route' => 'breeding.index',    'internal' => true],
-            ['label' => 'Performance', 'route' => 'performance.index', 'internal' => true],
-            ['label' => 'Mortality',   'route' => 'mortality.index',   'internal' => true],
-            ['label' => 'Pens',        'route' => 'pens.index',        'internal' => true],
-            ['label' => 'Reports',     'route' => 'reports.index',     'internal' => true],
-            ['label' => 'Users',       'route' => 'users.index',       'owner' => true],
-        ])->filter(function ($item) use ($user) {
-            if (! Route::has($item['route'])) {
-                return false;
-            }
-            if (($item['owner'] ?? false) && ! $user?->isOwner()) {
-                return false;
-            }
-            if (($item['internal'] ?? false) && ! $user?->isInternal()) {
-                return false;
-            }
+{{--
+    THE CONSOLE SHELL.
 
-            return true;
-        });
+    The single most important line in this file is `overflow-hidden` on the body
+    together with `overflow-y-auto` on the content region: the main region is the
+    ONLY scroll container in the console. The body never scrolls.
 
-        $isActive = fn (string $route) => request()->routeIs(Str::before($route, '.') . '.*')
-            || request()->routeIs($route);
-    @endphp
+    That one change is most of the difference between a website and an
+    application. Previously this was a 1120px column centred in the viewport,
+    which on a 1920px monitor left 400px of dead margin on each side - and dead
+    margin is the thing that reads as "web page" no matter how the contents are
+    styled.
 
-    <div x-data="{ mobileOpen: false }" class="min-h-full">
-        {{-- Global bar. Frosted rather than solid: depth comes from the content
-             scrolling beneath it, never from a shadow. --}}
-        <header class="frosted sticky top-0 z-40 border-b border-border">
-            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="flex h-12 items-center justify-between gap-6">
-                    {{-- inline-flex + min-h-11 so the wordmark is a full 44px tap
-                         target, not a 26px text run. It is the home link on a phone. --}}
-                    <a href="{{ route('dashboard') }}"
-                       class="inline-flex min-h-11 shrink-0 items-center text-[17px] font-semibold tracking-[-0.01em] text-foreground">
-                        {{ config('gfms.farm.name') }}
-                    </a>
+    The sidebar runs floor to ceiling and the top bar sits INSIDE the content
+    column to its right. A top bar spanning the full width above a sidebar reads
+    as an intranet.
+--}}
+<body class="h-full overflow-hidden bg-background">
+    <div
+        x-data="{
+            collapsed: localStorage.getItem('gfms-sidebar') === '1',
+            mobileNav: false,
+        }"
+        class="flex h-screen w-full overflow-hidden"
+    >
+        {{-- Desktop sidebar. Hidden below 1024px, where it becomes the sheet. --}}
+        <div class="hidden lg:flex">
+            <x-app-sidebar />
+        </div>
 
-                    {{-- Desktop nav, set below body size on purpose: the bar is a
-                         standing index you navigate by position, not something you
-                         read, so it should not compete with the record on the page. --}}
-                    <nav class="hidden flex-1 items-center gap-1 lg:flex" aria-label="Main">
-                        @foreach ($nav as $item)
-                            <a href="{{ route($item['route']) }}"
-                               @class([
-                                   'rounded-full px-3 py-1.5 text-[12px] transition-colors',
-                                   'bg-primary-50 font-medium text-primary' => $isActive($item['route']),
-                                   'text-muted-foreground hover:text-foreground' => ! $isActive($item['route']),
-                               ])
-                               @if ($isActive($item['route'])) aria-current="page" @endif>
-                                {{ $item['label'] }}
-                            </a>
-                        @endforeach
-                    </nav>
+        {{-- Off-canvas sheet + scrim for narrow viewports. --}}
+        <div x-show="mobileNav" x-cloak class="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
+            <div x-show="mobileNav"
+                 x-transition:enter="transition-opacity ease-out duration-200"
+                 x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition-opacity ease-in duration-150"
+                 x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                 @click="mobileNav = false"
+                 class="absolute inset-0 bg-foreground/40"></div>
 
-                    <div class="flex items-center gap-3">
-                        <div class="hidden text-right sm:block">
-                            <p class="text-[12px] font-medium leading-tight text-foreground">{{ $user?->full_name }}</p>
-                            <p class="text-[12px] leading-tight text-muted-foreground">{{ $user?->role->label() }}</p>
+            <div x-show="mobileNav"
+                 x-transition:enter="transition ease-out duration-260"
+                 x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full"
+                 @keydown.escape.window="mobileNav = false"
+                 x-trap.noscroll="mobileNav"
+                 class="absolute inset-y-0 left-0 flex">
+                {{-- The sheet always shows labels, whatever the desktop rail is
+                     set to: a 56px icon rail on a phone is unusable. --}}
+                <div x-data="{ collapsed: false }" class="flex">
+                    <x-app-sidebar />
+                </div>
+            </div>
+        </div>
+
+        {{-- Content column. min-w-0 is load-bearing: without it a wide table
+             forces the flex item past the viewport instead of scrolling inside
+             its own container. --}}
+        <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
+            <x-app-topbar />
+
+            {{-- THE ONLY SCROLL CONTAINER. --}}
+            <main class="min-h-0 flex-1 overflow-y-auto">
+                <div class="px-4 py-6 sm:px-6 lg:px-8">
+                    {{-- Flash messages. Both say what actually happened, never
+                         "Operation completed". --}}
+                    @if (session('success'))
+                        <div class="mb-5 rounded-[var(--radius-md)] bg-success-bg px-4 py-3 text-[15px] text-success" role="status">
+                            {{ session('success') }}
                         </div>
+                    @endif
 
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="inline-flex min-h-11 items-center px-1 text-[12px] text-primary hover:underline">
-                                Sign out
-                            </button>
-                        </form>
+                    @if (session('error'))
+                        <div class="mb-5 rounded-[var(--radius-md)] bg-destructive-bg px-4 py-3 text-[15px] text-destructive" role="alert">
+                            {{ session('error') }}
+                        </div>
+                    @endif
 
-                        <button type="button"
-                                @click="mobileOpen = ! mobileOpen"
-                                :aria-expanded="mobileOpen ? 'true' : 'false'"
-                                class="-mr-1 inline-flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-muted lg:hidden"
-                                aria-label="Toggle navigation">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.75"
-                                 viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                      x-show="! mobileOpen" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"/>
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                      x-show="mobileOpen" x-cloak d="M6 18 18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-                    </div>
+                    {{ $slot }}
                 </div>
-            </div>
+            </main>
+        </div>
 
-            {{-- Mobile nav. The one authored motion moment in the shell: a
-                 height-and-opacity reveal on an exponential ease-out. --}}
-            <div x-show="mobileOpen"
-                 x-cloak
-                 x-collapse.duration.220ms
-                 class="border-t border-border lg:hidden">
-                <nav class="space-y-0.5 px-4 py-2" aria-label="Main">
-                    @foreach ($nav as $item)
-                        <a href="{{ route($item['route']) }}"
-                           @class([
-                               'block rounded-[8px] px-3 py-2.5 text-[17px]',
-                               'bg-primary-50 font-medium text-primary' => $isActive($item['route']),
-                               'text-foreground hover:bg-muted' => ! $isActive($item['route']),
-                           ])>
-                            {{ $item['label'] }}
-                        </a>
-                    @endforeach
-                </nav>
-            </div>
-        </header>
-
-        <main class="mx-auto max-w-[1120px] px-6 py-14 sm:px-6 lg:px-8">
-            {{-- Flash messages. Both say what actually happened, never
-                 "Operation completed". --}}
-            @if (session('success'))
-                <div class="mb-6 rounded-[18px] bg-success-bg px-4 py-3 text-[17px] text-success" role="status">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div class="mb-6 rounded-[18px] bg-destructive-bg px-4 py-3 text-[17px] text-destructive" role="alert">
-                    {{ session('error') }}
-                </div>
-            @endif
-
-            {{ $slot }}
-        </main>
+        <x-command-palette />
     </div>
 
     {{-- Livewire auto-injects its scripts (and Alpine, which it bundles), so

@@ -137,6 +137,11 @@
         -webkit-text-size-adjust: 100%;
     }
 
+    /* Without this an x-show element flashes fully rendered before Alpine boots.
+       On the off-canvas sidebar that means the whole nav appears and then snaps
+       away on every page load. */
+    [x-cloak] { display: none !important; }
+
     body {
         background-color: var(--color-background);
         color: var(--color-foreground);

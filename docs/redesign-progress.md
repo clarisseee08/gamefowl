@@ -15,16 +15,18 @@ the rule that colour means bloodline.
 
 ## Steps
 
-- [x] 1. Tokens into `config/gfms-brand.php` + Tailwind theme (elevation, radius, motion, semantic pairs)
-- [ ] 2. Rebuild `/design` against new tokens — screenshot + critique before proceeding
-- [ ] 3. App shell — sidebar, top bar, breadcrumbs
-- [ ] 4. Command palette (⌘K)
-- [ ] 5. Card / table / form / badge components
-- [ ] 6. Dashboard — stat tiles, sparklines, compliance bars
-- [ ] 7. Catalogue index + bird detail
-- [ ] 8. Pedigree — elevation, hover, focus affordance
-- [ ] 9. PDF templates
-- [ ] 10. Dark mode (only if 1–9 complete and green)
+- [x] 1. Tokens into `config/gfms-brand.php` + Tailwind theme
+- [x] 2. App shell — full-bleed, full-height, sidebar, scroll containment (§3.5)
+- [ ] 3. Rebuild `/design` against new tokens
+- [ ] 4. Command palette — bird search (route jumping already shipped in step 2)
+- [ ] 5. Card / table / form / badge / drawer / toast components
+- [ ] 6. Broodcock table with the full §3.7 behaviour set
+- [ ] 7. Dashboard — stat tiles, sparklines, compliance bars
+- [ ] 8. Catalogue index + bird detail (full-bleed)
+- [ ] 9. Pedigree — elevation, hover, focus affordance
+- [ ] 10. Propagate §3.7 to health / breeding / performance
+- [ ] 11. PDF templates
+- [ ] 12. Dark mode (only if 1–11 complete and green)
 
 ## Decisions taken
 
@@ -50,7 +52,12 @@ would only have reintroduced the failure the old `ink-48` had on pearl.
 
 ## Open concerns
 
-_(appended as they happen)_
+**Sticky page-header stack is only half done.** §3.5 asks for breadcrumbs (56px),
+page header (64px) and tab rail (44px) all sticky above the scroll region. The
+breadcrumb bar is in the shell and sticky; the page header and tab rail are still
+owned by individual views and scroll away with the content. Landing them properly
+means touching all eleven console views, so it is folded into steps 5–10 rather
+than done as a separate pass.
 
 ## Could not do
 
