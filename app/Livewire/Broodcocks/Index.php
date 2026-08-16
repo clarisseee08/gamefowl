@@ -97,6 +97,98 @@ final class Index extends Component
             || $this->pen !== '';
     }
 
+    /**
+     * Clears one filter without touching the others, so a filter chip's × does
+     * what it looks like it does.
+     */
+    public function clearFilter(string $filter): void
+    {
+        if (! in_array($filter, ['search', 'status', 'class', 'sex', 'bloodline', 'breed', 'pen'], true)) {
+            return;
+        }
+
+        $this->reset($filter);
+        $this->resetPage();
+    }
+
+    // -----------------------------------------------------------------
+    // Bulk selection
+    //
+    // The selection lives in the component rather than in Alpine because it has
+    // to survive pagination and a filter change - a selection that silently
+    // empties when you turn the page is worse than no selection at all.
+    // -----------------------------------------------------------------
+
+    /** @var array<int, int> */
+    public array $selected = [];
+
+    public function toggleSelectPage(): void
+    {
+        $ids = $this->broodcocks->pluck('id')->all();
+        $allOnPageSelected = ! array_diff($ids, $this->selected);
+
+        $this->selected = $allOnPageSelected
+            ? array_values(array_diff($this->selected, $ids))
+            : array_values(array_unique([...$this->selected, ...$ids]));
+    }
+
+    public function clearSelection(): void
+    {
+        $this->selected = [];
+    }
+
+    /**
+     * Whether the bulk Delete button should be offered at all.
+     *
+     * BroodcockPolicy::delete() takes a model, so a class-level @can in the view
+     * throws "too few arguments" - a class-level check only works for methods
+     * that take no instance, like viewAny and create. This asks the real
+     * question instead: is there anything in the current selection this user is
+     * actually allowed to delete? One bounded query, and only when something is
+     * selected.
+     */
+    #[Computed]
+    public function canDeleteSelection(): bool
+    {
+        if ($this->selected === []) {
+            return false;
+        }
+
+        return Broodcock::query()
+            ->whereIn('id', $this->selected)
+            ->get()
+            ->contains(fn (Broodcock $bird) => auth()->user()?->can('delete', $bird));
+    }
+
+    /**
+     * Deletes the current selection.
+     *
+     * Deliberately a loop over the SAME authorize-then-delete path a single row
+     * already uses, not a mass query. A `whereIn(...)->delete()` would bypass
+     * the Policy and the model's own delete handling, which is exactly the kind
+     * of shortcut that turns a bulk action into a data-loss incident. Rows the
+     * user may not delete are skipped rather than failing the whole batch.
+     */
+    public function deleteSelected(): void
+    {
+        $deleted = 0;
+
+        foreach (Broodcock::query()->whereIn('id', $this->selected)->get() as $bird) {
+            if (auth()->user()?->can('delete', $bird)) {
+                $bird->delete();
+                $deleted++;
+            }
+        }
+
+        $skipped = count($this->selected) - $deleted;
+        $this->selected = [];
+        $this->resetPage();
+
+        session()->flash('success', $skipped > 0
+            ? "{$deleted} ".str('bird')->plural($deleted)." removed. {$skipped} could not be removed with your role."
+            : "{$deleted} ".str('bird')->plural($deleted).' removed from the active records.');
+    }
+
     /** @return LengthAwarePaginator<int, Broodcock> */
     #[Computed]
     public function broodcocks(): LengthAwarePaginator

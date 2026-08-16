@@ -318,6 +318,11 @@
     /* Row hover tint + inline actions revealed on hover. */
     .row-hover { transition: background-color var(--t-fast) var(--ease-out-quart); }
     .row-hover:hover { background-color: var(--color-muted); }
+    /* A selected row must stay visibly selected while the pointer is over it.
+       Without this the hover tint wins and the row you are about to act on is
+       the one row that stops looking selected. */
+    .row-hover.is-selected,
+    .row-hover.is-selected:hover { background-color: var(--color-primary-50); }
     .row-actions { @apply opacity-0; transition: opacity var(--t-fast) var(--ease-out-quart); }
     .row-hover:hover .row-actions,
     .row-hover:focus-within .row-actions { @apply opacity-100; }
