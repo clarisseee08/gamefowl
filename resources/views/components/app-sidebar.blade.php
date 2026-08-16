@@ -85,10 +85,14 @@
          style="border-bottom: 1px solid var(--color-brand-deeper)">
         <button type="button"
                 @click="collapsed = ! collapsed; localStorage.setItem('gfms-sidebar', collapsed ? '1' : '0')"
-                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-sm)] text-brand-foreground hover:bg-brand-deeper"
+                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-foreground ring-1 ring-brand-deeper hover:opacity-90"
                 :aria-label="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
                 :aria-expanded="collapsed ? 'false' : 'true'">
-            <x-icon.rooster class="h-7 w-7" eye="var(--color-brand-deep)" />
+            {{-- The badge is dark green and gold; the rail is dark red. Placed
+                 straight onto it, a 30px logo reads as a dark blob. It gets its
+                 own light ground, which is what a coloured badge normally needs
+                 on a dark surface - and it keeps the artwork untouched. --}}
+            <x-brand-mark :size="30" class="rounded-full" />
         </button>
         <div x-show="! collapsed" x-cloak class="min-w-0 flex-1">
             <p class="truncate text-[14px] font-semibold leading-tight text-brand-foreground">
@@ -127,13 +131,25 @@
 
     {{-- Pinned bottom: who you are and how to leave. --}}
     <div class="shrink-0 p-2" style="border-top: 1px solid var(--color-brand-deeper)">
-        <div class="flex items-center gap-2.5 rounded-[var(--radius-sm)] px-2 py-1.5">
-            <x-icon.user class="h-8 w-8 shrink-0" tone="onDark" />
+        {{-- The whole block is the link to your own profile: a name you can
+             click is a more obvious affordance than a separate icon beside it. --}}
+        <a href="{{ route('profile.edit') }}"
+           @class(['flex items-center gap-2.5 rounded-[var(--radius-sm)] px-2 py-1.5 transition-colors hover:bg-brand-deeper',
+                   'bg-brand-deeper' => request()->routeIs('profile.*')])>
+            @if ($user?->hasProfilePhoto() && $user->profilePhotoUrl())
+                <img src="{{ $user->profilePhotoUrl() }}" alt=""
+                     class="h-8 w-8 shrink-0 rounded-full object-cover"
+                     style="box-shadow: inset 0 0 0 1px var(--color-brand-deeper)">
+            @else
+                <x-icon.user class="h-8 w-8 shrink-0" tone="onDark" />
+            @endif
             <div x-show="! collapsed" x-cloak class="min-w-0 flex-1">
                 <p class="truncate text-[13px] font-medium leading-tight text-brand-foreground">{{ $user?->full_name }}</p>
                 <p class="truncate text-[11px] leading-tight text-brand-muted-fg">{{ $user?->role->label() }}</p>
             </div>
-            <form method="POST" action="{{ route('logout') }}" x-show="! collapsed" x-cloak>
+        </a>
+
+        <form method="POST" action="{{ route('logout') }}" x-show="! collapsed" x-cloak class="mt-1">
                 @csrf
                 <button type="submit"
                         class="inline-flex h-9 w-9 items-center justify-center rounded-[var(--radius-sm)] text-brand-muted-fg hover:bg-brand-deeper hover:text-brand-foreground"
@@ -142,8 +158,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round"
                               d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"/>
                     </svg>
-                </button>
-            </form>
-        </div>
+            </button>
+        </form>
     </div>
 </aside>

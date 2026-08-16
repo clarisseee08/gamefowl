@@ -32,7 +32,9 @@
             <x-brand-lockup size="md" tone="onDark" class="lg:hidden" />
 
             <div class="hidden lg:block">
-                <x-icon.rooster class="h-20 w-20 text-brand-foreground" eye="var(--color-brand-deep)" />
+                <span class="inline-flex h-28 w-28 items-center justify-center rounded-full bg-brand-foreground">
+                    <x-brand-mark :size="96" class="rounded-full" />
+                </span>
 
                 <h1 class="mt-8 text-[34px] font-semibold leading-[1.15] text-brand-foreground">
                     {{ config('gfms.system.name') }}

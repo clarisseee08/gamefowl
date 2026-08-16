@@ -30,7 +30,8 @@
 
 {{-- Favicon set. The SVG is the mark itself, so it stays sharp at any density;
      the ICO is the fallback for browsers that still want one. --}}
-<link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
-<link rel="alternate icon" href="{{ asset('favicon.ico') }}" sizes="32x32">
+<link rel="icon" href="{{ asset('favicon.ico') }}" sizes="32x32">
+<link rel="icon" href="{{ asset('images/brand/logo-192.png') }}" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+<meta property="og:image" content="{{ asset('images/brand/logo-512.png') }}">
 <meta name="theme-color" content="{{ config('gfms-brand.brand_deep') }}">

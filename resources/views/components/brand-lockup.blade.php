@@ -27,7 +27,7 @@
 @endphp
 
 <span {{ $attributes->merge(['class' => 'inline-flex items-center '.$gaps[$size]]) }}>
-    <x-icon.rooster :class="$marks[$size].' shrink-0 '.$markColour" :eye="$eye" />
+    <x-brand-mark :size="$size === 'lg' ? 64 : ($size === 'md' ? 28 : 20)" />
 
     @unless ($markOnly)
         <span class="min-w-0">

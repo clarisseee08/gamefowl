@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -34,6 +35,8 @@ class User extends Authenticatable
         'address',
         'position',
         'is_active',
+        'profile_photo_path',
+        'profile_photo_disk',
     ];
 
     /** @var list<string> */
@@ -143,5 +146,36 @@ class User extends Authenticatable
                 ->orWhereLike('email', "%{$term}%", caseSensitive: false)
                 ->orWhereLike('position', "%{$term}%", caseSensitive: false);
         });
+    }
+
+    /**
+     * A URL the browser can render for this user's photo, or null.
+     *
+     * Mirrors BroodcockPhoto::url(): the Supabase bucket is private, so signed
+     * temporary URLs are used where the driver supports them, falling back to a
+     * plain URL on the local public disk. Reading the disk from the row rather
+     * than from config is what makes an old photo still resolve after the
+     * default disk changes.
+     */
+    public function profilePhotoUrl(int $minutes = 30): ?string
+    {
+        if (blank($this->profile_photo_path)) {
+            return null;
+        }
+
+        $disk = Storage::disk($this->profile_photo_disk ?: config('filesystems.default'));
+
+        if (! $disk->exists($this->profile_photo_path)) {
+            return null;
+        }
+
+        return $disk->providesTemporaryUrls()
+            ? $disk->temporaryUrl($this->profile_photo_path, now()->addMinutes($minutes))
+            : $disk->url($this->profile_photo_path);
+    }
+
+    public function hasProfilePhoto(): bool
+    {
+        return filled($this->profile_photo_path);
     }
 }

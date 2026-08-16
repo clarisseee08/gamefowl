@@ -13,6 +13,7 @@ use App\Livewire\Health;
 use App\Livewire\Mortality;
 use App\Livewire\Pens;
 use App\Livewire\Performance;
+use App\Livewire\Profile;
 use App\Livewire\Reports;
 use App\Livewire\Users;
 use Illuminate\Support\Facades\Route;
@@ -136,6 +137,13 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         Route::livewire('/{pen}/assign', Pens\AssignBroodcocks::class)->name('assign');
         Route::livewire('/{pen}', Pens\Show::class)->name('show');
     });
+
+    /*
+     * A user's own profile. Not inside the users.* group on purpose: that group
+     * is the owner administering OTHER accounts, and this is every signed-in
+     * user editing their own. Different authorization, different route.
+     */
+    Route::livewire('/profile', Profile\Edit::class)->name('profile.edit');
 
     /*
      * The component gallery. Not a feature - it is the reference the interface

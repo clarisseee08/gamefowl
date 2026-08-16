@@ -27,9 +27,7 @@
         <div class="flex h-14 items-center gap-4 px-4 sm:px-6 lg:px-8">
             <a href="{{ route('catalog.index') }}"
                class="inline-flex min-h-11 shrink-0 items-center gap-2.5 text-[15px] font-semibold text-foreground">
-                <span class="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] bg-primary text-[12px] text-primary-foreground">
-                    SS
-                </span>
+<x-brand-mark :size="30" />
                 <span class="truncate">{{ config('gfms.farm.name') }}</span>
             </a>
 

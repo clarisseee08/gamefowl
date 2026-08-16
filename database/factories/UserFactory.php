@@ -33,6 +33,14 @@ class UserFactory extends Factory
             'address' => fake()->address(),
             'position' => null,
             'is_active' => true,
+
+            // Declared even though they are null. Model::shouldBeStrict() throws
+            // on reading an attribute that was never loaded, and a factory-built
+            // model only carries the keys the factory set - so omitting these
+            // made every view touching a profile photo explode in tests while
+            // working perfectly in the app, where the row is selected in full.
+            'profile_photo_path' => null,
+            'profile_photo_disk' => null,
             'remember_token' => Str::random(10),
         ];
     }

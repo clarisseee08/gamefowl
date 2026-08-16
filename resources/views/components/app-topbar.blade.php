@@ -58,13 +58,21 @@
         </svg>
     </button>
 
+    {{--
+        Breadcrumbs only where they earn their place.
+
+        On an index screen the trail was a single crumb repeating the page's own
+        h1 one line below it - "Dashboard" above "Good morning, Salvador", or
+        "Broodcocks" above "Broodcocks". A breadcrumb that names where you
+        already obviously are is noise, and it took a whole row of the bar.
+
+        On a SUB-page it is the way back, so it stays there.
+    --}}
     <nav class="flex min-w-0 flex-1 items-center gap-2 text-[13px]" aria-label="Breadcrumb">
         @if ($sectionRoute && $crumb)
             <a href="{{ $sectionRoute }}" class="truncate text-muted-foreground hover:text-foreground">{{ $sectionLabel }}</a>
             <span class="text-muted-foreground" aria-hidden="true">/</span>
             <span class="truncate font-medium text-foreground" aria-current="page">{{ $crumb }}</span>
-        @else
-            <span class="truncate font-medium text-foreground" aria-current="page">{{ $sectionLabel }}</span>
         @endif
     </nav>
 
