@@ -110,7 +110,7 @@ final class MortalityReportTest extends TestCase
 
         $row = $this->report()->rows()->firstWhere('bird_name', 'Bantay');
 
-        $this->assertSame('2 yrs', $row['age_at_death']);
+        $this->assertSame('24 mos', $row['age_at_death']);
     }
 
     public function test_unknown_and_known_ages_coexist_without_crashing(): void
@@ -122,7 +122,7 @@ final class MortalityReportTest extends TestCase
 
         $this->assertCount(2, $rows);
         $this->assertSame('Unknown', $rows->firstWhere('bird_name', 'NoDate')['age_at_death']);
-        $this->assertSame('1 yr', $rows->firstWhere('bird_name', 'HasDate')['age_at_death']);
+        $this->assertSame('12 mos', $rows->firstWhere('bird_name', 'HasDate')['age_at_death']);
     }
 
     // -----------------------------------------------------------------

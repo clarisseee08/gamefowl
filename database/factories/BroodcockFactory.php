@@ -28,7 +28,11 @@ class BroodcockFactory extends Factory
         $hatched = fake()->dateTimeBetween('-4 years', '-8 months');
 
         return [
-            'band_number' => strtoupper(fake()->bothify('??-####')),
+            // unique() matters: band_number carries a UNIQUE constraint, and
+            // bothify() alone will eventually repeat inside a single run. That
+            // surfaced as an intermittent UniqueConstraintViolationException in
+            // an unrelated pagination test - a flake with a real cause.
+            'band_number' => strtoupper(fake()->unique()->bothify('??-####')),
             'name' => fake()->firstName(),
             'breed' => fake()->randomElement(self::BREEDS),
             'bloodline' => fake()->randomElement(self::BLOODLINES),

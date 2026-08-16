@@ -211,7 +211,9 @@ final class BroodcockInventoryReportTest extends TestCase
 
         $row = $this->report()->rows()->firstWhere('name', 'Veteran');
 
-        $this->assertSame('2 yrs 2 mos', $row['age']);
+        // Months only - see Broodcock::ageLabel(). A keeper compares birds in
+        // months, and 26 sorts by eye where '2 yrs 2 mos' does not.
+        $this->assertSame('26 mos', $row['age']);
     }
 
     public function test_missing_parents_and_pens_are_labelled_rather_than_left_blank(): void

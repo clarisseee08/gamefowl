@@ -487,16 +487,10 @@ final class MortalityReport implements ReportDefinition
 
     private function ageLabel(int $months): string
     {
-        $years = intdiv($months, 12);
-        $remainder = $months % 12;
-
-        if ($years === 0) {
-            return $months === 1 ? '1 mo' : "{$months} mos";
-        }
-
-        $label = $years === 1 ? '1 yr' : "{$years} yrs";
-
-        return $remainder === 0 ? $label : "{$label} {$remainder} mos";
+        // Months only, matching Broodcock::ageLabel(). The two are separate
+        // implementations because the report works from a stored month count
+        // rather than a live date, so they have to be changed together.
+        return $months === 1 ? '1 mo' : "{$months} mos";
     }
 
     private function classLabel(string $class): string

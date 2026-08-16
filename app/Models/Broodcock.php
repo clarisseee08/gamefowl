@@ -122,17 +122,16 @@ class Broodcock extends Model
             return null;
         }
 
+        // Months only, never years-and-months.
+        //
+        // Gamefowl are managed in months throughout their working life - a
+        // keeper thinks "that cock is 26 months", not "2 years 2 months", and a
+        // mixed unit forces a mental conversion every time two birds are
+        // compared. It also makes the column sortable by eye: 8, 14, 26 reads
+        // in order, where "1 yr 2 mos" against "8 mos" does not.
         $months = (int) $this->date_hatched->diffInMonths(now());
-        $years = intdiv($months, 12);
-        $remainder = $months % 12;
 
-        if ($years === 0) {
-            return $months === 1 ? '1 mo' : "{$months} mos";
-        }
-
-        $label = $years === 1 ? '1 yr' : "{$years} yrs";
-
-        return $remainder === 0 ? $label : "{$label} {$remainder} mos";
+        return $months === 1 ? '1 mo' : "{$months} mos";
     }
 
     // -----------------------------------------------------------------
