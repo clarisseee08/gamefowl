@@ -425,7 +425,7 @@
         background-clip: content-box;
     }
     .scroll-slim:hover::-webkit-scrollbar-thumb {
-        background-color: #cdd2cb;
+        background-color: color-mix(in srgb, var(--color-muted-foreground) 32%, transparent);
         background-clip: content-box;
     }
 
@@ -436,20 +436,20 @@
        bar at all is the cue that there is more nav below the fold. */
     .scroll-slim-dark {
         scrollbar-width: thin;
-        scrollbar-color: rgb(219 194 193 / 0.35) transparent;
+        scrollbar-color: color-mix(in srgb, var(--color-brand-muted-fg) 35%, transparent) transparent;
     }
     .scroll-slim-dark::-webkit-scrollbar { width: 10px; }
     .scroll-slim-dark::-webkit-scrollbar-track { background: transparent; }
     .scroll-slim-dark::-webkit-scrollbar-button { display: none; height: 0; width: 0; }
     .scroll-slim-dark::-webkit-scrollbar-corner { background: transparent; }
     .scroll-slim-dark::-webkit-scrollbar-thumb {
-        background-color: rgb(219 194 193 / 0.35);
+        background-color: color-mix(in srgb, var(--color-brand-muted-fg) 35%, transparent);
         border-radius: 999px;
         border: 3px solid transparent;
         background-clip: content-box;
     }
     .scroll-slim-dark:hover::-webkit-scrollbar-thumb {
-        background-color: rgb(219 194 193 / 0.55);
+        background-color: color-mix(in srgb, var(--color-brand-muted-fg) 55%, transparent);
         background-clip: content-box;
     }
 
