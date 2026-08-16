@@ -101,7 +101,7 @@
                     </thead>
                     <tbody class="divide-y divide-border bg-card">
                         @foreach ($this->records as $record)
-                            <tr class="hover:bg-muted">
+                            <tr class="group row-hover">
                                 <td class="whitespace-nowrap px-6 py-4 text-sm text-foreground">
                                     {{ $record->mating_date->format('j M Y') }}
                                 </td>

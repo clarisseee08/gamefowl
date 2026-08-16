@@ -247,7 +247,7 @@
                     </thead>
                     <tbody class="divide-y divide-border bg-card">
                         @foreach ($this->offspring as $child)
-                            <tr class="hover:bg-muted">
+                            <tr class="group row-hover">
                                 <td class="px-6 py-4 text-sm font-medium">
                                     <a href="{{ route('broodcocks.show', $child) }}" class="text-primary hover:underline">
                                         {{ $child->displayBand() }}

@@ -83,7 +83,7 @@
                     </thead>
                     <tbody class="divide-y divide-border bg-card">
                         @foreach ($this->history as $entry)
-                            <tr class="hover:bg-muted">
+                            <tr class="group row-hover">
                                 <td class="px-6 py-4 text-sm font-medium text-foreground">
                                     {{ Str::headline($entry->report_type) }}
                                 </td>

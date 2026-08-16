@@ -247,7 +247,7 @@
                     </thead>
                     <tbody class="bg-card">
                         @foreach ($this->rows as $record)
-                            <tr wire:key="row-{{ $record->id }}" class="hover:bg-muted">
+                            <tr wire:key="row-{{ $record->id }}" class="group row-hover">
                                 <td class="px-4 py-3">
                                     <p class="font-medium text-foreground">{{ $record->broodcock?->name ?? 'Unknown bird' }}</p>
                                     {{-- "Not yet banded" is a real state, never a blank cell -

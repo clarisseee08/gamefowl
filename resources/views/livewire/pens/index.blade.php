@@ -123,7 +123,7 @@
                                 $remaining = $pen->remainingCapacity();
                                 $percent = $pen->capacity > 0 ? min(100, (int) round($occupancy / $pen->capacity * 100)) : null;
                             @endphp
-                            <tr wire:key="pen-{{ $pen->id }}" class="hover:bg-muted">
+                            <tr wire:key="pen-{{ $pen->id }}" class="group row-hover">
                                 <td class="whitespace-nowrap px-4 py-3">
                                     <a href="{{ route('pens.show', $pen) }}" wire:navigate class="datum text-[15px] font-medium text-primary hover:underline">
                                         {{ $pen->code }}

@@ -23,8 +23,8 @@ the rule that colour means bloodline.
 - [x] 6. Broodcock table with the full §3.7 behaviour set
 - [x] 7. Dashboard — stat tiles, sparklines, compliance bars
 - [x] 8. Catalogue index + bird detail (full-bleed)
-- [ ] 9. Pedigree — elevation, hover, focus affordance
-- [ ] 10. Propagate §3.7 to health / breeding / performance
+- [x] 9. Pedigree — elevation, hover, focus affordance
+- [~] 10. Propagate §3.7 to health / breeding / performance
 - [ ] 11. PDF templates
 - [ ] 12. Dark mode (only if 1–11 complete and green)
 

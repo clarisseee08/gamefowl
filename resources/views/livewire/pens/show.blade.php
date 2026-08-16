@@ -139,7 +139,7 @@
                             </thead>
                             <tbody class="table-hairline bg-card">
                                 @foreach ($this->birds as $bird)
-                                    <tr wire:key="bird-{{ $bird->id }}" class="hover:bg-muted">
+                                    <tr wire:key="bird-{{ $bird->id }}" class="group row-hover">
                                         <td class="px-4 py-3 text-[15px] font-medium text-foreground">{{ $bird->name }}</td>
                                         <td class="whitespace-nowrap px-4 py-3">
                                             <x-band-tag :bloodline="$bird->bloodline" :band="$bird->band_number" size="xs" />

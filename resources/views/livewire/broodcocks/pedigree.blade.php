@@ -10,10 +10,10 @@
 <div>
     <div class="mb-10 sm:flex sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-foreground">
+            <h1 class="text-[26px] font-semibold leading-[1.2] text-foreground">
                 Family Tree &mdash; {{ $root->name }}
             </h1>
-            <p class="mt-3 text-[17px] leading-relaxed text-muted-foreground">
+            <p class="mt-1 max-w-[68ch] text-[14px] leading-relaxed text-muted-foreground">
                 Three generations of ancestors, built from the sire and dam recorded on each bird.
             </p>
         </div>
@@ -33,8 +33,8 @@
                 ({{ $completeness['percent'] }}%)
             </span>
         </div>
-        <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-background">
-            <div class="h-full rounded-full bg-primary" style="width: {{ $completeness['percent'] }}%"></div>
+        <div class="meter mt-2.5">
+            <span class="bg-primary" style="width: {{ $completeness['percent'] }}%"></span>
         </div>
         @if ($completeness['known'] === 0)
             <p class="mt-3 text-sm text-muted-foreground">
