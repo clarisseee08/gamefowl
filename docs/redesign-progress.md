@@ -17,8 +17,8 @@ the rule that colour means bloodline.
 
 - [x] 1. Tokens into `config/gfms-brand.php` + Tailwind theme
 - [x] 2. App shell — full-bleed, full-height, sidebar, scroll containment (§3.5)
-- [ ] 3. Rebuild `/design` against new tokens
-- [ ] 4. Command palette — bird search (route jumping already shipped in step 2)
+- [x] 3. Rebuild `/design` against new tokens
+- [x] 4. Command palette — bird search (route jumping already shipped in step 2)
 - [ ] 5. Card / table / form / badge / drawer / toast components
 - [ ] 6. Broodcock table with the full §3.7 behaviour set
 - [ ] 7. Dashboard — stat tiles, sparklines, compliance bars

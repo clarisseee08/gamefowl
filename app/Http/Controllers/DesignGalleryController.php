@@ -36,13 +36,13 @@ class DesignGalleryController extends Controller
             // Ratios are computed, not typed in. A styleguide that asserts its
             // own accessibility without measuring it is worth nothing.
             'inkPairs' => [
-                ['ink', $brand['ink'], 'paper', $brand['paper']],
-                ['ink_muted', $brand['ink_muted'], 'paper', $brand['paper']],
-                ['ink_faint', $brand['ink_faint'], 'paper', $brand['paper']],
-                ['action', $brand['action'], 'paper', $brand['paper']],
+                ['foreground', $brand['foreground'], 'background', $brand['background']],
+                ['muted_foreground', $brand['muted_foreground'], 'background', $brand['background']],
+                ['muted_foreground', $brand['muted_foreground'], 'muted', $brand['muted']],
+                ['primary', $brand['primary'], 'card', $brand['card']],
             ],
-            'statusPairs' => collect(['ok', 'warn', 'alert', 'note', 'quiet'])
-                ->map(fn (string $k) => [$k, $brand[$k], $k.'_wash', $brand[$k.'_wash']])
+            'statusPairs' => collect(['success', 'warning', 'destructive', 'info'])
+                ->map(fn (string $k) => [$k, $brand[$k], $k.'_bg', $brand[$k.'_bg']])
                 ->all(),
         ]);
     }
