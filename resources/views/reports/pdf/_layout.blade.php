@@ -55,13 +55,13 @@
             left: 0;
             right: 0;
             height: 14mm;
-            border-bottom: 1pt solid {{ $b['print']['rule_strong'] }};
+            border-bottom: 2pt solid {{ $b['brand'] }};
         }
 
         .page-header .farm {
             font-size: 13pt;
             font-weight: bold;
-            color: {{ $b['foreground'] }};
+            color: {{ $b['brand'] }};
         }
 
         .page-header .subtitle {
@@ -87,6 +87,8 @@
         }
 
         h1 {
+            border-left: 3pt solid {{ $b['brand'] }};
+            padding-left: 3mm;
             font-size: 15pt;
             margin: 0 0 2mm 0;
             color: {{ $b['foreground'] }};

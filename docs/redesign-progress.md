@@ -1,5 +1,8 @@
 # Redesign progress — "Registry, running as software"
 
+> **Identity pass (name / mark / colour) is complete.** See the section at the
+> end of this file. Rollback for that pass: `git tag design/pre-identity`.
+
 **Rollback:** `git tag design/field-ledger-v1` (`a6b640a`). Earlier world at
 `design/apple-v1` (`3938e56`).
 
@@ -145,3 +148,73 @@ date-range picker. The components built here by hand (command palette, popover,
 sheet, sparkline, band tag) are small, carry no dependency, and are already
 themed. Adopting a library now would trade them for a foreign visual language and
 a version to track, on a deadline.
+
+
+---
+
+# Identity pass — name, mark, colour
+
+## Name
+
+**Gamefowl Breeding Management System / GBMS**, held in `config.gfms.system` and
+read from there by every browser title, meta tag, OG tag, auth screen, report
+heading and PDF header. Exactly one hardcoded occurrence existed — the PDF
+running header. `tests/Unit/SystemNameTest.php` fails on any recurrence.
+
+**Internals deliberately unchanged:** `config/gfms-brand.php`, the `GFMS_*` env
+keys, route names, table names, CSS prefixes and test filenames. Renaming them is
+invisible to a user and risks the suite. Future work if it ever grates.
+
+## Mark
+
+A rooster head built from geometry, not traced: three overlapping circles for the
+comb, a circle for the head, a triangle beak, two wattle circles, a knocked-out
+eye. The raster favicon is drawn with the **same** geometry through GD rather
+than converted from the SVG, so the vector and the bitmap cannot drift.
+
+It took three passes to read as a bird:
+
+1. An off-centre neck cut a notch where it met the head.
+2. Notch fixed, but the neck was still the largest element and the silhouette
+   read as a chess piece.
+3. Neck removed entirely — head-only, which is what the brief said. Comb radius
+   raised to 2.9 because at 16px the geometric r=2 merged three points into one
+   lump.
+
+Deliverables: Blade component, `favicon.svg`, a real `favicon.ico` (32px PNG-in-
+ICO, previously a 0-byte placeholder), `apple-touch-icon.png` at 180px,
+`mark-mono.svg` for print, and a lockup component with the wordmark dropping
+below rail width.
+
+## Colour
+
+Deep comb red on the sidebar, not a saturated top bar. The rail is on every
+console screen at full height, so it carries far more colour presence, and a dark
+navigation rail is a current pattern where a bright top bar is a 2014 one. Plus a
+3px brand rail across the very top of the viewport, brand markers on page titles,
+a two-panel auth screen, and brand rules in the PDF chrome.
+
+**Brand red is chrome only, and there is a test for it.** This app already uses
+red for mortality and overdue vaccinations. If brand red also appeared on a
+button, a keeper could not tell branded from urgent — in a system whose job
+includes flagging dead birds that is a usability defect, not an aesthetic one.
+Peacock stays the interactive colour.
+
+### Deviation, logged
+
+`brand_muted_fg` was specified as `#C9A2A0`, which measures **5.16:1** on the
+sidebar. It carries inactive nav labels — Console body text, under a 7:1 floor.
+Lightened to `#DBC2C1` per the brief's own instruction to adjust the foreground
+and never the surface. Verified in the browser afterwards: **all 17 sidebar text
+elements clear 7:1, worst 7.04**.
+
+## Measured, after
+
+| | Result |
+|---|---|
+| Routes checked (status, stock palette, centred column, old name, brand-on-control, new name present) | **14 / 14 clean** |
+| Contrast failures at 390px | **0** |
+| Touch targets under 44px | **0** |
+| Horizontal scroll at 390px | **none** |
+| Body scrolls in console | **no** |
+| Tests | **476 passing** |
