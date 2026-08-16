@@ -10,6 +10,7 @@ use App\Models\Broodcock;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -26,6 +27,13 @@ use Livewire\WithPagination;
  * Authorization is still the Policy - this class narrows what is SHOWN, it is
  * not what enforces access.
  */
+/*
+ * The catalogue is the PUBLIC surface and gets its own shell: full-bleed like
+ * the console, but without the console sidebar. A dense app rail is wrong for a
+ * photo-led browse, and it would show a customer navigation for screens they
+ * cannot open.
+ */
+#[Layout('layouts::catalog')]
 final class Index extends Component
 {
     use WithPagination;

@@ -1,7 +1,7 @@
 <div>
     <div class="mb-10">
-        <h1 class="text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-foreground">Our Gamefowl</h1>
-        <p class="mt-3 text-[17px] leading-relaxed text-muted-foreground">
+        <h1 class="text-[26px] font-semibold leading-[1.2] text-foreground">Our Gamefowl</h1>
+        <p class="mt-1 max-w-[68ch] text-[14px] leading-relaxed text-muted-foreground">
             Browse the birds currently on the farm. Tap any bird to see its photos,
             health record, family tree and performance history.
         </p>
@@ -66,7 +66,7 @@
             <h3 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-foreground">
                 {{ $this->hasActiveFilters() ? 'No birds match your search' : 'No birds are listed yet' }}
             </h3>
-            <p class="mt-3 text-[17px] leading-relaxed text-muted-foreground">
+            <p class="mt-1 max-w-[68ch] text-[14px] leading-relaxed text-muted-foreground">
                 {{ $this->hasActiveFilters()
                     ? 'Try a different bloodline or clear the filters to see everything.'
                     : 'Please check back soon.' }}
@@ -76,25 +76,25 @@
             @endif
         </div>
     @else
-        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6">
             @foreach ($this->birds as $bird)
                 <a href="{{ route('broodcocks.show', $bird) }}"
-                   class="card group overflow-hidden transition hover:border-muted-foreground">
+                   class="card card-interactive group overflow-hidden">
                     @if ($bird->primaryPhoto)
                         <x-photo-thumb :photo="$bird->primaryPhoto" :alt="'Photo of '.$bird->name"
-                                       class="aspect-4/5 w-full" />
+                                       class="aspect-[4/3] w-full" />
                     @else
                         {{-- Most birds on a working farm have no photo, so this well is
                              the largest element on the page and it was showing nothing.
                              Filling it with the bloodline's band colour turns the dead
                              space into the strongest scanning signal in the grid: you can
                              read the bloodline mix of a page at arm's length. --}}
-                        <div class="relative flex aspect-4/5 w-full flex-col items-center justify-center gap-2"
+                        <div class="relative flex aspect-[4/3] w-full flex-col items-center justify-center gap-2"
                              style="background-color: {{ \App\Support\BandTag::hex($bird->bloodline) }}0f">
                             {{-- Held at 38px on purpose: large enough to scan a page of
                                  bloodlines at arm's length, quiet enough that the band tag
                                  below stays the signature. --}}
-                            <span class="text-[38px] font-medium leading-none tracking-[-0.01em] opacity-80"
+                            <span class="text-[30px] font-medium leading-none tracking-[-0.01em] opacity-80"
                                   style="color: {{ \App\Support\BandTag::hex($bird->bloodline) }}"
                                   aria-hidden="true">{{ \App\Support\BandTag::code($bird->bloodline) }}</span>
                             <span class="text-[12px] text-muted-foreground">No photo yet</span>
