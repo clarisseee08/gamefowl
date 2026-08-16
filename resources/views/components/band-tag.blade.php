@@ -15,6 +15,17 @@
     // foreground that actually passes - which also covers whatever colour the
     // deterministic hash hands an unanticipated bloodline.
     $fg = BandTag::foreground($bloodline);
+
+    /*
+     * The code chip tints the band so the two-letter code reads as a separate
+     * element. The tint has to move the ground AWAY from the text, not toward
+     * it: tinting with the text's own colour darkened an ember band under dark
+     * ink and measured 3.84:1. So a light foreground darkens the chip and a dark
+     * foreground lightens it.
+     */
+    $chipTint = $fg === config('gfms-brand.band_foreground_light')
+        ? 'rgb(0 0 0 / 0.22)'
+        : 'rgb(255 255 255 / 0.45)';
     $code = BandTag::code($bloodline);
     $aria = BandTag::label($bloodline, $band);
 
@@ -37,7 +48,7 @@
           title="{{ $aria }}">
         @if ($showCode)
             <span class="band-code" aria-hidden="true"
-                  style="background-color: {{ $fg }}1f">{{ $code }}</span>
+                  style="background-color: {{ $chipTint }}">{{ $code }}</span>
         @endif
         <span class="band-number">{{ $band }}</span>
         <span class="sr-only">{{ $aria }}</span>

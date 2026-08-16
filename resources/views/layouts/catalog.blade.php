@@ -38,14 +38,14 @@
                 {{-- The way back to the console, shown only to staff. A customer
                      never sees a door they cannot open. --}}
                 <a href="{{ route('dashboard') }}"
-                   class="btn-secondary h-10 min-h-0 px-3 text-[14px]">
+                   class="btn-secondary h-11 min-h-0 px-3 text-[14px]">
                     Console
                 </a>
             @endif
 
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="btn-quiet h-10 min-h-0 px-3 text-[14px]">Sign out</button>
+                <button type="submit" class="btn-quiet h-11 min-h-0 px-3 text-[14px]">Sign out</button>
             </form>
         </div>
     </header>
