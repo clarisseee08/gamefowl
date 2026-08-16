@@ -1,5 +1,11 @@
 * text=auto eol=lf
 
+# Shell scripts are executed by the Linux container, not read by an editor.
+# `text=auto` lets Git decide, and on a Windows checkout it can decide CRLF -
+# which makes the kernel refuse the script with a bare "exec format error"
+# that names no file and no line. Pinned explicitly so it cannot happen.
+*.sh text eol=lf
+
 *.blade.php diff=html
 *.css diff=css
 *.html diff=html

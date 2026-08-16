@@ -1,0 +1,45 @@
+# Everything here is excluded from the build context, so it is invisible to
+# EVERY stage of the Dockerfile - not just the final image.
+
+# .env holds the live Supabase password. It must never reach an image, and the
+# runtime reads its configuration from Render's environment instead.
+.env
+.env.*
+!.env.example
+
+.git
+.github
+.gitignore
+
+# Rebuilt inside the image from the lockfiles, so host copies would only risk
+# shipping platform-specific binaries compiled for Windows.
+node_modules
+vendor
+public/build
+public/hot
+public/storage
+
+# Ephemeral. The entrypoint recreates these on every boot.
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/logs/*
+bootstrap/cache/*.php
+
+# The suite runs in CI and locally, never in the production image.
+tests
+phpunit.xml
+.phpunit.result.cache
+.php-cs-fixer.cache
+
+Dockerfile
+.dockerignore
+docker-compose*.yml
+render.yaml
+
+*.md
+!README.md
+
+.DS_Store
+.idea
+.vscode

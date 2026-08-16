@@ -1,0 +1,113 @@
+services:
+  - type: web
+    name: gfms-laravel
+    runtime: docker
+    plan: free
+    # Closest Render region to the Supabase project in ap-northeast-1.
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /up
+    autoDeploy: true
+
+    envVars:
+      - key: APP_NAME
+        value: "Digital Broodcock Farm Record Management System"
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_TIMEZONE
+        value: Asia/Manila
+      # Generate locally with: php artisan key:generate --show
+      # Entered in Render's UI, never committed.
+      - key: APP_KEY
+        sync: false
+      # Must be https and must match the real Render hostname. Update both of
+      # these after the first deploy, once the hostname is known.
+      - key: APP_URL
+        value: https://gfms-laravel.onrender.com
+      - key: ASSET_URL
+        value: https://gfms-laravel.onrender.com
+
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: warning
+
+      # ---- Supabase Postgres, via the SESSION pooler ----
+      #
+      # Copy the host from Supabase > Project Settings > Database >
+      # Connection pooling. Session mode, port 5432.
+      #
+      # NOT the direct host (db.<ref>.supabase.co): on the free tier it is
+      # IPv6-only and Render has no IPv6 egress, so the connection hangs and
+      # then times out without a useful error.
+      #
+      # NOT transaction mode (6543) either: it does not preserve PDO prepared
+      # statements between statements, producing intermittent
+      # "prepared statement already exists" failures.
+      #
+      # NOTE: this is the SAME database used locally and by every clone. There
+      # is no separate production copy. Anything written here is written for
+      # everyone.
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        sync: false           # e.g. aws-1-ap-northeast-1.pooler.supabase.com
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_DATABASE
+        value: postgres
+      - key: DB_USERNAME
+        sync: false           # e.g. postgres.abcdefghijklmnop
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_SSLMODE
+        value: require
+
+      # Sessions live in Postgres, so they survive the restarts a free instance
+      # does constantly. File sessions would log everyone out mid-demo.
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_LIFETIME
+        value: "120"
+      - key: SESSION_SECURE_COOKIE
+        value: "true"
+
+      - key: CACHE_STORE
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+
+      # ---- Photo storage ----
+      #
+      # THIS is what decides where bird and profile photos go - not
+      # FILESYSTEM_DISK. The container filesystem is wiped on every restart, so
+      # a local disk means photos uploaded during a rehearsal are gone by the
+      # defence. The 'supabase' disk is already defined in config/filesystems.php
+      # and BroodcockPhoto::url() already signs temporary URLs for the private
+      # bucket, so this is configuration only.
+      - key: GFMS_PHOTO_DISK
+        value: supabase
+      - key: SUPABASE_S3_ENDPOINT
+        sync: false           # https://<ref>.supabase.co/storage/v1/s3
+      - key: SUPABASE_S3_ACCESS_KEY_ID
+        sync: false
+      - key: SUPABASE_S3_SECRET_ACCESS_KEY
+        sync: false
+      # SUPABASE_S3_REGION and SUPABASE_S3_BUCKET already default correctly
+      # (ap-northeast-1 / gfms-laravel) in config/filesystems.php.
+
+      # Only needed when a NEW migration is shipped. The shared database is
+      # already migrated, so this stays "false" for the first deploy too.
+      # Set it to "true", deploy, confirm, then set it straight back.
+      - key: RUN_MIGRATIONS
+        value: "false"
+
+      # There is deliberately NO RUN_SEEDERS key.
+      #
+      # db:seed runs DatabaseSeeder, which regenerates demo birds. The farm's
+      # own five records live in this database. Since it is the only database,
+      # seeding here would destroy the real data rather than a deployed copy.
+      # The variable is omitted so it cannot be switched on by accident.
