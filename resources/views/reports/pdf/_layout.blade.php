@@ -206,7 +206,7 @@
         @if (config('gfms.farm.address'))
             <span class="subtitle">&nbsp;&middot;&nbsp;{{ config('gfms.farm.address') }}</span>
         @endif
-        <span class="subtitle" style="float: right;">Broodcock Farm Record Management System</span>
+        <span class="subtitle" style="float: right;">{{ config('gfms.system.name') }}</span>
     </div>
 
     <div class="page-footer">

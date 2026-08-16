@@ -77,6 +77,33 @@ return [
     'primary_foreground' => '#FFFFFF',
 
     /*
+     * BRAND — comb red. CHROME ONLY.
+     *
+     * This is the identity colour: the sidebar surface, the mark, the top rail,
+     * the auth panel, PDF chrome. It is never used on a button, a link, a status
+     * pill, or anything else interactive or semantic.
+     *
+     * That separation is a usability requirement, not a preference. This system
+     * already uses red to mean "dead bird" and "overdue vaccination". If brand
+     * red also appeared on buttons, a keeper could not tell whether a red thing
+     * was branded or urgent - in a system whose job includes flagging mortality,
+     * that ambiguity is a defect. Brand red lives in chrome; peacock stays the
+     * interactive colour. DesignSystemGuardTest enforces it.
+     */
+    'brand' => '#C1272D',
+    'brand_deep' => '#6E1417',
+    'brand_deeper' => '#4E0E11',
+    'brand_foreground' => '#F7E9E7',
+    /*
+     * DEVIATION: the brief specified #C9A2A0, which is 5.16:1 on brand_deep.
+     * It carries inactive nav labels - Console body text - and the Console floor
+     * is 7:1 because the interface is read outdoors in daylight. The brief's own
+     * instruction is to adjust the FOREGROUND lighter and never the surface, so
+     * that is what this is: same hue, higher lightness, 7.04:1.
+     */
+    'brand_muted_fg' => '#DBC2C1',
+
+    /*
      * SEMANTIC. Full foreground/background pairs, not single hues. The tinted
      * backgrounds ARE the point — this is where "one accent only" is
      * deliberately abandoned. Every pair is verified >= 4.5:1 by

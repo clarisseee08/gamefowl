@@ -73,24 +73,30 @@
     another panel.
 --}}
 <aside
-    class="flex h-full shrink-0 flex-col border-r border-border bg-muted transition-[width] duration-200"
+    class="flex h-full shrink-0 flex-col bg-brand-deep transition-[width] duration-200"
     :class="collapsed ? 'w-14' : 'w-60'"
     aria-label="Main navigation"
 >
     {{-- Pinned top: workspace identity. --}}
-    <div class="flex h-14 shrink-0 items-center gap-2 border-b border-border px-3">
+    {{-- Collapsed rail shows the mark alone; expanded shows the lockup. That is
+         the lockup's defined minimum in practice: below the rail width the
+         wordmark drops and the mark stands by itself. --}}
+    <div class="flex h-14 shrink-0 items-center gap-2 px-3"
+         style="border-bottom: 1px solid var(--color-brand-deeper)">
         <button type="button"
                 @click="collapsed = ! collapsed; localStorage.setItem('gfms-sidebar', collapsed ? '1' : '0')"
-                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-primary text-[13px] font-semibold text-primary-foreground"
+                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-sm)] text-brand-foreground hover:bg-brand-deeper"
                 :aria-label="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
                 :aria-expanded="collapsed ? 'false' : 'true'">
-            SS
+            <x-icon.rooster class="h-7 w-7" eye="var(--color-brand-deep)" />
         </button>
         <div x-show="! collapsed" x-cloak class="min-w-0 flex-1">
-            <p class="truncate text-[13px] font-semibold leading-tight text-foreground">
+            <p class="truncate text-[14px] font-semibold leading-tight text-brand-foreground">
+                {{ config('gfms.system.short') }}
+            </p>
+            <p class="truncate text-[11px] leading-tight text-brand-muted-fg">
                 {{ config('gfms.farm.name') }}
             </p>
-            <p class="truncate text-[11px] leading-tight text-muted-foreground">Broodcock records</p>
         </div>
     </div>
 
@@ -100,7 +106,7 @@
         @foreach ($visible as $groupName => $items)
             <p class="nav-section" x-show="! collapsed" x-cloak>{{ $groupName }}</p>
             @if (! $loop->first)
-                <div class="my-2 border-t border-border" x-show="collapsed" x-cloak></div>
+                <div class="my-2" style="border-top: 1px solid var(--color-brand-deeper)" x-show="collapsed" x-cloak></div>
             @endif
 
             @foreach ($items as $item)
@@ -120,20 +126,17 @@
     </nav>
 
     {{-- Pinned bottom: who you are and how to leave. --}}
-    <div class="shrink-0 border-t border-border p-2">
+    <div class="shrink-0 p-2" style="border-top: 1px solid var(--color-brand-deeper)">
         <div class="flex items-center gap-2.5 rounded-[var(--radius-sm)] px-2 py-1.5">
-            <span class="datum inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-100 text-[12px] font-medium text-primary-700"
-                  aria-hidden="true">
-                {{ Str::of($user?->full_name ?? '?')->explode(' ')->take(2)->map(fn ($p) => Str::substr($p, 0, 1))->implode('') }}
-            </span>
+            <x-icon.user class="h-8 w-8 shrink-0" tone="onDark" />
             <div x-show="! collapsed" x-cloak class="min-w-0 flex-1">
-                <p class="truncate text-[13px] font-medium leading-tight text-foreground">{{ $user?->full_name }}</p>
-                <p class="truncate text-[11px] leading-tight text-muted-foreground">{{ $user?->role->label() }}</p>
+                <p class="truncate text-[13px] font-medium leading-tight text-brand-foreground">{{ $user?->full_name }}</p>
+                <p class="truncate text-[11px] leading-tight text-brand-muted-fg">{{ $user?->role->label() }}</p>
             </div>
             <form method="POST" action="{{ route('logout') }}" x-show="! collapsed" x-cloak>
                 @csrf
                 <button type="submit"
-                        class="inline-flex h-9 w-9 items-center justify-center rounded-[var(--radius-sm)] text-muted-foreground hover:bg-card hover:text-foreground"
+                        class="inline-flex h-9 w-9 items-center justify-center rounded-[var(--radius-sm)] text-brand-muted-fg hover:bg-brand-deeper hover:text-brand-foreground"
                         aria-label="Sign out" title="Sign out">
                     <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round"

@@ -13,7 +13,7 @@
 
         <div class="mt-1 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-                <h1 class="text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">
+                <h1 class="page-title-marked text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">
                     Pen <span class="datum font-medium">{{ $pen->code }}</span>
                 </h1>
                 <p class="mt-2 text-[17px] leading-snug text-muted-foreground">{{ $pen->name }}</p>

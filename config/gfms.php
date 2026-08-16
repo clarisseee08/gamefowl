@@ -52,4 +52,23 @@ return [
         'address' => env('GFMS_FARM_ADDRESS', ''),
     ],
 
+    /*
+     * The SYSTEM's own name, which is not the farm's name.
+     *
+     * Kept here as the single source so a rename cannot land on the login screen
+     * and miss a PDF footer - the kind of drift a panel opens with.
+     * tests/Unit/SystemNameTest.php fails on any hardcoded occurrence of the old
+     * name in a view, template or mail file.
+     *
+     * NOTE: the internals are deliberately NOT renamed. config/gfms-brand.php,
+     * the GFMS_* env keys, route names, table names and CSS prefixes all stay.
+     * Renaming them buys nothing visible and risks a 472-test suite against a
+     * deadline.
+     */
+    'system' => [
+        'name' => env('APP_NAME', 'Gamefowl Breeding Management System'),
+        'short' => env('GBMS_SHORT_NAME', 'GBMS'),
+        'tagline' => 'Gamefowl breeding records',
+    ],
+
 ];

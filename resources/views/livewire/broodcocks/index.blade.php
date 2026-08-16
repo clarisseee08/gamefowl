@@ -38,7 +38,7 @@
          never centred, and never inside a max-width wrapper. --}}
     <div class="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
-            <h1 class="text-[26px] font-semibold leading-[1.2] text-foreground">Broodcocks</h1>
+            <h1 class="page-title-marked text-[26px] font-semibold leading-[1.2] text-foreground">Broodcocks</h1>
             <p class="mt-1 text-[14px] text-muted-foreground">
                 All birds recorded on the farm. Use the search and filters to narrow the list.
             </p>

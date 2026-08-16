@@ -3,7 +3,7 @@
 <div>
     <div class="mb-10 sm:flex sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-foreground">Breeding Records</h1>
+            <h1 class="page-title-marked text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-foreground">Breeding Records</h1>
             <p class="mt-3 text-[17px] leading-relaxed text-muted-foreground">
                 Matings, egg counts and hatch results. Fertility and hatch rates are worked
                 out automatically from the egg numbers.

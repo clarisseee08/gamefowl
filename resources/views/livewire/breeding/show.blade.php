@@ -8,7 +8,7 @@
 
         <div class="mt-2 sm:flex sm:items-start sm:justify-between">
             <div>
-                <h1 class="text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-foreground">
+                <h1 class="page-title-marked text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-foreground">
                     {{ $breeding->sire->name }} &times; {{ $breeding->dam->name }}
                 </h1>
                 <p class="mt-3 text-[17px] leading-relaxed text-muted-foreground">

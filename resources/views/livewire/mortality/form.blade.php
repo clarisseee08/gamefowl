@@ -13,7 +13,7 @@
             &larr; Back to Mortality Records
         </a>
 
-        <h1 class="text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">Record a Death</h1>
+        <h1 class="page-title-marked text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">Record a Death</h1>
         <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-muted-foreground">
             Fill this in when a bird dies. The bird will be marked as
             <strong class="font-medium text-foreground">deceased</strong> and will no longer appear in the active flock

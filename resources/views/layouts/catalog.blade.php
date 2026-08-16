@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Catalogue' }} &middot; {{ config('gfms.farm.name') }}</title>
+    <x-partials.head-meta :title="$title ?? 'Catalogue'" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 {{--
@@ -20,6 +20,7 @@
     reading behaviour and a customer expects the page to move.
 --}}
 <body class="min-h-full bg-background">
+    <div class="brand-rail" aria-hidden="true"></div>
     @php $user = auth()->user(); @endphp
 
     <header class="sticky top-0 z-30 border-b border-border bg-card">

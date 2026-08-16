@@ -6,7 +6,7 @@
            class="-mt-2 inline-flex min-h-11 items-center text-[13px] font-medium text-primary hover:underline">
             &larr; Back to performance records
         </a>
-        <h1 class="text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">
+        <h1 class="page-title-marked text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">
             {{ $this->isEditing() ? 'Edit Performance Record' : 'Add a Performance Record' }}
         </h1>
         <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-muted-foreground">

@@ -21,7 +21,7 @@
 
     <div class="mb-8 border-b border-border pb-6 sm:flex sm:items-end sm:justify-between sm:gap-8">
         <div>
-            <h1 class="text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">Health Records</h1>
+            <h1 class="page-title-marked text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">Health Records</h1>
             <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-muted-foreground">
                 Vaccinations, medications, dewormings, treatments and check-ups for every bird.
             </p>

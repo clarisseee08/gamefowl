@@ -10,7 +10,7 @@
 <div>
     <div class="mb-10 sm:flex sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-[26px] font-semibold leading-[1.2] text-foreground">
+            <h1 class="page-title-marked text-[26px] font-semibold leading-[1.2] text-foreground">
                 Family Tree &mdash; {{ $root->name }}
             </h1>
             <p class="mt-1 max-w-[68ch] text-[14px] leading-relaxed text-muted-foreground">

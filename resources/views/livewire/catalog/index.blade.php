@@ -1,6 +1,6 @@
 <div>
     <div class="mb-10">
-        <h1 class="text-[26px] font-semibold leading-[1.2] text-foreground">Our Gamefowl</h1>
+        <h1 class="page-title-marked text-[26px] font-semibold leading-[1.2] text-foreground">Our Gamefowl</h1>
         <p class="mt-1 max-w-[68ch] text-[14px] leading-relaxed text-muted-foreground">
             Browse the birds currently on the farm. Tap any bird to see its photos,
             health record, family tree and performance history.

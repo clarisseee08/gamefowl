@@ -2,7 +2,7 @@
     {{-- Header. Console surface: 32px display, 15px body, no colour beyond ink. --}}
     <div class="mb-8 sm:flex sm:items-end sm:justify-between sm:gap-6">
         <div>
-            <h1 class="text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">User Accounts</h1>
+            <h1 class="page-title-marked text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">User Accounts</h1>
             <p class="mt-2 max-w-[60ch] text-[15px] leading-relaxed text-muted-foreground">
                 Who can sign in to the system and what they are allowed to do.
             </p>

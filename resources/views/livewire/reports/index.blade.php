@@ -2,7 +2,7 @@
 
 <div>
     <div class="mb-10">
-        <h1 class="text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-foreground">Reports</h1>
+        <h1 class="page-title-marked text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-foreground">Reports</h1>
         <p class="mt-3 text-[17px] leading-relaxed text-muted-foreground">
             Choose a date range, then download any report as a spreadsheet (CSV) or a
             printable document (PDF). Every report you generate is recorded below.

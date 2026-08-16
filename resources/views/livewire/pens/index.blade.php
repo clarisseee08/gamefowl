@@ -3,7 +3,7 @@
          readable in daylight. --}}
     <div class="mb-8 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-            <h1 class="text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">Pens</h1>
+            <h1 class="page-title-marked text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">Pens</h1>
             <p class="mt-2 max-w-[62ch] text-[15px] leading-relaxed text-muted-foreground">
                 The housing units on the farm. Each pen shows how many birds are in it right now.
             </p>

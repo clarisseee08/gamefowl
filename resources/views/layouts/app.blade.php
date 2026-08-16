@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Dashboard' }} &middot; {{ config('gfms.farm.name') }}</title>
+    <x-partials.head-meta :title="$title ?? 'Dashboard'" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 {{--
@@ -25,12 +25,17 @@
     as an intranet.
 --}}
 <body class="h-full overflow-hidden bg-background">
+    {{-- 3px of brand across the very top of the viewport. Enough to read as
+         branded on every console screen; small enough that it never competes
+         with content the way a saturated colour bar would. --}}
+    <div class="brand-rail" aria-hidden="true"></div>
+
     <div
         x-data="{
             collapsed: localStorage.getItem('gfms-sidebar') === '1',
             mobileNav: false,
         }"
-        class="flex h-screen w-full overflow-hidden"
+        class="flex h-[calc(100vh-3px)] w-full overflow-hidden"
     >
         {{-- Desktop sidebar. Hidden below 1024px, where it becomes the sheet. --}}
         <div class="hidden lg:flex">

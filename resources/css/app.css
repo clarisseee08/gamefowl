@@ -78,6 +78,16 @@
     --color-primary-900: #052b2e;
     --color-primary-foreground: #ffffff;
 
+    /* Brand — comb red. CHROME ONLY: sidebar, mark, top rail, auth panel, PDF.
+       Never a button, link, status pill, or anything interactive. This system
+       already uses red to mean "dead bird" and "overdue"; if brand red also
+       appeared on controls, a keeper could not tell branded from urgent. */
+    --color-brand: #c1272d;
+    --color-brand-deep: #6e1417;
+    --color-brand-deeper: #4e0e11;
+    --color-brand-foreground: #f7e9e7;   /* 10.01:1 on brand-deep */
+    --color-brand-muted-fg: #dbc2c1;     /*  7.04:1 on brand-deep */
+
     /* Semantic — full pairs. The tinted grounds are the point; this is where
        "one accent only" is deliberately abandoned. */
     --color-success: #1f7a4d;
@@ -350,22 +360,52 @@
         to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* The console sidebar. The active fill is BRAND, never a band colour, so a
-       selected nav item can never be misread as a bloodline. */
+    /*
+     * The console sidebar, on the deep comb red.
+     *
+     * A dark saturated navigation rail is a current pattern; a bright saturated
+     * bar across the top is a 2014 one. This puts brand colour on every console
+     * screen, full height, without ever touching a control - the rail is chrome,
+     * and chrome is the only place brand red is allowed to live.
+     *
+     * No border against the content region: the value jump does the separating.
+     */
     .nav-item {
         @apply relative flex min-h-11 items-center gap-3 rounded-[var(--radius-sm)]
-               px-3 text-[14px] font-medium text-muted-foreground;
+               px-3 text-[14px] font-medium text-brand-muted-fg;
         transition: background-color var(--t-fast) var(--ease-out-quart),
                     color var(--t-fast) var(--ease-out-quart);
     }
-    .nav-item:hover { @apply bg-muted text-foreground; }
-    .nav-item-active { @apply bg-primary-50 text-primary-700; }
+    .nav-item:hover {
+        color: var(--color-brand-foreground);
+        background-color: color-mix(in srgb, var(--color-brand-deeper) 60%, transparent);
+    }
+    .nav-item-active { @apply bg-brand-deeper text-brand-foreground; }
     .nav-item-active::before {
         content: '';
-        @apply absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-primary;
+        @apply absolute left-0 top-1/2 h-5 -translate-y-1/2 rounded-full bg-brand-foreground;
+        width: 2px;
     }
     .nav-section {
-        @apply px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-[0.07em] text-muted-foreground;
+        @apply px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-[0.07em] text-brand-muted-fg;
+    }
+
+    /*
+     * The 3px brand rail across the very top of the viewport. Enough to read as
+     * branded on every page; small enough that it never competes with content
+     * the way a full colour bar would.
+     */
+    .brand-rail { height: 3px; background-color: var(--color-brand); }
+
+    /* Page titles carry a short brand marker, so the colour reaches the content
+       region without being spent on anything interactive. */
+    .page-title-marked {
+        @apply relative pl-3.5;
+    }
+    .page-title-marked::before {
+        content: '';
+        @apply absolute left-0 top-1 bottom-1 rounded-full bg-brand;
+        width: 3px;
     }
 
     /* Thin progress bars for compliance and hatch rates. */

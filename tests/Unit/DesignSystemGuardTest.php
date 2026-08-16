@@ -183,6 +183,52 @@ final class DesignSystemGuardTest extends TestCase
     }
 
     /**
+     * Brand red is CHROME ONLY.
+     *
+     * This system already uses red to mean "dead bird" and "overdue
+     * vaccination". If brand red also appeared on a button, a link, or a status
+     * pill, a keeper could not tell whether a red thing was branded or urgent —
+     * and in a system whose job includes flagging mortality, that ambiguity is a
+     * usability defect, not an aesthetic one.
+     *
+     * So: brand belongs to the sidebar, the mark, the top rail, the auth panel,
+     * page-header markers and PDF chrome. Peacock stays the interactive colour.
+     */
+    public function test_brand_red_is_never_used_on_an_interactive_element(): void
+    {
+        $offenders = [];
+
+        // Utilities that only ever appear on something you click or focus.
+        $interactive = ['btn-primary', 'btn-secondary', 'btn-danger', 'btn-quiet', 'input', 'badge'];
+
+        foreach ($this->files('resources/views', '.blade.php') as $file) {
+            $body = preg_replace('/\{\{--.*?--\}\}/s', '', file_get_contents($file)) ?? '';
+
+            // Any class attribute that pairs a control class with a brand colour.
+            if (preg_match_all('/class="([^"]*)"/', $body, $m)) {
+                foreach ($m[1] as $classList) {
+                    $hasControl = false;
+                    foreach ($interactive as $needle) {
+                        if (preg_match('/\b'.preg_quote($needle, '/').'\b/', $classList)) {
+                            $hasControl = true;
+                            break;
+                        }
+                    }
+
+                    if ($hasControl && preg_match('/\b(?:bg|text|border|ring)-brand(?:-[a-z-]+)?\b/', $classList, $hit)) {
+                        $offenders[] = $this->rel($file).': "'.trim($classList).'" uses '.$hit[0];
+                    }
+                }
+            }
+        }
+
+        $this->assertSame([], $offenders,
+            'Brand red is on an interactive element. It is chrome only — this app uses red '
+            ."for mortality and overdue, and the two must not be confusable:\n"
+            .implode("\n", $offenders));
+    }
+
+    /**
      * §8.5 — layout containment.
      *
      * The console is an application filling a viewport, not a document centred
