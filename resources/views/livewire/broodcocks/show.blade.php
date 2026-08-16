@@ -18,7 +18,7 @@
 <div>
     {{-- Header --}}
     <div class="mb-10">
-        <a href="{{ route('broodcocks.index') }}" class="text-sm font-medium text-action hover:underline">
+        <a href="{{ route('broodcocks.index') }}" class="text-sm font-medium text-primary hover:underline">
             &larr; Back to broodcocks
         </a>
 
@@ -26,11 +26,11 @@
             <div class="flex items-start gap-4">
                 @if ($bird->primaryPhoto)
                     <x-photo-thumb :photo="$bird->primaryPhoto" :alt="'Photo of '.$bird->name"
-                                   class="h-20 w-20 shrink-0 rounded-[6px] ring-1 ring-hairline" />
+                                   class="h-20 w-20 shrink-0 rounded-[6px] ring-1 ring-border" />
                 @else
                     {{-- Same treatment as the catalogue grid: an empty bordered box says
                          nothing, so the tile carries the bloodline instead. --}}
-                    <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-[6px] ring-1 ring-hairline"
+                    <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-[6px] ring-1 ring-border"
                          style="background-color: {{ \App\Support\BandTag::hex($bird->bloodline) }}14"
                          aria-hidden="true">
                         <span class="text-[24px] font-medium leading-none opacity-80"
@@ -43,7 +43,7 @@
                          is the identifier both a keeper and a buyer actually use. --}}
                     <x-band-tag :bloodline="$bird->bloodline" :band="$bird->band_number" />
 
-                    <h1 class="mt-2 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">{{ $bird->name }}</h1>
+                    <h1 class="mt-2 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-foreground">{{ $bird->name }}</h1>
 
                     <div class="mt-2 flex flex-wrap gap-1.5">
                         <span class="badge {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
@@ -68,7 +68,7 @@
                          the confirmation modal, where destroying the record IS the
                          primary action and nothing else competes with it. --}}
                     <button type="button" wire:click="confirmDeletion"
-                            class="btn-secondary text-alert hover:border-alert">Delete</button>
+                            class="btn-secondary text-destructive hover:border-destructive">Delete</button>
                 @endcan
             </div>
         </div>
@@ -76,25 +76,25 @@
 
     {{-- Deceased banner --}}
     @if ($bird->isDeceased() && $bird->mortalityRecord)
-        <div class="mb-6 rounded-lg bg-alert-wash p-4 ring-1 ring-alert/20">
-            <p class="text-sm font-medium text-alert">
+        <div class="mb-6 rounded-lg bg-destructive-bg p-4 ring-1 ring-destructive/20">
+            <p class="text-sm font-medium text-destructive">
                 This bird died on {{ $bird->mortalityRecord->date_of_death->format('j F Y') }}.
             </p>
             @if ($canSeeInternal)
-                <p class="mt-1 text-sm text-alert">Cause: {{ $bird->mortalityRecord->cause_of_death }}</p>
+                <p class="mt-1 text-sm text-destructive">Cause: {{ $bird->mortalityRecord->cause_of_death }}</p>
             @endif
         </div>
     @endif
 
     {{-- Tabs --}}
-    <div class="mb-6 border-b border-hairline">
+    <div class="mb-6 border-b border-border">
         <nav class="-mb-px flex flex-wrap gap-x-6" aria-label="Sections">
             @foreach ($tabs as $t)
                 <button type="button" wire:click="$set('tab', '{{ $t['key'] }}')"
                         @class([
                             'whitespace-nowrap border-b-2 px-1 py-3 text-sm font-medium transition',
-                            'border-action text-action' => $tab === $t['key'],
-                            'border-transparent text-ink-48 hover:border-hairline hover:text-ink-80' => $tab !== $t['key'],
+                            'border-primary text-primary' => $tab === $t['key'],
+                            'border-transparent text-muted-foreground hover:border-border hover:text-muted-foreground' => $tab !== $t['key'],
                         ])
                         @if ($tab === $t['key']) aria-current="page" @endif>
                     {{ $t['label'] }}
@@ -107,14 +107,14 @@
     @if ($tab === 'overview')
         <div class="grid gap-6 lg:grid-cols-3">
             <div class="card p-6 lg:col-span-2">
-                <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Details</h2>
+                <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-foreground">Details</h2>
                 {{-- A ruled ledger rather than thirteen floating pairs. Label left,
                      value right, hairline between: the rhythm of the printed record
                      book this system replaces, and it gives the eye a single column
                      to run down instead of a zig-zag across a two-column grid.
                      The boolean marks a registry value - it renders in mono with
                      tabular figures so dates and weights align down the column. --}}
-                <dl class="mt-4 divide-y divide-hairline border-t border-hairline">
+                <dl class="mt-4 divide-y divide-border border-t border-border">
                     @foreach ([
                         ['Band Number', $bird->displayBand(), true],
                         ['Name', $bird->name, false],
@@ -131,15 +131,15 @@
                         ['Leg Colour', $bird->leg_color ?: 'Not recorded', false],
                     ] as [$label, $value, $isDatum])
                         <div class="flex items-baseline justify-between gap-6 py-2.5">
-                            <dt class="shrink-0 text-[13px] text-ink-48">{{ $label }}</dt>
-                            <dd class="{{ $isDatum ? 'datum' : '' }} text-right text-[15px] text-ink">{{ $value }}</dd>
+                            <dt class="shrink-0 text-[13px] text-muted-foreground">{{ $label }}</dt>
+                            <dd class="{{ $isDatum ? 'datum' : '' }} text-right text-[15px] text-foreground">{{ $value }}</dd>
                         </div>
                     @endforeach
 
                     @if ($bird->distinguishing_marks)
                         <div class="py-2.5">
-                            <dt class="text-[13px] text-ink-48">Distinguishing Marks</dt>
-                            <dd class="mt-1 text-[15px] text-ink">{{ $bird->distinguishing_marks }}</dd>
+                            <dt class="text-[13px] text-muted-foreground">Distinguishing Marks</dt>
+                            <dd class="mt-1 text-[15px] text-foreground">{{ $bird->distinguishing_marks }}</dd>
                         </div>
                     @endif
 
@@ -147,8 +147,8 @@
                          a Policy check, not just a CSS hide. --}}
                     @if ($canSeeInternal && $bird->notes)
                         <div class="py-2.5">
-                            <dt class="text-[13px] text-ink-48">Internal Notes</dt>
-                            <dd class="mt-1 whitespace-pre-line text-[15px] text-ink">{{ $bird->notes }}</dd>
+                            <dt class="text-[13px] text-muted-foreground">Internal Notes</dt>
+                            <dd class="mt-1 whitespace-pre-line text-[15px] text-foreground">{{ $bird->notes }}</dd>
                         </div>
                     @endif
                 </dl>
@@ -156,17 +156,17 @@
 
             <div class="space-y-10">
                 <div class="card p-8">
-                    <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Parents</h2>
+                    <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-foreground">Parents</h2>
                     <div class="mt-4 space-y-3">
                         @foreach ([['Sire (Father)', $bird->sire], ['Dam (Mother)', $bird->dam]] as [$label, $parent])
                             <div>
-                                <p class="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-48">{{ $label }}</p>
+                                <p class="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{{ $label }}</p>
                                 @if ($parent)
-                                    <a href="{{ route('broodcocks.show', $parent) }}" class="text-sm font-medium text-action hover:underline">
+                                    <a href="{{ route('broodcocks.show', $parent) }}" class="text-sm font-medium text-primary hover:underline">
                                         {{ $parent->name }} ({{ $parent->displayBand() }})
                                     </a>
                                 @else
-                                    <p class="text-sm text-ink-48">Not recorded</p>
+                                    <p class="text-sm text-muted-foreground">Not recorded</p>
                                 @endif
                             </div>
                         @endforeach
@@ -178,16 +178,16 @@
 
                 @if ($canSeeInternal)
                     <div class="card p-8">
-                        <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">Housing</h2>
-                        <p class="mt-2 text-sm text-ink">
+                        <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-foreground">Housing</h2>
+                        <p class="mt-2 text-sm text-foreground">
                             @if ($bird->pen && Route::has('pens.show'))
-                                <a href="{{ route('pens.show', $bird->pen) }}" class="font-medium text-action hover:underline">
+                                <a href="{{ route('pens.show', $bird->pen) }}" class="font-medium text-primary hover:underline">
                                     {{ $bird->pen->code }} &mdash; {{ $bird->pen->name }}
                                 </a>
                             @elseif ($bird->pen)
                                 <span class="font-medium">{{ $bird->pen->code }} &mdash; {{ $bird->pen->name }}</span>
                             @else
-                                <span class="text-ink-48">Not assigned to a pen</span>
+                                <span class="text-muted-foreground">Not assigned to a pen</span>
                             @endif
                         </p>
                     </div>
@@ -201,7 +201,7 @@
         @if (class_exists(App\Livewire\Photos\Gallery::class))
             <livewire:photos.gallery :broodcock="$bird" :key="'gallery-'.$bird->id" />
         @else
-            <div class="card p-8 text-center text-sm text-ink-48">The photo gallery is not available yet.</div>
+            <div class="card p-8 text-center text-sm text-muted-foreground">The photo gallery is not available yet.</div>
         @endif
     @endif
 
@@ -210,7 +210,7 @@
         @if (class_exists(App\Livewire\Health\BroodcockHealthHistory::class))
             <livewire:health.broodcock-health-history :broodcock="$bird" :key="'health-'.$bird->id" />
         @else
-            <div class="card p-8 text-center text-sm text-ink-48">The health history view is not available yet.</div>
+            <div class="card p-8 text-center text-sm text-muted-foreground">The health history view is not available yet.</div>
         @endif
     @endif
 
@@ -219,7 +219,7 @@
         @if (class_exists(App\Livewire\Performance\BroodcockTimeline::class))
             <livewire:performance.broodcock-timeline :broodcock="$bird" :key="'perf-'.$bird->id" />
         @else
-            <div class="card p-8 text-center text-sm text-ink-48">The performance timeline is not available yet.</div>
+            <div class="card p-8 text-center text-sm text-muted-foreground">The performance timeline is not available yet.</div>
         @endif
     @endif
 
@@ -228,35 +228,35 @@
         <div class="card overflow-hidden">
             @if ($this->offspring->isEmpty())
                 <div class="p-12 text-center">
-                    <h3 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">No offspring recorded</h3>
-                    <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
+                    <h3 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-foreground">No offspring recorded</h3>
+                    <p class="mt-3 text-[17px] leading-relaxed text-muted-foreground">
                         Offspring appear here once birds are recorded with {{ $bird->name }}
                         as their {{ $bird->sex->parentTerm() }}.
                     </p>
                 </div>
             @else
-                <table class="min-w-full divide-y divide-divider">
-                    <thead class="bg-pearl">
+                <table class="min-w-full divide-y divide-border">
+                    <thead class="bg-muted">
                         <tr>
                             @foreach (['Band Number', 'Name', 'Sex', 'Bloodline', 'Hatched', 'Status'] as $heading)
-                                <th scope="col" class="px-6 py-4 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                                <th scope="col" class="px-6 py-4 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
                                     {{ $heading }}
                                 </th>
                             @endforeach
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-divider bg-white">
+                    <tbody class="divide-y divide-border bg-card">
                         @foreach ($this->offspring as $child)
-                            <tr class="hover:bg-pearl">
+                            <tr class="hover:bg-muted">
                                 <td class="px-6 py-4 text-sm font-medium">
-                                    <a href="{{ route('broodcocks.show', $child) }}" class="text-action hover:underline">
+                                    <a href="{{ route('broodcocks.show', $child) }}" class="text-primary hover:underline">
                                         {{ $child->displayBand() }}
                                     </a>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-ink">{{ $child->name }}</td>
-                                <td class="px-6 py-4 text-sm text-ink-80">{{ $child->sex->label() }}</td>
-                                <td class="px-6 py-4 text-sm text-ink-80">{{ $child->bloodline ?? '—' }}</td>
-                                <td class="px-6 py-4 text-sm text-ink-80">
+                                <td class="px-6 py-4 text-sm text-foreground">{{ $child->name }}</td>
+                                <td class="px-6 py-4 text-sm text-muted-foreground">{{ $child->sex->label() }}</td>
+                                <td class="px-6 py-4 text-sm text-muted-foreground">{{ $child->bloodline ?? '—' }}</td>
+                                <td class="px-6 py-4 text-sm text-muted-foreground">
                                     {{ $child->date_hatched?->format('j M Y') ?? '—' }}
                                 </td>
                                 <td class="px-6 py-4">
@@ -277,10 +277,10 @@
              is invalid JS, so Escape silently did nothing on this dialog. It needs
              $el. Nothing caught it because a broken key handler throws in the browser,
              not in the test suite. --}}
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 p-4" x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()" role="dialog" aria-modal="true" aria-labelledby="delete-bird-title">
-            <div class="w-full max-w-md rounded-[4px] border border-rule-strong bg-canvas p-6">
-                <h2 id="delete-bird-title" class="text-[22px] font-semibold tracking-[-0.01em] leading-[1.2] text-ink">Delete {{ $bird->name }}?</h2>
-                <p class="mt-2 text-sm text-ink-80">
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-foreground/70 p-4" x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()" role="dialog" aria-modal="true" aria-labelledby="delete-bird-title">
+            <div class="w-full max-w-md rounded-[4px] border border-border bg-card p-6">
+                <h2 id="delete-bird-title" class="text-[22px] font-semibold tracking-[-0.01em] leading-[1.2] text-foreground">Delete {{ $bird->name }}?</h2>
+                <p class="mt-2 text-sm text-muted-foreground">
                     This will remove <strong>{{ $bird->name }} ({{ $bird->displayBand() }})</strong>
                     from the active records. Its health, breeding and performance history is kept
                     and the deletion is recorded in the activity log, so this can be undone by

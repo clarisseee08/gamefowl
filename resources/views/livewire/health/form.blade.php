@@ -10,16 +10,16 @@
     outdoors, with a bird in the other hand.
 --}}
 <div class="mx-auto max-w-3xl">
-    <div class="mb-8 border-b border-rule-strong pb-6">
+    <div class="mb-8 border-b border-border pb-6">
         <a href="{{ route('health.index') }}" wire:navigate
-           class="inline-flex min-h-11 items-center text-[13px] font-medium text-action hover:underline">
+           class="inline-flex min-h-11 items-center text-[13px] font-medium text-primary hover:underline">
             &larr; Back to Health Records
         </a>
 
-        <h1 class="mt-1 text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">
+        <h1 class="mt-1 text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">
             {{ $this->isEditing() ? 'Edit Health Record' : 'Add Health Record' }}
         </h1>
-        <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-ink-80">
+        <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-muted-foreground">
             Record a vaccination, medication, deworming, treatment or check-up for one bird.
         </p>
     </div>
@@ -29,7 +29,7 @@
     <form wire:submit="save" class="card overflow-hidden">
         <div class="grid gap-6 p-5 sm:grid-cols-2 sm:p-8">
             <div class="sm:col-span-2">
-                <label for="broodcock_id" class="label">Bird <span class="text-alert">*</span></label>
+                <label for="broodcock_id" class="label">Bird <span class="text-destructive">*</span></label>
                 <select id="broodcock_id"
                         wire:model="broodcock_id"
                         @class(['input mt-1', 'input-error' => $errors->has('broodcock_id')])>
@@ -44,10 +44,10 @@
 
             {{-- A rule, not a gap: the record's identity is settled above, its
                  substance below. --}}
-            <hr class="border-hairline sm:col-span-2">
+            <hr class="border-border sm:col-span-2">
 
             <div>
-                <label for="record_type" class="label">Record Type <span class="text-alert">*</span></label>
+                <label for="record_type" class="label">Record Type <span class="text-destructive">*</span></label>
                 <select id="record_type"
                         wire:model.live="record_type"
                         @class(['input mt-1', 'input-error' => $errors->has('record_type')])>
@@ -91,10 +91,10 @@
                 <p class="help">How the bird was on the day.</p>
             </div>
 
-            <hr class="border-hairline sm:col-span-2">
+            <hr class="border-border sm:col-span-2">
 
             <div>
-                <label for="checkup_date" class="label">Check-up Date <span class="text-alert">*</span></label>
+                <label for="checkup_date" class="label">Check-up Date <span class="text-destructive">*</span></label>
                 <input id="checkup_date"
                        type="date"
                        wire:model.live="checkup_date"
@@ -117,7 +117,7 @@
                      leaving this blank is usually a mistake - but a one-off
                      booster legitimately has no follow-up. --}}
                 @if ($this->expectsNextDueDate && ! $next_due_date)
-                    <p class="mt-2 rounded-[4px] border-l-2 border-warn bg-warn-wash px-3 py-2 text-[12px] leading-snug text-warn">
+                    <p class="mt-2 rounded-[4px] border-l-2 border-warning bg-warning-bg px-3 py-2 text-[12px] leading-snug text-warning">
                         A {{ $this->selectedTypeLabel }} usually needs a
                         follow-up. Adding a next due date puts this bird on the vaccination schedule
                         so nobody forgets. You can still save without one.
@@ -127,7 +127,7 @@
                 @endif
             </div>
 
-            <hr class="border-hairline sm:col-span-2">
+            <hr class="border-border sm:col-span-2">
 
             <div class="sm:col-span-2">
                 <label for="remarks" class="label">Remarks</label>
@@ -143,7 +143,7 @@
 
         {{-- The action bar is sunk, so the form's edge is unmistakable on a
              phone where the card runs to the fold. --}}
-        <div class="flex flex-col-reverse gap-3 border-t border-hairline bg-pearl px-5 py-4 sm:flex-row sm:justify-end sm:px-8">
+        <div class="flex flex-col-reverse gap-3 border-t border-border bg-muted px-5 py-4 sm:flex-row sm:justify-end sm:px-8">
             <a href="{{ route('health.index') }}" wire:navigate class="btn-secondary">Cancel</a>
 
             <button type="submit" class="btn-primary" wire:loading.attr="disabled" wire:target="save">

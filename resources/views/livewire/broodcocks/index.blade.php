@@ -2,8 +2,8 @@
     {{-- Header --}}
     <div class="mb-10 sm:flex sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">Broodcocks</h1>
-            <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
+            <h1 class="text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-foreground">Broodcocks</h1>
+            <p class="mt-3 text-[17px] leading-relaxed text-muted-foreground">
                 All birds recorded on the farm. Use the search and filters to narrow the list.
             </p>
         </div>
@@ -96,8 +96,8 @@
         </div>
 
         @if ($this->hasActiveFilters())
-            <div class="mt-4 flex items-center justify-between border-t border-hairline pt-4">
-                <p class="text-sm text-ink-80">
+            <div class="mt-4 flex items-center justify-between border-t border-border pt-4">
+                <p class="text-sm text-muted-foreground">
                     Showing {{ number_format($this->broodcocks->total()) }}
                     {{ Str::plural('bird', $this->broodcocks->total()) }} matching your filters.
                 </p>
@@ -111,17 +111,17 @@
     {{-- Results --}}
     @if ($this->broodcocks->isEmpty())
         <div class="card p-12 text-center">
-            <svg class="mx-auto h-12 w-12 text-ink-48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <svg class="mx-auto h-12 w-12 text-muted-foreground" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
             </svg>
 
             @if ($this->hasActiveFilters())
-                <h3 class="mt-4 text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">No birds match your filters</h3>
-                <p class="mt-3 text-[17px] leading-relaxed text-ink-48">Try removing a filter or searching for something else.</p>
+                <h3 class="mt-4 text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-foreground">No birds match your filters</h3>
+                <p class="mt-3 text-[17px] leading-relaxed text-muted-foreground">Try removing a filter or searching for something else.</p>
                 <button type="button" wire:click="clearFilters" class="btn-secondary mt-6">Clear filters</button>
             @else
-                <h3 class="mt-4 text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">No broodcocks recorded yet</h3>
-                <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
+                <h3 class="mt-4 text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-foreground">No broodcocks recorded yet</h3>
+                <p class="mt-3 text-[17px] leading-relaxed text-muted-foreground">
                     Start by adding your first bird. You will be able to record its health,
                     breeding and performance afterwards.
                 </p>
@@ -138,8 +138,8 @@
                     <x-photo-thumb :photo="$bird->primaryPhoto" :alt="$bird->name"
                                    class="h-16 w-16 shrink-0 rounded-lg" />
                     <div class="min-w-0 flex-1">
-                        <p class="truncate font-semibold text-ink">{{ $bird->name }}</p>
-                        <p class="truncate text-sm text-ink-80">{{ $bird->displayBand() }}</p>
+                        <p class="truncate font-semibold text-foreground">{{ $bird->name }}</p>
+                        <p class="truncate text-sm text-muted-foreground">{{ $bird->displayBand() }}</p>
                         <div class="mt-2 flex flex-wrap gap-1">
                             <span class="badge {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
                             <span class="badge {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
@@ -152,15 +152,15 @@
         {{-- Desktop: table --}}
         <div class="card hidden overflow-hidden sm:block">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-divider">
+                <table class="min-w-full divide-y divide-border">
                     {{-- The Photo column is gone. It spent the leftmost and most valuable
                          column in the table on the word "None" for nearly every bird,
                          because a working farm photographs very few of them. The band tag
                          takes that position instead: it is the identifier a keeper
                          actually scans for, and it carries the bloodline as colour so a
                          thirty-row table can be read by bloodline without reading it. --}}
-                    <thead class="bg-pearl">
-                        <tr class="border-b border-rule-strong">
+                    <thead class="bg-muted">
+                        <tr class="border-b border-border">
                             @foreach ([
                                 'band_number' => 'Band Number',
                                 'name' => 'Name',
@@ -171,14 +171,14 @@
                                 'status' => 'Status',
                                 'date_hatched' => 'Age',
                             ] as $column => $heading)
-                                <th scope="col" class="px-4 py-2.5 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                                <th scope="col" class="px-4 py-2.5 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
                                     @if (in_array($column, ['band_number','name','breed','bloodline','class','status','date_hatched'], true))
                                         {{-- `uppercase` is repeated here on purpose. Tailwind's
                                              preflight sets `button { text-transform: none }`, so a
                                              sort button silently drops the transform from its own
                                              <th> - which is why Sex (the one unsortable column)
                                              was the only header rendering in caps. --}}
-                                        <button type="button" wire:click="sort('{{ $column }}')" class="inline-flex items-center gap-1 uppercase tracking-[0.06em] hover:text-ink">
+                                        <button type="button" wire:click="sort('{{ $column }}')" class="inline-flex items-center gap-1 uppercase tracking-[0.06em] hover:text-foreground">
                                             {{ $heading }}
                                             @if ($sortBy === $column)
                                                 <span aria-hidden="true">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
@@ -190,33 +190,33 @@
                                     @endif
                                 </th>
                             @endforeach
-                            <th scope="col" class="px-4 py-2.5 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                            <th scope="col" class="px-4 py-2.5 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
                                 <span class="sr-only">Actions</span>
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-divider bg-canvas">
+                    <tbody class="divide-y divide-border bg-card">
                         @foreach ($this->broodcocks as $bird)
-                            <tr class="hover:bg-pearl">
+                            <tr class="hover:bg-muted">
                                 <td class="whitespace-nowrap px-4 py-2.5">
                                     <x-band-tag :bloodline="$bird->bloodline" :band="$bird->band_number" size="xs" />
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-2.5 text-[15px] font-medium text-ink">{{ $bird->name }}</td>
-                                <td class="whitespace-nowrap px-4 py-2.5 text-[15px] text-ink-80">{{ $bird->sex->label() }}</td>
-                                <td class="whitespace-nowrap px-4 py-2.5 text-[15px] text-ink-80">{{ $bird->breed ?? '—' }}</td>
-                                <td class="whitespace-nowrap px-4 py-2.5 text-[15px] text-ink-80">{{ $bird->bloodline ?? '—' }}</td>
+                                <td class="whitespace-nowrap px-4 py-2.5 text-[15px] font-medium text-foreground">{{ $bird->name }}</td>
+                                <td class="whitespace-nowrap px-4 py-2.5 text-[15px] text-muted-foreground">{{ $bird->sex->label() }}</td>
+                                <td class="whitespace-nowrap px-4 py-2.5 text-[15px] text-muted-foreground">{{ $bird->breed ?? '—' }}</td>
+                                <td class="whitespace-nowrap px-4 py-2.5 text-[15px] text-muted-foreground">{{ $bird->bloodline ?? '—' }}</td>
                                 <td class="whitespace-nowrap px-4 py-2.5">
                                     <span class="badge {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-2.5">
                                     <span class="badge {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
                                 </td>
-                                <td class="datum whitespace-nowrap px-4 py-2.5 text-[14px] text-ink-80">
+                                <td class="datum whitespace-nowrap px-4 py-2.5 text-[14px] text-muted-foreground">
                                     {{ $bird->ageLabel() ?? 'Unknown' }}
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-2.5 text-right">
                                     <a href="{{ route('broodcocks.show', $bird) }}"
-                                       class="inline-flex min-h-11 items-center text-[15px] font-medium text-action hover:underline">
+                                       class="inline-flex min-h-11 items-center text-[15px] font-medium text-primary hover:underline">
                                         View<span class="sr-only">, {{ $bird->name }}</span>
                                     </a>
                                 </td>

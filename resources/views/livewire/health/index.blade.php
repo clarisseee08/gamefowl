@@ -10,19 +10,19 @@
 --}}
 <div>
     @if ($statusMessage)
-        <div class="mb-8 flex items-start justify-between gap-4 rounded-[4px] border border-hairline bg-ok-wash px-4 py-3" role="status">
-            <p class="text-[15px] leading-snug text-ok">{{ $statusMessage }}</p>
+        <div class="mb-8 flex items-start justify-between gap-4 rounded-[4px] border border-border bg-success-bg px-4 py-3" role="status">
+            <p class="text-[15px] leading-snug text-success">{{ $statusMessage }}</p>
             <button type="button" wire:click="dismissStatus"
-                    class="-my-2 shrink-0 text-[13px] font-medium text-ok underline underline-offset-2">
+                    class="-my-2 shrink-0 text-[13px] font-medium text-success underline underline-offset-2">
                 Dismiss
             </button>
         </div>
     @endif
 
-    <div class="mb-8 border-b border-rule-strong pb-6 sm:flex sm:items-end sm:justify-between sm:gap-8">
+    <div class="mb-8 border-b border-border pb-6 sm:flex sm:items-end sm:justify-between sm:gap-8">
         <div>
-            <h1 class="text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">Health Records</h1>
-            <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-ink-80">
+            <h1 class="text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">Health Records</h1>
+            <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-muted-foreground">
                 Vaccinations, medications, dewormings, treatments and check-ups for every bird.
             </p>
         </div>
@@ -88,12 +88,12 @@
 
         {{-- The result count is sunk into the card's foot so it reads as a
              consequence of the filters above it, not as a separate statement. --}}
-        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-hairline bg-pearl px-4 py-2.5 sm:px-5">
-            <p class="text-[13px] text-ink-80" wire:loading.remove wire:target="search,recordType,broodcockId,dateFrom,dateTo">
-                Showing <strong class="datum font-medium text-ink">{{ number_format($this->rows->total()) }}</strong>
+        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-muted px-4 py-2.5 sm:px-5">
+            <p class="text-[13px] text-muted-foreground" wire:loading.remove wire:target="search,recordType,broodcockId,dateFrom,dateTo">
+                Showing <strong class="datum font-medium text-foreground">{{ number_format($this->rows->total()) }}</strong>
                 {{ Str::plural('record', $this->rows->total()) }}.
             </p>
-            <p class="text-[13px] text-ink-80" wire:loading wire:target="search,recordType,broodcockId,dateFrom,dateTo">
+            <p class="text-[13px] text-muted-foreground" wire:loading wire:target="search,recordType,broodcockId,dateFrom,dateTo">
                 Searching&hellip;
             </p>
 
@@ -107,8 +107,8 @@
         @if ($this->rows->isEmpty())
             {{-- Empty states say what to do next, never just "No results". --}}
             <div class="px-6 py-16 text-center">
-                <p class="text-[18px] font-medium text-ink">No health records found.</p>
-                <p class="mx-auto mt-2 max-w-[52ch] text-[15px] leading-relaxed text-ink-80">
+                <p class="text-[18px] font-medium text-foreground">No health records found.</p>
+                <p class="mx-auto mt-2 max-w-[52ch] text-[15px] leading-relaxed text-muted-foreground">
                     @if ($this->search !== '' || $this->recordType !== '' || $this->broodcockId !== '' || $this->dateFrom !== '' || $this->dateTo !== '')
                         No record matches your filters. Try clearing them to see every record.
                     @else
@@ -128,19 +128,19 @@
                  own container rather than losing its last column. --}}
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
-                    <thead class="hidden bg-pearl sm:table-header-group">
-                        <tr class="border-b border-rule-strong">
-                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Bird</th>
-                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Record Type</th>
-                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Product</th>
-                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Check-up Date</th>
-                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Next Due Date</th>
-                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Status</th>
-                            <th scope="col" class="px-4 py-2.5 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Actions</th>
+                    <thead class="hidden bg-muted sm:table-header-group">
+                        <tr class="border-b border-border">
+                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Bird</th>
+                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Record Type</th>
+                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Product</th>
+                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Check-up Date</th>
+                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Next Due Date</th>
+                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Status</th>
+                            <th scope="col" class="px-4 py-2.5 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Actions</th>
                         </tr>
                     </thead>
 
-                    <tbody class="block divide-y divide-divider sm:table-row-group">
+                    <tbody class="block divide-y divide-border sm:table-row-group">
                         @foreach ($this->rows as $record)
                             @php
                                 $state = $record->scheduleState();
@@ -154,10 +154,10 @@
                                 };
                             @endphp
 
-                            <tr wire:key="record-{{ $record->id }}" class="block p-4 sm:table-row sm:p-0 sm:align-top sm:hover:bg-pearl">
+                            <tr wire:key="record-{{ $record->id }}" class="block p-4 sm:table-row sm:p-0 sm:align-top sm:hover:bg-muted">
                                 <td class="block sm:table-cell sm:px-4 sm:py-3">
-                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Bird</span>
-                                    <p class="text-[15px] font-medium leading-snug text-ink">{{ $record->broodcock->name }}</p>
+                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Bird</span>
+                                    <p class="text-[15px] font-medium leading-snug text-foreground">{{ $record->broodcock->name }}</p>
                                     {{-- The band tag is the bird's real identifier: the anodised
                                          ring it wears. Its bloodline is spelled out beside it so
                                          the encoding never depends on colour alone. --}}
@@ -166,56 +166,56 @@
                                                     :band="$record->broodcock->band_number"
                                                     size="xs" />
                                         @if ($record->broodcock->bloodline)
-                                            <span class="text-[12px] text-ink-80 sm:whitespace-nowrap">{{ $record->broodcock->bloodline }}</span>
+                                            <span class="text-[12px] text-muted-foreground sm:whitespace-nowrap">{{ $record->broodcock->bloodline }}</span>
                                         @endif
                                     </div>
                                 </td>
 
                                 <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
-                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Record Type</span>
+                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Record Type</span>
                                     <span class="badge {{ $record->record_type->badgeClasses() }}">
                                         {{ $record->record_type->label() }}
                                     </span>
                                 </td>
 
                                 <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
-                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Product</span>
-                                    <p class="text-[15px] leading-snug text-ink">{{ $record->product_name ?: '—' }}</p>
+                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Product</span>
+                                    <p class="text-[15px] leading-snug text-foreground">{{ $record->product_name ?: '—' }}</p>
                                     @if ($record->dosage)
-                                        <p class="mt-0.5 text-[12px] text-ink-80">Dosage: <span class="datum">{{ $record->dosage }}</span></p>
+                                        <p class="mt-0.5 text-[12px] text-muted-foreground">Dosage: <span class="datum">{{ $record->dosage }}</span></p>
                                     @endif
                                     @if ($record->condition)
-                                        <p class="mt-0.5 text-[12px] text-ink-80">Condition: {{ $record->condition }}</p>
+                                        <p class="mt-0.5 text-[12px] text-muted-foreground">Condition: {{ $record->condition }}</p>
                                     @endif
                                     {{-- Internal remarks. Customers are promised health STATUS,
                                          never the farm's private notes - the Policy decides. --}}
                                     @can('viewRemarks', $record)
                                         @if ($record->remarks)
-                                            <p class="mt-1.5 max-w-[40ch] border-l-2 border-hairline pl-2 text-[12px] leading-snug text-ink-80"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
+                                            <p class="mt-1.5 max-w-[40ch] border-l-2 border-border pl-2 text-[12px] leading-snug text-muted-foreground"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
                                         @endif
                                     @endcan
                                 </td>
 
                                 <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
-                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Check-up Date</span>
-                                    <span class="datum text-[15px] text-ink">{{ $record->checkup_date->format('d M Y') }}</span>
+                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Check-up Date</span>
+                                    <span class="datum text-[15px] text-foreground">{{ $record->checkup_date->format('d M Y') }}</span>
                                 </td>
 
                                 <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
-                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Next Due Date</span>
+                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Next Due Date</span>
                                     @if ($record->next_due_date)
-                                        <span class="datum text-[15px] text-ink">{{ $record->next_due_date->format('d M Y') }}</span>
+                                        <span class="datum text-[15px] text-foreground">{{ $record->next_due_date->format('d M Y') }}</span>
                                     @else
-                                        <span class="text-[15px] text-ink-80">None</span>
+                                        <span class="text-[15px] text-muted-foreground">None</span>
                                     @endif
                                 </td>
 
                                 <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
-                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Status</span>
+                                    <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Status</span>
                                     <span class="badge {{ $stateClasses }}">{{ $state }}</span>
                                 </td>
 
-                                <td class="mt-4 block border-t border-hairline pt-3 sm:mt-0 sm:table-cell sm:border-0 sm:px-4 sm:py-3 sm:text-right sm:whitespace-nowrap">
+                                <td class="mt-4 block border-t border-border pt-3 sm:mt-0 sm:table-cell sm:border-0 sm:px-4 sm:py-3 sm:text-right sm:whitespace-nowrap">
                                     <div class="flex gap-2 sm:justify-end">
                                         @can('update', $record)
                                             <a href="{{ route('health.edit', $record) }}" wire:navigate class="btn-secondary">Edit</a>
@@ -229,7 +229,7 @@
                                              record IS the primary action. --}}
                                         @can('delete', $record)
                                             <button type="button" wire:click="confirmDelete({{ $record->id }})"
-                                                    class="btn-secondary text-alert hover:border-alert">
+                                                    class="btn-secondary text-destructive hover:border-destructive">
                                                 Delete
                                             </button>
                                         @endcan
@@ -242,7 +242,7 @@
             </div>
 
             @if ($this->rows->hasPages())
-                <div class="border-t border-hairline bg-pearl px-4 py-2.5">
+                <div class="border-t border-border bg-muted px-4 py-2.5">
                     {{ $this->rows->links() }}
                 </div>
             @endif
@@ -254,29 +254,29 @@
     @if ($this->recordPendingDeletion)
         @php $pending = $this->recordPendingDeletion; @endphp
 
-        <div class="fixed inset-0 z-50 flex items-end justify-center bg-ink/50 p-4 sm:items-center"
+        <div class="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 p-4 sm:items-center"
              x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()" role="dialog"
              aria-modal="true"
              aria-labelledby="delete-dialog-title">
             {{-- No shadow: the dialog separates by ground and a strong rule,
                  which is how every other surface in this system separates. --}}
-            <div class="w-full max-w-lg rounded-[4px] border border-rule-strong bg-canvas p-6">
-                <h2 id="delete-dialog-title" class="text-[22px] font-semibold tracking-[-0.01em] text-ink">Delete this health record?</h2>
+            <div class="w-full max-w-lg rounded-[4px] border border-border bg-card p-6">
+                <h2 id="delete-dialog-title" class="text-[22px] font-semibold tracking-[-0.01em] text-foreground">Delete this health record?</h2>
 
-                <p class="mt-3 text-[15px] leading-relaxed text-ink-80">
+                <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
                     You are about to delete the
-                    <strong class="font-medium text-ink">{{ $pending->record_type->label() }}</strong> record for
-                    <strong class="font-medium text-ink">{{ $pending->broodcock->name }}</strong>
-                    (Band Number: <span class="datum text-ink">{{ $pending->broodcock->displayBand() }}</span>)
-                    dated <strong class="datum font-medium text-ink">{{ $pending->checkup_date->format('d M Y') }}</strong>.
+                    <strong class="font-medium text-foreground">{{ $pending->record_type->label() }}</strong> record for
+                    <strong class="font-medium text-foreground">{{ $pending->broodcock->name }}</strong>
+                    (Band Number: <span class="datum text-foreground">{{ $pending->broodcock->displayBand() }}</span>)
+                    dated <strong class="datum font-medium text-foreground">{{ $pending->checkup_date->format('d M Y') }}</strong>.
                 </p>
 
-                <p class="mt-2 text-[15px] leading-relaxed text-ink-80">
+                <p class="mt-2 text-[15px] leading-relaxed text-muted-foreground">
                     The record is kept in the farm's history and can be restored by the owner,
                     but it will no longer appear in lists or reports.
                 </p>
 
-                <div class="mt-6 flex flex-col-reverse gap-3 border-t border-hairline pt-5 sm:flex-row sm:justify-end">
+                <div class="mt-6 flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end">
                     <button type="button" wire:click="cancelDelete" class="btn-secondary">
                         No, keep it
                     </button>

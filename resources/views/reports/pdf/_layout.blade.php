@@ -44,7 +44,7 @@
         body {
             font-family: DejaVu Sans, sans-serif;   /* ships with dompdf; handles non-ASCII */
             font-size: 9pt;
-            color: {{ $b['ink'] }};
+            color: {{ $b['foreground'] }};
             margin: 0;
         }
 
@@ -55,18 +55,18 @@
             left: 0;
             right: 0;
             height: 14mm;
-            border-bottom: 1pt solid {{ $b['rule_strong'] }};
+            border-bottom: 1pt solid {{ $b['print']['rule_strong'] }};
         }
 
         .page-header .farm {
             font-size: 13pt;
             font-weight: bold;
-            color: {{ $b['ink'] }};
+            color: {{ $b['foreground'] }};
         }
 
         .page-header .subtitle {
             font-size: 8pt;
-            color: {{ $b['ink_muted'] }};
+            color: {{ $b['muted_foreground'] }};
         }
 
         .page-footer {
@@ -75,10 +75,10 @@
             left: 0;
             right: 0;
             height: 10mm;
-            border-top: 1pt solid {{ $b['rule_strong'] }};
+            border-top: 1pt solid {{ $b['print']['rule_strong'] }};
             padding-top: 2mm;
             font-size: 7.5pt;
-            color: {{ $b['ink_muted'] }};
+            color: {{ $b['muted_foreground'] }};
         }
 
         /* dompdf resolves these counters at render time. */
@@ -89,27 +89,27 @@
         h1 {
             font-size: 15pt;
             margin: 0 0 2mm 0;
-            color: {{ $b['ink'] }};
+            color: {{ $b['foreground'] }};
         }
 
         .meta {
             font-size: 8pt;
-            color: {{ $b['ink_muted'] }};
+            color: {{ $b['muted_foreground'] }};
             margin-bottom: 4mm;
         }
 
         /* Filter summary - a report is not defensible unless it states the
            exact parameters it was generated with. */
         .filters {
-            background-color: {{ $b['sunk'] }};
-            border: 0.5pt solid {{ $b['rule_strong'] }};
+            background-color: {{ $b['muted'] }};
+            border: 0.5pt solid {{ $b['print']['rule_strong'] }};
             padding: 2.5mm 3mm;
             margin-bottom: 5mm;
             font-size: 8pt;
         }
 
         .filters strong {
-            color: {{ $b['ink'] }};
+            color: {{ $b['foreground'] }};
         }
 
         table.data {
@@ -119,30 +119,30 @@
         }
 
         table.data thead th {
-            background-color: {{ $b['ink'] }};
+            background-color: {{ $b['foreground'] }};
             color: #ffffff;
             font-size: 8pt;
             font-weight: bold;
             text-align: left;
             padding: 2mm;
-            border: 0.5pt solid {{ $b['ink'] }};
+            border: 0.5pt solid {{ $b['foreground'] }};
         }
 
         table.data tbody td {
             padding: 1.8mm 2mm;
-            border: 0.5pt solid {{ $b['rule'] }};
+            border: 0.5pt solid {{ $b['print']['rule'] }};
             vertical-align: top;
         }
 
         /* dompdf supports :nth-child on table rows for zebra striping. */
         table.data tbody tr:nth-child(even) td {
-            background-color: {{ $b['paper'] }};
+            background-color: {{ $b['background'] }};
         }
 
         table.data tfoot td {
             padding: 2mm;
-            border: 0.5pt solid {{ $b['rule_strong'] }};
-            background-color: {{ $b['sunk'] }};
+            border: 0.5pt solid {{ $b['print']['rule_strong'] }};
+            background-color: {{ $b['muted'] }};
             font-weight: bold;
         }
 
@@ -163,41 +163,41 @@
         }
 
         table.summary td {
-            background-color: {{ $b['sunk'] }};
-            border: 0.5pt solid {{ $b['rule_strong'] }};
+            background-color: {{ $b['muted'] }};
+            border: 0.5pt solid {{ $b['print']['rule_strong'] }};
             padding: 2.5mm;
             width: 25%;
         }
 
         table.summary .label {
             font-size: 7.5pt;
-            color: {{ $b['ink_muted'] }};
+            color: {{ $b['muted_foreground'] }};
             text-transform: uppercase;
         }
 
         table.summary .value {
             font-size: 14pt;
             font-weight: bold;
-            color: {{ $b['ink'] }};
+            color: {{ $b['foreground'] }};
         }
 
         .empty {
             padding: 12mm;
             text-align: center;
-            color: {{ $b['ink_muted'] }};
-            border: 0.5pt dashed {{ $b['rule_strong'] }};
+            color: {{ $b['muted_foreground'] }};
+            border: 0.5pt dashed {{ $b['print']['rule_strong'] }};
         }
 
         .badge {
             padding: 0.4mm 1.4mm;
             font-size: 7.5pt;
-            border: 0.5pt solid {{ $b['rule_strong'] }};
-            background-color: {{ $b['sunk'] }};
+            border: 0.5pt solid {{ $b['print']['rule_strong'] }};
+            background-color: {{ $b['muted'] }};
         }
 
-        .badge-danger { background-color: {{ $b['alert_wash'] }}; border-color: {{ $b['alert'] }}; color: {{ $b['alert'] }}; }
-        .badge-warn   { background-color: {{ $b['warn_wash'] }}; border-color: {{ $b['warn'] }}; color: {{ $b['warn'] }}; }
-        .badge-ok     { background-color: {{ $b['ok_wash'] }}; border-color: {{ $b['ok'] }}; color: {{ $b['ok'] }}; }
+        .badge-danger { background-color: {{ $b['destructive_bg'] }}; border-color: {{ $b['destructive'] }}; color: {{ $b['destructive'] }}; }
+        .badge-warn   { background-color: {{ $b['warning_bg'] }}; border-color: {{ $b['warning'] }}; color: {{ $b['warning'] }}; }
+        .badge-ok     { background-color: {{ $b['success_bg'] }}; border-color: {{ $b['success'] }}; color: {{ $b['success'] }}; }
     </style>
 </head>
 <body>

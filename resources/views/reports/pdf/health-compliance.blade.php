@@ -95,7 +95,7 @@
                         // Already inside @php, so this is plain PHP - Blade's {{ }} does
                         // not apply here and would be emitted as literal text.
                         $cell = $state === 'Overdue'
-                            ? ' style="background-color: '.config('gfms-brand.alert_wash').';"'
+                            ? ' style="background-color: '.config('gfms-brand.destructive_bg').';"'
                             : '';
                     @endphp
                     <tr>

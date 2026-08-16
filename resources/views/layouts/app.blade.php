@@ -44,13 +44,13 @@
     <div x-data="{ mobileOpen: false }" class="min-h-full">
         {{-- Global bar. Frosted rather than solid: depth comes from the content
              scrolling beneath it, never from a shadow. --}}
-        <header class="frosted sticky top-0 z-40 border-b border-hairline">
+        <header class="frosted sticky top-0 z-40 border-b border-border">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex h-12 items-center justify-between gap-6">
                     {{-- inline-flex + min-h-11 so the wordmark is a full 44px tap
                          target, not a 26px text run. It is the home link on a phone. --}}
                     <a href="{{ route('dashboard') }}"
-                       class="inline-flex min-h-11 shrink-0 items-center text-[17px] font-semibold tracking-[-0.01em] text-ink">
+                       class="inline-flex min-h-11 shrink-0 items-center text-[17px] font-semibold tracking-[-0.01em] text-foreground">
                         {{ config('gfms.farm.name') }}
                     </a>
 
@@ -62,8 +62,8 @@
                             <a href="{{ route($item['route']) }}"
                                @class([
                                    'rounded-full px-3 py-1.5 text-[12px] transition-colors',
-                                   'bg-action-wash font-medium text-action' => $isActive($item['route']),
-                                   'text-ink-80 hover:text-ink' => ! $isActive($item['route']),
+                                   'bg-primary-50 font-medium text-primary' => $isActive($item['route']),
+                                   'text-muted-foreground hover:text-foreground' => ! $isActive($item['route']),
                                ])
                                @if ($isActive($item['route'])) aria-current="page" @endif>
                                 {{ $item['label'] }}
@@ -73,13 +73,13 @@
 
                     <div class="flex items-center gap-3">
                         <div class="hidden text-right sm:block">
-                            <p class="text-[12px] font-medium leading-tight text-ink">{{ $user?->full_name }}</p>
-                            <p class="text-[12px] leading-tight text-ink-48">{{ $user?->role->label() }}</p>
+                            <p class="text-[12px] font-medium leading-tight text-foreground">{{ $user?->full_name }}</p>
+                            <p class="text-[12px] leading-tight text-muted-foreground">{{ $user?->role->label() }}</p>
                         </div>
 
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="inline-flex min-h-11 items-center px-1 text-[12px] text-action hover:underline">
+                            <button type="submit" class="inline-flex min-h-11 items-center px-1 text-[12px] text-primary hover:underline">
                                 Sign out
                             </button>
                         </form>
@@ -87,7 +87,7 @@
                         <button type="button"
                                 @click="mobileOpen = ! mobileOpen"
                                 :aria-expanded="mobileOpen ? 'true' : 'false'"
-                                class="-mr-1 inline-flex h-11 w-11 items-center justify-center rounded-full text-ink-80 hover:bg-pearl lg:hidden"
+                                class="-mr-1 inline-flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-muted lg:hidden"
                                 aria-label="Toggle navigation">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.75"
                                  viewBox="0 0 24 24" aria-hidden="true">
@@ -106,14 +106,14 @@
             <div x-show="mobileOpen"
                  x-cloak
                  x-collapse.duration.220ms
-                 class="border-t border-divider lg:hidden">
+                 class="border-t border-border lg:hidden">
                 <nav class="space-y-0.5 px-4 py-2" aria-label="Main">
                     @foreach ($nav as $item)
                         <a href="{{ route($item['route']) }}"
                            @class([
                                'block rounded-[8px] px-3 py-2.5 text-[17px]',
-                               'bg-action-wash font-medium text-action' => $isActive($item['route']),
-                               'text-ink hover:bg-pearl' => ! $isActive($item['route']),
+                               'bg-primary-50 font-medium text-primary' => $isActive($item['route']),
+                               'text-foreground hover:bg-muted' => ! $isActive($item['route']),
                            ])>
                             {{ $item['label'] }}
                         </a>
@@ -126,13 +126,13 @@
             {{-- Flash messages. Both say what actually happened, never
                  "Operation completed". --}}
             @if (session('success'))
-                <div class="mb-6 rounded-[18px] bg-ok-wash px-4 py-3 text-[17px] text-ok" role="status">
+                <div class="mb-6 rounded-[18px] bg-success-bg px-4 py-3 text-[17px] text-success" role="status">
                     {{ session('success') }}
                 </div>
             @endif
 
             @if (session('error'))
-                <div class="mb-6 rounded-[18px] bg-alert-wash px-4 py-3 text-[17px] text-alert" role="alert">
+                <div class="mb-6 rounded-[18px] bg-destructive-bg px-4 py-3 text-[17px] text-destructive" role="alert">
                     {{ session('error') }}
                 </div>
             @endif

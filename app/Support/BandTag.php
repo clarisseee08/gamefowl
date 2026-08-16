@@ -26,8 +26,17 @@ namespace App\Support;
  */
 final class BandTag
 {
-    /** Fallback tone when no bloodline is recorded at all. */
-    public const UNKNOWN_HEX = '#5E5B55';
+    /**
+     * Fallback tone when no bloodline is recorded at all.
+     *
+     * Read from config rather than declared as a literal: config/gfms-brand.php
+     * is the single source of colour, and DesignSystemGuardTest fails on any
+     * hardcoded hex outside it.
+     */
+    public static function unknownHex(): string
+    {
+        return config('gfms-brand.muted_foreground');
+    }
 
     /** Normalises free text to a lookup key. */
     private static function key(?string $bloodline): string
@@ -77,8 +86,55 @@ final class BandTag
         $slot = self::slot($bloodline);
 
         return $slot === null
-            ? self::UNKNOWN_HEX
-            : (self::bands()[$slot] ?? self::UNKNOWN_HEX);
+            ? self::unknownHex()
+            : (self::bands()[$slot] ?? self::unknownHex());
+    }
+
+    /**
+     * The text colour that belongs on this band, resolved rather than assumed.
+     *
+     * The band palette is deliberately bright, and three of the six cannot
+     * carry white text - amber sits at 2.08:1 against white, which is
+     * unreadable. Darkening them until white worked would have undone the
+     * saturation the palette exists for. So each tag picks the foreground that
+     * actually passes.
+     *
+     * This is not just for the six curated colours: an unanticipated bloodline
+     * gets its colour from a hash, so the foreground has to be computed rather
+     * than tabulated or the fallback path ships an illegible tag.
+     */
+    public static function foreground(?string $bloodline): string
+    {
+        $light = config('gfms-brand.band_foreground_light');
+        $dark = config('gfms-brand.band_foreground_dark');
+        $bg = self::hex($bloodline);
+
+        return self::contrast($bg, $light) >= 4.5 ? $light : $dark;
+    }
+
+    /** WCAG relative-luminance contrast ratio between two hex colours. */
+    public static function contrast(string $a, string $b): float
+    {
+        $luminance = static function (string $hex): float {
+            $channels = array_map(
+                static fn (int $offset): float => hexdec(substr($hex, $offset, 2)) / 255,
+                [1, 3, 5]
+            );
+
+            $channels = array_map(
+                static fn (float $c): float => $c <= 0.03928
+                    ? $c / 12.92
+                    : (($c + 0.055) / 1.055) ** 2.4,
+                $channels
+            );
+
+            return 0.2126 * $channels[0] + 0.7152 * $channels[1] + 0.0722 * $channels[2];
+        };
+
+        $x = $luminance($a);
+        $y = $luminance($b);
+
+        return (max($x, $y) + 0.05) / (min($x, $y) + 0.05);
     }
 
     /**

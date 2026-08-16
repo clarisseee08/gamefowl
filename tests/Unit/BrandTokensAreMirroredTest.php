@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
+use App\Support\BandTag;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -27,6 +28,7 @@ final class BrandTokensAreMirroredTest extends TestCase
         return file_get_contents(__DIR__.'/../../resources/css/app.css');
     }
 
+    /** Every scalar colour in the config must appear in the stylesheet. */
     public function test_every_brand_colour_appears_in_the_stylesheet(): void
     {
         $css = strtolower($this->appCss());
@@ -57,68 +59,69 @@ final class BrandTokensAreMirroredTest extends TestCase
     }
 
     /**
-     * Every band colour must carry white text at >= 4.5:1, because the tag
-     * knocks its number out in white and the colour is chosen by data - we do
-     * not get to pick which bloodline lands on which slot.
+     * The band palette is deliberately bright, and three of the six cannot
+     * carry white text — amber measures 2.08:1 against white. Rather than
+     * darkening them back toward the muted set this direction replaced, the tag
+     * resolves its own foreground. What must hold is that SOME foreground
+     * passes for every band, including whatever the hash hands an
+     * unanticipated bloodline.
      */
-    public function test_every_band_colour_is_legible_with_white_text(): void
+    public function test_every_band_is_legible_with_its_resolved_foreground(): void
     {
-        foreach ($this->brand()['bands'] as $slot => $hex) {
-            $this->assertGreaterThanOrEqual(4.5, $this->contrast($hex, '#FFFFFF'),
-                "Band colour {$slot} ({$hex}) fails 4.5:1 against white text.");
+        $b = $this->brand();
+        $light = $b['band_foreground_light'];
+        $dark = $b['band_foreground_dark'];
+
+        foreach ($b['bands'] as $slot => $hex) {
+            $best = max(
+                BandTag::contrast($hex, $light),
+                BandTag::contrast($hex, $dark)
+            );
+
+            $this->assertGreaterThanOrEqual(4.5, $best,
+                "Band {$slot} ({$hex}) is illegible against BOTH available "
+                .'foregrounds. Every band must work with one of them.');
         }
     }
 
     /**
-     * A token is only legible against a specific GROUND, and this system has
-     * three. ink_faint clears 4.5:1 on parchment and canvas but measures 4.37:1
-     * on pearl - found by measuring the pedigree screen, where the root card
-     * sits on pearl, not by reading the palette. This pins the combination down
-     * so the next person does not rediscover it on a different screen.
+     * Console body text must clear 7:1 on every ground it can land on. The
+     * Console is used outdoors in Philippine daylight, so this is a legibility
+     * requirement rather than a preference.
      */
-    public function test_ink_faint_is_legible_on_light_grounds_and_not_on_pearl(): void
+    public function test_console_text_clears_the_seven_to_one_floor_on_every_surface(): void
     {
         $b = $this->brand();
 
-        foreach (['paper', 'card'] as $ground) {
-            $this->assertGreaterThanOrEqual(4.5, $this->contrast($b['ink_faint'], $b[$ground]),
-                "ink_faint should be usable on {$ground}.");
-        }
+        foreach (['foreground', 'muted_foreground'] as $ink) {
+            foreach (['background', 'card', 'muted'] as $ground) {
+                $ratio = BandTag::contrast($b[$ink], $b[$ground]);
 
-        $this->assertLessThan(4.5, $this->contrast($b['ink_faint'], $b['sunk']),
-            'ink_faint now passes on pearl. If the palette changed deliberately, delete this '
-            .'assertion and the warning in SKILL.md together - otherwise the documented rule is wrong.');
+                $this->assertGreaterThanOrEqual(7.0, $ratio,
+                    sprintf('%s on %s is %.2f:1 — below the Console 7:1 floor.', $ink, $ground, $ratio));
+            }
+        }
     }
 
-    /** Console body text must clear 7:1 on the app background (outdoor glare). */
-    public function test_console_ink_clears_the_seven_to_one_floor(): void
+    /** Every semantic pair must be legible as foreground-on-its-own-ground. */
+    public function test_every_semantic_pair_is_legible(): void
     {
         $b = $this->brand();
 
-        foreach (['ink', 'ink_muted', 'action'] as $token) {
-            $this->assertGreaterThanOrEqual(7.0, $this->contrast($b[$token], $b['paper']),
-                "{$token} ({$b[$token]}) fails the Console 7:1 floor on paper.");
+        foreach (['success', 'warning', 'destructive', 'info'] as $token) {
+            $ratio = BandTag::contrast($b[$token], $b[$token.'_bg']);
+
+            $this->assertGreaterThanOrEqual(4.5, $ratio,
+                sprintf('%s on %s_bg is %.2f:1.', $token, $token, $ratio));
         }
-    }
 
-    private function contrast(string $a, string $b): float
-    {
-        $l = function (string $hex): float {
-            $c = array_map(
-                fn (int $i) => hexdec(substr($hex, $i, 2)) / 255,
-                [1, 3, 5]
-            );
-            $c = array_map(
-                fn (float $v) => $v <= 0.03928 ? $v / 12.92 : (($v + 0.055) / 1.055) ** 2.4,
-                $c
-            );
+        // Filled controls: the foreground the button actually uses.
+        $this->assertGreaterThanOrEqual(4.5,
+            BandTag::contrast($b['primary_foreground'], $b['primary']),
+            'primary_foreground on primary is illegible.');
 
-            return 0.2126 * $c[0] + 0.7152 * $c[1] + 0.0722 * $c[2];
-        };
-
-        $x = $l($a);
-        $y = $l($b);
-
-        return (max($x, $y) + 0.05) / (min($x, $y) + 0.05);
+        $this->assertGreaterThanOrEqual(4.5,
+            BandTag::contrast($b['destructive_foreground'], $b['destructive']),
+            'destructive_foreground on destructive is illegible.');
     }
 }

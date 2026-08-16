@@ -53,17 +53,17 @@
     --}}
     <table style="width: 100%; border-collapse: collapse; margin-bottom: 5mm;">
         <tr>
-            <td style="border: 0.5pt solid {{ config('gfms-brand.alert') }}; background-color: {{ config('gfms-brand.alert_wash') }}; padding: 3mm; font-size: 8pt;">
-                <strong style="color: {{ config('gfms-brand.alert') }};">How the mortality rate was calculated</strong><br>
+            <td style="border: 0.5pt solid {{ config('gfms-brand.destructive') }}; background-color: {{ config('gfms-brand.destructive_bg') }}; padding: 3mm; font-size: 8pt;">
+                <strong style="color: {{ config('gfms-brand.destructive') }};">How the mortality rate was calculated</strong><br>
                 <span>{{ $rate['denominator_sentence'] }}</span><br>
-                <span style="color: {{ config('gfms-brand.ink_muted') }};">
+                <span style="color: {{ config('gfms-brand.muted_foreground') }};">
                     "On the farm today" counts birds whose status is
                     {{ implode(', ', $report->onFarmStatuses()) }} &mdash; it excludes sold and deceased birds.
                 </span>
             </td>
         </tr>
         <tr>
-            <td style="border: 0.5pt solid {{ config('gfms-brand.warn') }}; border-top: 0; background-color: {{ config('gfms-brand.warn_wash') }}; padding: 3mm; font-size: 7.5pt; color: {{ config('gfms-brand.warn') }};">
+            <td style="border: 0.5pt solid {{ config('gfms-brand.warning') }}; border-top: 0; background-color: {{ config('gfms-brand.warning_bg') }}; padding: 3mm; font-size: 7.5pt; color: {{ config('gfms-brand.warning') }};">
                 <strong>Why this is a proxy:</strong> {{ $rate['caveat'] }}
             </td>
         </tr>
@@ -97,7 +97,7 @@
                                 @if ($key === 'age_at_death' && $row[$key] === 'Unknown')
                                     {{-- No hatch date on file: the age is genuinely
                                          unknown, and "0 months" would be a lie. --}}
-                                    <span style="color: {{ config('gfms-brand.ink_muted') }};">Unknown</span>
+                                    <span style="color: {{ config('gfms-brand.muted_foreground') }};">Unknown</span>
                                 @else
                                     {{ $row[$key] ?? '—' }}
                                 @endif
@@ -149,7 +149,7 @@
                 </tr>
             </tfoot>
         </table>
-        <p style="font-size: 7.5pt; color: {{ config('gfms-brand.ink_muted') }}; margin: 0 0 4mm 0;">
+        <p style="font-size: 7.5pt; color: {{ config('gfms-brand.muted_foreground') }}; margin: 0 0 4mm 0;">
             Percentages are of the {{ number_format($byCause->sum('deaths')) }}
             {{ \Illuminate\Support\Str::plural('death', $byCause->sum('deaths')) }}
             matching these filters, not of all deaths ever recorded. Rounding to one
@@ -181,7 +181,7 @@
                         <td class="num">{{ number_format($period['deaths']) }}</td>
                         <td>
                             @if ($period['deaths'] === 0)
-                                <span style="color: {{ config('gfms-brand.ink_muted') }};">No deaths</span>
+                                <span style="color: {{ config('gfms-brand.muted_foreground') }};">No deaths</span>
                             @else
                                 {{-- A bar drawn as a table cell with a width -
                                      dompdf has no flexbox to size one with. --}}
@@ -191,7 +191,7 @@
                                              colouring it with the success token was a
                                              straight mis-signal, and the app's own mortality
                                              chart uses ink for the same reason. --}}
-                                        <td style="width: {{ round($period['deaths'] / $periodTotal * 100) }}%; background-color: {{ config('gfms-brand.ink_muted') }}; height: 2.6mm; border: 0;"></td>
+                                        <td style="width: {{ round($period['deaths'] / $periodTotal * 100) }}%; background-color: {{ config('gfms-brand.muted_foreground') }}; height: 2.6mm; border: 0;"></td>
                                         <td style="border: 0;"></td>
                                     </tr>
                                 </table>
@@ -212,7 +212,7 @@
                 </tr>
             </tfoot>
         </table>
-        <p style="font-size: 7.5pt; color: {{ config('gfms-brand.ink_muted') }}; margin: 0;">
+        <p style="font-size: 7.5pt; color: {{ config('gfms-brand.muted_foreground') }}; margin: 0;">
             Months inside the filtered range with no recorded deaths are shown as zero
             rather than omitted, so a quiet month cannot be mistaken for missing data.
         </p>

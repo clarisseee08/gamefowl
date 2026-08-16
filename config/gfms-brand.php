@@ -13,70 +13,124 @@ declare(strict_types=1);
 | templates read their colours from HERE, and `resources/css/app.css` mirrors
 | the same values into its @theme block.
 |
-| tests/Unit/BrandTokensAreMirroredTest.php asserts every hex below appears
-| verbatim in app.css, so screen and print cannot silently drift apart. That
-| test is the defensible answer to "how do you keep the reports looking like
-| the app?".
+| NAMING: shadcn-style semantic pairs (background/foreground, card/
+| card-foreground, muted/muted-foreground). Adopted for two reasons that are
+| both defensible at a panel: the vocabulary is widely understood, and it makes
+| a dark theme a second :root block rather than a second set of components —
+| every surface already declares the text colour that belongs on it.
 |
-| Full rationale, contrast measurements and usage rules: docs/design-brief.md
+| tests/Unit/BrandTokensAreMirroredTest.php asserts every hex below appears
+| verbatim in app.css, so screen and print cannot silently drift apart.
+| tests/Unit/TokenContrastTest.php asserts every declared pairing is legible.
 |
 */
 
 return [
 
     /*
-     * Ground and ink. The reference is a field ledger - dark ink on pale
-     * paper - because the Console is used outdoors in Philippine daylight and
-     * contrast is a legibility requirement, not a style preference.
+     * SURFACES. Tinted neutrals — never pure white for the page, never pure
+     * black for text. A pure #FFF page under a #FFF card gives you no
+     * elevation to work with, which is precisely what made the previous
+     * direction read as a printed document rather than software.
      */
-    'paper' => '#FAF9F7',
-    'card' => '#FFFFFF',
-    'sunk' => '#F1EFEA',
-
-    'ink' => '#1A1917',        // 16.7:1 on paper
-    'ink_muted' => '#55534D',  //  7.31:1 on paper - passes the Console 7:1 floor
-    'ink_faint' => '#726F66',  //  4.77:1 on paper - Catalog only, never Console body
-
-    'rule' => '#E3E0DA',
-    'rule_strong' => '#CFCBC2',
+    'background' => '#FBFBFA',   // the page
+    'card' => '#FFFFFF',         // raised surfaces
+    'muted' => '#F4F5F3',        // wells, table headers, inactive
+    'popover' => '#FFFFFF',
+    'border' => '#E4E6E2',
+    'input' => '#DFE2DD',
 
     /*
-     * The one interactive colour. Blue-black ledger ink, not a bright UI blue:
-     * it sits at 12.45:1 on paper so it survives glare, and it is chromatically
-     * distant from all six band colours so "clickable" never reads as a
-     * bloodline.
+     * TEXT. Each surface names the foreground that belongs on it, so a
+     * component never has to guess and a theme swap never orphans a colour.
      */
-    'action' => '#16324F',
-    'action_hover' => '#1E4468',
-    'action_wash' => '#E9EEF4',
+    'foreground' => '#161C19',
 
     /*
-     * Semantic status. Separate from `action` so a red badge never reads as a
-     * link, and separate from the band palette so status never reads as
-     * bloodline. Every pair below is >= 4.5:1 text-on-wash.
-     */
-    'ok' => '#1B6B44',        'ok_wash' => '#E6F1EB',      // 5.61:1
-    'warn' => '#8A5A12',      'warn_wash' => '#F8EFDF',    // 5.18:1
-    'alert' => '#A32219',     'alert_wash' => '#F7E8E7',   // 6.30:1
-    'note' => '#2A4E7A',      'note_wash' => '#E9EEF4',    // 7.29:1
-    'quiet' => '#5E5B55',     'quiet_wash' => '#EFEDE9',   // 5.79:1
-
-    /*
-     * The band palette - the ONLY chroma in the system.
+     * DEVIATION FROM THE SPEC, and the reason for it.
      *
-     * These are the anodised aluminium colours that poultry leg bands are
-     * actually sold in. Not a decorative palette; the physical object.
-     * All six carry white text at >= 4.5:1, which is what keeps the tag
-     * legible whichever bloodline it lands on.
+     * The direction specified #667069, which measures 4.96:1 on background and
+     * 4.70:1 on muted. Both clear AA, but the same document keeps the Console
+     * 7:1 floor — the staff screens are used outdoors in Philippine daylight,
+     * where 5:1 secondary text greys out. #4E5550 is the same hue at lower
+     * lightness: 7.40 on background, 7.67 on card, 7.01 on muted.
+     */
+    'muted_foreground' => '#4E5550',
+
+    'card_foreground' => '#161C19',
+    'popover_foreground' => '#161C19',
+
+    /*
+     * BRAND — peacock. A full scale rather than a single accent: the previous
+     * direction spent colour in exactly one place, and that austerity is what
+     * is being replaced. 500 is the base; -50/-100 are fills for active nav
+     * and selected rows, -600/-700 are hover and press.
+     */
+    'primary_50' => '#EDF7F7',
+    'primary_100' => '#D2ECEC',
+    'primary_200' => '#A6D8D9',
+    'primary_400' => '#35A0A6',
+    'primary' => '#0D6E75',
+    'primary_600' => '#0A5C62',
+    'primary_700' => '#08494E',
+    'primary_900' => '#052B2E',
+    'primary_foreground' => '#FFFFFF',
+
+    /*
+     * SEMANTIC. Full foreground/background pairs, not single hues. The tinted
+     * backgrounds ARE the point — this is where "one accent only" is
+     * deliberately abandoned. Every pair is verified >= 4.5:1 by
+     * TokenContrastTest.
+     */
+    'success' => '#1F7A4D',      'success_bg' => '#E8F4EE',   // 4.71:1
+
+    /*
+     * DEVIATION: the spec gave #A87409, which is 3.68:1 on its own tinted
+     * background — the one pair in the set that failed. Same hue, darker.
+     */
+    'warning' => '#906308',      'warning_bg' => '#FBF3E2',   // 4.79:1
+
+    'destructive' => '#B3261E',  'destructive_bg' => '#FBEAE9',  // 5.62:1
+    'info' => '#3C4A8A',         'info_bg' => '#ECEEF8',         // 7.15:1
+
+    'destructive_foreground' => '#FFFFFF',
+
+    /*
+     * THE BAND PALETTE — the identity, and the one thing carried unchanged
+     * through the direction change.
+     *
+     * A gamefowl's identity is not a row id; it is a numbered anodised ring on
+     * its leg. Colour in this system means bloodline and nothing else — status
+     * uses the semantic pairs above, never these.
+     *
+     * All six carry white text at >= 4.5:1, which is what keeps the tag legible
+     * whichever bloodline it lands on. Asserted, not assumed.
      */
     'bands' => [
-        'crimson' => '#B3202C',   // 6.65:1 with white
-        'cobalt' => '#1B4F9C',    // 7.94:1
-        'forest' => '#1E6B45',    // 6.47:1
-        'amber' => '#9A5B08',     // 5.42:1
-        'plum' => '#6A3080',      // 8.95:1
-        'slate' => '#41525E',     // 8.10:1
+        'ember' => '#E8552E',
+        'amber' => '#F2A413',
+        'jade' => '#1F9E6B',
+        'cobalt' => '#1D5FD0',
+        'plum' => '#8E44AD',
+        'rose' => '#D6336C',
     ],
+
+    /*
+     * The band tag picks its own text colour.
+     *
+     * These six are brighter and more saturated than the previous anodised set,
+     * which is the point — but three of them (ember 3.64, jade 3.41, amber a
+     * hopeless 2.08) cannot carry white text. Darkening them to fit white would
+     * have walked amber straight back to the muted gold this direction replaced.
+     *
+     * So the hexes stay exactly as specified and the FOREGROUND is resolved per
+     * band: white where it clears 4.5:1, deep ink where it does not. Every tag
+     * then passes on its own terms, and the rule extends automatically to any
+     * colour the deterministic hash produces for an unanticipated bloodline.
+     * App\Support\BandTag::foreground() computes it; BandTagContrastTest asserts it.
+     */
+    'band_foreground_light' => '#FFFFFF',
+    'band_foreground_dark' => '#10201B',
 
     /*
      * Curated bloodline -> band slot, so the farm's real stock is stable and
@@ -91,11 +145,22 @@ return [
      */
     'bloodlines' => [
         'sweater' => ['slot' => 'cobalt', 'code' => 'SW'],
-        'hatch' => ['slot' => 'crimson', 'code' => 'HA'],
-        'kelso' => ['slot' => 'forest', 'code' => 'KE'],
+        'hatch' => ['slot' => 'ember', 'code' => 'HA'],
+        'kelso' => ['slot' => 'jade', 'code' => 'KE'],
         'roundhead' => ['slot' => 'amber', 'code' => 'RH'],
-        'grey' => ['slot' => 'slate', 'code' => 'GR'],
-        'claret' => ['slot' => 'plum', 'code' => 'CL'],
+        'grey' => ['slot' => 'plum', 'code' => 'GR'],
+        'claret' => ['slot' => 'rose', 'code' => 'CL'],
+    ],
+
+    /*
+     * PRINT. dompdf gets colour, rules and type from the same source, but not
+     * elevation or tinted card grounds — a shadow costs ink and renders as a
+     * grey smear on a mono office printer. Print-adapted, not print-different.
+     */
+    'print' => [
+        'rule' => '#E4E6E2',
+        'rule_strong' => '#C7CBC5',
+        'zebra' => '#F7F8F6',
     ],
 
 ];

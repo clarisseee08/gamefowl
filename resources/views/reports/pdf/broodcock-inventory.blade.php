@@ -57,7 +57,7 @@
         h2.section {
             font-size: 10pt;
             margin: 0 0 2mm 0;
-            color: {{ config('gfms-brand.ok') }};
+            color: {{ config('gfms-brand.success') }};
         }
 
         /* A pure-CSS share bar. No flexbox: a fixed-width track holding a
@@ -65,15 +65,15 @@
         table.bar {
             width: 22mm;
             border-collapse: collapse;
-            background-color: {{ config('gfms-brand.rule') }};
-            border: 0.5pt solid {{ config('gfms-brand.rule_strong') }};
+            background-color: {{ config('gfms-brand.print.rule') }};
+            border: 0.5pt solid {{ config('gfms-brand.print.rule_strong') }};
         }
 
         table.bar td {
             height: 2.6mm;
             padding: 0;
             border: 0;
-            background-color: {{ config('gfms-brand.ok') }};
+            background-color: {{ config('gfms-brand.success') }};
         }
     </style>
 

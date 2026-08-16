@@ -2,108 +2,134 @@
    so the sources below are the WHOLE content set.
 
    This is not tidiness. Auto-detection scans every file in the project and
-   cannot tell prose from markup, so docs/design-brief.md - the document whose
-   anti-pattern list names bg-gray-100 and border-slate-200 as forbidden - was
-   compiling those exact utilities into the production bundle. The rule against
-   them was generating them. */
+   cannot tell prose from markup, so a design document whose anti-pattern list
+   names forbidden utilities was compiling those exact utilities into the
+   production bundle. The rule against them was generating them. */
 @import 'tailwindcss' source(none);
 
 /* Self-hosted, no CDN. A demo in a provincial venue cannot depend on Google
-   Fonts resolving, and the previous stack declared 'SF Pro' - which ships only
-   on Apple platforms, so every Windows machine silently rendered Segoe UI. */
+   Fonts resolving, and an earlier stack declared 'SF Pro' - which ships only on
+   Apple platforms, so every Windows machine silently rendered Segoe UI. */
 @import '@fontsource/fira-sans/latin-400.css';
 @import '@fontsource/fira-sans/latin-500.css';
 @import '@fontsource/fira-sans/latin-600.css';
 @import '@fontsource/fira-code/latin-400.css';
 @import '@fontsource/fira-code/latin-500.css';
-/* 600 is loaded because headline figures are .datum AND font-semibold. Without
-   the real weight the browser synthesises bold by smearing the 500, which is
-   visibly worse at 32-44px - exactly the sizes the dashboard uses. */
+/* 600 is loaded because headline figures are .datum AND semibold. Without the
+   real weight the browser synthesises bold by smearing the 500, which is
+   visibly worse at the 32-44px sizes the dashboard uses. */
 @import '@fontsource/fira-code/latin-600.css';
 
-/* Tailwind v4 is CSS-first: there is no tailwind.config.js. Content sources are
-   declared here instead of a `content: []` array. */
-/* The framework's own paginator views are NO LONGER a content source. They are
-   superseded by resources/views/vendor/pagination/, and scanning them was
-   compiling the stock grey palette into the bundle for markup that never
-   renders. */
 @source '../views/**/*.blade.php';
 @source '../js/**/*.js';
-/* storage/framework/views is deliberately NOT scanned: it holds COMPILED Blade,
-   so it duplicates the source above while also retaining stale markup from
-   templates that have since changed. */
+@source '../../app/**/*.php';
 
 /*
  * ---------------------------------------------------------------------------
- * GFMS — the field-ledger world.  Full rationale: docs/design-brief.md
+ * GFMS — "Registry, running as software"
  * ---------------------------------------------------------------------------
  *
- * Dark ink on pale paper, hairline rules, and colour spent in exactly ONE
- * place: the band tag. The Console is used outdoors in Philippine daylight, so
- * high contrast is a legibility requirement rather than a style preference.
+ * The subject is unchanged: provenance, bloodlines, papers. What changed is
+ * that it now presents as a live product with depth and state, rather than a
+ * printed document rendered in a browser.
  *
- * COLOUR SOURCE OF TRUTH IS config/gfms-brand.php, not this file. The PDF
- * report templates cannot read a custom property (dompdf is a CSS 2.1 engine),
- * so they read that PHP config directly and this @theme block mirrors the same
- * values. tests/Unit/BrandTokensAreMirroredTest.php asserts the two agree.
+ * COLOUR SOURCE OF TRUTH IS config/gfms-brand.php, not this file. dompdf is a
+ * CSS 2.1 engine and cannot read a custom property, so the PDF templates read
+ * that PHP config directly and this @theme block mirrors the same values.
+ * BrandTokensAreMirroredTest asserts the two agree.
  *
- * NOTE ON TOKEN NAMES: the names below are deliberately unchanged from the
- * previous visual world even though every VALUE changed. The class vocabulary
- * (.badge-ok, .btn-primary, .input, .card ...) is a contract consumed by five
- * PHP enums' badgeClasses() and ~1,300 call sites across the Blade views.
- * Renaming it would force an all-or-nothing lockstep migration with an
- * invisible broken intermediate state, and would buy nothing: semantic names
- * describe MEANING, and the meaning is not what is being reskinned.
+ * NAMING is shadcn-style semantic pairs - every surface declares the foreground
+ * that belongs on it. Two reasons, both defensible: the vocabulary is widely
+ * understood, and it makes a dark theme a second :root block rather than a
+ * second set of components.
+ *
+ * WHAT SURVIVED THE DIRECTION CHANGE: the band tag, the bloodline resolution
+ * over free text, mono registry data, the pedigree connectors, and the rule
+ * that colour means bloodline and nothing else.
  */
 
 @theme {
     --font-sans: 'Fira Sans', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'Fira Code', ui-monospace, 'Cascadia Mono', Menlo, monospace;
 
-    /* Ground and ink */
-    --color-canvas: #ffffff;      /* raised surface */
-    --color-parchment: #faf9f7;   /* app background */
-    --color-pearl: #f1efea;       /* table heads, wells */
+    /* Surfaces — tinted neutrals. Never pure white for the page, never pure
+       black for text: a #FFF page under a #FFF card leaves no elevation to
+       work with, which is what made the previous direction read as paper. */
+    --color-background: #fbfbfa;
+    --color-card: #ffffff;
+    --color-muted: #f4f5f3;
+    --color-popover: #ffffff;
+    --color-border: #e4e6e2;
+    --color-input: #dfe2dd;
 
-    --color-ink: #1a1917;         /* 16.70:1 on parchment */
-    --color-ink-80: #55534d;      /*  7.31:1 - passes the Console 7:1 floor */
-    --color-ink-48: #726f66;      /*  4.77:1 - Catalog only, never Console body */
+    --color-foreground: #161c19;
+    --color-muted-foreground: #4e5550;   /* 7.40:1 on background - Console floor */
+    --color-card-foreground: #161c19;
+    --color-popover-foreground: #161c19;
 
-    --color-hairline: #e3e0da;
-    --color-divider: #e3e0da;
-    --color-rule-strong: #cfcbc2;   /* dense console tables, where a hairline disappears */
+    /* Brand — peacock, as a full scale rather than a single accent. */
+    --color-primary-50: #edf7f7;
+    --color-primary-100: #d2ecec;
+    --color-primary-200: #a6d8d9;
+    --color-primary-400: #35a0a6;
+    --color-primary: #0d6e75;
+    --color-primary-600: #0a5c62;
+    --color-primary-700: #08494e;
+    --color-primary-900: #052b2e;
+    --color-primary-foreground: #ffffff;
 
-    /* The one interactive colour: blue-black ledger ink, 12.45:1 on parchment.
-       Chromatically distant from every band colour, so "clickable" can never
-       be mistaken for a bloodline. */
-    --color-action: #16324f;
-    --color-action-hover: #1e4468;
-    --color-action-wash: #e9eef4;
+    /* Semantic — full pairs. The tinted grounds are the point; this is where
+       "one accent only" is deliberately abandoned. */
+    --color-success: #1f7a4d;
+    --color-success-bg: #e8f4ee;
+    --color-warning: #906308;
+    --color-warning-bg: #fbf3e2;
+    --color-destructive: #b3261e;
+    --color-destructive-bg: #fbeae9;
+    --color-destructive-foreground: #ffffff;
+    --color-info: #3c4a8a;
+    --color-info-bg: #eceef8;
 
-    /* Semantic status - separate from the accent AND from the band palette */
-    --color-ok: #1b6b44;
-    --color-ok-wash: #e6f1eb;
-    --color-warn: #8a5a12;
-    --color-warn-wash: #f8efdf;
-    --color-alert: #a32219;
-    --color-alert-wash: #f7e8e7;
-    --color-info: #2a4e7a;
-    --color-info-wash: #e9eef4;
-    --color-neutral: #5e5b55;
-    --color-neutral-wash: #efede9;
+    /* Band palette — the identity. The ONLY chroma that means bloodline.
+       Bright on purpose; the tag resolves its own foreground per band because
+       three of these cannot carry white text. */
+    --color-band-ember: #e8552e;
+    --color-band-amber: #f2a413;
+    --color-band-jade: #1f9e6b;
+    --color-band-cobalt: #1d5fd0;
+    --color-band-plum: #8e44ad;
+    --color-band-rose: #d6336c;
 
-    /* The band palette - the ONLY chroma in the system. These are the anodised
-       colours poultry leg bands are actually sold in. All six carry white text
-       at >= 4.5:1. */
-    --color-band-crimson: #b3202c;
-    --color-band-cobalt: #1b4f9c;
-    --color-band-forest: #1e6b45;
-    --color-band-amber: #9a5b08;
-    --color-band-plum: #6a3080;
-    --color-band-slate: #41525e;
+    /* The two foregrounds a band tag can choose between. Mirrored here so the
+       stylesheet and the config cannot drift, even though the tag sets them
+       inline: the colour is resolved in PHP because bloodline is free text. */
+    --color-band-fg-light: #ffffff;
+    --color-band-fg-dark: #10201b;
 
-    --radius-control: 6px;
-    --radius-card: 4px;
+    /* Print-only rules, mirrored so the guard test sees them. */
+    --color-print-rule: #e4e6e2;
+    --color-print-rule-strong: #c7cbc5;
+    --color-print-zebra: #f7f8f6;
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+
+    /* Elevation. Three steps, and they mean something: elevation indicates
+       interactivity or layering, never decoration. Nothing lifts on its own. */
+    --shadow-e1: 0 1px 2px rgb(22 28 25 / 0.04), 0 1px 3px rgb(22 28 25 / 0.06);
+    --shadow-e2: 0 4px 12px rgb(22 28 25 / 0.08), 0 2px 4px rgb(22 28 25 / 0.04);
+    --shadow-e3: 0 16px 40px rgb(22 28 25 / 0.14);
+
+    --ease-out-quart: cubic-bezier(0.2, 0, 0.38, 0.9);
+    --ease-enter: cubic-bezier(0, 0, 0.38, 0.9);
+}
+
+:root {
+    --ring-color: rgb(13 110 117 / 0.35);
+    --t-fast: 120ms;
+    --t-base: 200ms;
+    --t-enter: 260ms;
 }
 
 @layer base {
@@ -112,16 +138,18 @@
     }
 
     body {
-        background-color: var(--color-parchment);
-        color: var(--color-ink);
+        background-color: var(--color-background);
+        color: var(--color-foreground);
         font-family: var(--font-sans);
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
     }
 
+    /* Tightened tracking. Untracked headings are a large part of why the
+       previous build read as a document rather than a product. */
     h1, h2, h3, h4 {
         font-weight: 600;
-        letter-spacing: -0.01em;
+        letter-spacing: -0.015em;
         text-wrap: balance;
     }
 
@@ -134,8 +162,8 @@
 
     /* Selects and text inputs were landing at 43px - one pixel under, which a
        measured audit fails just as hard as thirty. Checkboxes and radios are
-       excluded: stretching them to 44px distorts the control itself, so their
-       LABEL carries the target instead. */
+       excluded: stretching them distorts the control, so their LABEL carries
+       the target instead. */
     select,
     textarea,
     input:not([type='checkbox']):not([type='radio']):not([type='hidden']) {
@@ -143,19 +171,24 @@
     }
 
     :focus-visible {
-        outline: 2px solid var(--color-action);
+        outline: 2px solid var(--color-primary);
         outline-offset: 2px;
-        border-radius: 4px;
+        border-radius: var(--radius-sm);
     }
 
-    /* Removes TRAVEL while preserving the state change. A blanket 0.01ms kill
-       destroys useful feedback and is itself an accessibility defect. */
+    /*
+     * Reduced motion removes TRAVEL and lift while preserving state change.
+     * A blanket 0.01ms kill destroys useful feedback and is itself an
+     * accessibility defect - a user who cannot see the transition still needs
+     * to see that something happened.
+     */
     @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after {
             animation-duration: 0.01ms !important;
             animation-iteration-count: 1 !important;
-            transition-property: opacity, color, background-color, border-color !important;
-            transition-duration: 120ms !important;
+            transition-property: opacity, color, background-color, border-color, box-shadow !important;
+            transition-duration: 100ms !important;
+            transform: none !important;
         }
     }
 }
@@ -174,86 +207,95 @@
 
 @utility btn {
     @apply inline-flex min-h-11 items-center justify-center gap-2
-           rounded-[6px] px-4 py-2.5 text-[15px] font-medium leading-none
-           transition-colors duration-150
+           rounded-[var(--radius-sm)] px-4 py-2.5 text-[15px] font-medium leading-none
            focus:outline-none disabled:cursor-not-allowed disabled:opacity-40;
+    transition: background-color var(--t-fast) var(--ease-out-quart),
+                border-color var(--t-fast) var(--ease-out-quart),
+                color var(--t-fast) var(--ease-out-quart),
+                box-shadow var(--t-fast) var(--ease-out-quart),
+                transform var(--t-fast) var(--ease-out-quart);
 }
 
 @layer components {
-    /* A key, not a marketing pill. */
-    .btn-primary { @apply btn bg-action text-white hover:bg-action-hover; }
-    .btn-secondary { @apply btn border border-hairline bg-canvas text-ink hover:bg-pearl; }
-    .btn-danger { @apply btn bg-alert text-white hover:opacity-90; }
-    .btn-quiet { @apply btn bg-transparent text-action hover:bg-action-wash; }
+    /* Press feedback. 2% is enough to register as a physical control and small
+       enough not to read as a bounce. */
+    .btn:active:not(:disabled) { transform: scale(0.98); }
+
+    .btn-primary   { @apply btn bg-primary text-primary-foreground hover:bg-primary-600; box-shadow: var(--shadow-e1); }
+    .btn-secondary { @apply btn border border-border bg-card text-foreground hover:bg-muted; }
+    .btn-danger    { @apply btn bg-destructive text-destructive-foreground hover:opacity-90; box-shadow: var(--shadow-e1); }
+    .btn-quiet     { @apply btn bg-transparent text-primary hover:bg-primary-50; }
 
     /* 16px floor - below that iOS zooms the page on focus and one-handed entry
        falls apart. */
     .input {
-        @apply block w-full rounded-[4px] border border-hairline bg-canvas
-               px-3 py-2.5 text-[16px] text-ink
-               placeholder:text-ink-48
-               focus:border-action focus:outline-none focus:ring-2 focus:ring-action/25;
+        @apply block w-full rounded-[var(--radius-sm)] border border-input bg-card
+               px-3 py-2.5 text-[16px] text-foreground
+               placeholder:text-muted-foreground focus:border-primary focus:outline-none;
+        transition: border-color var(--t-fast) var(--ease-out-quart),
+                    box-shadow var(--t-fast) var(--ease-out-quart);
+    }
+    .input:focus { box-shadow: 0 0 0 3px var(--ring-color); }
+    .input-error { @apply border-destructive; }
+    .input-error:focus { box-shadow: 0 0 0 3px rgb(179 38 30 / 0.25); }
+
+    .label { @apply block text-[13px] font-medium tracking-[0.01em] text-foreground; }
+    .help  { @apply mt-1 text-[12px] leading-snug text-muted-foreground; }
+    .error { @apply mt-1 text-[13px] text-destructive; }
+
+    /*
+     * Cards now have elevation. This is the single biggest lever in the
+     * direction change: the previous world forbade shadows entirely, which is
+     * exactly what made it read as a printed document.
+     */
+    .card {
+        @apply rounded-[var(--radius-md)] border border-border bg-card text-card-foreground;
+        box-shadow: var(--shadow-e1);
     }
 
-    .input-error { @apply border-alert focus:border-alert focus:ring-alert/25; }
+    /* Only interactive cards lift, and only on hover. Nothing lifts on its own. */
+    .card-interactive {
+        transition: box-shadow var(--t-base) var(--ease-out-quart),
+                    border-color var(--t-base) var(--ease-out-quart),
+                    transform var(--t-base) var(--ease-out-quart);
+    }
+    .card-interactive:hover {
+        box-shadow: var(--shadow-e2);
+        transform: translateY(-1px);
+    }
 
-    .label { @apply block text-[13px] font-medium tracking-[0.01em] text-ink-80; }
-    /* ink-80 (7.31:1), not ink-48 (4.77:1). Help text sits under Console form
-       fields, and the Console floor is 7:1 because it is read outdoors - my own
-       token table says ink-48 is Catalog-only, and this was breaking that rule. */
-    .help { @apply mt-1 text-[12px] leading-snug text-ink-80; }
-    .error { @apply mt-1 text-[13px] text-alert; }
+    .elev-1 { box-shadow: var(--shadow-e1); }
+    .elev-2 { box-shadow: var(--shadow-e2); }
+    .elev-3 { box-shadow: var(--shadow-e3); }
 
-    /* Cards separate by ground inversion and a hairline. No shadow anywhere:
-       depth is not how this system communicates hierarchy. */
-    .card { @apply rounded-[4px] border border-hairline bg-canvas; }
-
+    /*
+     * Status badges. Tinted pill using the semantic pair, not a bare dot.
+     * The class NAMES are a contract: five PHP enums return them from
+     * badgeClasses() across ~22 call sites, so they are restyled, never renamed.
+     */
     .badge {
-        @apply inline-flex items-center gap-1.5 rounded-[2px] px-2 py-1
+        @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
                text-[12px] font-medium leading-none;
     }
-
-    .badge-ok { @apply bg-ok-wash text-ok; }
-    .badge-warn { @apply bg-warn-wash text-warn; }
-    .badge-alert { @apply bg-alert-wash text-alert; }
-    .badge-info { @apply bg-info-wash text-info; }
-    .badge-neutral { @apply bg-neutral-wash text-neutral; }
-
-    /*
-     * `.frosted` is retained as a NAME because the layout consumes it, but it
-     * is no longer frosted. backdrop-filter costs real GPU on the low-end
-     * Android these keepers carry, and a translucent bar smears into unreadable
-     * grey under direct sunlight. A solid bar with a hairline does the same job
-     * for free and stays legible outdoors.
-     */
-    .frosted {
-        background-color: var(--color-parchment);
-        border-bottom: 1px solid var(--color-hairline);
-    }
-
-    .table-hairline tbody tr + tr { border-top: 1px solid var(--color-divider); }
+    .badge-ok      { @apply bg-success-bg text-success; }
+    .badge-warn    { @apply bg-warning-bg text-warning; }
+    .badge-alert   { @apply bg-destructive-bg text-destructive; }
+    .badge-info    { @apply bg-info-bg text-info; }
+    .badge-neutral { @apply bg-muted text-muted-foreground; }
 
     /*
-     * THE SIGNATURE - the band tag.
-     *
-     * Modelled on the anodised aluminium ring a gamefowl actually wears: a
-     * filled capsule carrying the band number in mono. It is the only capsule
-     * in the system and the only place colour is spent; if a second pill
-     * appears on screen the signature is dead.
-     *
-     * Colour comes from App\Support\BandTag (curated map + deterministic hash
-     * fallback), so a bloodline nobody anticipated still renders correctly.
+     * THE BAND TAG. Carried through the direction change unchanged in concept,
+     * restyled in execution. Colour is set inline from PHP because bloodline is
+     * free text resolved at runtime - a dynamic Tailwind class would survive
+     * `npm run dev` and vanish from `npm run build`.
      */
     .band-tag {
-        @apply inline-flex items-center gap-1.5 rounded-full py-1 pl-1.5 pr-2.5
-               text-[12px] font-medium leading-none text-white;
+        @apply inline-flex items-center rounded-[3px] font-medium leading-none;
     }
-
     .band-tag .band-code {
-        @apply rounded-full bg-white/25 px-1.5 py-0.5 text-[11px] font-semibold
-               tracking-[0.04em];
+        @apply rounded-[2px] px-1.5 py-0.5 text-[11px] font-semibold tracking-[0.04em];
+        background-color: rgb(255 255 255 / 0.22);
     }
-
     .band-tag .band-number {
         font-family: var(--font-mono);
         font-variant-numeric: tabular-nums;
@@ -262,26 +304,69 @@
     /* A bird with no band is NOT an error - birds are banded at an age, not at
        hatch. It gets its own honest state, never a blank cell or a dash. */
     .band-tag-none {
-        @apply inline-flex items-center gap-1.5 rounded-full border border-dashed
-               border-hairline px-2.5 py-1 text-[12px] leading-none text-ink-48;
+        @apply inline-flex items-center gap-1.5 rounded-[3px] border border-dashed
+               border-border px-2.5 py-1 text-[12px] leading-none text-muted-foreground;
     }
-}
 
-/* ── Pedigree bracket ────────────────────────────────────────────────────────
-   A pedigree chart whose cards float in unconnected columns is not a chart -
-   you cannot tell which grandparent belongs to which parent, which is the one
-   question the screen exists to answer. These draw the bracket in CSS so the
-   lines cost no markup, no SVG and no layout pass.
+    .table-hairline tbody tr + tr { border-top: 1px solid var(--color-border); }
 
-   The previous version encoded sex as blue and pink card fills. That broke the
-   system's central rule - colour means bloodline - and it was redundant, since
-   every card already states Sire or Dam in text. Structure carries it now:
-   sire sits above dam in every pair, and the label says which. */
-@layer components {
-    /* flex:1 on both the pair and the node is what makes the bracket line up.
-       Each generation doubles in count, so proportional distribution puts a
-       pair's midpoint exactly on its descendant's midpoint at every depth.
-       justify-content alone drifts as soon as the counts differ per column. */
+    /* Row hover tint + inline actions revealed on hover. */
+    .row-hover { transition: background-color var(--t-fast) var(--ease-out-quart); }
+    .row-hover:hover { background-color: var(--color-muted); }
+    .row-actions { @apply opacity-0; transition: opacity var(--t-fast) var(--ease-out-quart); }
+    .row-hover:hover .row-actions,
+    .row-hover:focus-within .row-actions { @apply opacity-100; }
+
+    /* Skeletons match real layout, so the page does not reflow when data lands. */
+    .skeleton {
+        @apply rounded-[var(--radius-sm)] bg-muted;
+        animation: gfms-pulse 1.6s var(--ease-out-quart) infinite;
+    }
+
+    @keyframes gfms-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.55; }
+    }
+
+    /* Popovers, dropdowns, command palette, sheets. */
+    .popover {
+        @apply rounded-[var(--radius-md)] border border-border bg-popover text-popover-foreground;
+        box-shadow: var(--shadow-e3);
+    }
+    .enter-pop { animation: gfms-pop var(--t-enter) var(--ease-enter) both; }
+    @keyframes gfms-pop {
+        from { opacity: 0; transform: translateY(4px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* The console sidebar. The active fill is BRAND, never a band colour, so a
+       selected nav item can never be misread as a bloodline. */
+    .nav-item {
+        @apply relative flex min-h-11 items-center gap-3 rounded-[var(--radius-sm)]
+               px-3 text-[14px] font-medium text-muted-foreground;
+        transition: background-color var(--t-fast) var(--ease-out-quart),
+                    color var(--t-fast) var(--ease-out-quart);
+    }
+    .nav-item:hover { @apply bg-muted text-foreground; }
+    .nav-item-active { @apply bg-primary-50 text-primary-700; }
+    .nav-item-active::before {
+        content: '';
+        @apply absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-primary;
+    }
+    .nav-section {
+        @apply px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-[0.07em] text-muted-foreground;
+    }
+
+    /* Thin progress bars for compliance and hatch rates. */
+    .meter { @apply h-1.5 w-full overflow-hidden rounded-full bg-muted; }
+    .meter > span { @apply block h-full rounded-full; transition: width var(--t-base) var(--ease-out-quart); }
+
+    /*
+     * Pedigree bracket. A chart whose cards float in unconnected columns is not
+     * a chart - you cannot tell which grandparent belongs to which parent,
+     * which is the one question the screen exists to answer. Kept from the
+     * previous direction; only elevation and hover are new.
+     */
     .ped-branch {
         position: relative;
         display: flex;
@@ -289,44 +374,35 @@
         flex-direction: column;
         gap: 0.5rem;
     }
-
-    .ped-node {
-        display: flex;
-        flex: 1 1 0;
-        flex-direction: column;
-        justify-content: center;
-    }
-
-    /* The spine: one vertical rule linking a pair back toward its descendant. */
     .ped-branch::before {
         content: '';
         position: absolute;
         left: -0.85rem;
         top: 25%;
         bottom: 25%;
-        border-left: 1px solid var(--color-hairline);
+        border-left: 1px solid var(--color-border);
     }
-
-    /* The rung: from the spine across to each card. */
     .ped-node {
         position: relative;
+        display: flex;
+        flex: 1 1 0;
+        flex-direction: column;
+        justify-content: center;
     }
-
     .ped-node::before {
         content: '';
         position: absolute;
         left: -0.85rem;
         width: 0.85rem;
         top: 50%;
-        border-top: 1px solid var(--color-hairline);
+        border-top: 1px solid var(--color-border);
     }
-
-    /* An unrecorded ancestor should recede, not compete. On a young farm most
-       of a three-generation tree is legitimately empty, and at equal weight the
-       chart reads as broken rather than as young. */
+    /* An unrecorded ancestor recedes. On a young farm most of a three
+       generation tree is legitimately empty, and at equal weight the chart
+       reads as broken rather than as young. */
     .ped-empty {
-        @apply rounded-[4px] border border-dashed border-hairline
-               px-3 py-2.5 text-center text-[12px] text-ink-48;
-        opacity: 0.55;
+        @apply rounded-[var(--radius-sm)] border border-dashed border-border
+               px-3 py-2.5 text-center text-[12px] text-muted-foreground;
+        opacity: 0.6;
     }
 }

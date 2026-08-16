@@ -1,12 +1,12 @@
 <x-layouts::guest title="Sign in">
-    <h2 class="text-center text-[24px] font-semibold tracking-[-0.015em] text-ink">Sign in to your account</h2>
-    <p class="mt-3 text-center text-[17px] leading-relaxed text-ink-48">
+    <h2 class="text-center text-[24px] font-semibold tracking-[-0.015em] text-foreground">Sign in to your account</h2>
+    <p class="mt-3 text-center text-[17px] leading-relaxed text-muted-foreground">
         Enter the email address and password given to you by the farm owner.
     </p>
 
     {{-- Status message, e.g. after a successful password reset. --}}
     @if (session('status'))
-        <div class="mt-4 rounded-lg bg-ok-wash p-3 text-sm text-ok ring-1 ring-ok/20">
+        <div class="mt-4 rounded-lg bg-success-bg p-3 text-sm text-success ring-1 ring-success/20">
             {{ session('status') }}
         </div>
     @endif
@@ -14,8 +14,8 @@
     {{-- Fortify throws a validation error for wrong credentials, deactivated
          accounts and rate limiting. Show them together, in plain language. --}}
     @if ($errors->any())
-        <div class="mt-4 rounded-lg bg-alert-wash p-3 ring-1 ring-alert/20" role="alert">
-            <ul class="space-y-1 text-sm text-alert">
+        <div class="mt-4 rounded-lg bg-destructive-bg p-3 ring-1 ring-destructive/20" role="alert">
+            <ul class="space-y-1 text-sm text-destructive">
                 @foreach ($errors->all() as $message)
                     <li>{{ $message }}</li>
                 @endforeach
@@ -54,18 +54,18 @@
         </div>
 
         <div class="flex items-center justify-between">
-            <label for="remember" class="flex items-center gap-2 text-sm text-ink-80">
+            <label for="remember" class="flex items-center gap-2 text-sm text-muted-foreground">
                 <input
                     id="remember"
                     type="checkbox"
                     name="remember"
-                    class="h-4 w-4 rounded border-hairline text-action focus:ring-action"
+                    class="h-4 w-4 rounded border-border text-primary focus:ring-primary"
                 >
                 Keep me signed in
             </label>
 
             @if (Route::has('password.request'))
-                <a href="{{ route('password.request') }}" class="text-sm font-medium text-action hover:underline">
+                <a href="{{ route('password.request') }}" class="text-sm font-medium text-primary hover:underline">
                     Forgot password?
                 </a>
             @endif

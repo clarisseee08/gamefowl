@@ -2,7 +2,7 @@
     {{-- Livewire re-renders only this component, so the confirmation lives
          here rather than in the layout's session flash. --}}
     @if ($statusMessage !== '')
-        <div class="mb-6 flex items-start justify-between gap-4 rounded-[4px] bg-ok-wash px-3 py-3 text-[15px] text-ok"
+        <div class="mb-6 flex items-start justify-between gap-4 rounded-[4px] bg-success-bg px-3 py-3 text-[15px] text-success"
              role="status">
             <p>{{ $statusMessage }}</p>
             <button type="button" wire:click="dismissStatus" class="-my-3 shrink-0 font-medium underline">
@@ -12,10 +12,10 @@
     @endif
 
     {{-- Header --}}
-    <div class="mb-8 border-b border-rule-strong pb-6 sm:flex sm:items-end sm:justify-between sm:gap-8">
+    <div class="mb-8 border-b border-border pb-6 sm:flex sm:items-end sm:justify-between sm:gap-8">
         <div>
-            <h1 class="text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">Performance Records</h1>
-            <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-ink-80">
+            <h1 class="text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">Performance Records</h1>
+            <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-muted-foreground">
                 Every sparring session, derby, conditioning session and weigh-in recorded on the farm.
             </p>
         </div>
@@ -76,8 +76,8 @@
         </div>
 
         @if ($this->hasActiveFilters())
-            <div class="mt-5 flex flex-col gap-3 border-t border-hairline pt-4 sm:flex-row sm:items-center sm:justify-between">
-                <p class="text-[15px] text-ink-80">
+            <div class="mt-5 flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-[15px] text-muted-foreground">
                     Showing <span class="datum">{{ number_format($this->records->total()) }}</span>
                     {{ Str::plural('record', $this->records->total()) }} matching your filters.
                 </p>
@@ -91,19 +91,19 @@
     {{-- Results --}}
     @if ($this->records->isEmpty())
         <div class="card px-6 py-12 text-center">
-            <svg class="mx-auto h-8 w-8 text-ink-48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+            <svg class="mx-auto h-8 w-8 text-muted-foreground" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
             </svg>
 
             @if ($this->hasActiveFilters())
-                <h3 class="mt-4 text-[18px] font-medium text-ink">No records match your filters</h3>
-                <p class="mx-auto mt-2 max-w-[52ch] text-[15px] leading-relaxed text-ink-80">
+                <h3 class="mt-4 text-[18px] font-medium text-foreground">No records match your filters</h3>
+                <p class="mx-auto mt-2 max-w-[52ch] text-[15px] leading-relaxed text-muted-foreground">
                     Try a different date range, or clear the filters to see everything.
                 </p>
                 <button type="button" wire:click="clearFilters" class="btn-secondary mt-6">Clear filters</button>
             @else
-                <h3 class="mt-4 text-[18px] font-medium text-ink">No performance records yet</h3>
-                <p class="mx-auto mt-2 max-w-[52ch] text-[15px] leading-relaxed text-ink-80">
+                <h3 class="mt-4 text-[18px] font-medium text-foreground">No performance records yet</h3>
+                <p class="mx-auto mt-2 max-w-[52ch] text-[15px] leading-relaxed text-muted-foreground">
                     Record a sparring session, derby, conditioning session or weigh-in and it will
                     appear here and on the bird's own timeline.
                 </p>
@@ -121,10 +121,10 @@
                 <div class="card p-4">
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                            <p class="truncate text-[15px] font-medium text-ink">
+                            <p class="truncate text-[15px] font-medium text-foreground">
                                 {{ $record->broodcock?->displayName() ?? 'Bird removed' }}
                             </p>
-                            <p class="datum mt-0.5 text-[13px] text-ink-80">{{ $record->event_date->format('d M Y') }}</p>
+                            <p class="datum mt-0.5 text-[13px] text-muted-foreground">{{ $record->event_date->format('d M Y') }}</p>
                         </div>
                         <div class="flex shrink-0 flex-col items-end gap-1">
                             <span class="badge {{ $record->event_type->badgeClasses() }}">
@@ -138,20 +138,20 @@
                         </div>
                     </div>
 
-                    <dl class="mt-3.5 grid grid-cols-3 gap-3 border-t border-hairline pt-3">
+                    <dl class="mt-3.5 grid grid-cols-3 gap-3 border-t border-border pt-3">
                         <div>
-                            <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Weight</dt>
-                            <dd class="datum mt-1 text-[15px] text-ink">{{ $record->weight !== null ? $record->weight.' kg' : '—' }}</dd>
+                            <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Weight</dt>
+                            <dd class="datum mt-1 text-[15px] text-foreground">{{ $record->weight !== null ? $record->weight.' kg' : '—' }}</dd>
                         </div>
                         <div>
-                            <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Duration</dt>
-                            <dd class="datum mt-1 text-[15px] text-ink">{{ $record->durationLabel() ?? '—' }}</dd>
+                            <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Duration</dt>
+                            <dd class="datum mt-1 text-[15px] text-foreground">{{ $record->durationLabel() ?? '—' }}</dd>
                         </div>
                         <div>
-                            <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Rating</dt>
+                            <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Rating</dt>
                             <dd class="mt-1">
                                 @if ($record->rating === null)
-                                    <span class="text-[13px] text-ink-80">Not rated</span>
+                                    <span class="text-[13px] text-muted-foreground">Not rated</span>
                                 @else
                                     {{-- Ink stars, not amber: colour in this system means
                                          bloodline, so a rating is drawn with fill and
@@ -159,7 +159,7 @@
                                     <span class="inline-flex items-center gap-0.5" role="img"
                                           aria-label="{{ $record->rating }} out of 5 stars">
                                         @for ($star = 1; $star <= 5; $star++)
-                                            <svg class="h-4 w-4 {{ $star <= $record->rating ? 'text-ink' : 'text-ink-48' }}"
+                                            <svg class="h-4 w-4 {{ $star <= $record->rating ? 'text-foreground' : 'text-muted-foreground' }}"
                                                  viewBox="0 0 20 20" aria-hidden="true"
                                                  fill="{{ $star <= $record->rating ? 'currentColor' : 'none' }}"
                                                  stroke="currentColor"
@@ -178,7 +178,7 @@
                             <a href="{{ route('performance.edit', $record) }}" class="btn-secondary flex-1">Edit</a>
                         @endcan
                         @can('delete', $record)
-                            <button type="button" wire:click="confirmDelete({{ $record->id }})" class="btn-secondary text-alert hover:border-alert flex-1">
+                            <button type="button" wire:click="confirmDelete({{ $record->id }})" class="btn-secondary text-destructive hover:border-destructive flex-1">
                                 Delete
                             </button>
                         @endcan
@@ -193,9 +193,9 @@
                 {{-- .table-hairline resolves to `.table-hairline tbody tr + tr`,
                      so it belongs on the table, not the tbody. --}}
                 <table class="table-hairline min-w-full">
-                    <thead class="border-b border-rule-strong bg-pearl">
+                    <thead class="border-b border-border bg-muted">
                         <tr>
-                            <th scope="col" class="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                            <th scope="col" class="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
                                 Bird
                             </th>
                             @foreach ([
@@ -207,15 +207,15 @@
                                 {{-- Numeric columns are right-aligned so the mono digits
                                      stack into a single readable column. --}}
                                 <th scope="col" @class([
-                                    'px-4 py-2 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80',
+                                    'px-4 py-2 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground',
                                     'text-right' => $column === 'weight',
                                     'text-left' => $column !== 'weight',
                                 ])>
                                     <button type="button" wire:click="sort('{{ $column }}')"
-                                            class="-mx-1 inline-flex items-center gap-1 rounded-[4px] px-1 uppercase tracking-[0.06em] hover:text-ink">
+                                            class="-mx-1 inline-flex items-center gap-1 rounded-[4px] px-1 uppercase tracking-[0.06em] hover:text-foreground">
                                         {{ $heading }}
                                         @if ($sortBy === $column)
-                                            <svg class="h-3 w-3 shrink-0 text-action" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+                                            <svg class="h-3 w-3 shrink-0 text-primary" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
                                                 <path d="{{ $sortDirection === 'asc' ? 'M6 3l3.5 5h-7z' : 'M6 9L2.5 4h7z' }}"/>
                                             </svg>
                                             <span class="sr-only">sorted {{ $sortDirection === 'asc' ? 'ascending' : 'descending' }}</span>
@@ -223,15 +223,15 @@
                                     </button>
                                 </th>
                             @endforeach
-                            <th scope="col" class="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                            <th scope="col" class="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
                                 Duration
                             </th>
-                            <th scope="col" class="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                            <th scope="col" class="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
                                 <button type="button" wire:click="sort('rating')"
-                                        class="-mx-1 inline-flex items-center gap-1 rounded-[4px] px-1 uppercase tracking-[0.06em] hover:text-ink">
+                                        class="-mx-1 inline-flex items-center gap-1 rounded-[4px] px-1 uppercase tracking-[0.06em] hover:text-foreground">
                                     Rating
                                     @if ($sortBy === 'rating')
-                                        <svg class="h-3 w-3 shrink-0 text-action" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+                                        <svg class="h-3 w-3 shrink-0 text-primary" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
                                             <path d="{{ $sortDirection === 'asc' ? 'M6 3l3.5 5h-7z' : 'M6 9L2.5 4h7z' }}"/>
                                         </svg>
                                         <span class="sr-only">sorted {{ $sortDirection === 'asc' ? 'ascending' : 'descending' }}</span>
@@ -243,28 +243,28 @@
                                  "Mari" - which reads as a broken table rather than a shortened
                                  name. Of the nine it is the least load-bearing, and the phone
                                  card still carries it at every width. --}}
-                            <th scope="col" class="hidden px-3 py-2 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 2xl:table-cell">
+                            <th scope="col" class="hidden px-3 py-2 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground 2xl:table-cell">
                                 Recorded By
                             </th>
                             {{-- Sticky. Nine columns do not fit a 1280px card, so the table
                                  scrolls - and the column that fell off the right edge was the
                                  one carrying Edit and Delete. Pinning it keeps the actions
                                  reachable without scrolling. --}}
-                            <th scope="col" class="sticky right-0 z-10 border-l border-hairline bg-pearl px-3 py-2 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">
+                            <th scope="col" class="sticky right-0 z-10 border-l border-border bg-muted px-3 py-2 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
                                 <span class="sr-only">Actions</span>
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-canvas">
+                    <tbody class="bg-card">
                         @foreach ($this->records as $record)
-                            <tr class="group hover:bg-pearl">
+                            <tr class="group hover:bg-muted">
                                 {{-- The band tag is possible here now: bloodline was added to
                                      this component's eager-load select list. Before that,
                                      reading it threw under Model::shouldBeStrict(). --}}
-                                <td class="whitespace-nowrap px-3 py-3 text-[15px] font-medium text-ink">
+                                <td class="whitespace-nowrap px-3 py-3 text-[15px] font-medium text-foreground">
                                     @if ($record->broodcock !== null)
                                         <a href="{{ route('broodcocks.show', $record->broodcock) }}"
-                                           class="inline-flex items-center gap-2 text-action hover:underline">
+                                           class="inline-flex items-center gap-2 text-primary hover:underline">
                                             <x-band-tag :bloodline="$record->broodcock->bloodline"
                                                         :band="$record->broodcock->band_number" size="xs" />
                                             {{-- name only: displayName() appends the band in
@@ -273,10 +273,10 @@
                                             {{ $record->broodcock->name }}
                                         </a>
                                     @else
-                                        <span class="font-normal text-ink-80">Bird removed</span>
+                                        <span class="font-normal text-muted-foreground">Bird removed</span>
                                     @endif
                                 </td>
-                                <td class="datum whitespace-nowrap px-3 py-3 text-[15px] text-ink">
+                                <td class="datum whitespace-nowrap px-3 py-3 text-[15px] text-foreground">
                                     {{ $record->event_date->format('d M Y') }}
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3">
@@ -289,20 +289,20 @@
                                         {{ $record->result->label() }}
                                     </span>
                                 </td>
-                                <td class="datum whitespace-nowrap px-3 py-3 text-right text-[15px] text-ink">
+                                <td class="datum whitespace-nowrap px-3 py-3 text-right text-[15px] text-foreground">
                                     {{ $record->weight !== null ? $record->weight.' kg' : '—' }}
                                 </td>
-                                <td class="datum whitespace-nowrap px-3 py-3 text-right text-[15px] text-ink">
+                                <td class="datum whitespace-nowrap px-3 py-3 text-right text-[15px] text-foreground">
                                     {{ $record->durationLabel() ?? '—' }}
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3">
                                     @if ($record->rating === null)
-                                        <span class="text-[13px] text-ink-80">Not rated</span>
+                                        <span class="text-[13px] text-muted-foreground">Not rated</span>
                                     @else
                                         <span class="inline-flex items-center gap-0.5" role="img"
                                               aria-label="{{ $record->rating }} out of 5 stars">
                                             @for ($star = 1; $star <= 5; $star++)
-                                                <svg class="h-4 w-4 {{ $star <= $record->rating ? 'text-ink' : 'text-ink-48' }}"
+                                                <svg class="h-4 w-4 {{ $star <= $record->rating ? 'text-foreground' : 'text-muted-foreground' }}"
                                                      viewBox="0 0 20 20" aria-hidden="true"
                                                      fill="{{ $star <= $record->rating ? 'currentColor' : 'none' }}"
                                                      stroke="currentColor"
@@ -313,22 +313,22 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td class="hidden max-w-[11rem] truncate px-3 py-3 text-[15px] text-ink-80 2xl:table-cell"
+                                <td class="hidden max-w-[11rem] truncate px-3 py-3 text-[15px] text-muted-foreground 2xl:table-cell"
                                     title="{{ $record->recordedBy?->full_name }}">
                                     {{ $record->recordedBy?->full_name ?? '—' }}
                                 </td>
-                                <td class="sticky right-0 whitespace-nowrap border-l border-hairline bg-canvas px-3 py-3 text-right text-[15px] group-hover:bg-pearl">
+                                <td class="sticky right-0 whitespace-nowrap border-l border-border bg-card px-3 py-3 text-right text-[15px] group-hover:bg-muted">
                                     <div class="flex items-center justify-end gap-4">
                                         @can('update', $record)
                                             {{-- min-h-11 by hand: the base rule only sizes
                                                  buttons, and this action is a link. --}}
                                             <a href="{{ route('performance.edit', $record) }}"
-                                               class="inline-flex min-h-11 items-center font-medium text-action hover:underline">
+                                               class="inline-flex min-h-11 items-center font-medium text-primary hover:underline">
                                                 Edit<span class="sr-only">, {{ $record->event_type->label() }} record</span>
                                             </a>
                                         @endcan
                                         @can('delete', $record)
-                                            <button type="button" wire:click="confirmDelete({{ $record->id }})" class="font-medium text-alert hover:underline">
+                                            <button type="button" wire:click="confirmDelete({{ $record->id }})" class="font-medium text-destructive hover:underline">
                                                 Delete<span class="sr-only">, {{ $record->event_type->label() }} record</span>
                                             </button>
                                         @endcan
@@ -341,7 +341,7 @@
             </div>
         </div>
 
-        <div class="mt-5 border-t border-hairline pt-4">
+        <div class="mt-5 border-t border-border pt-4">
             {{ $this->records->links() }}
         </div>
     @endif
@@ -350,27 +350,27 @@
          event and the date - so nobody deletes the wrong one by muscle memory. --}}
     @if ($this->recordPendingDeletion !== null)
         @php($pending = $this->recordPendingDeletion)
-        <div class="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-4 sm:items-center" x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()"
+        <div class="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-4 sm:items-center" x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()"
              role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title"
              wire:keydown.escape="cancelDelete">
             <div class="card w-full max-w-lg p-6">
-                <h2 id="delete-dialog-title" class="text-[22px] font-semibold leading-[1.2] tracking-[-0.01em] text-ink">
+                <h2 id="delete-dialog-title" class="text-[22px] font-semibold leading-[1.2] tracking-[-0.01em] text-foreground">
                     Delete this performance record?
                 </h2>
 
-                <p class="mt-3 text-[15px] leading-relaxed text-ink-80">
+                <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
                     You are about to delete the
-                    <strong class="font-medium text-ink">{{ $pending->event_type->label() }}</strong> record for
-                    <strong class="font-medium text-ink">{{ $pending->broodcock?->displayName() ?? 'this bird' }}</strong>
-                    dated <strong class="datum font-medium text-ink">{{ $pending->event_date->format('d M Y') }}</strong>.
+                    <strong class="font-medium text-foreground">{{ $pending->event_type->label() }}</strong> record for
+                    <strong class="font-medium text-foreground">{{ $pending->broodcock?->displayName() ?? 'this bird' }}</strong>
+                    dated <strong class="datum font-medium text-foreground">{{ $pending->event_date->format('d M Y') }}</strong>.
                 </p>
 
-                <p class="mt-2 text-[15px] leading-relaxed text-ink-80">
+                <p class="mt-2 text-[15px] leading-relaxed text-muted-foreground">
                     It will be removed from the bird's timeline and from its win rate.
                     The farm owner can restore it later if this was a mistake.
                 </p>
 
-                <div class="mt-6 flex flex-col-reverse gap-3 border-t border-hairline pt-5 sm:flex-row sm:justify-end">
+                <div class="mt-6 flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end">
                     <button type="button" wire:click="cancelDelete" class="btn-secondary sm:w-auto">
                         No, keep it
                     </button>

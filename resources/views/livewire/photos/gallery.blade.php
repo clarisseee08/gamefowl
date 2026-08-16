@@ -7,17 +7,17 @@
 <div x-data="{ open: false, src: '', label: '' }"
      x-on:keydown.escape.window="open = false">
 
-    <div class="mb-4 flex items-baseline justify-between gap-3 border-b border-hairline pb-3">
-        <h2 class="text-[22px] font-semibold leading-[1.2] tracking-[-0.01em] text-ink">
+    <div class="mb-4 flex items-baseline justify-between gap-3 border-b border-border pb-3">
+        <h2 class="text-[22px] font-semibold leading-[1.2] tracking-[-0.01em] text-foreground">
             Photos
             @if ($this->photos->isNotEmpty())
-                <span class="datum text-[15px] font-normal text-ink-80">({{ $this->photos->count() }})</span>
+                <span class="datum text-[15px] font-normal text-muted-foreground">({{ $this->photos->count() }})</span>
             @endif
         </h2>
     </div>
 
     @if ($status !== '')
-        <div class="mb-4 flex items-start gap-2 rounded-[4px] bg-ok-wash px-4 py-3 text-[15px] leading-snug text-ok" role="status">
+        <div class="mb-4 flex items-start gap-2 rounded-[4px] bg-success-bg px-4 py-3 text-[15px] leading-snug text-success" role="status">
             <svg class="mt-0.5 h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
             </svg>
@@ -28,14 +28,14 @@
     @if ($this->photos->isEmpty())
         {{-- Empty state that says what to do next, never a blank box. --}}
         <div class="card flex flex-col items-center px-6 py-16 text-center">
-            <svg class="h-10 w-10 text-ink-80" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+            <svg class="h-10 w-10 text-muted-foreground" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round"
                       d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M18 9h.008v.008H18V9Zm2.25 9a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75h12A2.25 2.25 0 0 1 20.25 6v12Z"/>
             </svg>
-            <p class="mt-4 text-[18px] font-medium text-ink">No photos of this bird yet</p>
-            <p class="mt-2 max-w-[46ch] text-[15px] leading-relaxed text-ink-80">
+            <p class="mt-4 text-[18px] font-medium text-foreground">No photos of this bird yet</p>
+            <p class="mt-2 max-w-[46ch] text-[15px] leading-relaxed text-muted-foreground">
                 @if ($canManage)
-                    Use <strong class="font-medium text-ink">Add Photos</strong> above to take or choose a picture.
+                    Use <strong class="font-medium text-foreground">Add Photos</strong> above to take or choose a picture.
                     The first one you add becomes the main photo shown in lists.
                 @else
                     Photos will appear here once the farm staff add them.
@@ -57,7 +57,7 @@
                             class="group relative block w-full"
                             x-on:click="open = true; src = @js($src); label = @js($label)"
                             aria-label="Enlarge this photo">
-                        <span class="block aspect-4/5 overflow-hidden border-b border-hairline bg-pearl">
+                        <span class="block aspect-4/5 overflow-hidden border-b border-border bg-muted">
                             <img src="{{ $src }}"
                                  alt="{{ $label }}"
                                  loading="lazy"
@@ -97,17 +97,17 @@
                                 </div>
                             </div>
                         @else
-                            <p class="min-h-[1.5rem] text-[15px] leading-snug text-ink">
+                            <p class="min-h-[1.5rem] text-[15px] leading-snug text-foreground">
                                 {{ $photo->caption ?: 'No description' }}
                             </p>
                         @endif
 
-                        <p class="mt-1 text-[12px] leading-snug text-ink-80">
+                        <p class="mt-1 text-[12px] leading-snug text-muted-foreground">
                             Added by {{ $photo->uploadedBy?->full_name ?? 'a removed account' }}
                         </p>
 
                         @if ($canManage && $editingCaptionFor !== $photo->id)
-                            <div class="mt-3 flex flex-col gap-2 border-t border-hairline pt-3">
+                            <div class="mt-3 flex flex-col gap-2 border-t border-border pt-3">
                                 @unless ($photo->is_primary)
                                     <button type="button"
                                             wire:click="setPrimary({{ $photo->id }})"
@@ -145,7 +145,7 @@
     <div x-show="open"
          x-cloak
          x-transition.opacity
-         class="fixed inset-0 z-50 flex items-center justify-center bg-ink/80 p-4"
+         class="fixed inset-0 z-50 flex items-center justify-center bg-foreground/80 p-4"
          x-data x-trap.noscroll="open" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()" role="dialog"
          aria-modal="true"
          aria-label="Enlarged photo"
@@ -154,7 +154,7 @@
         <div class="max-h-full w-full max-w-3xl overflow-auto">
             <img :src="src" :alt="label" class="mx-auto max-h-[75vh] w-auto rounded-[4px] object-contain">
 
-            <p class="mt-4 text-center text-[15px] leading-snug text-canvas" x-text="label"></p>
+            <p class="mt-4 text-center text-[15px] leading-snug text-card" x-text="label"></p>
 
             <div class="mt-4 flex justify-center">
                 <button type="button" x-on:click="open = false" class="btn-secondary px-6">

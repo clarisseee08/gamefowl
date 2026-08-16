@@ -10,6 +10,11 @@
 
     $hasBand = trim((string) $band) !== '';
     $hex = BandTag::hex($bloodline);
+    // Resolved, not assumed: the band palette is bright enough that three of the
+    // six cannot carry white text (amber sits at 2.08:1). Each tag takes the
+    // foreground that actually passes - which also covers whatever colour the
+    // deterministic hash hands an unanticipated bloodline.
+    $fg = BandTag::foreground($bloodline);
     $code = BandTag::code($bloodline);
     $aria = BandTag::label($bloodline, $band);
 
@@ -28,10 +33,11 @@
          its slot is resolved in PHP; a dynamic Tailwind class would not survive
          a production build. --}}
     <span {{ $attributes->merge(['class' => "band-tag {$scale}"]) }}
-          style="background-color: {{ $hex }}"
+          style="background-color: {{ $hex }}; color: {{ $fg }}"
           title="{{ $aria }}">
         @if ($showCode)
-            <span class="band-code" aria-hidden="true">{{ $code }}</span>
+            <span class="band-code" aria-hidden="true"
+                  style="background-color: {{ $fg }}1f">{{ $code }}</span>
         @endif
         <span class="band-number">{{ $band }}</span>
         <span class="sr-only">{{ $aria }}</span>

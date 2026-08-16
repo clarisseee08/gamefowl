@@ -1,12 +1,12 @@
 <div class="mx-auto max-w-2xl">
-    <div class="mb-8 border-b border-hairline pb-6">
-        <a href="{{ route('pens.index') }}" wire:navigate class="inline-flex min-h-11 items-center text-[13px] font-medium text-action hover:underline">
+    <div class="mb-8 border-b border-border pb-6">
+        <a href="{{ route('pens.index') }}" wire:navigate class="inline-flex min-h-11 items-center text-[13px] font-medium text-primary hover:underline">
             &larr; Back to Pens
         </a>
-        <h1 class="mt-1 text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">
+        <h1 class="mt-1 text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">
             {{ $this->isEditing() ? 'Edit Pen' : 'Add Pen' }}
         </h1>
-        <p class="mt-2 max-w-[62ch] text-[15px] leading-relaxed text-ink-80">
+        <p class="mt-2 max-w-[62ch] text-[15px] leading-relaxed text-muted-foreground">
             A pen is a physical housing unit on the farm. Give it a short code so it is easy to find later.
         </p>
     </div>
@@ -14,7 +14,7 @@
     {{-- One field per ruled row, the way a paper record sheet is laid out.
          Spacing is not uniform: rows are tight, the section rules do the
          separating. --}}
-    <form wire:submit="save" class="card divide-y divide-hairline overflow-hidden">
+    <form wire:submit="save" class="card divide-y divide-border overflow-hidden">
         @csrf
 
         <div class="px-5 py-5">
@@ -49,7 +49,7 @@
         </div>
 
         <div class="px-5 py-5">
-            <label for="location" class="label">Location <span class="font-normal text-ink-80">(optional)</span></label>
+            <label for="location" class="label">Location <span class="font-normal text-muted-foreground">(optional)</span></label>
             <input
                 id="location"
                 type="text"
@@ -74,14 +74,14 @@
                 required
                 class="datum input mt-1.5 max-w-[10rem] @error('capacity') input-error @enderror"
             >
-            <p class="help">How many birds this pen can hold. Enter <strong class="datum font-medium text-ink">0</strong> if there is no set limit.</p>
+            <p class="help">How many birds this pen can hold. Enter <strong class="datum font-medium text-foreground">0</strong> if there is no set limit.</p>
             @error('capacity')
                 <p class="error">{{ $message }}</p>
             @enderror
 
             @php $typedCapacity = $this->capacityValue(); @endphp
             @if ($this->isEditing() && $typedCapacity !== null && $typedCapacity > 0 && $typedCapacity < $this->currentOccupancy)
-                <p class="mt-3 max-w-[62ch] rounded-[4px] border border-warn/25 bg-warn-wash px-3 py-2.5 text-[13px] leading-relaxed text-warn" role="status">
+                <p class="mt-3 max-w-[62ch] rounded-[4px] border border-warning/25 bg-warning-bg px-3 py-2.5 text-[13px] leading-relaxed text-warning" role="status">
                     This pen already holds {{ $this->currentOccupancy }}
                     {{ $this->currentOccupancy === 1 ? 'bird' : 'birds' }}, which is more than the capacity you entered.
                     You can still save - the pen will simply show as over capacity.
@@ -90,7 +90,7 @@
         </div>
 
         <div class="px-5 py-5">
-            <label for="notes" class="label">Notes <span class="font-normal text-ink-80">(optional)</span></label>
+            <label for="notes" class="label">Notes <span class="font-normal text-muted-foreground">(optional)</span></label>
             <textarea
                 id="notes"
                 rows="4"
@@ -103,7 +103,7 @@
             @enderror
         </div>
 
-        <div class="flex flex-col-reverse gap-3 bg-pearl px-5 py-4 sm:flex-row sm:justify-end">
+        <div class="flex flex-col-reverse gap-3 bg-muted px-5 py-4 sm:flex-row sm:justify-end">
             <a href="{{ $this->isEditing() ? route('pens.show', $penId) : route('pens.index') }}"
                wire:navigate
                class="btn-secondary">

@@ -1,12 +1,12 @@
 <x-layouts::guest title="Choose a new password">
-    <h2 class="text-[24px] font-semibold tracking-[-0.015em] leading-[1.2] text-ink">Choose a new password</h2>
-    <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
+    <h2 class="text-[24px] font-semibold tracking-[-0.015em] leading-[1.2] text-foreground">Choose a new password</h2>
+    <p class="mt-3 text-[17px] leading-relaxed text-muted-foreground">
         Your new password must be at least 8 characters long.
     </p>
 
     @if ($errors->any())
-        <div class="mt-4 rounded-lg bg-alert-wash p-3 ring-1 ring-alert/20" role="alert">
-            <ul class="space-y-1 text-sm text-alert">
+        <div class="mt-4 rounded-lg bg-destructive-bg p-3 ring-1 ring-destructive/20" role="alert">
+            <ul class="space-y-1 text-sm text-destructive">
                 @foreach ($errors->all() as $message)
                     <li>{{ $message }}</li>
                 @endforeach

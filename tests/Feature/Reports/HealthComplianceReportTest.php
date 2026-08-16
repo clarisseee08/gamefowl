@@ -408,7 +408,7 @@ final class HealthComplianceReportTest extends TestCase
         // particular colour, and hard-coding the hex made a palette change look
         // like a broken report.
         $this->assertStringContainsString(
-            'background-color: '.config('gfms-brand.alert_wash').';',
+            'background-color: '.config('gfms-brand.destructive_bg').';',
             $html
         );
 

@@ -10,10 +10,10 @@
     whose dates are `.datum` so the check-up column reads down.
 --}}
 <div class="card overflow-hidden">
-    <div class="flex flex-wrap items-start justify-between gap-4 border-b border-rule-strong px-4 py-4 sm:px-5">
+    <div class="flex flex-wrap items-start justify-between gap-4 border-b border-border px-4 py-4 sm:px-5">
         <div class="min-w-0">
-            <h2 class="text-[22px] font-semibold tracking-[-0.01em] text-ink">Health History</h2>
-            <p class="mt-1 max-w-[65ch] text-[15px] leading-relaxed text-ink-80">
+            <h2 class="text-[22px] font-semibold tracking-[-0.01em] text-foreground">Health History</h2>
+            <p class="mt-1 max-w-[65ch] text-[15px] leading-relaxed text-muted-foreground">
                 Vaccinations, medications and check-ups for {{ $broodcock->name }}, newest first.
             </p>
             {{-- The bird this panel belongs to, stated the way the system states
@@ -22,7 +22,7 @@
             <div class="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                 <x-band-tag :bloodline="$broodcock->bloodline" :band="$broodcock->band_number" size="xs" />
                 @if ($broodcock->bloodline)
-                    <span class="text-[12px] text-ink-80">{{ $broodcock->bloodline }}</span>
+                    <span class="text-[12px] text-muted-foreground">{{ $broodcock->bloodline }}</span>
                 @endif
             </div>
         </div>
@@ -42,13 +42,13 @@
             // A left rule and a desaturated wash - the state is also written out
             // in words at the end of the sentence, so hue is never load-bearing.
             $followUpClasses = match ($followUpState) {
-                'Overdue' => 'border-alert bg-alert-wash text-alert',
-                'Due soon' => 'border-warn bg-warn-wash text-warn',
-                default => 'border-info bg-info-wash text-info',
+                'Overdue' => 'border-destructive bg-destructive-bg text-destructive',
+                'Due soon' => 'border-warning bg-warning-bg text-warning',
+                default => 'border-info bg-info-bg text-info',
             };
         @endphp
 
-        <div class="border-b border-hairline px-4 py-3 sm:px-5">
+        <div class="border-b border-border px-4 py-3 sm:px-5">
             <p class="rounded-[4px] border-l-2 px-3 py-2 text-[15px] leading-snug {{ $followUpClasses }}">
                 <span class="font-medium">Next follow-up:</span>
                 {{ $followUp->record_type->label() }}
@@ -62,8 +62,8 @@
 
     @if ($this->rows->isEmpty())
         <div class="px-6 py-14 text-center">
-            <p class="text-[18px] font-medium text-ink">No health records for this bird yet.</p>
-            <p class="mx-auto mt-2 max-w-[52ch] text-[15px] leading-relaxed text-ink-80">
+            <p class="text-[18px] font-medium text-foreground">No health records for this bird yet.</p>
+            <p class="mx-auto mt-2 max-w-[52ch] text-[15px] leading-relaxed text-muted-foreground">
                 @can('create', \App\Models\HealthRecord::class)
                     Click &ldquo;Add Health Record&rdquo; above to log this bird's first
                     vaccination, deworming or check-up.
@@ -77,17 +77,17 @@
              own container rather than losing its last column. --}}
         <div class="overflow-x-auto">
             <table class="w-full text-left">
-                <thead class="hidden bg-pearl sm:table-header-group">
-                    <tr class="border-b border-rule-strong">
-                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Check-up Date</th>
-                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Record Type</th>
-                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Product / Condition</th>
-                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Next Due Date</th>
-                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80">Status</th>
+                <thead class="hidden bg-muted sm:table-header-group">
+                    <tr class="border-b border-border">
+                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Check-up Date</th>
+                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Record Type</th>
+                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Product / Condition</th>
+                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Next Due Date</th>
+                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Status</th>
                     </tr>
                 </thead>
 
-                <tbody class="block divide-y divide-divider sm:table-row-group">
+                <tbody class="block divide-y divide-border sm:table-row-group">
                     @foreach ($this->rows as $record)
                         @php
                             $state = $record->scheduleState();
@@ -99,46 +99,46 @@
                             };
                         @endphp
 
-                        <tr wire:key="history-{{ $record->id }}" class="block p-4 sm:table-row sm:p-0 sm:align-top sm:hover:bg-pearl">
+                        <tr wire:key="history-{{ $record->id }}" class="block p-4 sm:table-row sm:p-0 sm:align-top sm:hover:bg-muted">
                             <td class="block sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
-                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Check-up Date</span>
-                                <span class="datum text-[15px] font-medium text-ink">{{ $record->checkup_date->format('d M Y') }}</span>
+                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Check-up Date</span>
+                                <span class="datum text-[15px] font-medium text-foreground">{{ $record->checkup_date->format('d M Y') }}</span>
                             </td>
 
                             <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
-                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Record Type</span>
+                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Record Type</span>
                                 <span class="badge {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
                             </td>
 
                             <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
-                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Product / Condition</span>
-                                <p class="text-[15px] leading-snug text-ink">{{ $record->product_name ?: '—' }}</p>
+                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Product / Condition</span>
+                                <p class="text-[15px] leading-snug text-foreground">{{ $record->product_name ?: '—' }}</p>
                                 @if ($record->dosage)
-                                    <p class="mt-0.5 text-[12px] text-ink-80">Dosage: <span class="datum">{{ $record->dosage }}</span></p>
+                                    <p class="mt-0.5 text-[12px] text-muted-foreground">Dosage: <span class="datum">{{ $record->dosage }}</span></p>
                                 @endif
                                 @if ($record->condition)
-                                    <p class="mt-0.5 text-[12px] text-ink-80">Condition: {{ $record->condition }}</p>
+                                    <p class="mt-0.5 text-[12px] text-muted-foreground">Condition: {{ $record->condition }}</p>
                                 @endif
                                 {{-- Internal remarks are for farm staff. Customers are
                                      promised health status, not the farm's notes. --}}
                                 @can('viewRemarks', $record)
                                     @if ($record->remarks)
-                                        <p class="mt-1.5 max-w-[40ch] border-l-2 border-hairline pl-2 text-[12px] leading-snug text-ink-80"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
+                                        <p class="mt-1.5 max-w-[40ch] border-l-2 border-border pl-2 text-[12px] leading-snug text-muted-foreground"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
                                     @endif
                                 @endcan
                             </td>
 
                             <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
-                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Next Due Date</span>
+                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Next Due Date</span>
                                 @if ($record->next_due_date)
-                                    <span class="datum text-[15px] text-ink">{{ $record->next_due_date->format('d M Y') }}</span>
+                                    <span class="datum text-[15px] text-foreground">{{ $record->next_due_date->format('d M Y') }}</span>
                                 @else
-                                    <span class="text-[15px] text-ink-80">None</span>
+                                    <span class="text-[15px] text-muted-foreground">None</span>
                                 @endif
                             </td>
 
                             <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
-                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-ink-80 sm:hidden">Status</span>
+                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Status</span>
                                 <span class="badge {{ $stateClasses }}">{{ $state }}</span>
                             </td>
                         </tr>
@@ -148,7 +148,7 @@
         </div>
 
         @if ($this->rows->hasPages())
-            <div class="border-t border-hairline bg-pearl px-4 py-2.5">
+            <div class="border-t border-border bg-muted px-4 py-2.5">
                 {{ $this->rows->links() }}
             </div>
         @endif

@@ -1,7 +1,7 @@
 <div>
     <div class="mb-10">
-        <h1 class="text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-ink">Our Gamefowl</h1>
-        <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
+        <h1 class="text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-foreground">Our Gamefowl</h1>
+        <p class="mt-3 text-[17px] leading-relaxed text-muted-foreground">
             Browse the birds currently on the farm. Tap any bird to see its photos,
             health record, family tree and performance history.
         </p>
@@ -51,8 +51,8 @@
         </div>
 
         @if ($this->hasActiveFilters())
-            <div class="mt-4 flex items-center justify-between border-t border-hairline pt-4">
-                <p class="text-sm text-ink-80">
+            <div class="mt-4 flex items-center justify-between border-t border-border pt-4">
+                <p class="text-sm text-muted-foreground">
                     {{ number_format($this->birds->total()) }}
                     {{ Str::plural('bird', $this->birds->total()) }} found.
                 </p>
@@ -63,10 +63,10 @@
 
     @if ($this->birds->isEmpty())
         <div class="card p-12 text-center">
-            <h3 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-ink">
+            <h3 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-foreground">
                 {{ $this->hasActiveFilters() ? 'No birds match your search' : 'No birds are listed yet' }}
             </h3>
-            <p class="mt-3 text-[17px] leading-relaxed text-ink-48">
+            <p class="mt-3 text-[17px] leading-relaxed text-muted-foreground">
                 {{ $this->hasActiveFilters()
                     ? 'Try a different bloodline or clear the filters to see everything.'
                     : 'Please check back soon.' }}
@@ -79,7 +79,7 @@
         <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             @foreach ($this->birds as $bird)
                 <a href="{{ route('broodcocks.show', $bird) }}"
-                   class="card group overflow-hidden transition hover:border-ink-48">
+                   class="card group overflow-hidden transition hover:border-muted-foreground">
                     @if ($bird->primaryPhoto)
                         <x-photo-thumb :photo="$bird->primaryPhoto" :alt="'Photo of '.$bird->name"
                                        class="aspect-4/5 w-full" />
@@ -97,36 +97,36 @@
                             <span class="text-[38px] font-medium leading-none tracking-[-0.01em] opacity-80"
                                   style="color: {{ \App\Support\BandTag::hex($bird->bloodline) }}"
                                   aria-hidden="true">{{ \App\Support\BandTag::code($bird->bloodline) }}</span>
-                            <span class="text-[12px] text-ink-48">No photo yet</span>
+                            <span class="text-[12px] text-muted-foreground">No photo yet</span>
                         </div>
                     @endif
 
-                    <div class="border-t border-hairline p-4">
+                    <div class="border-t border-border p-4">
                         {{-- Identity first: the band is how a keeper and a buyer both
                              refer to the bird, so it leads rather than trailing the name
                              as grey subtext. --}}
                         <x-band-tag :bloodline="$bird->bloodline" :band="$bird->band_number" size="xs" />
 
-                        <h2 class="mt-2.5 truncate text-[17px] font-medium leading-snug text-ink group-hover:text-action">
+                        <h2 class="mt-2.5 truncate text-[17px] font-medium leading-snug text-foreground group-hover:text-primary">
                             {{ $bird->name }}
                         </h2>
 
                         <dl class="mt-3 space-y-1.5 text-[14px]">
                             <div class="flex justify-between gap-3">
-                                <dt class="shrink-0 text-ink-48">Bloodline</dt>
-                                <dd class="truncate text-ink">{{ $bird->bloodline ?: 'Not recorded' }}</dd>
+                                <dt class="shrink-0 text-muted-foreground">Bloodline</dt>
+                                <dd class="truncate text-foreground">{{ $bird->bloodline ?: 'Not recorded' }}</dd>
                             </div>
                             <div class="flex justify-between gap-3">
-                                <dt class="shrink-0 text-ink-48">Breed</dt>
-                                <dd class="truncate text-ink">{{ $bird->breed ?: 'Not recorded' }}</dd>
+                                <dt class="shrink-0 text-muted-foreground">Breed</dt>
+                                <dd class="truncate text-foreground">{{ $bird->breed ?: 'Not recorded' }}</dd>
                             </div>
                             <div class="flex justify-between gap-3">
-                                <dt class="shrink-0 text-ink-48">Age</dt>
-                                <dd class="datum text-ink">{{ $bird->ageLabel() ?? 'Unknown' }}</dd>
+                                <dt class="shrink-0 text-muted-foreground">Age</dt>
+                                <dd class="datum text-foreground">{{ $bird->ageLabel() ?? 'Unknown' }}</dd>
                             </div>
                         </dl>
 
-                        <div class="mt-3.5 flex flex-wrap gap-1.5 border-t border-hairline pt-3.5">
+                        <div class="mt-3.5 flex flex-wrap gap-1.5 border-t border-border pt-3.5">
                             <span class="badge {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
                             <span class="badge badge-neutral">{{ $bird->sex->farmTerm() }}</span>
                         </div>
