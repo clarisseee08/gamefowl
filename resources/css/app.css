@@ -78,15 +78,15 @@
     --color-primary-900: #052b2e;
     --color-primary-foreground: #ffffff;
 
-    /* Brand — comb red. CHROME ONLY: sidebar, mark, top rail, auth panel, PDF.
-       Never a button, link, status pill, or anything interactive. This system
-       already uses red to mean "dead bird" and "overdue"; if brand red also
-       appeared on controls, a keeper could not tell branded from urgent. */
-    --color-brand: #c1272d;
-    --color-brand-deep: #6e1417;
-    --color-brand-deeper: #4e0e11;
-    --color-brand-foreground: #f7e9e7;   /* 10.01:1 on brand-deep */
-    --color-brand-muted-fg: #dbc2c1;     /*  7.04:1 on brand-deep */
+    /* Brand — forest green, sampled from the farm's badge. CHROME ONLY: sidebar,
+       mark, top rail, auth panel, PDF. Never a button, link or status pill.
+       Green also keeps brand clear of the red this system uses for mortality
+       and overdue, so branded and urgent can never be confused. */
+    --color-brand: #2f6b3c;              /*  6.38:1 on card */
+    --color-brand-deep: #22331f;
+    --color-brand-deeper: #16240f;
+    --color-brand-foreground: #edf3ea;   /* 11.92:1 on brand-deep */
+    --color-brand-muted-fg: #bfcfbb;     /*  8.24:1 on brand-deep */
 
     /* Semantic — full pairs. The tinted grounds are the point; this is where
        "one accent only" is deliberately abandoned. */

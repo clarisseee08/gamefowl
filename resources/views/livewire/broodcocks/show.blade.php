@@ -198,11 +198,23 @@
 
     {{-- Photos --}}
     @if ($tab === 'photos')
-        @if (class_exists(App\Livewire\Photos\Gallery::class))
+        <div class="space-y-5">
+            {{--
+                The uploader was built, tested and then never put on a page. The
+                gallery's own empty state said "Use Add Photos above" while
+                nothing above it existed, so adding a photo to a bird was
+                reachable only from the test suite.
+
+                It sits above the gallery because Upload dispatches
+                `photos-updated` and Gallery listens for it - they were designed
+                as a pair and only ever needed to be placed together.
+            --}}
+            @can('create', App\Models\BroodcockPhoto::class)
+                <livewire:photos.upload :broodcock="$bird" :key="'upload-'.$bird->id" />
+            @endcan
+
             <livewire:photos.gallery :broodcock="$bird" :key="'gallery-'.$bird->id" />
-        @else
-            <div class="card p-8 text-center text-sm text-muted-foreground">The photo gallery is not available yet.</div>
-        @endif
+        </div>
     @endif
 
     {{-- Health --}}
