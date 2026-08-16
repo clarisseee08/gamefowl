@@ -81,32 +81,76 @@
     {{-- Collapsed rail shows the mark alone; expanded shows the lockup. That is
          the lockup's defined minimum in practice: below the rail width the
          wordmark drops and the mark stands by itself. --}}
+    {{--
+        Brand block.
+
+        The logo and wordmark are a LINK HOME, not the collapse control. Those
+        were the same button before, which meant the most obvious thing on the
+        rail did the least expected thing - clicking a logo goes home in every
+        product anyone has used.
+
+        Collapse now has its own labelled control beside it, which also makes it
+        discoverable: a toggle hidden inside the logo is a toggle nobody finds.
+    --}}
     <div class="flex h-14 shrink-0 items-center gap-2 px-3"
-         style="border-bottom: 1px solid var(--color-brand-deeper)">
-        <button type="button"
-                @click="collapsed = ! collapsed; localStorage.setItem('gfms-sidebar', collapsed ? '1' : '0')"
-                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-foreground ring-1 ring-brand-deeper hover:opacity-90"
-                :aria-label="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
-                :aria-expanded="collapsed ? 'false' : 'true'">
+         style="border-bottom: 1px solid var(--color-brand-deeper)"
+         :class="collapsed ? 'justify-center px-2' : ''">
+        <a href="{{ route('dashboard') }}"
+           class="flex min-w-0 flex-1 items-center gap-2.5 rounded-[var(--radius-sm)] p-1 hover:bg-brand-deeper"
+           :class="collapsed ? 'flex-none justify-center' : ''"
+           title="{{ config('gfms.system.name') }}">
             {{-- The badge is dark green and gold; the rail is dark red. Placed
                  straight onto it, a 30px logo reads as a dark blob. It gets its
                  own light ground, which is what a coloured badge normally needs
                  on a dark surface - and it keeps the artwork untouched. --}}
-            <x-brand-mark :size="30" class="rounded-full" />
+            <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-foreground ring-1 ring-brand-deeper">
+                <x-brand-mark :size="30" class="rounded-full" />
+            </span>
+
+            <span x-show="! collapsed" x-cloak class="min-w-0">
+                <span class="block truncate text-[14px] font-semibold leading-tight text-brand-foreground">
+                    {{ config('gfms.system.short') }}
+                </span>
+                <span class="block truncate text-[11px] leading-tight text-brand-muted-fg">
+                    {{ config('gfms.farm.name') }}
+                </span>
+            </span>
+            <span class="sr-only">Go to dashboard</span>
+        </a>
+
+        <button type="button"
+                x-show="! collapsed" x-cloak
+                @click="collapsed = true; localStorage.setItem('gfms-sidebar', '1')"
+                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-sm)] text-brand-muted-fg hover:bg-brand-deeper hover:text-brand-foreground"
+                aria-label="Collapse sidebar" title="Collapse sidebar">
+            <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="1.7"
+                 viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M3.75 5.25h16.5M9 5.25v13.5M3.75 18.75h16.5M3.75 5.25v13.5M20.25 5.25v13.5"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 9.75 14.25 12l2.25 2.25"/>
+            </svg>
         </button>
-        <div x-show="! collapsed" x-cloak class="min-w-0 flex-1">
-            <p class="truncate text-[14px] font-semibold leading-tight text-brand-foreground">
-                {{ config('gfms.system.short') }}
-            </p>
-            <p class="truncate text-[11px] leading-tight text-brand-muted-fg">
-                {{ config('gfms.farm.name') }}
-            </p>
-        </div>
+    </div>
+
+    {{-- Expand, shown only on the collapsed rail where there is no room beside
+         the logo. --}}
+    <div x-show="collapsed" x-cloak class="shrink-0 px-2 pt-2">
+        <button type="button"
+                @click="collapsed = false; localStorage.setItem('gfms-sidebar', '0')"
+                class="inline-flex h-9 w-full items-center justify-center rounded-[var(--radius-sm)] text-brand-muted-fg hover:bg-brand-deeper hover:text-brand-foreground"
+                aria-label="Expand sidebar" title="Expand sidebar">
+            <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="1.7"
+                 viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M3.75 5.25h16.5M9 5.25v13.5M3.75 18.75h16.5M3.75 5.25v13.5M20.25 5.25v13.5"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="m14.25 9.75 2.25 2.25-2.25 2.25"/>
+            </svg>
+        </button>
     </div>
 
     {{-- The nav scrolls between the two pinned blocks, so a long list never
          pushes the account menu off the bottom of the viewport. --}}
-    <nav class="min-h-0 flex-1 overflow-y-auto px-2 py-2">
+    <nav class="scroll-slim-dark min-h-0 flex-1 overflow-y-auto px-2 py-2">
         @foreach ($visible as $groupName => $items)
             <p class="nav-section" x-show="! collapsed" x-cloak>{{ $groupName }}</p>
             @if (! $loop->first)

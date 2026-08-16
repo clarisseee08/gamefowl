@@ -391,6 +391,69 @@
     }
 
     /*
+     * SCROLLBARS.
+     *
+     * The console has two scroll regions on two different grounds and the OS
+     * default suits neither: on Windows it arrives with stepper arrows and a
+     * grey track, which sits on the dark red rail looking like a rendering
+     * fault, and on the content region it is heavier than any border in the
+     * design system.
+     *
+     * Width is deliberately not zero. Hiding the bar removes the only cue that
+     * a region scrolls at all, and on the sidebar that is the difference
+     * between "short nav" and "there is more below the fold".
+     *
+     * Firefox reads scrollbar-width/color; Chromium and WebKit read the
+     * pseudo-elements. Both are needed - neither is a superset of the other,
+     * and the stepper buttons have to be turned off explicitly or Chromium on
+     * Windows keeps drawing them.
+     */
+    .scroll-slim {
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-border) transparent;
+    }
+    .scroll-slim::-webkit-scrollbar { width: 10px; height: 10px; }
+    .scroll-slim::-webkit-scrollbar-track { background: transparent; }
+    .scroll-slim::-webkit-scrollbar-button { display: none; height: 0; width: 0; }
+    .scroll-slim::-webkit-scrollbar-corner { background: transparent; }
+    .scroll-slim::-webkit-scrollbar-thumb {
+        background-color: var(--color-border);
+        border-radius: 999px;
+        /* A transparent border plus background-clip insets the thumb without
+           shrinking the hit area to something you cannot grab with a mouse. */
+        border: 3px solid transparent;
+        background-clip: content-box;
+    }
+    .scroll-slim:hover::-webkit-scrollbar-thumb {
+        background-color: #cdd2cb;
+        background-clip: content-box;
+    }
+
+    /* The same, tuned for the red rail. */
+    /* A LIGHT thumb on the dark rail, not a darker red. brand-deeper on
+       brand-deep is only a few values apart, which made the bar technically
+       present and practically invisible - and the whole reason for keeping a
+       bar at all is the cue that there is more nav below the fold. */
+    .scroll-slim-dark {
+        scrollbar-width: thin;
+        scrollbar-color: rgb(219 194 193 / 0.35) transparent;
+    }
+    .scroll-slim-dark::-webkit-scrollbar { width: 10px; }
+    .scroll-slim-dark::-webkit-scrollbar-track { background: transparent; }
+    .scroll-slim-dark::-webkit-scrollbar-button { display: none; height: 0; width: 0; }
+    .scroll-slim-dark::-webkit-scrollbar-corner { background: transparent; }
+    .scroll-slim-dark::-webkit-scrollbar-thumb {
+        background-color: rgb(219 194 193 / 0.35);
+        border-radius: 999px;
+        border: 3px solid transparent;
+        background-clip: content-box;
+    }
+    .scroll-slim-dark:hover::-webkit-scrollbar-thumb {
+        background-color: rgb(219 194 193 / 0.55);
+        background-clip: content-box;
+    }
+
+    /*
      * The 3px brand rail across the very top of the viewport. Enough to read as
      * branded on every page; small enough that it never competes with content
      * the way a full colour bar would.

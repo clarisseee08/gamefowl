@@ -75,7 +75,7 @@
             <x-app-topbar />
 
             {{-- THE ONLY SCROLL CONTAINER. --}}
-            <main class="min-h-0 flex-1 overflow-y-auto">
+            <main class="scroll-slim min-h-0 flex-1 overflow-y-auto">
                 <div class="px-4 py-6 sm:px-6 lg:px-8">
                     {{-- Flash messages. Both say what actually happened, never
                          "Operation completed". --}}
