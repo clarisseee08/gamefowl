@@ -38,13 +38,18 @@ What is needed, in order:
 **This is the single highest-value thing left to do, and no amount of further
 code improves it.**
 
-### 2. The thesis title no longer matches the running system
+### 2. ~~The thesis title no longer matches the running system~~ — RESOLVED
 
-Flagged previously and still outstanding: the paper says *Digital Broodcock Farm
-Record Management System*; the application says *Gamefowl Breeding Management
-System*. Title page, abstract, every chapter reference, figure and table
-captions, the class diagram, and the appendices. A mismatch here is the first
-thing a panel notices and the easiest to avoid.
+The application now reads *Digital Broodcock Farm Record Management System*,
+matching the paper. Resolved by moving the **application** back rather than
+retitling the document: the paper is what a panel reads, and the internals
+(`config/gfms.php`, the `GFMS_*` env keys, route and table names, the repository)
+were never renamed, so this direction leaves the whole project consistent.
+
+`tests/Unit/SystemNameTest.php` asserts the configured name matches the thesis
+title exactly and fails on any hardcoded occurrence of the retired one — so if
+the paper is ever retitled, the test forces the application to follow rather
+than letting the two drift apart again.
 
 ### 3. No documented backup and recovery procedure
 

@@ -55,10 +55,17 @@ final class SystemNameTest extends TestCase
      *
      * If the literal string sat in this file, a future grep for "is the old name
      * gone?" would keep finding this test and reporting a false positive.
+     *
+     * NOTE ON DIRECTION: this guard used to forbid the Broodcock title and
+     * require the Gamefowl one. The thesis document keeps the Broodcock title,
+     * so the application was moved back to match it rather than the other way
+     * round - the paper is the thing a panel reads, and the internals
+     * (config/gfms.php, the GFMS_* env keys, the repository name) were never
+     * renamed, so this direction leaves everything consistent.
      */
     private function retiredName(): string
     {
-        return 'Broodcock'.' '.'Farm'.' '.'Record';
+        return 'Gamefowl'.' '.'Breeding'.' '.'Management';
     }
 
     public function test_no_user_facing_file_hardcodes_the_retired_system_name(): void
@@ -79,7 +86,7 @@ final class SystemNameTest extends TestCase
 
     public function test_no_user_facing_file_hardcodes_the_retired_short_name(): void
     {
-        $short = 'GF'.'MS';
+        $short = 'GB'.'MS';
         $offenders = [];
 
         foreach ($this->userFacingFiles() as $file) {
@@ -106,8 +113,11 @@ final class SystemNameTest extends TestCase
         $config = require __DIR__.'/../../config/gfms.php';
 
         $this->assertArrayHasKey('system', $config);
-        $this->assertSame('Gamefowl Breeding Management System', $config['system']['name']);
-        $this->assertSame('GBMS', $config['system']['short']);
+
+        // Matches the thesis document exactly. If the paper is ever retitled,
+        // this test is the thing that forces the application to follow.
+        $this->assertSame('Digital Broodcock Farm Record Management System', $config['system']['name']);
+        $this->assertSame('DBFRMS', $config['system']['short']);
         $this->assertNotSame('Laravel', $config['system']['name']);
     }
 }

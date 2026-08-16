@@ -66,9 +66,9 @@ return [
      * deadline.
      */
     'system' => [
-        'name' => env('APP_NAME', 'Gamefowl Breeding Management System'),
-        'short' => env('GBMS_SHORT_NAME', 'GBMS'),
-        'tagline' => 'Gamefowl breeding records',
+        'name' => env('APP_NAME', 'Digital Broodcock Farm Record Management System'),
+        'short' => env('GFMS_SHORT_NAME', 'DBFRMS'),
+        'tagline' => 'Broodcock farm records',
     ],
 
 ];

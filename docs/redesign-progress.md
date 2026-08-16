@@ -156,10 +156,15 @@ a version to track, on a deadline.
 
 ## Name
 
-**Gamefowl Breeding Management System / GBMS**, held in `config.gfms.system` and
+**Digital Broodcock Farm Record Management System / DBFRMS**, held in
+`config.gfms.system` and
 read from there by every browser title, meta tag, OG tag, auth screen, report
 heading and PDF header. Exactly one hardcoded occurrence existed — the PDF
 running header. `tests/Unit/SystemNameTest.php` fails on any recurrence.
+
+(The display name was briefly *Gamefowl Breeding Management System*; it was moved
+back to match the thesis document, which keeps the Broodcock title. Because the
+internals were never renamed, that reversal touched five files.)
 
 **Internals deliberately unchanged:** `config/gfms-brand.php`, the `GFMS_*` env
 keys, route names, table names, CSS prefixes and test filenames. Renaming them is

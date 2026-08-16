@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Gamefowl Breeding Management System'),
+    'name' => env('APP_NAME', 'Digital Broodcock Farm Record Management System'),
 
     /*
     |--------------------------------------------------------------------------
