@@ -26,7 +26,13 @@ Thumbs.db
 /.serena/
 /.claude/settings.local.json
 /.playwright-mcp/
-*.png
+
+# Screenshots taken during design work land in the project ROOT, so only root
+# PNGs are ignored. This was `*.png` for a while, which silently excluded every
+# brand image in public/images/ - the app referenced files that were never in
+# the repository, so a fresh clone rendered with no logo anywhere and no error
+# to explain why. Keep this anchored with the leading slash.
+/*.png
 
 # Agent tooling installed via npx (skills, design presets) - developer
 # environment, not thesis source. Remove these lines to commit them.
