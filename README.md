@@ -344,3 +344,31 @@ Run that from the Supabase SQL editor. It only affects stuck connections.
 | Connection refused, project seems dead | The project is paused — restore it from the dashboard. |
 | Photos show a placeholder | `php artisan storage:link` was not run |
 | `Vite manifest not found` | Run `npm run build` |
+
+---
+
+## Interface: "Registry, running as software"
+
+The console is a full-bleed application shell — sidebar floor-to-ceiling, top bar
+inside the content column, and the main region as the **only** scroll container
+in the document. Tokens follow shadcn-style semantic naming
+(`background`/`foreground`, `card`/`card-foreground`, `muted`/`muted-foreground`),
+which is why a dark theme would be a second `:root` block rather than a second
+set of components.
+
+`config/gfms-brand.php` is the single source of colour, consumed by both the
+Tailwind theme and the PDF templates. Five guard tests in
+`tests/Unit/DesignSystemGuardTest.php` and `BrandTokensAreMirroredTest.php` hold
+the rules that are cheap to state and expensive to notice breaking.
+
+### Dark mode is not shipped
+
+Deliberately. The token layer is ready for it — every surface already declares
+the foreground that belongs on it — but the product-behaviour work in §3.7 (side
+drawers, inline edit, toasts, keyboard shortcuts) is only partly done, and the
+brief gates dark mode on that being complete. A half-working theme toggle is
+worse than none, so it is left out rather than shipped unfinished.
+
+Turning it on later means adding a `:root[data-theme="dark"]` block that
+redefines the same token names, plus a toggle that sets the attribute. No
+component should need to change.

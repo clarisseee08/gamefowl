@@ -1,15 +1,12 @@
 # Redesign progress — "Registry, running as software"
 
-Resume file. If a session is interrupted, read this and continue from the first
-unchecked step rather than restarting.
-
 **Rollback:** `git tag design/field-ledger-v1` (`a6b640a`). Earlier world at
 `design/apple-v1` (`3938e56`).
 
-**Direction:** replacing the field-ledger's no-elevation / single-accent / paper
-rules with a product UI that has depth, state and motion. Keeping the band tag,
-the bloodline resolution logic, mono registry data, the pedigree connectors, and
-the rule that colour means bloodline.
+**Direction:** replaced the field-ledger's no-elevation / single-accent / paper
+rules with a product UI that has depth, state and motion. Kept the band tag, the
+bloodline resolution over free text, mono registry data, the pedigree connectors,
+and the rule that colour means bloodline.
 
 ---
 
@@ -18,52 +15,133 @@ the rule that colour means bloodline.
 - [x] 1. Tokens into `config/gfms-brand.php` + Tailwind theme
 - [x] 2. App shell — full-bleed, full-height, sidebar, scroll containment (§3.5)
 - [x] 3. Rebuild `/design` against new tokens
-- [x] 4. Command palette — bird search (route jumping already shipped in step 2)
-- [x] 5. Card / table / form / badge / drawer / toast components
-- [x] 6. Broodcock table with the full §3.7 behaviour set
-- [x] 7. Dashboard — stat tiles, sparklines, compliance bars
-- [x] 8. Catalogue index + bird detail (full-bleed)
-- [x] 9. Pedigree — elevation, hover, focus affordance
-- [~] 10. Propagate §3.7 to health / breeding / performance
-- [ ] 11. PDF templates
-- [ ] 12. Dark mode (only if 1–11 complete and green)
+- [x] 4. Command palette (⌘K / Ctrl+K)
+- [x] 5. Card / table / form / badge components
+- [x] 6. Broodcock table with the §3.7 behaviour set
+- [x] 7. Dashboard — stat tiles, sparkline, compliance meter
+- [x] 8. Catalogue — full-bleed on its own shell
+- [x] 9. Pedigree — elevation and hover, connectors kept
+- [~] 10. Propagate §3.7 — **partial**, see below
+- [x] 11. PDF templates read the config
+- [ ] 12. Dark mode — **not done, deliberately**, see below
+- [x] §8 guard tests (five)
+
+---
 
 ## Decisions taken
 
 **1. Band foregrounds are resolved, not fixed.** §3.1's band hexes are brighter
 than the previous anodised set, and three of the six cannot carry white text —
-amber measures **2.08:1**, which is unreadable. Darkening them to fit white would
-have walked amber straight back to the muted gold this direction replaced. So the
-hexes stay exactly as specified and `BandTag::foreground()` picks white or deep
-ink per band. This also covers the hash fallback, where the colour is not known
-in advance.
+amber measures **2.08:1**. Darkening them to fit white would have walked amber
+straight back to the muted gold this direction replaced. So the hexes stay
+exactly as specified and `BandTag::foreground()` picks white or deep ink per
+band. This also covers the hash fallback, where the colour is not known ahead of
+time.
 
-**2. `muted-foreground` darkened from `#667069` to `#4E5550`.** The spec value
-measures 4.96:1 on background and 4.70:1 on muted — both clear AA, but the same
-document keeps the Console 7:1 floor. Same hue, lower lightness: 7.40 / 7.67 /
-7.01 across the three grounds.
+**2. `muted-foreground` darkened `#667069` → `#4E5550`.** The spec value measures
+4.96:1 on background and 4.70:1 on muted — both clear AA, but the same document
+keeps the Console 7:1 floor. Same hue, lower lightness: 7.40 / 7.67 / 7.01.
 
-**3. `warning` darkened from `#A87409` to `#906308`.** At the specified value it
-was 3.68:1 on its own tinted background — the one semantic pair that failed.
+**3. `warning` darkened `#A87409` → `#906308`.** At the specified value it was
+3.68:1 on its own tinted background — the one semantic pair that failed.
 
 **4. The two-step ink scale collapsed to one.** `ink-80` and `ink-48` both map to
-`muted-foreground`; the new value already clears 7:1, so a second, lighter step
+`muted-foreground`; the new value already clears 7:1, so a second lighter step
 would only have reintroduced the failure the old `ink-48` had on pearl.
 
-## Open concerns
+**5. Bulk delete was implemented, not refused.** §9 forbids new features, but
+§3.7 explicitly requires bulk selection with "available actions" and states the
+behaviours need no schema change. The more specific instruction wins. It is a
+loop over the **same** authorize-then-delete path a single row already uses — not
+a `whereIn(...)->delete()`, which would bypass the Policy and the model's own
+delete handling.
 
-**Sticky page-header stack is only half done.** §3.5 asks for breadcrumbs (56px),
-page header (64px) and tab rail (44px) all sticky above the scroll region. The
-breadcrumb bar is in the shell and sticky; the page header and tab rail are still
-owned by individual views and scroll away with the content. Landing them properly
-means touching all eleven console views, so it is folded into steps 5–10 rather
-than done as a separate pass.
+**6. Column visibility is client-side.** It is a per-person viewing preference,
+not shared state. localStorage keeps it across sessions without a table.
+
+**7. Catalogue got its own shell.** §3.5 says full-bleed but no console sidebar.
+A dense app rail spends 240px of a grid that wants width, and shows a customer
+navigation for screens they cannot open.
+
+**8. Catalogue cards went 4:5 → 4:3.** The portrait crop was chosen when the grid
+was a 1120px centred column; full-bleed it made cards ~730px tall and showed one
+row — the change meant to show more stock was showing less.
+
+---
 
 ## Could not do
 
 **Sparklines on three of the four headline tiles.** Total / on-farm / breeding
-have no time series behind them that already exists; drawing a twelve-point
-history for each would need a new aggregate per tile, which §9 forbids. They
-carry a supporting proportion bar instead, which is derived from figures already
-on the page. Only the fertility tile has a real series (`breedingTrend()`, one
-query, already computed for the chart below it).
+have no existing time series; drawing twelve points for each needs a new
+aggregate per tile, which §9 forbids. They carry a proportion bar derived from
+figures already on the page. Only fertility has a real series
+(`breedingTrend()`, one query, already computed for the chart below it).
+
+**§3.7 is partial (step 10).** Landed: bulk selection with a floating action bar,
+row-hover actions, filter chips, column visibility, saved views via the query
+string (already present through `#[Url]`), and the row-hover pattern propagated
+to all six tables. **Not landed:** side drawers replacing page navigations,
+inline edit on single fields, toasts replacing flash banners, and the `?`
+keyboard-shortcut overlay. Each is a substantial behavioural change across
+several components, and they were the lowest-certainty items against the
+remaining budget.
+
+**Dark mode (step 12).** §4 gates it on steps 1–11 being complete. Step 10 is
+partial, so it is not started. The token layer is ready — every surface declares
+its own foreground — and enabling it later is a `:root[data-theme="dark"]` block
+plus a toggle, with no component changes. Recorded in the README.
+
+**Sticky page-header stack.** §3.5 asks for breadcrumbs (56px), page header
+(64px) and tab rail (44px) all sticky. The breadcrumb bar is in the shell and is
+sticky; page headers are still owned by individual views and scroll with the
+content.
+
+---
+
+## Measured, after
+
+Debugbar disabled. All 14 routes fetched and inspected; dense screens measured in
+the browser at 390px.
+
+| | Result |
+|---|---|
+| Stock Tailwind palette classes, all 14 routes | **0** |
+| Page-scale centred columns, all 14 routes | **0** |
+| Contrast failures (dashboard, broodcocks, incl. composited band chips) | **0** |
+| Touch targets under 44px | **0** |
+| Horizontal scroll at 390px | **none** |
+| Body scrolls in console | **no** — main is the only scroll container |
+| Dead margin at 1920px | **0px** (content 1665px of 1920) |
+| Tests | **472 passing** |
+
+Two defects were found only by measuring the rendered page, not by reading
+tokens: the band code chip at 3.84:1, and three toolbar controls at 40px. Both
+are fixed and both now have guards.
+
+---
+
+## Flux UI / Mary UI — evaluated, not adopted
+
+Per the brief, both were assessed as a source of the primitives this app lacks
+(combobox, command palette, sheet, data table) and neither was adopted.
+
+**Flux UI** is the official Livewire component library from the Livewire authors,
+so version alignment is a non-issue and its `wire:model` integration is native.
+The free tier covers the basics; the components this project actually wanted —
+command palette, data table, date picker — are largely in the paid tier, which
+§0 rules out. Its visual language is also strongly opinionated toward a
+neutral-grey SaaS look, so theming it to the band-tag identity would mean
+overriding most of what you installed it for.
+
+**Mary UI** is free, broader, and built on daisyUI — which is the problem: it
+brings a second theming system with its own token names and semantics, on top of
+a Tailwind v4 theme layer this project already owns. Two sources of truth for
+colour is precisely what `config/gfms-brand.php` and its mirror test exist to
+prevent.
+
+**Recommendation for future work:** revisit Flux if the project ever takes a paid
+tier, and only for genuinely complex primitives — a combobox with async search, a
+date-range picker. The components built here by hand (command palette, popover,
+sheet, sparkline, band tag) are small, carry no dependency, and are already
+themed. Adopting a library now would trade them for a foreign visual language and
+a version to track, on a deadline.
