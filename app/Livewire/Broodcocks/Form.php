@@ -4,20 +4,40 @@ declare(strict_types=1);
 
 namespace App\Livewire\Broodcocks;
 
+use App\Actions\Photos\StorePhoto;
 use App\Enums\BroodcockClass;
 use App\Enums\BroodcockStatus;
 use App\Enums\Sex;
 use App\Http\Requests\StoreBroodcockRequest;
 use App\Models\Broodcock;
+use App\Models\BroodcockPhoto;
 use App\Models\Pen;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Livewire\WithFileUploads;
 
 final class Form extends Component
 {
+    use WithFileUploads;
+
+    /**
+     * Photos chosen while filling in the form.
+     *
+     * A photo row needs a broodcock_id, so on CREATE the bird genuinely cannot
+     * exist yet when the file is picked. Rather than making the keeper save,
+     * navigate to the bird, open a tab and upload again, the files are held
+     * here and attached immediately after the insert - inside the same
+     * transaction-adjacent flow, using the SAME StorePhoto action the dedicated
+     * uploader uses, so there is one code path for storing a photo.
+     *
+     * @var array<int, TemporaryUploadedFile>
+     */
+    public array $photos = [];
+
     public ?Broodcock $broodcock = null;
 
     // Form state. Kept as individual public properties rather than an array so
@@ -102,7 +122,14 @@ final class Form extends Component
     /** @return array<string, mixed> */
     protected function rules(): array
     {
-        return StoreBroodcockRequest::rulesFor($this->broodcock);
+        // The photo rules live here rather than in StoreBroodcockRequest: that
+        // request describes the BIRD, and a file picked in the browser is not
+        // part of the record's shape. Limits match the dedicated uploader so a
+        // keeper does not meet two different rules for the same action.
+        return StoreBroodcockRequest::rulesFor($this->broodcock) + [
+            'photos' => ['array', 'max:10'],
+            'photos.*' => ['image', 'max:4096'],
+        ];
     }
 
     /** @return array<string, string> */
@@ -114,7 +141,11 @@ final class Form extends Component
     /** @return array<string, string> */
     protected function messages(): array
     {
-        return StoreBroodcockRequest::messageOverrides();
+        return StoreBroodcockRequest::messageOverrides() + [
+            'photos.max' => 'You can add up to 10 photos at a time.',
+            'photos.*.max' => 'Each photo must be 4 MB or smaller. Most phones can send a smaller copy.',
+            'photos.*.image' => 'One of those files is not an image.',
+        ];
     }
 
     /** Validate a single field as soon as the user leaves it. */
@@ -126,6 +157,11 @@ final class Form extends Component
     public function save(): void
     {
         $data = $this->validate();
+
+        // `photos` is validated with the rest of the form but is NOT a column
+        // on the bird, so it has to come out before the write - passing it
+        // through hits a MassAssignmentException on create.
+        unset($data['photos']);
 
         // Normalise empty strings from <select> and <input> to real nulls, so
         // "no sire selected" is stored as NULL rather than 0 or ''.
@@ -149,6 +185,8 @@ final class Form extends Component
 
             return Broodcock::create($data);
         });
+
+        $this->attachPhotos($saved);
 
         session()->flash('success', $this->isEditing()
             ? "Changes to {$saved->name} have been saved."
@@ -222,5 +260,31 @@ final class Form extends Component
     public function render(): View
     {
         return view('livewire.broodcocks.form');
+    }
+
+    /**
+     * Attaches any photos picked on the form to the saved bird.
+     *
+     * Deliberately NOT inside the transaction above: the files go to object
+     * storage, which cannot be rolled back. Committing the bird first means a
+     * storage failure costs a photo rather than the whole record.
+     */
+    private function attachPhotos(Broodcock $bird): void
+    {
+        if ($this->photos === []) {
+            return;
+        }
+
+        if (! auth()->user()?->can('create', BroodcockPhoto::class)) {
+            return;
+        }
+
+        $storePhoto = app(StorePhoto::class);
+
+        foreach ($this->photos as $photo) {
+            $storePhoto->handle($bird, $photo, auth()->user());
+        }
+
+        $this->photos = [];
     }
 }

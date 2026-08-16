@@ -206,6 +206,73 @@
             </div>
         </section>
 
+        {{--
+            Photos.
+
+            A photo row needs a broodcock_id, so when adding a NEW bird the
+            record genuinely cannot exist yet at the moment the file is picked.
+            The files are held on the component and attached the instant the
+            insert commits, so a keeper photographs and records a bird in one
+            pass instead of saving, navigating to the bird, opening a tab and
+            uploading again.
+
+            On an existing bird this is the "add more" path; the Photos tab on
+            the bird's own page remains where you manage what is already there.
+        --}}
+        @can('create', App\Models\BroodcockPhoto::class)
+            <section class="card p-8">
+                <h2 class="text-[21px] font-semibold leading-[1.25] tracking-[-0.01em] text-foreground">Photos</h2>
+                <p class="mt-1 text-[14px] text-muted-foreground">
+                    Optional. JPG, PNG or WEBP, up to <span class="datum">4 MB</span> each.
+                    @if ($this->isEditing())
+                        These are added to the bird's existing photos.
+                    @endif
+                </p>
+
+                <label class="mt-5 flex cursor-pointer flex-col items-center justify-center rounded-[var(--radius-md)] border border-dashed border-input px-6 py-8 text-center transition-colors hover:border-primary hover:bg-primary-50 focus-within:border-primary focus-within:bg-primary-50">
+                    <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 7.5 12 3m0 0L7.5 7.5M12 3v13.5"/>
+                    </svg>
+                    <span class="mt-2 text-[15px] font-medium text-foreground">Tap to choose photos</span>
+                    <span class="mt-0.5 text-[13px] text-muted-foreground">You can pick more than one.</span>
+                    <input type="file" wire:model="photos" accept="image/*" multiple class="sr-only">
+                </label>
+
+                <div wire:loading wire:target="photos" class="mt-3 text-[13px] text-muted-foreground">
+                    Uploading…
+                </div>
+
+                @error('photos') <p class="error">{{ $message }}</p> @enderror
+                @error('photos.*') <p class="error">{{ $message }}</p> @enderror
+
+                @if ($photos)
+                    <div class="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-5">
+                        @foreach ($photos as $index => $photo)
+                            <div class="overflow-hidden rounded-[var(--radius-sm)] border border-border">
+                                {{-- isPreviewable() is load-bearing: temporaryUrl()
+                                     THROWS on a non-image, so without it choosing a
+                                     PDF crashes the page instead of showing the
+                                     validation message already waiting for it. --}}
+                                @if ($photo->isPreviewable())
+                                    <img src="{{ $photo->temporaryUrl() }}" alt="Selected photo {{ $index + 1 }}"
+                                         class="aspect-[4/3] w-full object-cover">
+                                @else
+                                    <div class="flex aspect-[4/3] w-full items-center justify-center bg-muted text-[12px] text-muted-foreground">
+                                        Not an image
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                    <p class="mt-2 text-[13px] text-muted-foreground">
+                        <span class="datum">{{ count($photos) }}</span>
+                        {{ Str::plural('photo', count($photos)) }} will be attached when you save.
+                    </p>
+                @endif
+            </section>
+        @endcan
+
         <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <a href="{{ $this->isEditing() ? route('broodcocks.show', $broodcock) : route('broodcocks.index') }}"
                class="btn-secondary">Cancel</a>
