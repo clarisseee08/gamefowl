@@ -33,6 +33,10 @@ class BroodcockFactory extends Factory
             // surfaced as an intermittent UniqueConstraintViolationException in
             // an unrelated pagination test - a flake with a real cause.
             'band_number' => strtoupper(fake()->unique()->bothify('??-####')),
+            // Declared even though most birds are not for sale: a
+            // factory-built model only carries the keys the factory sets,
+            // and shouldBeStrict() throws on reading one it does not have.
+            'for_sale' => false,
             'name' => fake()->firstName(),
             'breed' => fake()->randomElement(self::BREEDS),
             'bloodline' => fake()->randomElement(self::BLOODLINES),

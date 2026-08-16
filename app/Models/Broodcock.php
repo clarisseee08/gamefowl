@@ -51,6 +51,7 @@ class Broodcock extends Model
 
     /** @var list<string> */
     protected $fillable = [
+        'for_sale',
         'band_number',
         'name',
         'breed',
@@ -75,6 +76,7 @@ class Broodcock extends Model
     protected function casts(): array
     {
         return [
+            'for_sale' => 'boolean',
             'class' => BroodcockClass::class,
             'sex' => Sex::class,
             'status' => BroodcockStatus::class,

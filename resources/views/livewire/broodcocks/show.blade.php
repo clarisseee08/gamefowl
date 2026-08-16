@@ -129,6 +129,7 @@
                         ['Colour', $bird->color ?: 'Not recorded', false],
                         ['Comb Type', $bird->comb_type ?: 'Not recorded', false],
                         ['Leg Colour', $bird->leg_color ?: 'Not recorded', false],
+                        ['For Sale', $bird->for_sale ? 'Yes' : 'No', false],
                     ] as [$label, $value, $isDatum])
                         <div class="flex items-baseline justify-between gap-6 py-2.5">
                             <dt class="shrink-0 text-[13px] text-muted-foreground">{{ $label }}</dt>

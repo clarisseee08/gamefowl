@@ -38,6 +38,9 @@ final class Form extends Component
      */
     public array $photos = [];
 
+    /** Whether the bird is offered to customers. Defaults to not for sale. */
+    public bool $for_sale = false;
+
     public ?Broodcock $broodcock = null;
 
     // Form state. Kept as individual public properties rather than an array so
@@ -85,6 +88,7 @@ final class Form extends Component
             $this->broodcock = $broodcock;
 
             $this->fill([
+                'for_sale' => (bool) $broodcock->for_sale,
                 'band_number' => $broodcock->band_number,
                 'name' => $broodcock->name,
                 'breed' => $broodcock->breed,
@@ -127,6 +131,7 @@ final class Form extends Component
         // part of the record's shape. Limits match the dedicated uploader so a
         // keeper does not meet two different rules for the same action.
         return StoreBroodcockRequest::rulesFor($this->broodcock) + [
+            'for_sale' => ['boolean'],
             'photos' => ['array', 'max:10'],
             'photos.*' => ['image', 'max:4096'],
         ];

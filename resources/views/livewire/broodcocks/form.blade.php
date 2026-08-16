@@ -197,6 +197,16 @@
                 </div>
 
                 <div>
+                    {{-- The farm tracks this on every bird, so it belongs on the
+                         form rather than buried in notes. Defaults to not for
+                         sale: a bird wrongly listed as available starts a
+                         customer conversation nobody intended. --}}
+                    <label class="flex min-h-11 cursor-pointer items-center gap-2.5">
+                        <input type="checkbox" wire:model="for_sale" class="h-5 w-5 accent-primary">
+                        <span class="text-[15px] text-foreground">This bird is for sale</span>
+                    </label>
+                    <p class="help mb-5">Shown to customers in the catalogue.</p>
+
                     <label for="notes" class="label">Notes</label>
                     <textarea id="notes" rows="3" wire:model.blur="notes"
                               class="input mt-1 @error('notes') input-error @enderror"></textarea>
