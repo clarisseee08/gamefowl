@@ -19,9 +19,9 @@ the rule that colour means bloodline.
 - [x] 2. App shell — full-bleed, full-height, sidebar, scroll containment (§3.5)
 - [x] 3. Rebuild `/design` against new tokens
 - [x] 4. Command palette — bird search (route jumping already shipped in step 2)
-- [ ] 5. Card / table / form / badge / drawer / toast components
-- [ ] 6. Broodcock table with the full §3.7 behaviour set
-- [ ] 7. Dashboard — stat tiles, sparklines, compliance bars
+- [x] 5. Card / table / form / badge / drawer / toast components
+- [x] 6. Broodcock table with the full §3.7 behaviour set
+- [x] 7. Dashboard — stat tiles, sparklines, compliance bars
 - [ ] 8. Catalogue index + bird detail (full-bleed)
 - [ ] 9. Pedigree — elevation, hover, focus affordance
 - [ ] 10. Propagate §3.7 to health / breeding / performance
@@ -61,4 +61,9 @@ than done as a separate pass.
 
 ## Could not do
 
-_(appended as they happen)_
+**Sparklines on three of the four headline tiles.** Total / on-farm / breeding
+have no time series behind them that already exists; drawing a twelve-point
+history for each would need a new aggregate per tile, which §9 forbids. They
+carry a supporting proportion bar instead, which is derived from figures already
+on the page. Only the fertility tile has a real series (`breedingTrend()`, one
+query, already computed for the chart below it).

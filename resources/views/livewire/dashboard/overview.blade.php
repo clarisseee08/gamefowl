@@ -8,22 +8,91 @@
 @endphp
 
 <div class="space-y-12">
+    @php
+        /*
+         * Only the fertility tile gets a sparkline, because it is the only figure
+         * on this screen with a time series behind it that already exists -
+         * breedingTrend() is one query and is already computed for the chart
+         * below. The other three would each need a new aggregate to draw a
+         * twelve-point history, which is a schema-adjacent change for decoration.
+         * So they carry a supporting proportion instead of a fake trend.
+         */
+        $fertilitySeries = array_map(fn ($m) => $m['fertility'], $trend);
+
+        $scheduled = $this->overdueCount + $this->upcomingVaccinations->count();
+        $compliance = $scheduled > 0
+            ? round((($scheduled - $this->overdueCount) / $scheduled) * 100, 1)
+            : null;
+    @endphp
+
     {{-- Headline counts --}}
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         @foreach ([
-            ['Total Broodcocks', number_format($flock['total']), 'Every bird ever recorded'],
-            ['On the Farm', number_format($flock['on_farm']), 'Excludes sold and deceased'],
-            ['Currently Breeding', number_format($flock['breeding']), 'Status set to breeding'],
-            ['Overdue Vaccinations', number_format($this->overdueCount), 'Needs attention'],
-        ] as $i => [$label, $value, $hint])
-            <div class="card p-5 {{ $i === 3 && $this->overdueCount > 0 ? 'ring-2 ring-destructive/20' : '' }}">
-                <p class="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{{ $label }}</p>
-                <p class="datum mt-1 text-[40px] font-semibold leading-[1.08] {{ $i === 3 && $this->overdueCount > 0 ? 'text-destructive' : 'text-foreground' }}">
-                    {{ $value }}
-                </p>
-                <p class="mt-1 text-xs text-muted-foreground">{{ $hint }}</p>
+            ['Total Broodcocks', number_format($flock['total']), 'Every bird ever recorded', null],
+            ['On the Farm', number_format($flock['on_farm']), 'Excludes sold and deceased',
+                $flock['total'] > 0 ? round($flock['on_farm'] / $flock['total'] * 100) : null],
+            ['Currently Breeding', number_format($flock['breeding']), 'Status set to breeding',
+                $flock['on_farm'] > 0 ? round($flock['breeding'] / $flock['on_farm'] * 100) : null],
+            ['Overdue Vaccinations', number_format($this->overdueCount), 'Needs attention', null],
+        ] as $i => [$label, $value, $hint, $share])
+            @php $isAlert = $i === 3 && $this->overdueCount > 0; @endphp
+            <div @class(['card p-5', 'border-destructive/30' => $isAlert])>
+                <p class="text-[11px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">{{ $label }}</p>
+                <p @class([
+                    'datum mt-1.5 text-[34px] font-semibold leading-[1.05]',
+                    'text-destructive' => $isAlert,
+                    'text-foreground' => ! $isAlert,
+                ])>{{ $value }}</p>
+
+                @if ($share !== null)
+                    <div class="meter mt-3">
+                        <span class="bg-primary" style="width: {{ $share }}%"></span>
+                    </div>
+                    <p class="mt-2 text-[12px] text-muted-foreground">
+                        <span class="datum">{{ $share }}%</span> {{ $hint }}
+                    </p>
+                @else
+                    <p class="mt-2 text-[12px] text-muted-foreground">{{ $hint }}</p>
+                @endif
             </div>
         @endforeach
+    </div>
+
+    {{-- Two tiles that carry a shape rather than a number alone. --}}
+    <div class="grid gap-4 lg:grid-cols-2">
+        <div class="card p-5">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">Fertility trend</p>
+                    <p class="datum mt-1.5 text-[28px] font-semibold leading-none text-foreground">
+                        {{ $breeding['fertility'] !== null ? $breeding['fertility'].'%' : 'No data' }}
+                    </p>
+                    <p class="mt-2 text-[12px] text-muted-foreground">
+                        Last <span class="datum">{{ count($trend) }}</span> months
+                    </p>
+                </div>
+                <x-sparkline :points="$fertilitySeries" tone="primary"
+                             label="Monthly fertility rate over the last {{ count($trend) }} months" />
+            </div>
+        </div>
+
+        <div class="card p-5">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">Vaccination compliance</p>
+            <p class="datum mt-1.5 text-[28px] font-semibold leading-none {{ $compliance !== null && $compliance < 80 ? 'text-warning' : 'text-foreground' }}">
+                {{ $compliance !== null ? $compliance.'%' : 'No data' }}
+            </p>
+            @if ($compliance !== null)
+                <div class="meter mt-3">
+                    <span class="{{ $compliance < 80 ? 'bg-warning' : 'bg-success' }}" style="width: {{ $compliance }}%"></span>
+                </div>
+                <p class="mt-2 text-[12px] text-muted-foreground">
+                    <span class="datum">{{ $scheduled - $this->overdueCount }}</span> of
+                    <span class="datum">{{ $scheduled }}</span> scheduled follow-ups are not overdue
+                </p>
+            @else
+                <p class="mt-2 text-[12px] text-muted-foreground">Nothing is scheduled in the window.</p>
+            @endif
+        </div>
     </div>
 
     {{-- Breakdowns --}}
