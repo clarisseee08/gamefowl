@@ -1,0 +1,76 @@
+# Keeps the Supabase project from being paused for inactivity.
+#
+# A free Supabase project is paused after 7 days with no activity, and restoring
+# it is a manual step in the dashboard. If that happens the week before a
+# defence, the application is not slow - it is down, and every screen is a
+# connection error.
+#
+# WHY THIS DOES NOT JUST PING THE APP. It was measured: a request to the Render
+# health endpoint wrote no row to the sessions table, so hitting the web service
+# does NOT reliably register as database activity. The two have to be kept alive
+# independently, and this issues a real query over the same connection the
+# application uses.
+#
+# Once a day is ample against a 7-day timer - it tolerates six consecutive
+# failures before the project is at risk - and costs ~30 Actions minutes a
+# month, which matters because this repository is private and metered.
+name: Keep Supabase awake
+
+on:
+  schedule:
+    # 03:17 UTC = 11:17 Manila. Deliberately not on the hour: GitHub's scheduler
+    # is busiest at :00 and delays runs queued there.
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: keep-supabase-awake
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  touch-database:
+    name: Run a query against Postgres
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+
+    steps:
+      - name: Check the connection string is configured
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "${DB_URL}" ]; then
+            echo "::error::The SUPABASE_DB_URL secret is not set, so this job \
+            cannot keep the project awake. Add it with: \
+            gh secret set SUPABASE_DB_URL"
+            exit 1
+          fi
+
+      - name: Query Supabase
+        env:
+          # Must be the SESSION pooler host on port 5432. The direct host
+          # (db.<ref>.supabase.co) publishes only an IPv6 address and GitHub's
+          # runners are IPv4, so it would hang and then time out here exactly as
+          # it does from most Philippine connections.
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -uo pipefail
+
+          for attempt in 1 2 3; do
+            # Reading a real table, not `select 1`: it exercises the same path
+            # the application uses, so a permissions or schema problem surfaces
+            # here rather than the day someone opens the site.
+            if out=$(psql "$DB_URL" -tAc 'select count(*) from broodcocks' 2>&1); then
+              echo "attempt ${attempt}: ok - ${out} broodcock rows"
+              exit 0
+            fi
+
+            echo "attempt ${attempt} failed: ${out}"
+            sleep 20
+          done
+
+          echo "::error::Could not reach Supabase. If the project is already \
+          paused, resume it from the dashboard - a query cannot un-pause it."
+          exit 1
