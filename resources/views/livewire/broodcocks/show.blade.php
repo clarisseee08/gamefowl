@@ -119,7 +119,6 @@
                         ['Band Number', $bird->displayBand(), true],
                         ['Name', $bird->name, false],
                         ['Sex', $bird->sex->label(), false],
-                        ['Breed', $bird->breed ?: 'Not recorded', false],
                         ['Bloodline', $bird->bloodline ?: 'Not recorded', false],
                         ['Class', $bird->class->label(), false],
                         ['Age', $bird->ageLabel() ?? 'Unknown (no hatch date)', true],
@@ -177,22 +176,6 @@
                     </a>
                 </div>
 
-                @if ($canSeeInternal)
-                    <div class="card p-8">
-                        <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-foreground">Housing</h2>
-                        <p class="mt-2 text-sm text-foreground">
-                            @if ($bird->pen && Route::has('pens.show'))
-                                <a href="{{ route('pens.show', $bird->pen) }}" class="font-medium text-primary hover:underline">
-                                    {{ $bird->pen->code }} &mdash; {{ $bird->pen->name }}
-                                </a>
-                            @elseif ($bird->pen)
-                                <span class="font-medium">{{ $bird->pen->code }} &mdash; {{ $bird->pen->name }}</span>
-                            @else
-                                <span class="text-muted-foreground">Not assigned to a pen</span>
-                            @endif
-                        </p>
-                    </div>
-                @endif
             </div>
         </div>
     @endif
@@ -224,6 +207,17 @@
             <livewire:health.broodcock-health-history :broodcock="$bird" :key="'health-'.$bird->id" />
         @else
             <div class="card p-8 text-center text-sm text-muted-foreground">The health history view is not available yet.</div>
+        @endif
+
+        {{-- Performance sits on this tab as well as on its own. A keeper doing a
+             weigh-in is already holding the bird, and making them cross to a
+             second tab to write the result down is how a reading goes
+             unrecorded. It is the same component, so the rules live in one
+             place and the two views cannot drift. --}}
+        @if (class_exists(App\Livewire\Performance\BroodcockTimeline::class))
+            <div class="mt-5">
+                <livewire:performance.broodcock-timeline :broodcock="$bird" :key="'perf-on-health-'.$bird->id" />
+            </div>
         @endif
     @endif
 

@@ -66,6 +66,7 @@ class Broodcock extends Model
         'leg_color',
         'distinguishing_marks',
         'status',
+        'is_external',
         'sire_id',
         'dam_id',
         'pen_id',
@@ -77,6 +78,7 @@ class Broodcock extends Model
     {
         return [
             'for_sale' => 'boolean',
+            'is_external' => 'boolean',
             'class' => BroodcockClass::class,
             'sex' => Sex::class,
             'status' => BroodcockStatus::class,
@@ -332,6 +334,24 @@ class Broodcock extends Model
         }
 
         $query->where('pen_id', $penId);
+    }
+
+    /**
+     * Birds this farm actually owns.
+     *
+     * Outside parents are pedigree nodes, not livestock - a borrowed hen is
+     * recorded so the family tree stays whole, but she is not in the farm's
+     * care and must not be counted as its stock.
+     */
+    public function scopeFarmStock(Builder $query): void
+    {
+        $query->where($query->qualifyColumn('is_external'), false);
+    }
+
+    /** Birds belonging to someone else, recorded only to complete a pedigree. */
+    public function scopeExternal(Builder $query): void
+    {
+        $query->where($query->qualifyColumn('is_external'), true);
     }
 
     /** Birds physically present on the farm (excludes sold and deceased). */

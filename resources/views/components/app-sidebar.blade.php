@@ -36,8 +36,6 @@
              'icon' => 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z'],
         ],
         'Admin' => [
-            ['label' => 'Pens',        'route' => 'pens.index',        'internal' => true,
-             'icon' => 'M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15'],
             ['label' => 'Users',       'route' => 'users.index',       'owner' => true,
              'icon' => 'M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z'],
         ],
@@ -109,9 +107,6 @@
 
             <span x-show="! collapsed" x-cloak class="min-w-0">
                 <span class="block truncate text-[14px] font-semibold leading-tight text-brand-foreground">
-                    {{ config('gfms.system.short') }}
-                </span>
-                <span class="block truncate text-[11px] leading-tight text-brand-muted-fg">
                     {{ config('gfms.farm.name') }}
                 </span>
             </span>

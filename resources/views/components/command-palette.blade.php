@@ -17,7 +17,6 @@
         ['label' => 'Breeding records', 'hint' => 'Go to', 'route' => 'breeding.index', 'internal' => true],
         ['label' => 'Performance records', 'hint' => 'Go to', 'route' => 'performance.index', 'internal' => true],
         ['label' => 'Mortality register', 'hint' => 'Go to', 'route' => 'mortality.index', 'internal' => true],
-        ['label' => 'Pens', 'hint' => 'Go to', 'route' => 'pens.index', 'internal' => true],
         ['label' => 'Reports', 'hint' => 'Go to', 'route' => 'reports.index', 'internal' => true],
         ['label' => 'Users', 'hint' => 'Go to', 'route' => 'users.index', 'owner' => true],
         ['label' => 'Add a broodcock', 'hint' => 'Create', 'route' => 'broodcocks.create', 'internal' => true],

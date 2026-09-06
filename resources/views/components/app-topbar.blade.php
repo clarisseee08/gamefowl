@@ -22,7 +22,6 @@
         'breeding' => 'Breeding',
         'performance' => 'Performance',
         'mortality' => 'Mortality',
-        'pens' => 'Pens',
         'reports' => 'Reports',
         'users' => 'Users',
         'design' => 'Design System',

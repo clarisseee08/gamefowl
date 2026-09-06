@@ -20,8 +20,25 @@ declare(strict_types=1);
 | every surface already declares the text colour that belongs on it.
 |
 | tests/Unit/BrandTokensAreMirroredTest.php asserts every hex below appears
-| verbatim in app.css, so screen and print cannot silently drift apart.
-| tests/Unit/TokenContrastTest.php asserts every declared pairing is legible.
+| verbatim in app.css, that Console text clears 7:1 on every surface, and that
+| every semantic pair clears 4.5:1 — so screen and print cannot silently drift
+| apart, and no pairing can quietly become illegible.
+|
+| THE FOUR CLIENT COLOURS. The farm specified #8B2626, #EF6905, #F1E5A1 and
+| #486C2F. Each is placed by what it can actually carry, measured rather than
+| assumed:
+|
+|   #486C2F  green   -> brand chrome (sidebar, mark, rail, PDF chrome).
+|   #8B2626  red     -> primary, the interactive colour. 8.74:1 on card, so it
+|                       clears the Console 7:1 floor as link text. The green,
+|                       at 6.07:1, does not — which is why the roles sit this
+|                       way round rather than the other.
+|   #F1E5A1  cream   -> warning_bg, the callout ground. It cannot be a general
+|                       surface: secondary ink lands at 6.01:1 on it, under the
+|                       7:1 floor.
+|   #EF6905  orange  -> accent. FILL ONLY, never text: 3.14:1 on white, below
+|                       even the 4.5 AA floor. It carries dark ink at 5.51:1,
+|                       which is the only way it is used.
 |
 */
 
@@ -32,6 +49,10 @@ return [
      * black for text. A pure #FFF page under a #FFF card gives you no
      * elevation to work with, which is precisely what made the previous
      * direction read as a printed document rather than software.
+     *
+     * These stay neutral. The four client colours contain no neutral, and
+     * painting the page cream would drop secondary text to 6.01:1 — below the
+     * Console floor the farm's own outdoor use requires.
      */
     'background' => '#FBFBFA',   // the page
     'card' => '#FFFFFF',         // raised surfaces
@@ -47,13 +68,9 @@ return [
     'foreground' => '#161C19',
 
     /*
-     * DEVIATION FROM THE SPEC, and the reason for it.
-     *
-     * The direction specified #667069, which measures 4.96:1 on background and
-     * 4.70:1 on muted. Both clear AA, but the same document keeps the Console
-     * 7:1 floor — the staff screens are used outdoors in Philippine daylight,
-     * where 5:1 secondary text greys out. #4E5550 is the same hue at lower
-     * lightness: 7.40 on background, 7.67 on card, 7.01 on muted.
+     * The Console 7:1 floor. The staff screens are used outdoors in Philippine
+     * daylight, where 5:1 secondary text greys out. #4E5550 measures 7.40 on
+     * background, 7.67 on card, 7.01 on muted.
      */
     'muted_foreground' => '#4E5550',
 
@@ -61,72 +78,89 @@ return [
     'popover_foreground' => '#161C19',
 
     /*
-     * BRAND — peacock. A full scale rather than a single accent: the previous
-     * direction spent colour in exactly one place, and that austerity is what
-     * is being replaced. 500 is the base; -50/-100 are fills for active nav
-     * and selected rows, -600/-700 are hover and press.
+     * PRIMARY — the farm's deep red. THE INTERACTIVE COLOUR: buttons, links,
+     * active nav, focus rings. A full scale rather than a single accent;
+     * -50/-100 are fills for active nav and selected rows, -600/-700 are hover
+     * and press.
+     *
+     * Red carries the interactive role rather than the green because of one
+     * measurement: #8B2626 is 8.74:1 on card and #486C2F is 6.07:1. Link text
+     * has to clear the Console 7:1 floor, and only one of the two does.
      */
-    'primary_50' => '#EDF7F7',
-    'primary_100' => '#D2ECEC',
-    'primary_200' => '#A6D8D9',
-    'primary_400' => '#35A0A6',
-    'primary' => '#0D6E75',
-    'primary_600' => '#0A5C62',
-    'primary_700' => '#08494E',
-    'primary_900' => '#052B2E',
-    'primary_foreground' => '#FFFFFF',
+    'primary_50' => '#FAF0EF',
+    'primary_100' => '#F1DAD8',
+    'primary_200' => '#E0B4B0',
+    'primary_400' => '#B5453F',
+    'primary' => '#8B2626',
+    'primary_600' => '#74201F',
+    'primary_700' => '#5C1A19',
+    'primary_900' => '#331010',
+    'primary_foreground' => '#FFFFFF',   // 8.74:1 on primary
 
     /*
-     * BRAND — forest green, sampled from the farm's own badge. CHROME ONLY.
+     * BRAND — the farm's green. CHROME ONLY.
      *
      * This is the identity colour: the sidebar surface, the mark, the top rail,
      * the auth panel, PDF chrome. It is never used on a button, a link, a status
-     * pill, or anything else interactive or semantic.
-     *
-     * Green rather than the comb red used before, because the client's badge is
-     * green and gold - the logo is the identity, not a colour picked beside it.
-     * It also removes a real ambiguity: this system uses red to mean "dead bird"
-     * and "overdue vaccination", so a red sidebar meant branded and urgent were
-     * the same colour on a screen whose job includes flagging mortality.
-     *
-     * Still chrome only - never a button, link or status pill. Peacock stays the
-     * interactive colour and DesignSystemGuardTest enforces the separation.
+     * pill, or anything else interactive or semantic — the guard test
+     * DesignSystemGuardTest::test_brand_red_is_never_used_on_an_interactive_element
+     * enforces that separation.
      */
-    'brand' => '#2F6B3C',
-    'brand_deep' => '#22331F',
-    'brand_deeper' => '#16240F',
-    'brand_foreground' => '#EDF3EA',
-    'brand_muted_fg' => '#BFCFBB',   // 8.24:1 on brand_deep
+    'brand' => '#486C2F',
+    'brand_deep' => '#243619',
+    'brand_deeper' => '#1A2711',
+    'brand_foreground' => '#EDF3EA',   // 11.51:1 on brand_deep
+    'brand_muted_fg' => '#BFCFBB',     //  7.95:1 on brand_deep
 
     /*
-     * SEMANTIC. Full foreground/background pairs, not single hues. The tinted
-     * backgrounds ARE the point — this is where "one accent only" is
-     * deliberately abandoned. Every pair is verified >= 4.5:1 by
-     * TokenContrastTest.
+     * ACCENT — the farm's orange. FILL ONLY, and that is a measurement rather
+     * than a stylistic preference.
+     *
+     * #EF6905 is 3.14:1 on white. That is below the 4.5 AA floor, so it cannot
+     * be a link, a label, a status word or any other text, at any size. It
+     * carries dark ink at 5.51:1, so it is used as a ground with
+     * accent_foreground on it, and as a chart or marker fill.
+     *
+     * It is also 1.16:1 against the ember band (#E8552E) — very nearly the same
+     * colour. So it is kept away from anything sitting near a bloodline tag,
+     * where the two would read as the same signal.
+     */
+    'accent' => '#EF6905',
+    'accent_foreground' => '#161C19',   // 5.51:1 on accent
+
+    /*
+     * SEMANTIC. Full foreground/background pairs, not single hues. Every pair
+     * is verified >= 4.5:1 by BrandTokensAreMirroredTest.
      */
     'success' => '#1F7A4D',      'success_bg' => '#E8F4EE',   // 4.71:1
 
     /*
-     * DEVIATION: the spec gave #A87409, which is 3.68:1 on its own tinted
-     * background — the one pair in the set that failed. Same hue, darker.
+     * The cream is the warning ground. The previous warning ink (#906308)
+     * measured 4.14:1 on it — just under the floor — so it was taken down to
+     * #755006, which reads 5.66:1 on the cream and 7.23:1 on white.
      */
-    'warning' => '#906308',      'warning_bg' => '#FBF3E2',   // 4.79:1
+    'warning' => '#755006',      'warning_bg' => '#F1E5A1',   // 5.66:1
 
-    'destructive' => '#B3261E',  'destructive_bg' => '#FBEAE9',  // 5.62:1
+    /*
+     * DESTRUCTIVE had to move. .btn-primary and .btn-danger are both solid
+     * fills carrying white text, so with primary now a deep red the old
+     * #B3261E sat 1.34:1 away from it — Save and Delete would have been the
+     * same button. #D32F2F is 1.76:1 from primary: the same danger convention,
+     * clearly brighter. Its ground was lightened to #FEF5F4 so the alert badge
+     * still clears 4.5:1.
+     */
+    'destructive' => '#D32F2F',  'destructive_bg' => '#FEF5F4',  // 4.64:1
     'info' => '#3C4A8A',         'info_bg' => '#ECEEF8',         // 7.15:1
 
-    'destructive_foreground' => '#FFFFFF',
+    'destructive_foreground' => '#FFFFFF',   // 4.98:1 on destructive
 
     /*
      * THE BAND PALETTE — the identity, and the one thing carried unchanged
-     * through the direction change.
+     * through every direction change.
      *
      * A gamefowl's identity is not a row id; it is a numbered anodised ring on
      * its leg. Colour in this system means bloodline and nothing else — status
      * uses the semantic pairs above, never these.
-     *
-     * All six carry white text at >= 4.5:1, which is what keeps the tag legible
-     * whichever bloodline it lands on. Asserted, not assumed.
      */
     'bands' => [
         'ember' => '#E8552E',
@@ -140,16 +174,12 @@ return [
     /*
      * The band tag picks its own text colour.
      *
-     * These six are brighter and more saturated than the previous anodised set,
-     * which is the point — but three of them (ember 3.64, jade 3.41, amber a
-     * hopeless 2.08) cannot carry white text. Darkening them to fit white would
-     * have walked amber straight back to the muted gold this direction replaced.
-     *
-     * So the hexes stay exactly as specified and the FOREGROUND is resolved per
-     * band: white where it clears 4.5:1, deep ink where it does not. Every tag
-     * then passes on its own terms, and the rule extends automatically to any
-     * colour the deterministic hash produces for an unanticipated bloodline.
-     * App\Support\BandTag::foreground() computes it; BandTagContrastTest asserts it.
+     * Three of the six (ember 3.64, jade 3.41, amber a hopeless 2.08) cannot
+     * carry white text. So the hexes stay exactly as specified and the
+     * FOREGROUND is resolved per band: white where it clears 4.5:1, deep ink
+     * where it does not. The rule extends automatically to any colour the
+     * deterministic hash produces for an unanticipated bloodline.
+     * App\Support\BandTag::foreground() computes it.
      */
     'band_foreground_light' => '#FFFFFF',
     'band_foreground_dark' => '#10201B',

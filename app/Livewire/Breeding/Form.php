@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Breeding;
 
+use App\Enums\BroodcockClass;
+use App\Enums\BroodcockStatus;
 use App\Enums\Sex;
 use App\Http\Requests\StoreBreedingRecordRequest;
 use App\Models\BreedingRecord;
@@ -21,6 +23,23 @@ final class Form extends Component
     public ?string $sire_id = null;
 
     public ?string $dam_id = null;
+
+    /**
+     * An outside parent - a bird the farm does not own, typed as a name
+     * instead of chosen from the list. Borrowed and visiting hens are normal
+     * practice here, and before this they could not be recorded at all.
+     */
+    public bool $sire_is_external = false;
+
+    public ?string $sire_external_name = null;
+
+    public ?string $sire_external_bloodline = null;
+
+    public bool $dam_is_external = false;
+
+    public ?string $dam_external_name = null;
+
+    public ?string $dam_external_bloodline = null;
 
     public ?string $mating_date = null;
 
@@ -66,7 +85,11 @@ final class Form extends Component
     /** @return array<string, mixed> */
     protected function rules(): array
     {
-        return StoreBreedingRecordRequest::rulesFor($this->record);
+        return StoreBreedingRecordRequest::rulesFor(
+            $this->record,
+            $this->sire_is_external,
+            $this->dam_is_external,
+        );
     }
 
     /** @return array<string, string> */
@@ -109,7 +132,10 @@ final class Form extends Component
     {
         $data = $this->validate();
 
-        // Cross-field rule that needs the parent models loaded.
+        // Cross-field rule that needs the parent models loaded. An outside
+        // parent has no row yet, so its id is still null here and the check
+        // skips it - which is right, because an outside bird has no hatch
+        // date on file to compare the mating against either.
         $validator = validator([], []);
         StoreBreedingRecordRequest::validateMatingDateAgainstParents($validator, $data);
 
@@ -126,6 +152,34 @@ final class Form extends Component
         $data['recorded_by'] = auth()->id();
 
         $saved = DB::transaction(function () use ($data): BreedingRecord {
+            // Outside parents are turned into real broodcock rows here, in the
+            // same transaction as the record itself. Two reasons: sire_id and
+            // dam_id stay foreign keys, so the pedigree tree keeps the branch
+            // above that bird; and a save that fails leaves no orphan bird
+            // behind.
+            if ($this->sire_is_external) {
+                $data['sire_id'] = $this->resolveExternalParent(
+                    Sex::Male,
+                    (string) $this->sire_external_name,
+                    $this->sire_external_bloodline,
+                );
+            }
+
+            if ($this->dam_is_external) {
+                $data['dam_id'] = $this->resolveExternalParent(
+                    Sex::Female,
+                    (string) $this->dam_external_name,
+                    $this->dam_external_bloodline,
+                );
+            }
+
+            // Form-only helpers; they are not columns on breeding_records.
+            unset(
+                $data['sire_is_external'], $data['dam_is_external'],
+                $data['sire_external_name'], $data['dam_external_name'],
+                $data['sire_external_bloodline'], $data['dam_external_bloodline'],
+            );
+
             if ($this->isEditing()) {
                 $this->record->update($data);
 
@@ -140,6 +194,34 @@ final class Form extends Component
             : 'The breeding record has been saved.');
 
         $this->redirectRoute('breeding.show', $saved, navigate: true);
+    }
+
+    /**
+     * Find or create the broodcock row standing in for a bird the farm does
+     * not own.
+     *
+     * Matched on name and sex, so entering the same borrowed hen on a second
+     * mating reuses her row instead of creating a duplicate - which is what
+     * keeps her one node in the pedigree rather than several.
+     */
+    private function resolveExternalParent(Sex $sex, string $name, ?string $bloodline): int
+    {
+        $bloodline = $bloodline !== null && trim($bloodline) !== '' ? trim($bloodline) : null;
+
+        $bird = Broodcock::query()->firstOrCreate(
+            [
+                'name' => trim($name),
+                'sex' => $sex->value,
+                'is_external' => true,
+            ],
+            [
+                'bloodline' => $bloodline,
+                'class' => BroodcockClass::Ordinary->value,
+                'status' => BroodcockStatus::Active->value,
+            ],
+        );
+
+        return (int) $bird->id;
     }
 
     /** @return Collection<int, Broodcock> */

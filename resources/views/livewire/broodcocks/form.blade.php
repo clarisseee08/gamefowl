@@ -56,13 +56,6 @@
                 </div>
 
                 <div>
-                    <label for="breed" class="label">Breed</label>
-                    <input id="breed" type="text" wire:model.blur="breed" list="breed-list"
-                           class="input mt-1 @error('breed') input-error @enderror">
-                    @error('breed') <p class="error">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
                     <label for="bloodline" class="label">Bloodline</label>
                     <input id="bloodline" type="text" wire:model.blur="bloodline"
                            class="input mt-1 @error('bloodline') input-error @enderror">
@@ -180,22 +173,11 @@
             </div>
         </section>
 
-        {{-- Housing and notes --}}
+        {{-- Notes --}}
         <section class="card p-8">
-            <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-foreground">Housing and Notes</h2>
+            <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-foreground">Notes</h2>
 
             <div class="mt-8 space-y-5">
-                <div>
-                    <label for="pen_id" class="label">Pen</label>
-                    <select id="pen_id" wire:model.blur="pen_id" class="input mt-1 @error('pen_id') input-error @enderror">
-                        <option value="">Not assigned to a pen</option>
-                        @foreach ($this->pens as $pen)
-                            <option value="{{ $pen->id }}">{{ $pen->code }} - {{ $pen->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('pen_id') <p class="error">{{ $message }}</p> @enderror
-                </div>
-
                 <div>
                     {{-- The farm tracks this on every bird, so it belongs on the
                          form rather than buried in notes. Defaults to not for

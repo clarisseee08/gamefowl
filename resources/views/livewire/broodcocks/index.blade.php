@@ -7,7 +7,6 @@
      */
     $optionalColumns = [
         'sex' => 'Sex',
-        'breed' => 'Breed',
         'bloodline' => 'Bloodline',
         'class' => 'Class',
         'status' => 'Status',
@@ -21,8 +20,6 @@
         ['key' => 'class', 'label' => 'Class', 'value' => $class],
         ['key' => 'sex', 'label' => 'Sex', 'value' => $sex],
         ['key' => 'bloodline', 'label' => 'Bloodline', 'value' => $bloodline],
-        ['key' => 'breed', 'label' => 'Breed', 'value' => $breed],
-        ['key' => 'pen', 'label' => 'Pen', 'value' => $pen],
     ])->filter(fn ($c) => $c['value'] !== '' && $c['value'] !== null);
 @endphp
 
@@ -127,7 +124,7 @@
                     id="search"
                     type="search"
                     wire:model.live.debounce.300ms="search"
-                    placeholder="Name, band number, breed or bloodline"
+                    placeholder="Name, band number or bloodline"
                     class="input mt-1"
                 >
             </div>
@@ -173,26 +170,6 @@
             </div>
 
             <div>
-                <label for="breed" class="label">Breed</label>
-                <select id="breed" wire:model.live="breed" class="input mt-1">
-                    <option value="">All breeds</option>
-                    @foreach ($this->breedOptions as $option)
-                        <option value="{{ $option }}">{{ $option }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            @if ($this->penOptions->isNotEmpty())
-                <div>
-                    <label for="pen" class="label">Pen</label>
-                    <select id="pen" wire:model.live="pen" class="input mt-1">
-                        <option value="">All pens</option>
-                        @foreach ($this->penOptions as $option)
-                            <option value="{{ $option->id }}">{{ $option->code }} - {{ $option->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            @endif
         </div>
 
         @if ($this->hasActiveFilters())
@@ -275,7 +252,6 @@
                                 'band_number' => 'Band Number',
                                 'name' => 'Name',
                                 'sex' => 'Sex',
-                                'breed' => 'Breed',
                                 'bloodline' => 'Bloodline',
                                 'class' => 'Class',
                                 'status' => 'Status',
@@ -284,13 +260,13 @@
                                 @php
                                     // Maps the sort key to the client-side visibility key so a
                                     // hidden column hides its header too.
-                                    $visKey = ['sex' => 'sex', 'breed' => 'breed', 'bloodline' => 'bloodline',
+                                    $visKey = ['sex' => 'sex', 'bloodline' => 'bloodline',
                                                'class' => 'class', 'status' => 'status', 'date_hatched' => 'age'][$column] ?? null;
                                 @endphp
                                 <th scope="col"
                                     @if ($visKey) x-show="cols.{{ $visKey }}" @endif
                                     class="px-4 py-2.5 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
-                                    @if (in_array($column, ['band_number','name','breed','bloodline','class','status','date_hatched'], true))
+                                    @if (in_array($column, ['band_number','name','bloodline','class','status','date_hatched'], true))
                                         {{-- `uppercase` is repeated here on purpose. Tailwind's
                                              preflight sets `button { text-transform: none }`, so a
                                              sort button silently drops the transform from its own
@@ -334,7 +310,6 @@
                                     </a>
                                 </td>
                                 <td x-show="cols.sex" class="whitespace-nowrap px-4 py-2.5 text-[14px] text-muted-foreground">{{ $bird->sex->label() }}</td>
-                                <td x-show="cols.breed" class="whitespace-nowrap px-4 py-2.5 text-[14px] text-muted-foreground">{{ $bird->breed ?? '—' }}</td>
                                 <td x-show="cols.bloodline" class="whitespace-nowrap px-4 py-2.5 text-[14px] text-muted-foreground">{{ $bird->bloodline ?? '—' }}</td>
                                 <td x-show="cols.class" class="whitespace-nowrap px-4 py-2.5">
                                     <span class="badge {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
