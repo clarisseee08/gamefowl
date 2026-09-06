@@ -1,0 +1,78 @@
+# Keeps the Render web service from cold-starting.
+#
+# Render's free instance type spins down after 15 minutes with no traffic, and
+# waking it takes 25-60 seconds - which, in front of a panel, reads as a broken
+# system rather than a sleeping one. This pings the health endpoint often enough
+# that it never gets to sleep during the hours anyone is likely to open it.
+#
+# THE SCHEDULE IS A BUDGET, NOT A PREFERENCE. This repository is private, so
+# Actions minutes are metered: GitHub rounds every job up to a whole minute, and
+# the free allowance is 2000 minutes a month. Every 12 minutes across a 12-hour
+# window is 60 runs a day, ~1800 minutes a month, which leaves room for the
+# Supabase job and the occasional manual run. Widening the window to 24 hours
+# would cost ~4300 minutes and blow the allowance twice over.
+#
+# It also stays inside Render's other free limit: 12 hours awake per day is
+# ~360 instance-hours a month against an allowance of 750. Pinging around the
+# clock would consume essentially all of it on this one service.
+#
+# HONEST LIMITATION: GitHub's scheduled workflows are best-effort and are
+# documented as such. Under load they are routinely late by 10-60 minutes, and
+# occasionally skipped. So this makes a cold start much less likely; it cannot
+# make it impossible. Before anything that matters, open the site by hand a few
+# minutes early rather than trusting this.
+name: Keep Render warm
+
+on:
+  schedule:
+    # Every 12 minutes, 00:00-11:59 UTC = 08:00-19:59 Manila.
+    - cron: '*/12 0-11 * * *'
+  workflow_dispatch:
+
+# A late run must never pile up behind an in-flight one.
+concurrency:
+  group: keep-render-warm
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    name: Ping the health endpoint
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+
+    steps:
+      - name: Wake the app
+        env:
+          # /up is Laravel's health route. It is the cheapest endpoint that
+          # still proves the PHP process is actually serving, rather than the
+          # platform returning a holding page.
+          URL: https://gfms-laravel.onrender.com/up
+        run: |
+          set -uo pipefail
+
+          # A cold instance can take the better part of a minute to answer, and
+          # the first attempt is the one that pays for the wake-up. Retry rather
+          # than failing the run over an expected slow start.
+          for attempt in 1 2 3 4 5 6; do
+            start=$(date +%s)
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 90 "$URL" || echo 000)
+            elapsed=$(( $(date +%s) - start ))
+
+            echo "attempt ${attempt}: HTTP ${code} in ${elapsed}s"
+
+            if [ "$code" = "200" ]; then
+              if [ "$elapsed" -gt 15 ]; then
+                echo "::notice::Instance was asleep - took ${elapsed}s to answer."
+              fi
+              exit 0
+            fi
+
+            sleep 15
+          done
+
+          echo "::error::${URL} never returned 200. The service may be down, \
+          suspended, or out of free instance-hours for the month."
+          exit 1
