@@ -67,7 +67,7 @@ return [
      */
     'system' => [
         'name' => env('APP_NAME', 'Digital Broodcock Farm Record Management System'),
-        'short' => env('GFMS_SHORT_NAME', 'DBFRMS'),
+        'short' => env('GFMS_SHORT_NAME', 'SSGuad Game Farm'),
         'tagline' => 'Broodcock farm records',
     ],
 

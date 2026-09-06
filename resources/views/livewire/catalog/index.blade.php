@@ -16,7 +16,7 @@
             <div class="col-span-2">
                 <label for="search" class="label">Search</label>
                 <input id="search" type="search" wire:model.live.debounce.300ms="search"
-                       placeholder="Name, band number or breed" class="input mt-1">
+                       placeholder="Name, band number or bloodline" class="input mt-1">
             </div>
 
             <div>
@@ -30,15 +30,6 @@
             </div>
 
             <div>
-                <label for="breed" class="label">Breed</label>
-                <select id="breed" wire:model.live="breed" class="input mt-1">
-                    <option value="">All breeds</option>
-                    @foreach ($this->breedOptions as $option)
-                        <option value="{{ $option }}">{{ $option }}</option>
-                    @endforeach
-                </select>
-            </div>
-
             <div class="col-span-2 lg:col-span-1">
                 <label for="sex" class="label">Type</label>
                 <select id="sex" wire:model.live="sex" class="input mt-1">
@@ -115,10 +106,6 @@
                             <div class="flex justify-between gap-3">
                                 <dt class="shrink-0 text-muted-foreground">Bloodline</dt>
                                 <dd class="truncate text-foreground">{{ $bird->bloodline ?: 'Not recorded' }}</dd>
-                            </div>
-                            <div class="flex justify-between gap-3">
-                                <dt class="shrink-0 text-muted-foreground">Breed</dt>
-                                <dd class="truncate text-foreground">{{ $bird->breed ?: 'Not recorded' }}</dd>
                             </div>
                             <div class="flex justify-between gap-3">
                                 <dt class="shrink-0 text-muted-foreground">Age</dt>

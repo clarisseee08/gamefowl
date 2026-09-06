@@ -44,7 +44,6 @@ class StoreBroodcockRequest extends FormRequest
                 Rule::unique('broodcocks', 'band_number')->ignore($selfId)->whereNull('deleted_at'),
             ],
             'name' => ['required', 'string', 'max:255'],
-            'breed' => ['nullable', 'string', 'max:120'],
             'bloodline' => ['nullable', 'string', 'max:120'],
             'class' => ['required', Rule::enum(BroodcockClass::class)],
             'sex' => ['required', Rule::enum(Sex::class)],
@@ -72,7 +71,6 @@ class StoreBroodcockRequest extends FormRequest
                 $selfId ? Rule::notIn([$selfId]) : '',
             ],
 
-            'pen_id' => ['nullable', 'integer', Rule::exists('pens', 'id')->whereNull('deleted_at')],
             'notes' => ['nullable', 'string', 'max:5000'],
         ];
     }
@@ -94,7 +92,6 @@ class StoreBroodcockRequest extends FormRequest
         return [
             'band_number' => 'band number',
             'name' => 'name',
-            'breed' => 'breed',
             'bloodline' => 'bloodline',
             'class' => 'class',
             'sex' => 'sex',
@@ -108,7 +105,6 @@ class StoreBroodcockRequest extends FormRequest
             'status' => 'status',
             'sire_id' => 'sire (father)',
             'dam_id' => 'dam (mother)',
-            'pen_id' => 'pen',
             'notes' => 'notes',
         ];
     }

@@ -67,38 +67,46 @@
     --color-card-foreground: #161c19;
     --color-popover-foreground: #161c19;
 
-    /* Brand — peacock, as a full scale rather than a single accent. */
-    --color-primary-50: #edf7f7;
-    --color-primary-100: #d2ecec;
-    --color-primary-200: #a6d8d9;
-    --color-primary-400: #35a0a6;
-    --color-primary: #0d6e75;
-    --color-primary-600: #0a5c62;
-    --color-primary-700: #08494e;
-    --color-primary-900: #052b2e;
+    /* Primary — the farm's deep red, as a full scale rather than a single
+       accent. THE INTERACTIVE COLOUR: buttons, links, active nav, focus rings.
+       Red carries this role rather than the green because it measures 8.74:1 on
+       card against the green's 6.07:1, and link text must clear the Console
+       7:1 floor. */
+    --color-primary-50: #faf0ef;
+    --color-primary-100: #f1dad8;
+    --color-primary-200: #e0b4b0;
+    --color-primary-400: #b5453f;
+    --color-primary: #8b2626;
+    --color-primary-600: #74201f;
+    --color-primary-700: #5c1a19;
+    --color-primary-900: #331010;
     --color-primary-foreground: #ffffff;
 
-    /* Brand — forest green, sampled from the farm's badge. CHROME ONLY: sidebar,
-       mark, top rail, auth panel, PDF. Never a button, link or status pill.
-       Green also keeps brand clear of the red this system uses for mortality
-       and overdue, so branded and urgent can never be confused. */
-    --color-brand: #2f6b3c;              /*  6.38:1 on card */
-    --color-brand-deep: #22331f;
-    --color-brand-deeper: #16240f;
-    --color-brand-foreground: #edf3ea;   /* 11.92:1 on brand-deep */
-    --color-brand-muted-fg: #bfcfbb;     /*  8.24:1 on brand-deep */
+    /* Brand — the farm's green. CHROME ONLY: sidebar, mark, top rail, auth
+       panel, PDF. Never a button, link or status pill; DesignSystemGuardTest
+       enforces that separation. */
+    --color-brand: #486c2f;              /*  6.07:1 on card - chrome, not text */
+    --color-brand-deep: #243619;
+    --color-brand-deeper: #1a2711;
+    --color-brand-foreground: #edf3ea;   /* 11.51:1 on brand-deep */
+    --color-brand-muted-fg: #bfcfbb;     /*  7.95:1 on brand-deep */
 
     /* Semantic — full pairs. The tinted grounds are the point; this is where
        "one accent only" is deliberately abandoned. */
     --color-success: #1f7a4d;
     --color-success-bg: #e8f4ee;
-    --color-warning: #906308;
-    --color-warning-bg: #fbf3e2;
-    --color-destructive: #b3261e;
-    --color-destructive-bg: #fbeae9;
+    --color-warning: #755006;            /* 5.66:1 on the cream ground */
+    --color-warning-bg: #f1e5a1;         /* the farm cream */
+    --color-destructive: #d32f2f;        /* 1.76:1 from primary, so Delete != Save */
+    --color-destructive-bg: #fef5f4;
     --color-destructive-foreground: #ffffff;
     --color-info: #3c4a8a;
     --color-info-bg: #eceef8;
+
+    /* Accent — the farm's orange. FILL ONLY: 3.14:1 on white is below the AA
+       floor, so it never carries text. It grounds dark ink at 5.51:1. */
+    --color-accent: #ef6905;
+    --color-accent-foreground: #161c19;
 
     /* Band palette — the identity. The ONLY chroma that means bloodline.
        Bright on purpose; the tag resolves its own foreground per band because
@@ -136,8 +144,8 @@
 }
 
 :root {
-    --ring-color: rgb(13 110 117 / 0.35);          /* primary @ 35% */
-    --ring-color-destructive: rgb(179 38 30 / 0.25); /* destructive @ 25% */
+    --ring-color: rgb(139 38 38 / 0.35);          /* primary @ 35% */
+    --ring-color-destructive: rgb(211 47 47 / 0.25); /* destructive @ 25% */
     --t-fast: 120ms;
     --t-base: 200ms;
     --t-enter: 260ms;

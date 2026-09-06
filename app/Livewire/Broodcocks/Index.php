@@ -8,10 +8,8 @@ use App\Enums\BroodcockClass;
 use App\Enums\BroodcockStatus;
 use App\Enums\Sex;
 use App\Models\Broodcock;
-use App\Models\Pen;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -36,12 +34,6 @@ final class Index extends Component
     #[Url(except: '')]
     public string $bloodline = '';
 
-    #[Url(except: '')]
-    public string $breed = '';
-
-    #[Url(except: '')]
-    public string $pen = '';
-
     #[Url(except: 'created_at')]
     public string $sortBy = 'created_at';
 
@@ -49,7 +41,7 @@ final class Index extends Component
     public string $sortDirection = 'desc';
 
     /** Columns a user is allowed to sort by - never interpolate raw input into SQL. */
-    private const SORTABLE = ['band_number', 'name', 'breed', 'bloodline', 'class', 'status', 'date_hatched', 'created_at'];
+    private const SORTABLE = ['band_number', 'name', 'bloodline', 'class', 'status', 'date_hatched', 'created_at'];
 
     public function mount(): void
     {
@@ -82,7 +74,7 @@ final class Index extends Component
 
     public function clearFilters(): void
     {
-        $this->reset(['search', 'status', 'class', 'sex', 'bloodline', 'breed', 'pen']);
+        $this->reset(['search', 'status', 'class', 'sex', 'bloodline']);
         $this->resetPage();
     }
 
@@ -92,9 +84,7 @@ final class Index extends Component
             || $this->status !== ''
             || $this->class !== ''
             || $this->sex !== ''
-            || $this->bloodline !== ''
-            || $this->breed !== ''
-            || $this->pen !== '';
+            || $this->bloodline !== '';
     }
 
     /**
@@ -103,7 +93,7 @@ final class Index extends Component
      */
     public function clearFilter(string $filter): void
     {
-        if (! in_array($filter, ['search', 'status', 'class', 'sex', 'bloodline', 'breed', 'pen'], true)) {
+        if (! in_array($filter, ['search', 'status', 'class', 'sex', 'bloodline'], true)) {
             return;
         }
 
@@ -197,17 +187,15 @@ final class Index extends Component
         $direction = $this->sortDirection === 'asc' ? 'asc' : 'desc';
 
         return Broodcock::query()
-            // Eager-loaded because the table renders pen name and primary
+            // Eager-loaded because the table renders the primary
             // photo per row. Without this the list issues 2 extra queries per
             // row - and each one is a round trip to Tokyo.
-            ->with(['pen:id,code,name', 'primaryPhoto'])
+            ->with(['primaryPhoto'])
             ->search($this->search)
             ->status($this->status)
             ->classGrade($this->class)
             ->sex($this->sex)
             ->bloodline($this->bloodline)
-            ->breed($this->breed)
-            ->pen($this->pen)
             ->orderBy($sortBy, $direction)
             ->paginate(config('gfms.per_page'));
     }
@@ -227,30 +215,6 @@ final class Index extends Component
             ->orderBy('bloodline')
             ->pluck('bloodline')
             ->all();
-    }
-
-    /** @return array<int, string> */
-    #[Computed]
-    public function breedOptions(): array
-    {
-        return Broodcock::query()
-            ->whereNotNull('breed')
-            ->distinct()
-            ->orderBy('breed')
-            ->pluck('breed')
-            ->all();
-    }
-
-    /** @return Collection<int, Pen> */
-    #[Computed]
-    public function penOptions()
-    {
-        // Customers never see pens, so do not even build the list for them.
-        if (! auth()->user()?->isInternal()) {
-            return collect();
-        }
-
-        return Pen::query()->orderBy('code')->get(['id', 'code', 'name']);
     }
 
     /** @return array<int, BroodcockStatus> */

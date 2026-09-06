@@ -11,7 +11,6 @@ use App\Enums\Sex;
 use App\Http\Requests\StoreBroodcockRequest;
 use App\Models\Broodcock;
 use App\Models\BroodcockPhoto;
-use App\Models\Pen;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -49,8 +48,6 @@ final class Form extends Component
 
     public string $name = '';
 
-    public ?string $breed = null;
-
     public ?string $bloodline = null;
 
     public string $class = '';
@@ -77,8 +74,6 @@ final class Form extends Component
 
     public ?string $dam_id = null;
 
-    public ?string $pen_id = null;
-
     public ?string $notes = null;
 
     public function mount(?Broodcock $broodcock = null): void
@@ -91,7 +86,6 @@ final class Form extends Component
                 'for_sale' => (bool) $broodcock->for_sale,
                 'band_number' => $broodcock->band_number,
                 'name' => $broodcock->name,
-                'breed' => $broodcock->breed,
                 'bloodline' => $broodcock->bloodline,
                 'class' => $broodcock->class->value,
                 'sex' => $broodcock->sex->value,
@@ -105,7 +99,6 @@ final class Form extends Component
                 'status' => $broodcock->status->value,
                 'sire_id' => $broodcock->sire_id ? (string) $broodcock->sire_id : null,
                 'dam_id' => $broodcock->dam_id ? (string) $broodcock->dam_id : null,
-                'pen_id' => $broodcock->pen_id ? (string) $broodcock->pen_id : null,
                 'notes' => $broodcock->notes,
             ]);
 
@@ -170,9 +163,9 @@ final class Form extends Component
 
         // Normalise empty strings from <select> and <input> to real nulls, so
         // "no sire selected" is stored as NULL rather than 0 or ''.
-        foreach (['band_number', 'breed', 'bloodline', 'date_hatched', 'date_acquired', 'weight',
+        foreach (['band_number', 'bloodline', 'date_hatched', 'date_acquired', 'weight',
             'color', 'comb_type', 'leg_color', 'distinguishing_marks', 'sire_id', 'dam_id',
-            'pen_id', 'notes'] as $nullable) {
+            'notes'] as $nullable) {
             if (($data[$nullable] ?? null) === '') {
                 $data[$nullable] = null;
             }
@@ -235,13 +228,6 @@ final class Form extends Component
             })
             ->orderBy('name')
             ->get(['id', 'name', 'band_number', 'bloodline']);
-    }
-
-    /** @return Collection<int, Pen> */
-    #[Computed]
-    public function pens(): Collection
-    {
-        return Pen::query()->orderBy('code')->get(['id', 'code', 'name']);
     }
 
     /** @return array<int, BroodcockClass> */

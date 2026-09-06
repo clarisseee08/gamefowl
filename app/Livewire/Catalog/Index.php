@@ -45,9 +45,6 @@ final class Index extends Component
     public string $bloodline = '';
 
     #[Url(except: '')]
-    public string $breed = '';
-
-    #[Url(except: '')]
     public string $sex = '';
 
     #[Url(except: '')]
@@ -67,14 +64,14 @@ final class Index extends Component
 
     public function clearFilters(): void
     {
-        $this->reset(['search', 'bloodline', 'breed', 'sex', 'class']);
+        $this->reset(['search', 'bloodline', 'sex', 'class']);
         $this->resetPage();
     }
 
     public function hasActiveFilters(): bool
     {
         return $this->search !== '' || $this->bloodline !== ''
-            || $this->breed !== '' || $this->sex !== '' || $this->class !== '';
+            || $this->sex !== '' || $this->class !== '';
     }
 
     /** @return LengthAwarePaginator<int, Broodcock> */
@@ -90,7 +87,6 @@ final class Index extends Component
             ->onFarm()
             ->search($this->search)
             ->bloodline($this->bloodline)
-            ->breed($this->breed)
             ->sex($this->sex)
             ->classGrade($this->class)
             ->orderBy('name')
@@ -107,19 +103,6 @@ final class Index extends Component
             ->distinct()
             ->orderBy('bloodline')
             ->pluck('bloodline')
-            ->all();
-    }
-
-    /** @return array<int, string> */
-    #[Computed]
-    public function breedOptions(): array
-    {
-        return Broodcock::query()
-            ->onFarm()
-            ->whereNotNull('breed')
-            ->distinct()
-            ->orderBy('breed')
-            ->pluck('breed')
             ->all();
     }
 

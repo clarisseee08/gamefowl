@@ -117,7 +117,7 @@ final class SystemNameTest extends TestCase
         // Matches the thesis document exactly. If the paper is ever retitled,
         // this test is the thing that forces the application to follow.
         $this->assertSame('Digital Broodcock Farm Record Management System', $config['system']['name']);
-        $this->assertSame('DBFRMS', $config['system']['short']);
+        $this->assertSame('SSGuad Game Farm', $config['system']['short']);
         $this->assertNotSame('Laravel', $config['system']['name']);
     }
 }

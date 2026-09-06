@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Health;
 
 use App\Enums\HealthRecordType;
+use App\Livewire\Health\BroodcockHealthHistory;
 use App\Livewire\Health\Form;
 use App\Livewire\Health\Index;
 use App\Livewire\Health\Schedule;
@@ -262,5 +263,35 @@ final class HealthRecordTest extends TestCase
             ->test(Index::class)
             ->assertOk()
             ->assertSee('No health records', escape: false);
+    }
+
+    // -----------------------------------------------------------------
+    // The health panel on a bird page
+    // -----------------------------------------------------------------
+
+    /**
+     * The panel could add a record but not correct one, while the farm-wide
+     * Health list could do both - so a keeper who spotted a typo on the bird
+     * they were looking at had to go and find the row somewhere else.
+     */
+    public function test_the_health_panel_on_a_bird_offers_edit_on_each_row(): void
+    {
+        $bird = Broodcock::factory()->create();
+        $record = HealthRecord::factory()->for($bird)->create();
+
+        Livewire::actingAs(User::factory()->staff()->create())
+            ->test(BroodcockHealthHistory::class, ['broodcock' => $bird])
+            ->assertSee('Edit')
+            ->assertSee(route('health.edit', $record), escape: false);
+    }
+
+    public function test_a_customer_sees_no_edit_link_on_the_health_panel(): void
+    {
+        $bird = Broodcock::factory()->create();
+        $record = HealthRecord::factory()->for($bird)->create();
+
+        Livewire::actingAs(User::factory()->customer()->create())
+            ->test(BroodcockHealthHistory::class, ['broodcock' => $bird])
+            ->assertDontSee(route('health.edit', $record), escape: false);
     }
 }
