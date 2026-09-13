@@ -5,12 +5,31 @@
 # system rather than a sleeping one. This pings the health endpoint often enough
 # that it never gets to sleep during the hours anyone is likely to open it.
 #
-# THE SCHEDULE IS A BUDGET, NOT A PREFERENCE. This repository is private, so
-# Actions minutes are metered: GitHub rounds every job up to a whole minute, and
-# the free allowance is 2000 minutes a month. Every 12 minutes across a 12-hour
-# window is 60 runs a day, ~1800 minutes a month, which leaves room for the
-# Supabase job and the occasional manual run. Widening the window to 24 hours
-# would cost ~4300 minutes and blow the allowance twice over.
+# THE SCHEDULE IS A BUDGET, NOT A PREFERENCE, AND 24/7 IS NOT BUYABLE HERE.
+#
+# This repository is private, so Actions minutes are metered, and GitHub rounds
+# every job UP to a whole minute - a two-second curl is billed as 60 seconds.
+# That is what makes Actions a poor fit for a heartbeat.
+#
+#   free allowance ............................. 2000 min/month
+#   less keep-supabase-awake (~1/day) ...........  -30
+#   less CI (~20 runs at ~5 min) ................ -100
+#   available for this workflow ................. 1870
+#
+#   Render sleeps after 15 min idle, so >= 5 pings/hour are required.
+#   5 runs x 1 min x 30 days = 150 min per HOUR of daily coverage.
+#   1870 / 150 = 12.5 hours of coverage per day, and that is the ceiling.
+#
+# So 12 hours is not a cautious choice, it is very nearly the maximum. 24-hour
+# coverage would cost 3600 min/month - roughly twice the entire allowance.
+#
+# IF ROUND-THE-CLOCK COVERAGE IS WANTED, IT DOES NOT COME FROM HERE. Point a
+# free external pinger (cron-job.org, UptimeRobot) at /up every 5-10 minutes
+# and delete this workflow. Those services exist to do exactly this, bill
+# nothing, and are not subject to the per-minute rounding that makes this file
+# expensive. Render's own free tier allows 750 instance-hours a month against
+# the 720 a month of continuous uptime, so 24/7 is affordable on Render's side
+# - the constraint is entirely GitHub's billing model.
 #
 # It also stays inside Render's other free limit: 12 hours awake per day is
 # ~360 instance-hours a month against an allowance of 750. Pinging around the
@@ -25,8 +44,20 @@ name: Keep Render warm
 
 on:
   schedule:
-    # Every 12 minutes, 00:00-11:59 UTC = 08:00-19:59 Manila.
-    - cron: '*/12 0-11 * * *'
+    # Every 12 minutes, 03:00-14:59 UTC = 11:00-22:59 Manila.
+    #
+    # THE WINDOW IS THE SETTING THAT MATTERS, not the interval. This used to
+    # run 08:00-19:59 Manila and the service was found cold at 22:03 - two
+    # hours after the pinger had stopped for the day. Pinging more often
+    # inside the old window would not have helped at all: at 12-minute
+    # intervals the service is already never idle for the 15 minutes Render
+    # needs before it spins down, so extra runs buy nothing and cost the same
+    # as the useful ones.
+    #
+    # Shifted rather than widened, because widening is not affordable - see
+    # the budget note above. Move these hours to match when the farm actually
+    # opens the site; the cost is identical wherever the 12 hours sit.
+    - cron: '*/12 3-14 * * *'
   workflow_dispatch:
 
 # A late run must never pile up behind an in-flight one.
