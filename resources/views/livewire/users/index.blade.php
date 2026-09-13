@@ -15,7 +15,7 @@
 
     @if ($statusMessage)
         <div class="mb-6 flex items-start justify-between gap-4 rounded-[4px] bg-success-bg px-4 py-3" role="status">
-            <p class="text-[15px] leading-snug text-success">{{ $statusMessage }}</p>
+            <p class="text-[15px] leading-snug text-foreground">{{ $statusMessage }}</p>
             <button type="button" wire:click="dismissStatus"
                     class="-my-2 shrink-0 px-1 text-[13px] font-medium text-success hover:underline">
                 Dismiss
@@ -81,10 +81,10 @@
                         <dd class="text-[15px] text-foreground">{{ $person->role->label() }}</dd>
 
                         <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Position</dt>
-                        <dd class="text-[15px] text-muted-foreground">{{ $person->position ?? '—' }}</dd>
+                        <dd class="text-[15px] text-muted-foreground">{{ $person->position ?? 'Not recorded' }}</dd>
 
                         <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Contact</dt>
-                        <dd class="datum text-[15px] text-muted-foreground">{{ $person->contact_number ?? '—' }}</dd>
+                        <dd class="datum text-[15px] text-muted-foreground">{{ $person->contact_number ?? 'Not recorded' }}</dd>
                     </dl>
 
                     @canany(['update', 'deactivate'], $person)
@@ -138,8 +138,8 @@
                                 </td>
                                 <td class="datum whitespace-nowrap px-4 py-3 text-[15px] text-muted-foreground">{{ $person->email }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-[15px] text-foreground">{{ $person->role->label() }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 text-[15px] text-muted-foreground">{{ $person->position ?? '—' }}</td>
-                                <td class="datum whitespace-nowrap px-4 py-3 text-[15px] text-muted-foreground">{{ $person->contact_number ?? '—' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 text-[15px] text-muted-foreground">{{ $person->position ?? 'Not recorded' }}</td>
+                                <td class="datum whitespace-nowrap px-4 py-3 text-[15px] text-muted-foreground">{{ $person->contact_number ?? 'Not recorded' }}</td>
                                 <td class="whitespace-nowrap px-4 py-3">
                                     @if ($person->is_active)
                                         <span class="badge badge-ok">Active</span>

@@ -48,7 +48,7 @@
     {{-- A Livewire update does not re-render the layout, so the confirmation
          of a delete has to be shown from inside the component. --}}
     @if ($status)
-        <div class="mb-6 rounded-[4px] bg-success-bg px-4 py-3 text-[15px] text-success" role="status">
+        <div class="mb-6 rounded-[4px] bg-success-bg px-4 py-3 text-[15px] text-foreground" role="status">
             {{ $status }}
         </div>
     @endif
@@ -316,7 +316,7 @@
                         <strong class="datum font-medium text-foreground">{{ $this->confirmingRecord->date_of_death->format('d M Y') }}</strong>
                         ({{ $this->confirmingRecord->cause_of_death }}) will be removed from the register.
                     </p>
-                    <p class="rounded-[4px] bg-destructive-bg px-3 py-2.5 text-destructive">
+                    <p class="rounded-[4px] bg-destructive-bg px-3 py-2.5 text-foreground">
                         {{ $this->confirmingRecord->broodcock?->name ?? 'The bird' }}
                         will be put back on the <strong class="font-medium">active</strong> list, as if the death had never
                         been recorded. Do this only if the death was entered by mistake.

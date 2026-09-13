@@ -11,9 +11,9 @@
 <div>
     @if ($statusMessage)
         <div class="mb-8 flex items-start justify-between gap-4 rounded-[4px] border border-border bg-success-bg px-4 py-3" role="status">
-            <p class="text-[15px] leading-snug text-success">{{ $statusMessage }}</p>
+            <p class="text-[15px] leading-snug text-foreground">{{ $statusMessage }}</p>
             <button type="button" wire:click="dismissStatus"
-                    class="-my-2 shrink-0 text-[13px] font-medium text-success underline underline-offset-2">
+                    class="-my-2 shrink-0 text-[13px] font-medium text-foreground underline underline-offset-2">
                 Dismiss
             </button>
         </div>
@@ -169,7 +169,7 @@
 
                                 <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
                                     <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Product</span>
-                                    <p class="text-[15px] leading-snug text-foreground">{{ $record->product_name ?: '—' }}</p>
+                                    <p class="text-[15px] leading-snug text-foreground">{{ $record->product_name ?: 'Not recorded' }}</p>
                                     @if ($record->dosage)
                                         <p class="mt-0.5 text-[12px] text-muted-foreground">Dosage: <span class="datum">{{ $record->dosage }}</span></p>
                                     @endif
@@ -180,7 +180,7 @@
                                          never the farm's private notes - the Policy decides. --}}
                                     @can('viewRemarks', $record)
                                         @if ($record->remarks)
-                                            <p class="mt-1.5 max-w-[40ch] border-l-2 border-border pl-2 text-[12px] leading-snug text-muted-foreground"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
+                                            <p class="mt-1.5 max-w-[40ch] border-l border-border pl-2 text-[12px] leading-snug text-muted-foreground"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
                                         @endif
                                     @endcan
                                 </td>

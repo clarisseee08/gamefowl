@@ -87,12 +87,21 @@
                                 <td class="px-6 py-4 text-sm font-medium text-foreground">
                                     {{ Str::headline($entry->report_type) }}
                                 </td>
+                                {{-- badge-neutral rather than the three utilities it
+                                     resolves to: the class vocabulary is a contract, and
+                                     an open-coded badge is the one that gets missed when
+                                     the badge is restyled.
+
+                                     strtoupper is applied to the format and NOT to the
+                                     fallback. It exists to turn "csv" into "CSV"; wrapped
+                                     around the whole expression it also turned a missing
+                                     format into a badge shouting NOT RECORDED. --}}
                                 <td class="px-6 py-4">
-                                    <span class="badge bg-background text-muted-foreground ring-border">
-                                        {{ strtoupper($entry->format ?? '—') }}
+                                    <span class="badge badge-neutral">
+                                        {{ $entry->format ? strtoupper($entry->format) : 'Not recorded' }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-muted-foreground">{{ number_format((int) $entry->row_count) }}</td>
+                                <td class="datum px-6 py-4 text-sm text-muted-foreground">{{ number_format((int) $entry->row_count) }}</td>
                                 <td class="px-6 py-4 text-xs text-muted-foreground">
                                     @if (empty($entry->parameters))
                                         <span class="text-muted-foreground">No filters (all records)</span>

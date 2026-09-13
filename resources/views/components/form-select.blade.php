@@ -199,10 +199,10 @@
             role="listbox"
             aria-labelledby="{{ $id }}-label"
             x-bind:aria-activedescendant="active > -1 ? '{{ $id }}-opt-' + active : null"
-            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter="transition-[opacity,transform] ease-out duration-200"
             x-transition:enter-start="opacity-0 -translate-y-1"
             x-transition:enter-end="opacity-100 translate-y-0"
-            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave="transition-[opacity,transform] ease-in duration-150"
             x-transition:leave-start="opacity-100 translate-y-0"
             x-transition:leave-end="opacity-0 -translate-y-1"
             class="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-72 overflow-y-auto rounded-[var(--radius-md)]

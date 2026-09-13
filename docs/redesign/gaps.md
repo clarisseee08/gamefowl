@@ -2,9 +2,16 @@
 
 One line per gap: route, what was needed, what was used instead.
 
-- `/` — the page needs a second `<h1>`-free catalogue: `catalog.browse` renders its own
+- ~~`/` — the page needs a second `<h1>`-free catalogue: `catalog.browse` renders its own
   `<h1>` ("Our Gamefowl"), so `/` ships two `<h1>`s. Left alone; the heading belongs to
-  the `/catalog` migration, not the landing view.
+  the `/catalog` migration, not the landing view.~~
+  **CLOSED.** `Catalog\Browse` takes a `headingLevel` prop (allow-listed to `h1`/`h2`), so
+  it keeps its `<h1>` when routed at `/catalog` and renders `<h2>` when embedded under the
+  farm's nameplate on `/`. Only the tag changes; size, weight and the brand marker come
+  from the classes, so both renderings look identical. `OneHeadingPerPageTest` now walks
+  every public and console page and fails on any page with a count other than one.
+  Deferring it was the mistake worth recording: written down is not fixed, and this one
+  survived on the public front page for the whole migration because the note existed.
 - `/` — the Catalog surface is specified photo-led, but `Landing\Index` exposes no data
   (no farm photograph, no stock figure), so the masthead is type-only. Adding either
   needs a component change, which is out of scope for a presentation migration.

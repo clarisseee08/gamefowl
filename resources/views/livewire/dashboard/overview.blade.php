@@ -200,7 +200,7 @@
                     @endphp
                     <div class="flex w-16 flex-col items-center gap-2">
                         <span class="datum text-[12px] font-medium {{ $month['fertility'] !== null ? 'text-muted-foreground' : 'text-muted-foreground' }}">
-                            {{ $month['fertility'] !== null ? $month['fertility'].'%' : '—' }}
+                            {{ $month['fertility'] !== null ? $month['fertility'].'%' : 'No data' }}
                         </span>
 
                         <div class="flex w-full items-end justify-center" style="height: {{ $track }}px">
@@ -237,18 +237,26 @@
             </div>
 
             @if ($this->overdueVaccinations->isEmpty() && $this->upcomingVaccinations->isEmpty())
-                <p class="mt-4 rounded-lg bg-success-bg p-4 text-sm text-success">
+                <p class="mt-4 rounded-lg bg-success-bg p-4 text-sm text-foreground">
                     Nothing is overdue and nothing is due in the next
                     {{ config('gfms.vaccination_warning_days') }} days. The flock is up to date.
                 </p>
             @else
                 <ul class="mt-4 divide-y divide-border">
-                    {{-- Overdue rows carry a severity stripe. Without it, "141 days
-                         overdue" and "due in 29 days" differ only by the wash on a pill,
-                         and on a phone in daylight that difference disappears - which is
-                         exactly when this list is read. --}}
+                    {{-- THE SEVERITY STRIPE IS GONE, and the comment that defended it
+                         was describing a list that no longer exists.
+
+                         It argued that without a coloured left rule, "141 days overdue"
+                         and "due in 29 days" differ only by the wash on a pill - which
+                         would be a fair point about a MIXED list. This one is
+                         Overview::overdueVaccinations, which is scopeOverdue() and
+                         nothing else, so every row carried the same stripe and it
+                         separated nothing from anything. A mark that every item has is
+                         decoration by definition; the section heading already says
+                         these are overdue, and each row states how late it is in
+                         words. --}}
                     @foreach ($this->overdueVaccinations as $record)
-                        <li class="flex items-center justify-between gap-3 border-l-2 border-destructive py-2.5 pl-3">
+                        <li class="flex items-center justify-between gap-3 py-2.5">
                             <div class="min-w-0">
                                 <p class="truncate text-[15px] font-medium text-foreground">
                                     {{ $record->broodcock?->name ?? 'Unknown bird' }}
@@ -258,7 +266,7 @@
                                     @if ($record->product_name) &middot; {{ $record->product_name }} @endif
                                 </p>
                             </div>
-                            <span class="badge datum shrink-0 bg-destructive-bg text-destructive ring-destructive/20">
+                            <span class="badge badge-alert datum shrink-0">
                                 {{ abs((int) $record->daysUntilDue()) }} days overdue
                             </span>
                         </li>
@@ -275,7 +283,7 @@
                                     @if ($record->product_name) &middot; {{ $record->product_name }} @endif
                                 </p>
                             </div>
-                            <span class="badge shrink-0 bg-warning-bg text-warning ring-warning/20">
+                            <span class="badge badge-warn shrink-0">
                                 due in {{ (int) $record->daysUntilDue() }} days
                             </span>
                         </li>
@@ -291,7 +299,7 @@
             </div>
 
             @if ($this->recentMortality->isEmpty())
-                <p class="mt-4 rounded-lg bg-success-bg p-4 text-sm text-success">
+                <p class="mt-4 rounded-lg bg-success-bg p-4 text-sm text-foreground">
                     No deaths have been recorded.
                 </p>
             @else

@@ -204,7 +204,7 @@
                     </div>
                 </dl>
 
-                <p class="mt-4 rounded-[4px] bg-destructive-bg px-3 py-2.5 text-[15px] leading-relaxed text-destructive">
+                <p class="mt-4 rounded-[4px] bg-destructive-bg px-3 py-2.5 text-[15px] leading-relaxed text-foreground">
                     {{ $this->selectedBird->name }} will be marked as <strong class="font-medium">deceased</strong> and
                     removed from the active flock and from breeding. Only the farm owner can undo this.
                 </p>

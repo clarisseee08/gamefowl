@@ -299,6 +299,102 @@
         </section>
 
         {{-- 7 ─ RATIONALE --}}
+        {{-- ---------------------------------------------------------------
+             THE PRIMITIVES.
+
+             These eight were built as a layer and then referenced by nothing -
+             not one view, and not this gallery either, which is the page
+             CLAUDE.md describes as "every component in every state on one page".
+             A primitive nobody can see is indistinguishable from one that does
+             not work, and the next person to need a progress bar writes a
+             ninth one.
+
+             So they are exercised here rather than deleted. The alternative was
+             removing a deliberate layer because the reference page had not
+             caught up with it.
+        --------------------------------------------------------------- --}}
+        <section>
+            <h2 class="text-[19px] font-semibold text-foreground">Primitives</h2>
+            <p class="mt-2 max-w-[68ch] text-[14px] leading-relaxed text-muted-foreground">
+                Available to any view. Each one already resolves its own tokens, contrast
+                and ARIA, so reaching for it is cheaper than rebuilding it.
+            </p>
+
+            <div class="mt-5 grid gap-4 lg:grid-cols-2">
+                <x-info-card title="Info card" description="A titled panel for content that is not a single figure.">
+                    <p class="text-[15px] leading-relaxed text-muted-foreground">
+                        The container this row of examples is sitting in.
+                    </p>
+                </x-info-card>
+
+                <x-info-card title="Avatar" description="A photo when there is one, initials when there is not.">
+                    <div class="flex items-center gap-4">
+                        <x-avatar name="Salvador Guadalupe" size="sm" />
+                        <x-avatar name="Salvador Guadalupe" size="md" />
+                        <x-avatar name="Salvador Guadalupe" size="lg" />
+                    </div>
+                </x-info-card>
+
+                <x-info-card title="Progress" description="A proportion, with the figure stated in text beside it.">
+                    <div class="space-y-4">
+                        <x-progress :value="14" label="Pedigree recorded" />
+                        <x-progress :value="81" label="Fertility rate" />
+                    </div>
+                </x-info-card>
+
+                <x-info-card title="Switch" description="A setting that applies immediately, with no Save.">
+                    <x-switch id="design-switch" label="Only show birds that are for sale"
+                              help="Applies as soon as it is flipped." />
+                </x-info-card>
+
+                <x-info-card title="Breadcrumb" description="Where this page sits. The last entry is the current page.">
+                    <x-breadcrumb :items="[
+                        ['label' => 'Broodcocks', 'href' => route('broodcocks.index')],
+                        ['label' => 'Tanikala', 'href' => '#'],
+                    ]" />
+                </x-info-card>
+
+                <x-info-card title="Separator" description="A hairline rule - elevation here is a rule, never a shadow.">
+                    <div class="flex items-center gap-4 text-[14px] text-muted-foreground">
+                        <span>Before</span>
+                        <x-separator orientation="vertical" class="h-5" />
+                        <span>After</span>
+                    </div>
+                    <x-separator class="mt-4" />
+                </x-info-card>
+            </div>
+
+            <h3 class="mt-7 text-[11px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">
+                Sort control
+            </h3>
+            <div class="card mt-3 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-muted">
+                        <tr>
+                            <x-sort-control field="band_number" label="Band Number" current="band_number" direction="asc" />
+                            <x-sort-control field="name" label="Name" current="band_number" />
+                            <x-sort-control field="weight" label="Weight" current="band_number" align="right" />
+                        </tr>
+                    </thead>
+                    <tbody class="bg-card">
+                        <tr>
+                            <td class="datum px-4 py-3 text-[14px] text-foreground">KL-4003</td>
+                            <td class="px-4 py-3 text-[14px] text-foreground">Tanikala</td>
+                            <td class="datum px-4 py-3 text-right text-[14px] text-foreground">2.10 kg</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="mt-7 text-[11px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">
+                Empty state
+            </h3>
+            <div class="card mt-3">
+                <x-empty-state title="No deaths have been recorded yet"
+                               description="That is worth noting. If a bird has died, click Record a Death." />
+            </div>
+        </section>
+
         <section>
             <h2 class="text-[19px] font-semibold text-foreground">Why it looks like this</h2>
             <div class="card mt-5 space-y-3.5 p-6 text-[14px] leading-relaxed text-muted-foreground">

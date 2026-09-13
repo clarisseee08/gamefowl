@@ -98,34 +98,51 @@
                     <tbody class="divide-y divide-border bg-card">
                         @foreach ($this->records as $record)
                             <tr class="group row-hover">
-                                <td class="whitespace-nowrap px-6 py-4 text-sm text-foreground">
+                                {{-- Every figure in this row is .datum: the date, the three
+                                     egg counts and both rates. They were plain text, which
+                                     means eight columns of digits that do not line up
+                                     down the table - the one thing this design system
+                                     says a registry must never look like. --}}
+                                <td class="datum whitespace-nowrap px-6 py-4 text-sm text-foreground">
                                     {{ $record->mating_date->format('j M Y') }}
                                 </td>
-                                <td class="px-6 py-4 text-sm">
-                                    <a href="{{ route('broodcocks.show', $record->sire_id) }}" wire:navigate class="text-primary hover:underline">
-                                        {{ $record->sire->name }}
-                                    </a>
-                                    <span class="block text-xs text-muted-foreground">{{ $record->sire->band_number ?? 'No band' }}</span>
+
+                                {{-- Each parent carries its band, the same object the
+                                     catalogue and the bird page use. It was the raw
+                                     band_number with 'No band' behind a null coalesce -
+                                     a third phrasing of what x-band-tag already states
+                                     as "Not yet banded", and the identifier a keeper
+                                     actually reads was the smallest thing in the cell. --}}
+                                @foreach ([[$record->sire_id, $record->sire], [$record->dam_id, $record->dam]] as [$parentId, $parent])
+                                    <td class="px-6 py-4 text-sm">
+                                        <a href="{{ route('broodcocks.show', $parentId) }}" wire:navigate
+                                           class="group inline-block">
+                                            <span class="block text-foreground group-hover:underline">{{ $parent->name }}</span>
+                                            <span class="mt-1 block">
+                                                <x-band-tag :bloodline="$parent->bloodline" :band="$parent->band_number" size="xs" />
+                                            </span>
+                                        </a>
+                                    </td>
+                                @endforeach
+
+                                <td class="datum px-6 py-4 text-sm text-muted-foreground">{{ $record->eggs_set }}</td>
+                                <td class="datum px-6 py-4 text-sm text-muted-foreground">{{ $record->eggs_fertile }}</td>
+                                <td class="datum px-6 py-4 text-sm text-muted-foreground">{{ $record->eggs_hatched }}</td>
+                                <td class="datum px-6 py-4 text-sm font-medium text-foreground">
+                                    {{ $record->fertilityRate() !== null ? $record->fertilityRate().'%' : 'No data' }}
                                 </td>
-                                <td class="px-6 py-4 text-sm">
-                                    <a href="{{ route('broodcocks.show', $record->dam_id) }}" wire:navigate class="text-primary hover:underline">
-                                        {{ $record->dam->name }}
-                                    </a>
-                                    <span class="block text-xs text-muted-foreground">{{ $record->dam->band_number ?? 'No band' }}</span>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-muted-foreground">{{ $record->eggs_set }}</td>
-                                <td class="px-6 py-4 text-sm text-muted-foreground">{{ $record->eggs_fertile }}</td>
-                                <td class="px-6 py-4 text-sm text-muted-foreground">{{ $record->eggs_hatched }}</td>
-                                <td class="px-6 py-4 text-sm font-medium text-foreground">
-                                    {{ $record->fertilityRate() !== null ? $record->fertilityRate().'%' : '—' }}
-                                </td>
-                                <td class="px-6 py-4 text-sm font-medium text-foreground">
-                                    {{ $record->hatchRate() !== null ? $record->hatchRate().'%' : '—' }}
+                                <td class="datum px-6 py-4 text-sm font-medium text-foreground">
+                                    {{ $record->hatchRate() !== null ? $record->hatchRate().'%' : 'No data' }}
                                 </td>
                                 <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
                                     @if ($record->hasUnregisteredOffspring())
-                                        <span class="badge bg-warning-bg text-warning ring-warning/20">
-                                            {{ $record->unregisteredOffspring() }} to register
+                                        {{-- badge-warn, not the three utilities it resolves
+                                             to. The class vocabulary is a contract shared
+                                             with five PHP enums; open-coding a badge here
+                                             means a restyle reaches every other badge in
+                                             the application except this one. --}}
+                                        <span class="badge badge-warn">
+                                            <span class="datum">{{ $record->unregisteredOffspring() }}</span>&nbsp;to register
                                         </span>
                                     @endif
                                     <a href="{{ route('breeding.show', $record) }}" wire:navigate class="ml-2 font-medium text-primary hover:underline">
