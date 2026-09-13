@@ -80,13 +80,13 @@
                     {{-- Flash messages. Both say what actually happened, never
                          "Operation completed". --}}
                     @if (session('success'))
-                        <div class="mb-5 rounded-[var(--radius-md)] bg-success-bg px-4 py-3 text-[15px] text-success" role="status">
+                        <div class="mb-5 rounded-[var(--radius-md)] bg-success-bg px-4 py-3 text-[15px] text-foreground" role="status">
                             {{ session('success') }}
                         </div>
                     @endif
 
                     @if (session('error'))
-                        <div class="mb-5 rounded-[var(--radius-md)] bg-destructive-bg px-4 py-3 text-[15px] text-destructive" role="alert">
+                        <div class="mb-5 rounded-[var(--radius-md)] bg-destructive-bg px-4 py-3 text-[15px] text-foreground" role="alert">
                             {{ session('error') }}
                         </div>
                     @endif

@@ -237,7 +237,7 @@
             </div>
 
             @if ($this->overdueVaccinations->isEmpty() && $this->upcomingVaccinations->isEmpty())
-                <p class="mt-4 rounded-lg bg-success-bg p-4 text-sm text-success">
+                <p class="mt-4 rounded-lg bg-success-bg p-4 text-sm text-foreground">
                     Nothing is overdue and nothing is due in the next
                     {{ config('gfms.vaccination_warning_days') }} days. The flock is up to date.
                 </p>
@@ -266,7 +266,7 @@
                                     @if ($record->product_name) &middot; {{ $record->product_name }} @endif
                                 </p>
                             </div>
-                            <span class="badge datum shrink-0 bg-destructive-bg text-destructive ring-destructive/20">
+                            <span class="badge badge-alert datum shrink-0">
                                 {{ abs((int) $record->daysUntilDue()) }} days overdue
                             </span>
                         </li>
@@ -283,7 +283,7 @@
                                     @if ($record->product_name) &middot; {{ $record->product_name }} @endif
                                 </p>
                             </div>
-                            <span class="badge shrink-0 bg-warning-bg text-warning ring-warning/20">
+                            <span class="badge badge-warn shrink-0">
                                 due in {{ (int) $record->daysUntilDue() }} days
                             </span>
                         </li>
@@ -299,7 +299,7 @@
             </div>
 
             @if ($this->recentMortality->isEmpty())
-                <p class="mt-4 rounded-lg bg-success-bg p-4 text-sm text-success">
+                <p class="mt-4 rounded-lg bg-success-bg p-4 text-sm text-foreground">
                     No deaths have been recorded.
                 </p>
             @else

@@ -169,8 +169,8 @@
              family tree is a by-product of normal data entry. --}}
         @if ($generating)
             <div class="mt-5 rounded-[var(--radius-md)] bg-success-bg p-4 ring-1 ring-success/20">
-                <h3 class="text-sm font-semibold text-success">Register chicks from this hatch</h3>
-                <p class="mt-1 text-sm text-success">
+                <h3 class="text-sm font-semibold text-foreground">Register chicks from this hatch</h3>
+                <p class="mt-1 text-sm text-foreground">
                     Each chick will be created with
                     <strong>{{ $breeding->sire->name }}</strong> as its sire and
                     <strong>{{ $breeding->dam->name }}</strong> as its dam, so it appears in the

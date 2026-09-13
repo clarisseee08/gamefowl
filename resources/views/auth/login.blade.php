@@ -12,7 +12,7 @@
 
     {{-- Status message, e.g. after a successful password reset. --}}
     @if (session('status'))
-        <div class="rise-in mt-4 rounded-lg bg-success-bg p-3 text-sm text-success ring-1 ring-success/20"
+        <div class="rise-in mt-4 rounded-lg bg-success-bg p-3 text-sm text-foreground ring-1 ring-success/20"
              style="--rise-delay: 140ms">
             {{ session('status') }}
         </div>
@@ -28,7 +28,7 @@
     @if ($errors->any())
         <div id="login-error" class="rise-in mt-4 rounded-lg bg-destructive-bg p-3 ring-1 ring-destructive/20"
              style="--rise-delay: 120ms" role="alert">
-            <ul class="space-y-1 text-sm text-destructive">
+            <ul class="space-y-1 text-sm text-foreground">
                 @foreach ($errors->all() as $message)
                     <li>{{ $message }}</li>
                 @endforeach

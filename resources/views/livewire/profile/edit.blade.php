@@ -8,7 +8,7 @@
     </div>
 
     @if ($status !== '')
-        <div class="mb-5 rounded-[var(--radius-md)] bg-success-bg px-4 py-3 text-[15px] text-success" role="status">
+        <div class="mb-5 rounded-[var(--radius-md)] bg-success-bg px-4 py-3 text-[15px] text-foreground" role="status">
             {{ $status }}
         </div>
     @endif
