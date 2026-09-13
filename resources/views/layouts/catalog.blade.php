@@ -34,7 +34,7 @@
             <span class="ml-auto"></span>
 
             @if ($user?->isInternal())
-                {{-- The way back to the console, shown only to staff. A customer
+                {{-- The way back to the console, shown only to staff. A visitor
                      never sees a door they cannot open. --}}
                 <a href="{{ route('dashboard') }}"
                    class="btn-secondary h-11 min-h-0 px-3 text-[14px]">
@@ -42,10 +42,21 @@
                 </a>
             @endif
 
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="btn-quiet h-11 min-h-0 px-3 text-[14px]">Sign out</button>
-            </form>
+            {{-- This shell now serves people who are not signed in at all, so
+                 it cannot assume there is a session to end. A bare "Sign out"
+                 in front of a visitor who never signed in is a dead control
+                 that also implies they have an account they do not have.
+
+                 The sign-in link is deliberately quiet: this is a shop window,
+                 and the farm's own staff are the only people it is for. --}}
+            @auth
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="btn-quiet h-11 min-h-0 px-3 text-[14px]">Sign out</button>
+                </form>
+            @else
+                <a href="{{ route('login') }}" class="btn-quiet h-11 min-h-0 px-3 text-[14px]">Sign in</a>
+            @endauth
         </div>
     </header>
 

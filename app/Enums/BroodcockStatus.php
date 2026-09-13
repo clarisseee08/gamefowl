@@ -40,6 +40,25 @@ enum BroodcockStatus: string
         };
     }
 
+    /**
+     * The on-farm statuses, as column values for a whereIn().
+     *
+     * Derived from isOnFarm() rather than listed again. The same four cases
+     * were already written out by hand in two separate query sites, and a
+     * third was about to be added for the public-visibility check - at which
+     * point selling a bird would have removed it from the inventory, the
+     * dashboard and the catalogue but left its public page reachable.
+     *
+     * @return array<int, string>
+     */
+    public static function onFarmValues(): array
+    {
+        return array_values(array_map(
+            static fn (self $case): string => $case->value,
+            array_filter(self::cases(), static fn (self $case): bool => $case->isOnFarm())
+        ));
+    }
+
     /** Eligible to be selected as a sire or dam on a new breeding record. */
     public function isBreedingEligible(): bool
     {

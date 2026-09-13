@@ -358,12 +358,23 @@ class Broodcock extends Model
     /** @param Builder<Broodcock> $query */
     public function scopeOnFarm(Builder $query): void
     {
-        $query->whereIn('status', [
-            BroodcockStatus::Active->value,
-            BroodcockStatus::Breeding->value,
-            BroodcockStatus::Resting->value,
-            BroodcockStatus::Retired->value,
-        ]);
+        $query->whereIn('status', BroodcockStatus::onFarmValues());
+    }
+
+    /**
+     * May a visitor who is not signed in see this bird at all?
+     *
+     * The catalogue is public, so the bird page it links to has to be too - and
+     * an id in a URL is guessable. Without this, /broodcocks/31 would show the
+     * public a bird that died, and /broodcocks/{borrowed hen} would show them a
+     * bird belonging to somebody else's farm.
+     *
+     * The rule is exactly the catalogue's own filter, so anything the public
+     * can reach by URL is something it could already have reached by browsing.
+     */
+    public function isPubliclyVisible(): bool
+    {
+        return ! $this->is_external && $this->status->isOnFarm();
     }
 
     /** Birds that may be selected as a parent on a new breeding record. */

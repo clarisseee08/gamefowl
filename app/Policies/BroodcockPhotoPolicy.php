@@ -13,13 +13,31 @@ use App\Models\User;
  */
 final class BroodcockPhotoPolicy
 {
-    public function viewAny(User $user): bool
+    public function viewAny(?User $user): bool
     {
-        return $user->is_active;
+        return $user === null || $user->is_active;
     }
 
-    public function view(User $user, BroodcockPhoto $photo): bool
+    /**
+     * A guest may only fetch a photo of a bird they are allowed to see.
+     *
+     * Photo ids are sequential, so this is the difference between "the public
+     * catalogue has pictures" and "anyone can page through every photograph the
+     * farm has ever taken, including of birds that died".
+     *
+     * loadMissing(), not the relation directly: Model::shouldBeStrict() turns an
+     * un-eager-loaded relation into an exception, and this policy is reached
+     * from a controller that only ever loaded the photo. It costs one indexed
+     * primary-key lookup per image request, and only for guests.
+     */
+    public function view(?User $user, BroodcockPhoto $photo): bool
     {
+        if ($user === null) {
+            $photo->loadMissing('broodcock');
+
+            return $photo->broodcock?->isPubliclyVisible() ?? false;
+        }
+
         return $user->is_active;
     }
 

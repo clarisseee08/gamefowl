@@ -41,36 +41,69 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::redirect('/', '/dashboard')->name('home');
+/*
+ * The front door depends on who is knocking.
+ *
+ * The catalogue is the PUBLIC face of the farm, so a visitor who has never
+ * signed in lands there. Staff land on the dashboard, which is where their
+ * working day starts. Sending everyone to /dashboard meant a member of the
+ * public hit the auth middleware and was shown a login form as the first thing
+ * the farm's website said to them.
+ */
+Route::get('/', function () {
+    return redirect()->route(
+        auth()->user()?->isInternal() ? 'dashboard' : 'catalog.index'
+    );
+})->name('home');
 
-Route::middleware(['auth', 'active'])->group(function (): void {
-    Route::get('/dashboard', DashboardController::class)->name('dashboard');
-
-    /*
-     * Customer portal - the read-only catalogue.
-     *
-     * Open to every signed-in role (staff use it to see what a customer sees),
-     * but it is the only farm screen a customer has any reason to visit.
-     */
+/*
+|--------------------------------------------------------------------------
+| PUBLIC
+|--------------------------------------------------------------------------
+|
+| No `auth`. These are the advertisement surface: anyone may browse the stock
+| and open a bird's page without an account, which is the whole point of the
+| catalogue existing.
+|
+| `active` is still applied. It does nothing for a guest - it only acts when
+| Auth::check() passes - but it means a signed-in account that gets deactivated
+| mid-session is still signed out even while browsing a public page, rather
+| than the public pages being a place where deactivation does not take effect.
+|
+| WHAT A GUEST SEES is not a new visibility tier. The Policies treat a null
+| user as the equivalent of an active customer, and the views were already
+| written to hide internal fields from that role - see $canSeeInternal in
+| broodcocks/show.blade.php. So this opens up who can reach these screens
+| without changing what the screens render.
+|
+| BroodcockPolicy::view() additionally restricts a guest to birds the
+| catalogue itself would list: ids in URLs are guessable, and a dead bird or
+| another farm's borrowed hen is not something the public should find.
+*/
+Route::middleware('active')->group(function (): void {
     Route::livewire('/catalog', Catalog\Index::class)->name('catalog.index');
-
-    /* Broodcocks - the central entity. Visible to every role. */
-    Route::prefix('broodcocks')->name('broodcocks.')->group(function (): void {
-        Route::livewire('/', Broodcocks\Index::class)->name('index');
-        Route::livewire('/create', Broodcocks\Form::class)->name('create');
-        Route::livewire('/{broodcock}/edit', Broodcocks\Form::class)->name('edit');
-        Route::livewire('/{broodcock}/pedigree', Broodcocks\Pedigree::class)->name('pedigree');
-        Route::livewire('/{broodcock}', Broodcocks\Show::class)->name('show');
-    });
 
     /*
      * Photo files.
      *
      * The Supabase bucket is private, so photos are streamed through this
      * controller and authorized by BroodcockPhotoPolicy on every request,
-     * rather than exposed as unguessable public URLs.
+     * rather than exposed as unguessable public URLs. That policy is what
+     * keeps a guest from paging through photographs of birds the catalogue
+     * does not list.
      */
     Route::get('/photos/{photo}', [BroodcockPhotoController::class, 'show'])->name('photos.show');
+});
+
+Route::middleware(['auth', 'active'])->group(function (): void {
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
+
+    /* Broodcocks - the central entity. */
+    Route::prefix('broodcocks')->name('broodcocks.')->group(function (): void {
+        Route::livewire('/', Broodcocks\Index::class)->name('index');
+        Route::livewire('/create', Broodcocks\Form::class)->name('create');
+        Route::livewire('/{broodcock}/edit', Broodcocks\Form::class)->name('edit');
+    });
 
     /* Health records - customers may view, only staff may write. */
     Route::prefix('health')->name('health.')->group(function (): void {
@@ -160,4 +193,29 @@ Route::middleware(['auth', 'active'])->group(function (): void {
      * rather than trusting the group, since this sits outside the policy layer.
      */
     Route::get('/design', DesignGalleryController::class)->name('design');
+});
+
+/*
+|--------------------------------------------------------------------------
+| PUBLIC BIRD PAGES
+|--------------------------------------------------------------------------
+|
+| DECLARED LAST, AND THAT IS LOAD-BEARING. Laravel matches routes in
+| registration order, and `/broodcocks/{broodcock}` will happily match the
+| string "create". The auth group above registers /broodcocks/create and
+| /broodcocks/{broodcock}/edit first, so those still win; anything else falls
+| through to here.
+|
+| Moving either of these above that group would make /broodcocks/create open a
+| bird whose id is the word "create" - a 404 that looks like a missing record
+| rather than a routing mistake.
+|
+| The pedigree is public deliberately: the three-generation family tree is the
+| farm's actual selling point, and hiding it behind a login would leave the
+| advertisement showing photographs of birds with nothing to say about their
+| breeding.
+*/
+Route::middleware('active')->prefix('broodcocks')->name('broodcocks.')->group(function (): void {
+    Route::livewire('/{broodcock}/pedigree', Broodcocks\Pedigree::class)->name('pedigree');
+    Route::livewire('/{broodcock}', Broodcocks\Show::class)->name('show');
 });
