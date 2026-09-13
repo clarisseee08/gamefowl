@@ -106,7 +106,13 @@
 
         <div class="absolute inset-x-0 top-[12vh] mx-auto w-[min(92vw,36rem)]">
             <div x-show="open" x-cloak
-                 x-transition:enter="transition ease-out duration-260"
+                 {{-- transition-[opacity,transform] and duration-200, not the bare
+                      `transition` shorthand at 260ms. 260 is not on the scale at all -
+                      the tokens are 100 / 150 / 200 / 300, and --dur-base (200ms) is
+                      the one whose own comment names "dropdowns, popovers, tabs,
+                      accordions". A command palette is a popover. The shorthand also
+                      animated box-shadow, which .popover sets to the e3 elevation. --}}
+                 x-transition:enter="transition-[opacity,transform] ease-out duration-200"
                  x-transition:enter-start="opacity-0 -translate-y-1"
                  x-transition:enter-end="opacity-100 translate-y-0"
                  x-trap.noscroll="open"

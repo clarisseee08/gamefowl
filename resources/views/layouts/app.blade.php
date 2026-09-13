@@ -52,10 +52,20 @@
                  @click="mobileNav = false"
                  class="absolute inset-0 bg-foreground/40"></div>
 
+            {{-- transition-transform at --dur-slow, not the bare `transition`
+                 shorthand at 260ms. 260 was never on the scale - the tokens are
+                 100 / 150 / 200 / 300 - and 300ms is the step whose own comment
+                 reads "modals, drawers". The only property changing here is the
+                 translate; the shorthand was also animating colour, shadow and
+                 filter on a panel that changes none of them.
+
+                 The exit stays faster than the entrance, which is the one piece
+                 of asymmetry that makes a drawer feel answered rather than
+                 sluggish. --}}
             <div x-show="mobileNav"
-                 x-transition:enter="transition ease-out duration-260"
+                 x-transition:enter="transition-transform ease-out duration-300"
                  x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
-                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave="transition-transform ease-in duration-150"
                  x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full"
                  @keydown.escape.window="mobileNav = false"
                  x-trap.noscroll="mobileNav"

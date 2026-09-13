@@ -28,9 +28,15 @@
     <div class="card mb-10 p-6">
         <div class="flex items-center justify-between text-sm">
             <span class="font-medium text-foreground">Pedigree recorded</span>
+            {{-- "3 of 14" is ONE figure and sits in one .datum span rather than
+                 two with a proportional "of" between them. Two spans set the two
+                 numbers in mono and the word joining them in Inter, which makes a
+                 single ratio look like two unrelated counts - and it also split a
+                 string PedigreePerformanceTest asserts, which is the suite doing
+                 its job: visible copy is this project's test API. --}}
             <span class="text-muted-foreground">
-                {{ $completeness['known'] }} of {{ $completeness['total'] }} ancestors
-                ({{ $completeness['percent'] }}%)
+                <span class="datum">{{ $completeness['known'] }} of {{ $completeness['total'] }}</span> ancestors
+                (<span class="datum">{{ $completeness['percent'] }}%</span>)
             </span>
         </div>
         <div class="meter mt-2.5">
@@ -75,8 +81,14 @@
                                     <div @class(['ped-node' => $index > 0])>
                                         @if ($ancestor)
                                             <a href="{{ route('broodcocks.show', $ancestor) }}" wire:navigate
+                                               {{-- transition-colors, not the bare `transition`
+                                                    shorthand. That one also animates box-shadow,
+                                                    transform, filter and backdrop-filter - four
+                                                    properties this card never changes and two the
+                                                    motion whitelist does not allow it to. The only
+                                                    thing moving here is a border colour. --}}
                                                @class([
-                                                   'block rounded-[4px] border p-3 transition hover:border-muted-foreground',
+                                                   'block rounded-[4px] border p-3 transition-colors hover:border-muted-foreground',
                                                    'border-border bg-muted' => $index === 0,
                                                    'border-border bg-card' => $index > 0,
                                                ])>
@@ -87,11 +99,17 @@
                                                 </p>
                                                 {{-- The root is the subject of the tree, not
                                                      somebody's parent - calling it "Sire"
-                                                     here is just wrong. It gets its plain sex. --}}
-                                                {{-- ink-80, not ink-48. The root card sits on
-                                                     pearl rather than canvas, and ink-48
-                                                     measures 4.37:1 there - it clears 4.5:1 on
-                                                     parchment but not on the darker ground. --}}
+                                                     here is just wrong. It gets its plain sex.
+
+                                                     The second half of this comment used to
+                                                     argue for ink-80 over ink-48 on the pearl
+                                                     ground. None of those three tokens exist:
+                                                     pearl, ink-48 and ink-80 were all retired
+                                                     with the field-ledger direction, and the
+                                                     class here has been muted-foreground for as
+                                                     long as this file has compiled. A comment
+                                                     defending a decision in a vocabulary the
+                                                     code no longer speaks is worse than none. --}}
                                                 <p class="mt-0.5 truncate text-[12px] text-muted-foreground">
                                                     {{ $index === 0 ? $ancestor->sex->label() : $ancestor->sex->parentTerm() }}@if ($ancestor->bloodline) &middot; {{ $ancestor->bloodline }}@endif
                                                 </p>
