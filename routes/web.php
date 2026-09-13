@@ -11,7 +11,6 @@ use App\Livewire\Broodcocks;
 use App\Livewire\Catalog;
 use App\Livewire\Health;
 use App\Livewire\Mortality;
-use App\Livewire\Pens;
 use App\Livewire\Performance;
 use App\Livewire\Profile;
 use App\Livewire\Reports;
@@ -129,14 +128,23 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         Route::livewire('/{user}/edit', Users\Form::class)->name('edit');
     });
 
-    /* Pens - internal only. */
-    Route::prefix('pens')->name('pens.')->group(function (): void {
-        Route::livewire('/', Pens\Index::class)->name('index');
-        Route::livewire('/create', Pens\Form::class)->name('create');
-        Route::livewire('/{pen}/edit', Pens\Form::class)->name('edit');
-        Route::livewire('/{pen}/assign', Pens\AssignBroodcocks::class)->name('assign');
-        Route::livewire('/{pen}', Pens\Show::class)->name('show');
-    });
+    /*
+     * PENS HAVE NO SCREENS, DELIBERATELY.
+     *
+     * Pens are still real data - `broodcocks.pen_id`, the Pen model, the Pen
+     * column and filter on the inventory report, and the pen selector when
+     * registering a hatch on /breeding/{record}. What was removed is the CRUD
+     * around them, which had been dropped from the sidebar in 0f8c244 while its
+     * routes stayed live: reachable by typing a URL, covered by 34 tests, and
+     * findable by nobody. Half-removed was the worst of both.
+     *
+     * CONSEQUENCE, stated plainly: pens can no longer be created or renamed
+     * through the interface. They come from PenSeeder. If the farm needs a new
+     * pen, that is a seeder change and a deploy - which is the right trade
+     * while pens are a fixed handful, and the wrong one the day they are not.
+     * Restoring the screens means restoring this group and the four components
+     * with it; they are in the history at 0f8c244.
+     */
 
     /*
      * A user's own profile. Not inside the users.* group on purpose: that group
