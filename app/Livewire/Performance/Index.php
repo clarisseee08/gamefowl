@@ -204,6 +204,7 @@ final class Index extends Component
 
     public function render(): View
     {
-        return view('livewire.performance.index');
+        return view('livewire.performance.index')
+            ->title('Performance Records');
     }
 }

@@ -287,6 +287,7 @@ final class Index extends Component
 
     public function render(): View
     {
-        return view('livewire.broodcocks.index');
+        return view('livewire.broodcocks.index')
+            ->title('Broodcocks');
     }
 }

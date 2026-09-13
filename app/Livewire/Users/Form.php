@@ -150,6 +150,7 @@ final class Form extends Component
 
     public function render(): View
     {
-        return view('livewire.users.form');
+        return view('livewire.users.form')
+            ->title($this->isEditing() ? 'Edit User' : 'Add a User');
     }
 }

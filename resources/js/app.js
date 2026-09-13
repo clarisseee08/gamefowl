@@ -210,3 +210,32 @@ document.querySelectorAll('[data-capslock-for]').forEach((warning) => {
     field.addEventListener('keyup', sync);
     field.addEventListener('blur', () => warning.toggleAttribute('hidden', true));
 });
+
+/**
+ * Re-stamp the chosen theme after every Livewire navigation.
+ *
+ * wire:navigate copies the fetched document's <html> attributes over the live
+ * ones, and the server cannot know which theme THIS browser chose - so
+ * data-theme is wiped on every soft navigation and the page snaps back to
+ * whatever prefers-color-scheme says. Measured, not guessed: click the toggle
+ * to light on /mortality and navigate, and the attribute is null on arrival
+ * while localStorage still says light.
+ *
+ * The inline script in head-meta still runs first on a cold load, because that
+ * one has to beat first paint. This is the soft-navigation half of the same
+ * job, and livewire:navigated fires on the initial load too, so the two agree.
+ */
+const applyStoredTheme = () => {
+    try {
+        const choice = localStorage.getItem('gfms-theme');
+
+        if (choice === 'light' || choice === 'dark') {
+            document.documentElement.setAttribute('data-theme', choice);
+        }
+    } catch (e) {
+        // Private windows and some embedded webviews throw on localStorage.
+        // The media query is a correct fallback, so there is nothing to do.
+    }
+};
+
+document.addEventListener('livewire:navigated', applyStoredTheme);
