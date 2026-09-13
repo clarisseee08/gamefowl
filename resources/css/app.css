@@ -92,11 +92,6 @@
     --color-card-foreground: #161c19;
     --color-popover-foreground: #161c19;
 
-    /* Primary — the farm's deep red, as a full scale rather than a single
-       accent. THE INTERACTIVE COLOUR: buttons, links, active nav, focus rings.
-       Red carries this role rather than the green because it measures 8.74:1 on
-       card against the green's 6.07:1, and link text must clear the Console
-       7:1 floor. */
     /* ------------------------------------------------------------------
        THE INK RAMP. Neutrals only - no hue is introduced here.
 
@@ -124,8 +119,14 @@
     --color-ink-900: #161c19;
     --color-ink-950: #0d110f;
 
-    /* The primary ramp, completed. Same hue throughout - these are tints and
-       shades of the existing #8b2626, not new colours. 500 is an explicit
+    /* Primary — the farm's deep red, as a full scale rather than a single
+       accent. THE INTERACTIVE COLOUR: buttons, links, active nav, focus rings.
+       Red carries this role rather than the green because it measures 8.74:1 on
+       card against the green's 6.07:1, and link text must clear the Console
+       7:1 floor.
+
+       Completed to a full 50-950 ramp. Same hue throughout - these are tints
+       and shades of the existing #8b2626, not new colours. 500 is an explicit
        alias for the base so a call site can say primary-500 and mean it. */
     --color-primary-50: #faf0ef;
     --color-primary-100: #f1dad8;
@@ -343,11 +344,25 @@
     @apply inline-flex min-h-11 items-center justify-center gap-2
            rounded-[var(--radius-sm)] px-4 py-2.5 text-[15px] font-medium leading-none
            focus:outline-none disabled:cursor-not-allowed disabled:opacity-40;
-    transition: background-color var(--t-fast) var(--ease-out-quart),
-                border-color var(--t-fast) var(--ease-out-quart),
-                color var(--t-fast) var(--ease-out-quart),
-                box-shadow var(--t-fast) var(--ease-out-quart),
-                transform var(--t-fast) var(--ease-out-quart);
+
+    /* Whitelist rows: "Button hover - bg colour, --dur-instant" and
+       "Button press - scale(0.98), --dur-instant".
+
+       box-shadow is NOT in this list and used to be. Animating it forces a
+       repaint of the element's whole shadow region on every frame, which is
+       the reason the rule exists; the focus ring below gets the same effect
+       from opacity on a layer that is already painted. */
+    transition: background-color var(--dur-instant) var(--ease-in-out),
+                border-color var(--dur-instant) var(--ease-in-out),
+                color var(--dur-instant) var(--ease-in-out),
+                transform var(--dur-instant) var(--ease-in-out);
+}
+
+/* The press. scale rather than translate, so the button compresses toward its
+   own centre instead of sliding - and 0.98 rather than anything deeper,
+   because a button that visibly moves reads as a bug at this size. */
+.btn:active:not(:disabled) {
+    transform: scale(0.98);
 }
 
 @layer components {
@@ -362,12 +377,18 @@
 
     /* 16px floor - below that iOS zooms the page on focus and one-handed entry
        falls apart. */
+    /* 16px is not a preference. Anything smaller and iOS Safari zooms the
+       viewport on focus, which throws the user out of the form they were
+       filling in. */
     .input {
         @apply block w-full rounded-[var(--radius-sm)] border border-input bg-card
                px-3 py-2.5 text-[16px] text-foreground
                placeholder:text-muted-foreground focus:border-primary focus:outline-none;
-        transition: border-color var(--t-fast) var(--ease-out-quart),
-                    box-shadow var(--t-fast) var(--ease-out-quart);
+
+        /* Whitelist row: "Input focus - border colour, --dur-fast". Border
+           only; the shadow transition that used to sit here animated a
+           property the brief bans. */
+        transition: border-color var(--dur-fast) var(--ease-in-out);
     }
     .input:focus { box-shadow: 0 0 0 3px var(--ring-color); }
     .input-error { @apply border-destructive; }
@@ -641,3 +662,185 @@
         opacity: 0.6;
     }
 }
+
+/* =====================================================================
+   PRIMITIVES ADDED BY THE REDESIGN
+   =====================================================================
+
+   Each block below implements exactly one row of the Motion whitelist in
+   docs/redesign/01-system.md and no more. The whitelist is the contract: if
+   an effect is not a row there, it is not implemented here, however good it
+   would look.
+
+   Two rules govern every one of them:
+
+     Animate transform and opacity ONLY. Both are composited, so they cost no
+     layout and no repaint. Everything else - height, width, top, margin,
+     box-shadow - forces the browser to recompute geometry on every frame, on
+     phones that cannot spare it.
+
+     Nothing exceeds 300ms. Past roughly a third of a second a transition
+     stops reading as motion and starts reading as latency.
+
+   The three deliberate exceptions are marked where they occur.
+   ===================================================================== */
+
+/* Focus ring. OPACITY ONLY, on a ring that is already at full size.
+
+   The banned alternative is a ring that grows - animating width or box-shadow
+   so the outline expands outward. It looks considered and it is a repaint on
+   every frame, on the element the user is actively interacting with. */
+@utility focus-ring {
+    position: relative;
+}
+.focus-ring::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: inherit;
+    border: 2px solid var(--color-primary);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-fast) var(--ease-out);
+}
+.focus-ring:focus-visible::after {
+    opacity: 1;
+}
+
+/* Tooltip. opacity + scale, --dur-fast, and a 400ms delay before it appears.
+
+   The delay is the whole design. Without it, every pointer crossing the
+   screen trails a wake of tooltips. Leaving has no delay: a tooltip in the
+   way should go immediately. */
+.tooltip {
+    @apply pointer-events-none absolute z-50 rounded-[var(--radius-sm)]
+           bg-ink-900 px-2.5 py-1.5 text-[13px] leading-snug text-ink-50;
+    opacity: 0;
+    transform: scale(0.96);
+    transition: opacity var(--dur-fast) var(--ease-in) 0ms,
+                transform var(--dur-fast) var(--ease-in) 0ms;
+}
+.tooltip-trigger:hover .tooltip,
+.tooltip-trigger:focus-visible .tooltip {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity var(--dur-fast) var(--ease-out) 400ms,
+                transform var(--dur-fast) var(--ease-out) 400ms;
+}
+
+/* Toast. translateY + opacity, --dur-base. */
+.toast {
+    @apply rounded-[var(--radius-md)] border border-border bg-card px-4 py-3
+           text-[15px] text-foreground;
+    box-shadow: var(--shadow-e2);
+}
+.toast-enter {
+    opacity: 0;
+    transform: translateY(8px);
+}
+.toast-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity var(--dur-base) var(--ease-out),
+                transform var(--dur-base) var(--ease-out);
+}
+.toast-leave-active {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity var(--dur-fast) var(--ease-in),
+                transform var(--dur-fast) var(--ease-in);
+}
+
+/* Modal. Backdrop fades; panel fades and scales up from 0.97.
+
+   Scaling UP on entry rather than down means the panel appears to come
+   toward the reader. Starting at 0.97 rather than lower keeps the text
+   inside it legible for the whole transition instead of arriving blurred. */
+.modal-backdrop {
+    @apply fixed inset-0 z-40 bg-ink-950/50;
+    opacity: 0;
+    transition: opacity var(--dur-slow) var(--ease-out);
+}
+.modal-backdrop-open { opacity: 1; }
+
+.modal-panel {
+    @apply relative z-50 w-full rounded-[var(--radius-lg)] border border-border bg-card;
+    box-shadow: var(--shadow-e3);
+    opacity: 0;
+    transform: scale(0.97);
+    transition: opacity var(--dur-slow) var(--ease-out),
+                transform var(--dur-slow) var(--ease-out);
+}
+.modal-panel-open {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Drawer. translateX, --dur-slow. Never `left` or `width` - both force
+   layout on every frame; a transform does not. */
+.drawer {
+    @apply fixed inset-y-0 z-50 w-[min(22rem,85vw)] border-r border-border bg-card;
+    transform: translateX(-100%);
+    transition: transform var(--dur-slow) var(--ease-out);
+}
+.drawer-open { transform: translateX(0); }
+
+/* Tabs. The indicator is the one place width is animated, and it is a
+   whitelist exception rather than an oversight: an underline that slides
+   without resizing cannot track tabs of differing widths. */
+.tab {
+    @apply relative inline-flex min-h-11 items-center px-3 text-[15px] text-muted-foreground;
+    transition: color var(--dur-instant) var(--ease-in-out);
+}
+.tab-active { @apply text-foreground; }
+.tab-indicator {
+    @apply absolute bottom-0 h-0.5 bg-primary;
+    transition: transform var(--dur-base) var(--ease-in-out),
+                width var(--dur-base) var(--ease-in-out);
+}
+
+/* Accordion. grid-template-rows 0fr -> 1fr, the second whitelist exception.
+   It is how a collapse animates to CONTENT height without measuring it in
+   JavaScript, which is the usual alternative and worse. */
+.accordion-content {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--dur-base) var(--ease-in-out);
+}
+.accordion-content > * { overflow: hidden; }
+.accordion-open { grid-template-rows: 1fr; }
+
+/* Empty state. No motion: it is the resting state of a screen, and a thing
+   that animates in every time a filter returns nothing is a thing that
+   punishes the user for filtering. */
+.empty-state {
+    @apply flex flex-col items-center justify-center rounded-[var(--radius-md)]
+           border border-border bg-card px-6 py-12 text-center;
+}
+.empty-state-title { @apply text-[17px] text-foreground; }
+.empty-state-body { @apply mt-2 max-w-[46ch] text-[15px] text-muted-foreground; }
+
+/* Avatar. */
+.avatar {
+    @apply inline-flex shrink-0 items-center justify-center overflow-hidden
+           rounded-full bg-ink-200 text-ink-700;
+}
+
+/* Breadcrumb. */
+.breadcrumb { @apply flex flex-wrap items-center gap-1.5 text-[14px]; }
+.breadcrumb-link {
+    @apply text-muted-foreground;
+    transition: color var(--dur-instant) var(--ease-in-out);
+}
+.breadcrumb-link:hover { @apply text-foreground; }
+.breadcrumb-current { @apply text-foreground; }
+
+/* Pagination. */
+.page-link {
+    @apply inline-flex min-h-11 min-w-11 items-center justify-center
+           rounded-[var(--radius-sm)] px-3 text-[15px] text-muted-foreground;
+    transition: background-color var(--dur-instant) var(--ease-in-out),
+                color var(--dur-instant) var(--ease-in-out);
+}
+.page-link:hover { @apply bg-muted text-foreground; }
+.page-link-current { @apply bg-muted text-foreground; }
