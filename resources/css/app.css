@@ -9,16 +9,31 @@
 
 /* Self-hosted, no CDN. A demo in a provincial venue cannot depend on Google
    Fonts resolving, and an earlier stack declared 'SF Pro' - which ships only on
-   Apple platforms, so every Windows machine silently rendered Segoe UI. */
-@import '@fontsource/fira-sans/latin-400.css';
-@import '@fontsource/fira-sans/latin-500.css';
-@import '@fontsource/fira-sans/latin-600.css';
-@import '@fontsource/fira-code/latin-400.css';
-@import '@fontsource/fira-code/latin-500.css';
+   Apple platforms, so every Windows machine silently rendered Segoe UI.
+   @fontsource ships woff2 with font-display: swap already set, so there is no
+   render-blocking <link> anywhere in this application.
+
+   THREE ROLES, THREE FACES, and the roles are enforced by review:
+     Poppins        headings only, never body
+     Inter          body, UI, forms, tables
+     JetBrains Mono every number, via .datum and tabular-nums
+
+   latin-ext is loaded alongside latin: Filipino place names in the farm's own
+   records carry diacritics that bare latin does not cover, and a missing
+   glyph falls back mid-word to a different face. */
+@import '@fontsource/poppins/latin-600.css';
+@import '@fontsource/poppins/latin-700.css';
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-600.css';
+@import '@fontsource/inter/latin-ext-400.css';
+@import '@fontsource/inter/latin-ext-500.css';
+@import '@fontsource/jetbrains-mono/latin-400.css';
+@import '@fontsource/jetbrains-mono/latin-500.css';
 /* 600 is loaded because headline figures are .datum AND semibold. Without the
    real weight the browser synthesises bold by smearing the 500, which is
    visibly worse at the 32-44px sizes the dashboard uses. */
-@import '@fontsource/fira-code/latin-600.css';
+@import '@fontsource/jetbrains-mono/latin-600.css';
 
 @source '../views/**/*.blade.php';
 @source '../js/**/*.js';
@@ -49,8 +64,18 @@
  */
 
 @theme {
-    --font-sans: 'Fira Sans', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'Fira Code', ui-monospace, 'Cascadia Mono', Menlo, monospace;
+    /* THE THREE ROLES. Each face does one job and no other.
+
+       --font-display is headings only. Using it for body text is the single
+       most common way a type system degrades, because Poppins is a geometric
+       face: even, circular, and tiring to read in long runs at 15-17px.
+
+       --font-mono carries every number through .datum, not just code. Band
+       numbers, dates, weights, counts, rates and percentages all have to align
+       in a column, which proportional figures cannot do. */
+    --font-display: 'Poppins', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Menlo, monospace;
 
     /* Surfaces — tinted neutrals. Never pure white for the page, never pure
        black for text: a #FFF page under a #FFF card leaves no elevation to
@@ -139,16 +164,46 @@
     --shadow-e2: 0 4px 12px rgb(22 28 25 / 0.08), 0 2px 4px rgb(22 28 25 / 0.04);
     --shadow-e3: 0 16px 40px rgb(22 28 25 / 0.14);
 
-    --ease-out-quart: cubic-bezier(0.2, 0, 0.38, 0.9);
-    --ease-enter: cubic-bezier(0, 0, 0.38, 0.9);
+    /* ------------------------------------------------------------------
+       MOTION. This is the complete set. Nothing outside it may be used, and
+       a raw duration or easing anywhere in a view is a defect.
+
+       Four durations, named for what they move rather than how long they
+       take, so the choice is "is this a button or a modal" rather than "does
+       150 feel right here".
+
+       EXITS RUN ONE STEP FASTER THAN ENTRANCES. A thing arriving is being
+       introduced and can afford the time; a thing leaving is in the way, and
+       waiting for it is the most common reason an interface feels sluggish.
+
+       NOTHING EXCEEDS 300ms. Past roughly a third of a second a transition
+       stops reading as motion and starts reading as latency.
+       ------------------------------------------------------------------ */
+    --dur-instant: 100ms;   /* hover / focus colour shifts */
+    --dur-fast: 150ms;      /* buttons, inputs, tooltips, toggles */
+    --dur-base: 200ms;      /* dropdowns, popovers, tabs, accordions */
+    --dur-slow: 300ms;      /* modals, drawers */
+
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);      /* entrances */
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);          /* exits */
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);    /* moves, resizes */
+
+    /* Retained so the existing rules below keep compiling while call sites
+       migrate. Aliases, not a second system - they resolve to the tokens
+       above and must not be used in new work. */
+    --ease-out-quart: var(--ease-in-out);
+    --ease-enter: var(--ease-out);
 }
 
 :root {
     --ring-color: rgb(139 38 38 / 0.35);          /* primary @ 35% */
     --ring-color-destructive: rgb(211 47 47 / 0.25); /* destructive @ 25% */
-    --t-fast: 120ms;
-    --t-base: 200ms;
-    --t-enter: 260ms;
+
+    /* Legacy aliases. Same reason as the easings above: these resolve to the
+       four durations rather than competing with them. */
+    --t-fast: var(--dur-fast);
+    --t-base: var(--dur-base);
+    --t-enter: var(--dur-base);
 }
 
 @layer base {
@@ -169,11 +224,15 @@
         -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Tightened tracking. Untracked headings are a large part of why the
-       previous build read as a document rather than a product. */
+    /* Headings, and the ONLY place --font-display appears.
+       Tightened tracking: untracked headings are a large part of why the
+       previous build read as a document rather than a product. Poppins is
+       geometric and runs wide, so it needs more negative tracking than the
+       body face did. */
     h1, h2, h3, h4 {
+        font-family: var(--font-display);
         font-weight: 600;
-        letter-spacing: -0.015em;
+        letter-spacing: -0.02em;
         text-wrap: balance;
     }
 
@@ -201,18 +260,35 @@
     }
 
     /*
-     * Reduced motion removes TRAVEL and lift while preserving state change.
-     * A blanket 0.01ms kill destroys useful feedback and is itself an
-     * accessibility defect - a user who cannot see the transition still needs
-     * to see that something happened.
+     * Reduced motion. The blanket kill, mandated by the redesign brief.
+     *
+     * WHAT THIS REPLACED, because the argument was a real one and should not
+     * have to be rediscovered: this block used to hold transitions at 100ms
+     * and restrict them to colour and opacity, on the reasoning that reduced
+     * motion means remove TRAVEL, not remove FEEDBACK - a user who cannot see
+     * a transition still needs to see that something happened, and a blanket
+     * 0.01ms kill takes the acknowledgement away with the animation.
+     *
+     * The brief specifies this version verbatim and it is what ships. The cost
+     * is that state changes now land instantly with no acknowledgement for
+     * users who have asked for reduced motion. Revisit if that is reported.
      */
     @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after {
             animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+
+    /*
+     * Additive, not a departure from the block above: without it an animation
+     * declared `infinite` still loops forever at 0.01ms - invisible, and
+     * spinning a repaint on the low-end Android phones this runs on.
+     */
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
             animation-iteration-count: 1 !important;
-            transition-property: opacity, color, background-color, border-color, box-shadow !important;
-            transition-duration: 100ms !important;
-            transform: none !important;
         }
     }
 }
