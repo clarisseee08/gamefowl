@@ -281,4 +281,50 @@ final class DesignSystemGuardTest extends TestCase
             ."viewport; forms may take an internal max-width but must stay left-aligned:\n"
             .implode("\n", $offenders));
     }
+
+    /**
+     * Every Blade view opens and closes the same number of <div>s.
+     *
+     * This caught two real bugs, both the same authoring slip: a bare `<div>`
+     * left above an already-opened one in the catalogue filter row, and another
+     * below the broodcock filter grid. Nothing errors - Blade renders happily
+     * and the browser silently re-nests everything that follows inside the
+     * stray element, which is why it survived. The visible symptom was a
+     * catalogue whose card grid inherited the filter panel's layout and whose
+     * photo wells collapsed, i.e. "the photos are not showing" with no photo
+     * bug anywhere in the stack.
+     *
+     * A COUNT, NOT A PARSER. It cannot know that a div opened inside @if and
+     * closed inside @else is balanced at runtime. That is a real limitation and
+     * the reason this is worth stating: no view in this project does that
+     * today, so the invariant holds, and the day one legitimately needs to, the
+     * honest fix is to restructure the markup rather than to loosen this.
+     */
+    public function test_every_view_balances_its_divs(): void
+    {
+        $offenders = [];
+
+        foreach ($this->files('resources/views', '.blade.php') as $file) {
+            $body = file_get_contents($file);
+
+            $opened = preg_match_all('/<div(?=[\s>\/])/i', $body);
+            $closed = preg_match_all('/<\/div\s*>/i', $body);
+
+            if ($opened !== $closed) {
+                $offenders[] = sprintf(
+                    '%s: %d opened, %d closed (%+d)',
+                    $this->rel($file),
+                    $opened,
+                    $closed,
+                    $opened - $closed
+                );
+            }
+        }
+
+        $this->assertSame([], $offenders,
+            'A view opens a <div> it never closes. The browser will re-nest everything after it, '
+            .'which breaks the layout silently rather than erroring:
+'.implode('
+', $offenders));
+    }
 }
