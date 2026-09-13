@@ -44,6 +44,22 @@ final class StoreBroodcockPhotoRequest extends FormRequest
     }
 
     /**
+     * The same cap, where choosing NO photos is a valid answer.
+     *
+     * The add-a-bird form accepts photos but does not demand them - a keeper
+     * standing in a pen often records the bird first and photographs it later.
+     * Only the required/min part differs, so the limit itself still comes from
+     * one place; the form used to restate `max:10` as a literal and silently
+     * ignored GFMS_PHOTO_MAX_PER_BIRD.
+     *
+     * @return array<int, string>
+     */
+    public static function optionalPhotoBagRules(): array
+    {
+        return ['nullable', 'array', 'max:'.self::maxPerBroodcock()];
+    }
+
+    /**
      * Rules for one uploaded file.
      *
      * `image` verifies the file really decodes as an image, `mimes` pins the
@@ -61,6 +77,24 @@ final class StoreBroodcockPhotoRequest extends FormRequest
             'mimes:'.implode(',', self::acceptedMimes()),
             'max:'.self::maxKilobytes(),
         ];
+    }
+
+    /**
+     * One uploaded file, where choosing none is a valid answer.
+     *
+     * `nullable` does NOT cancel `required` - Laravel still fails a null value
+     * against it - so the rule has to be dropped rather than overridden. Used
+     * by the profile screen, where an account without a photo is the normal
+     * state rather than an incomplete one.
+     *
+     * @return array<int, string>
+     */
+    public static function optionalSinglePhotoRules(): array
+    {
+        return array_values(array_filter(
+            self::singlePhotoRules(),
+            static fn (string $rule): bool => $rule !== 'required'
+        ));
     }
 
     /** @return array<int, string> */

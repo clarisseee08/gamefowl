@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 /**
@@ -127,5 +129,52 @@ final class AuthenticationTest extends TestCase
         ])->assertStatus(429);
 
         $this->assertGuest();
+    }
+
+    // -----------------------------------------------------------------
+    // Password reset
+    //
+    // Features::resetPasswords() is enabled, so every user is offered this
+    // flow. It went untested, and in production it silently did nothing:
+    // render.yaml set no MAIL_* keys, so Laravel fell back to its default
+    // MAIL_MAILER of `log` and wrote every reset link to the container's
+    // stderr while telling the user it had been emailed.
+    //
+    // These assert the FLOW, which is what the application controls. Whether
+    // the transport actually delivers is a deployment concern, now configured
+    // in render.yaml.
+    // -----------------------------------------------------------------
+
+    public function test_the_forgot_password_screen_can_be_rendered(): void
+    {
+        $this->get(route('password.request'))->assertOk();
+    }
+
+    public function test_requesting_a_reset_sends_a_link_to_a_known_address(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->create(['email' => 'keeper@ssguad.test']);
+
+        $this->post(route('password.email'), ['email' => 'keeper@ssguad.test'])
+            ->assertSessionHasNoErrors();
+
+        Notification::assertSentTo($user, ResetPassword::class);
+    }
+
+    /**
+     * An unknown address must not reveal that it is unknown.
+     *
+     * Laravel returns the same confirmation either way; asserting it stops a
+     * future "helpful" error message turning this screen into a way to check
+     * whether a given person has an account on the farm's system.
+     */
+    public function test_requesting_a_reset_for_an_unknown_address_sends_nothing(): void
+    {
+        Notification::fake();
+
+        $this->post(route('password.email'), ['email' => 'nobody@ssguad.test']);
+
+        Notification::assertNothingSent();
     }
 }
