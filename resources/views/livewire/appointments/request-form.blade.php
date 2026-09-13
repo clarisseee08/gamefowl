@@ -53,14 +53,12 @@
                 </div>
 
                 <div>
-                    <label for="visit_time" class="label">Time of day</label>
-                    <select id="visit_time" wire:model.blur="preferred_time"
-                            class="input mt-1 @error('preferred_time') input-error @enderror">
+                    <x-form-select id="visit_time" label="Time of day" error="preferred_time"
+                                   wire:model.blur="preferred_time"
+                                   help="The exact hour is settled on the phone.">
                         <option value="morning">Morning</option>
                         <option value="afternoon">Afternoon</option>
-                    </select>
-                    <p class="help">The exact hour is settled on the phone.</p>
-                    @error('preferred_time') <p class="error">{{ $message }}</p> @enderror
+                    </x-form-select>
                 </div>
 
                 <div>

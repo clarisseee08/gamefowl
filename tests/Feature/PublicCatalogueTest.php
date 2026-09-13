@@ -263,4 +263,52 @@ final class PublicCatalogueTest extends TestCase
 
         $this->assertFalse($outside->isPubliclyVisible());
     }
+
+    // -----------------------------------------------------------------
+    // Doors a visitor cannot open
+    // -----------------------------------------------------------------
+
+    /**
+     * A bird's page is public. The broodcock index is not.
+     *
+     * The back link pointed at broodcocks.index for everyone, so a customer
+     * who reached a bird from the catalogue or the front page - the only two
+     * ways they can reach one - met a link that bounced them to a login form.
+     *
+     * The bug is worth a test rather than a fix alone because it is invisible
+     * while signed in as staff, which is how this page is usually looked at.
+     */
+    public function test_a_guest_on_a_birds_page_is_sent_back_somewhere_they_can_go(): void
+    {
+        $bird = Broodcock::factory()->create();
+
+        /*
+         * The link's COPY, not its href. route('broodcocks.index') is
+         * "/broodcocks", which is a substring of this very page's own URL
+         * "/broodcocks/28" - so asserting the href is absent fails on the
+         * address bar rather than on the link.
+         */
+        $this->get(route('broodcocks.show', $bird))
+            ->assertOk()
+            ->assertSee('Back to the catalogue')
+            ->assertDontSee('Back to broodcocks');
+    }
+
+    /** And following it actually works, rather than landing on the login. */
+    public function test_that_back_link_does_not_bounce_a_guest_to_the_login(): void
+    {
+        $this->get(route('catalog.index'))->assertOk();
+    }
+
+    /** Staff keep the console index, because they can open it. */
+    public function test_staff_still_go_back_to_the_broodcock_index(): void
+    {
+        $bird = Broodcock::factory()->create();
+
+        $this->actingAs(User::factory()->staff()->create())
+            ->get(route('broodcocks.show', $bird))
+            ->assertOk()
+            ->assertSee('Back to broodcocks')
+            ->assertDontSee('Back to the catalogue');
+    }
 }

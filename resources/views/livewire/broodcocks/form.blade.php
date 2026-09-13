@@ -36,23 +36,19 @@
                 </div>
 
                 <div>
-                    <label for="sex" class="label">Sex <span class="text-destructive">*</span></label>
-                    <select id="sex" wire:model.live="sex" class="input mt-1 @error('sex') input-error @enderror">
+                    <x-form-select id="sex" label="Sex" required wire:model.live="sex">
                         @foreach ($this->sexOptions() as $option)
                             <option value="{{ $option->value }}">{{ $option->label() }} ({{ $option->farmTerm() }})</option>
                         @endforeach
-                    </select>
-                    @error('sex') <p class="error">{{ $message }}</p> @enderror
+                    </x-form-select>
                 </div>
 
                 <div>
-                    <label for="status" class="label">Status <span class="text-destructive">*</span></label>
-                    <select id="status" wire:model.blur="status" class="input mt-1 @error('status') input-error @enderror">
+                    <x-form-select id="status" label="Status" required wire:model.blur="status">
                         @foreach ($this->statusOptions() as $option)
                             <option value="{{ $option->value }}">{{ $option->label() }}</option>
                         @endforeach
-                    </select>
-                    @error('status') <p class="error">{{ $message }}</p> @enderror
+                    </x-form-select>
                 </div>
 
                 <div>
@@ -63,13 +59,11 @@
                 </div>
 
                 <div>
-                    <label for="class" class="label">Class <span class="text-destructive">*</span></label>
-                    <select id="class" wire:model.blur="class" class="input mt-1 @error('class') input-error @enderror">
+                    <x-form-select id="class" label="Class" required wire:model.blur="class">
                         @foreach ($this->classOptions() as $option)
                             <option value="{{ $option->value }}">{{ $option->label() }} - {{ $option->description() }}</option>
                         @endforeach
-                    </select>
-                    @error('class') <p class="error">{{ $message }}</p> @enderror
+                    </x-form-select>
                 </div>
             </div>
         </section>
@@ -163,10 +157,8 @@
                  that bird. --}}
             <div class="mt-8 grid gap-6 sm:grid-cols-2">
                 <div>
-                    <label for="sire_choice" class="label">Sire (Father)</label>
-
-                    <select id="sire_choice" wire:model.live="sire_choice"
-                            class="input mt-1 @error('sire_id') input-error @enderror">
+                    <x-form-select id="sire_choice" label="Sire (Father)" error="sire_id"
+                                   wire:model.live="sire_choice">
                         <option value="">Not known</option>
                         @foreach ($this->sireOptions as $option)
                             <option value="{{ $option->id }}">
@@ -174,8 +166,7 @@
                             </option>
                         @endforeach
                         <option value="{{ App\Livewire\Broodcocks\Form::OFF_LIST }}">Someone else's bird</option>
-                    </select>
-                    @error('sire_id') <p class="error">{{ $message }}</p> @enderror
+                    </x-form-select>
 
                     @if ($sire_is_external)
                         {{-- Indented off a hairline so the fields read as belonging
@@ -196,10 +187,8 @@
                 </div>
 
                 <div>
-                    <label for="dam_choice" class="label">Dam (Mother)</label>
-
-                    <select id="dam_choice" wire:model.live="dam_choice"
-                            class="input mt-1 @error('dam_id') input-error @enderror">
+                    <x-form-select id="dam_choice" label="Dam (Mother)" error="dam_id"
+                                   wire:model.live="dam_choice">
                         <option value="">Not known</option>
                         @foreach ($this->damOptions as $option)
                             <option value="{{ $option->id }}">
@@ -207,8 +196,7 @@
                             </option>
                         @endforeach
                         <option value="{{ App\Livewire\Broodcocks\Form::OFF_LIST }}">Someone else's bird</option>
-                    </select>
-                    @error('dam_id') <p class="error">{{ $message }}</p> @enderror
+                    </x-form-select>
 
                     @if ($dam_is_external)
                         <div class="mt-4 border-l border-border pl-4">
