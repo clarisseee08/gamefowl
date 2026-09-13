@@ -7,7 +7,7 @@
     @php($summary = $this->summary)
 
     @if ($statusMessage !== '')
-        <div class="mb-6 flex items-start justify-between gap-4 rounded-[4px] bg-success-bg px-4 py-3 text-[15px] text-success"
+        <div class="mb-6 flex items-start justify-between gap-4 rounded-[4px] bg-success-bg px-4 py-3 text-[15px] text-foreground"
              role="status">
             <p>{{ $statusMessage }}</p>
             <button type="button" wire:click="dismissStatus" class="-my-3 shrink-0 font-medium underline">

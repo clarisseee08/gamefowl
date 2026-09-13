@@ -22,7 +22,7 @@
     </div>
 
     @if ($status !== '')
-        <div class="mb-4 flex items-start gap-2 rounded-[4px] bg-success-bg px-4 py-3 text-[15px] leading-snug text-success" role="status">
+        <div class="mb-4 flex items-start gap-2 rounded-[4px] bg-success-bg px-4 py-3 text-[15px] leading-snug text-foreground" role="status">
             <svg class="mt-0.5 h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
             </svg>
@@ -112,7 +112,7 @@
         {{-- A rejected file is the one thing on this screen that must not be
              missed, so it gets the alert wash rather than a line of red text. --}}
         @error('photos')
-            <div class="mt-4 flex items-start gap-2 rounded-[4px] bg-destructive-bg px-4 py-3 text-[15px] leading-snug text-destructive" role="alert">
+            <div class="mt-4 flex items-start gap-2 rounded-[4px] bg-destructive-bg px-4 py-3 text-[15px] leading-snug text-foreground" role="alert">
                 <svg class="mt-0.5 h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008M10.34 3.94l-8.19 14.2A1.5 1.5 0 0 0 3.45 20.4h17.1a1.5 1.5 0 0 0 1.3-2.26l-8.19-14.2a1.5 1.5 0 0 0-2.6 0Z"/>
                 </svg>

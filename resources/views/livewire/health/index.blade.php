@@ -11,9 +11,9 @@
 <div>
     @if ($statusMessage)
         <div class="mb-8 flex items-start justify-between gap-4 rounded-[4px] border border-border bg-success-bg px-4 py-3" role="status">
-            <p class="text-[15px] leading-snug text-success">{{ $statusMessage }}</p>
+            <p class="text-[15px] leading-snug text-foreground">{{ $statusMessage }}</p>
             <button type="button" wire:click="dismissStatus"
-                    class="-my-2 shrink-0 text-[13px] font-medium text-success underline underline-offset-2">
+                    class="-my-2 shrink-0 text-[13px] font-medium text-foreground underline underline-offset-2">
                 Dismiss
             </button>
         </div>

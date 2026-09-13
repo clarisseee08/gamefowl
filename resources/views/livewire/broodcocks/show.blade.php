@@ -100,11 +100,11 @@
     {{-- Deceased banner --}}
     @if ($bird->isDeceased() && $bird->mortalityRecord)
         <div class="mb-6 rounded-lg bg-destructive-bg p-4 ring-1 ring-destructive/20">
-            <p class="text-sm font-medium text-destructive">
+            <p class="text-sm font-medium text-foreground">
                 This bird died on {{ $bird->mortalityRecord->date_of_death->format('j F Y') }}.
             </p>
             @if ($canSeeInternal)
-                <p class="mt-1 text-sm text-destructive">Cause: {{ $bird->mortalityRecord->cause_of_death }}</p>
+                <p class="mt-1 text-sm text-foreground">Cause: {{ $bird->mortalityRecord->cause_of_death }}</p>
             @endif
         </div>
     @endif
