@@ -113,4 +113,90 @@ final class BroodcockFormPhotosTest extends TestCase
 
         $this->assertSame(2, BroodcockPhoto::where('broodcock_id', $bird->id)->count());
     }
+
+    // -----------------------------------------------------------------
+    // One upload path, one set of rules
+    //
+    // This form and the dedicated uploader on a bird's page store photos
+    // through the same StorePhoto action, so they must also VALIDATE the same
+    // way. They did not: the rules here were written as literals (max:10,
+    // max:4096) and had no `mimes` rule at all.
+    // -----------------------------------------------------------------
+
+    /**
+     * The size limit is farm policy in config, not a number in a component.
+     *
+     * With the limit restated as `max:4096`, lowering GFMS_PHOTO_MAX_KB changed
+     * what the uploader accepted and left this form accepting 4 MB regardless.
+     */
+    public function test_the_size_limit_comes_from_config(): void
+    {
+        config(['gfms.photos.max_kilobytes' => 100]);
+        Storage::fake('local');
+
+        $component = Livewire::actingAs($this->staff())->test(Form::class);
+
+        foreach ($this->validBird() as $field => $value) {
+            $component->set($field, $value);
+        }
+
+        // Comfortably under the old 4 MB literal, over the configured limit.
+        $component
+            ->set('photos', [UploadedFile::fake()->image('medium.jpg')->size(500)])
+            ->call('save')
+            ->assertHasErrors('photos.*');
+
+        $this->assertDatabaseMissing('broodcocks', ['name' => 'Bagwis']);
+    }
+
+    /** Likewise the per-bird cap, which this form did not consult at all. */
+    public function test_the_per_bird_cap_comes_from_config(): void
+    {
+        config(['gfms.photos.max_per_broodcock' => 2]);
+        Storage::fake('local');
+
+        $component = Livewire::actingAs($this->staff())->test(Form::class);
+
+        foreach ($this->validBird() as $field => $value) {
+            $component->set($field, $value);
+        }
+
+        $component
+            ->set('photos', [
+                UploadedFile::fake()->image('a.jpg'),
+                UploadedFile::fake()->image('b.jpg'),
+                UploadedFile::fake()->image('c.jpg'),
+            ])
+            ->call('save')
+            ->assertHasErrors('photos');
+
+        $this->assertDatabaseMissing('broodcocks', ['name' => 'Bagwis']);
+    }
+
+    /**
+     * An SVG passes Laravel's `image` rule, which is why `mimes` exists.
+     *
+     * The uploader pinned the accepted types; this form did not, so the same
+     * file was accepted on one screen and refused on the next. Storing one is
+     * not currently exploitable - BroodcockPhotoController sends nosniff and
+     * labels unknown extensions image/jpeg - but "the other layer catches it"
+     * is not a rule, it is a coincidence waiting to be refactored away.
+     */
+    public function test_a_file_type_the_uploader_refuses_is_refused_here_too(): void
+    {
+        Storage::fake('local');
+
+        $component = Livewire::actingAs($this->staff())->test(Form::class);
+
+        foreach ($this->validBird() as $field => $value) {
+            $component->set($field, $value);
+        }
+
+        $component
+            ->set('photos', [UploadedFile::fake()->create('vector.svg', 10, 'image/svg+xml')])
+            ->call('save')
+            ->assertHasErrors('photos.*');
+
+        $this->assertDatabaseMissing('broodcocks', ['name' => 'Bagwis']);
+    }
 }

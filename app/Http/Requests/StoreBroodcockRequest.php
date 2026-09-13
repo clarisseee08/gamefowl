@@ -8,6 +8,7 @@ use App\Enums\BroodcockClass;
 use App\Enums\BroodcockStatus;
 use App\Enums\Sex;
 use App\Models\Broodcock;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -56,23 +57,100 @@ class StoreBroodcockRequest extends FormRequest
             'distinguishing_marks' => ['nullable', 'string', 'max:2000'],
             'status' => ['required', Rule::enum(BroodcockStatus::class)],
 
-            // A sire must be male, a dam must be female, and neither may be
-            // the bird itself. The DB enforces the self-reference check too,
-            // but catching it here produces a readable message instead of a
-            // constraint-violation exception.
+            // A sire must be male, a dam must be female, neither may be the
+            // bird itself, and neither may be a bird descended from it. The DB
+            // enforces the self-reference check too, but catching it here
+            // produces a readable message instead of a constraint violation.
             'sire_id' => [
                 'nullable', 'integer',
                 Rule::exists('broodcocks', 'id')->where('sex', Sex::Male->value)->whereNull('deleted_at'),
                 $selfId ? Rule::notIn([$selfId]) : '',
+                self::noAncestorLoop($selfId, 'sire'),
             ],
             'dam_id' => [
                 'nullable', 'integer',
                 Rule::exists('broodcocks', 'id')->where('sex', Sex::Female->value)->whereNull('deleted_at'),
                 $selfId ? Rule::notIn([$selfId]) : '',
+                self::noAncestorLoop($selfId, 'dam'),
             ],
 
             'notes' => ['nullable', 'string', 'max:5000'],
         ];
+    }
+
+    /**
+     * Refuses a parent that is descended from the bird being edited.
+     *
+     * WHAT THIS PREVENTS. `sire_id` and `dam_id` are self-referencing keys, so
+     * nothing in the schema stops A being B's sire while B is A's sire. The
+     * database CHECK constraints only catch the one-step case - a bird that is
+     * its own parent - and the migration that added them claims deeper cycles
+     * are "prevented in the application layer, where the full ancestor chain is
+     * known". They were not; this is that check.
+     *
+     * A cycle is not a crash - Pedigree walks a fixed three generations and
+     * stops - it is worse than that. It renders a bird as its own
+     * great-grandfather, silently, on the one screen the whole system is built
+     * to justify.
+     *
+     * ONLY WHEN EDITING. A bird being created has no id yet, so nothing can be
+     * descended from it and no cycle is reachable.
+     */
+    private static function noAncestorLoop(?int $selfId, string $label): string|Closure
+    {
+        if ($selfId === null) {
+            return '';
+        }
+
+        return function (string $attribute, mixed $value, Closure $fail) use ($selfId, $label): void {
+            if (blank($value)) {
+                return;
+            }
+
+            if (self::isSelfOrDescendedFrom((int) $value, $selfId)) {
+                $fail("That bird is descended from this one, so it cannot also be its {$label}.");
+            }
+        };
+    }
+
+    /**
+     * Is $candidateId the bird $selfId, or descended from it?
+     *
+     * Walks UP from the candidate one generation per query rather than down
+     * from the bird: ancestors are a bounded set that narrows, whereas
+     * descendants fan out without limit on a productive cock.
+     *
+     * The visited set is not defensive padding. If a cycle already exists in
+     * the data - written before this rule did - walking it without one never
+     * terminates, and the first thing a keeper would do on discovering a cycle
+     * is open the form to correct it.
+     */
+    private static function isSelfOrDescendedFrom(int $candidateId, int $selfId): bool
+    {
+        $seen = [];
+        $frontier = [$candidateId];
+
+        while ($frontier !== []) {
+            $frontier = array_values(array_diff(array_unique($frontier), $seen));
+
+            if ($frontier === []) {
+                return false;
+            }
+
+            if (in_array($selfId, $frontier, true)) {
+                return true;
+            }
+
+            $seen = [...$seen, ...$frontier];
+
+            $frontier = Broodcock::query()
+                ->whereIn('id', $frontier)
+                ->get(['sire_id', 'dam_id'])
+                ->flatMap(fn (Broodcock $bird): array => array_filter([$bird->sire_id, $bird->dam_id]))
+                ->all();
+        }
+
+        return false;
     }
 
     /**

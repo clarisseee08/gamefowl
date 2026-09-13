@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Actions\Photos\StorePhoto;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -149,6 +151,33 @@ class User extends Authenticatable
     }
 
     /**
+     * Memoised result of profilePhotoUrl(), including a resolved null.
+     *
+     * `false` means "not looked up yet", which null cannot express - and the
+     * difference matters, because a null answer is the expensive one to reach.
+     */
+    private string|false|null $resolvedPhotoUrl = false;
+
+    /**
+     * Assigning a new path invalidates the memo.
+     *
+     * Without this, uploading and then removing a photo inside one request
+     * would keep serving the URL of the file that was just deleted. Hanging it
+     * off the attribute rather than off the two call sites means a third caller
+     * cannot forget to do it.
+     */
+    protected function profilePhotoPath(): Attribute
+    {
+        return Attribute::make(
+            set: function (?string $value): ?string {
+                $this->resolvedPhotoUrl = false;
+
+                return $value;
+            },
+        );
+    }
+
+    /**
      * A URL the browser can render for this user's photo, or null.
      *
      * Mirrors BroodcockPhoto::url(): the Supabase bucket is private, so signed
@@ -156,14 +185,32 @@ class User extends Authenticatable
      * plain URL on the local public disk. Reading the disk from the row rather
      * than from config is what makes an old photo still resolve after the
      * default disk changes.
+     *
+     * MEMOISED, and that is not a micro-optimisation. The sidebar renders on
+     * every console screen and calls this twice - once to decide whether to
+     * show an <img> at all, once for its src. On the supabase disk the exists()
+     * check below is an HTTP round trip to Tokyo, so an unmemoised call put two
+     * of them in front of every page in the application.
      */
     public function profilePhotoUrl(int $minutes = 30): ?string
+    {
+        if ($this->resolvedPhotoUrl !== false) {
+            return $this->resolvedPhotoUrl;
+        }
+
+        return $this->resolvedPhotoUrl = $this->resolveProfilePhotoUrl($minutes);
+    }
+
+    private function resolveProfilePhotoUrl(int $minutes): ?string
     {
         if (blank($this->profile_photo_path)) {
             return null;
         }
 
-        $disk = Storage::disk($this->profile_photo_disk ?: config('filesystems.default'));
+        // gfms.photo_disk, not filesystems.default - see StorePhoto::disk().
+        // The fallback only covers rows written before profile_photo_disk
+        // existed; anything newer carries the disk it was actually stored on.
+        $disk = Storage::disk($this->profile_photo_disk ?: StorePhoto::disk());
 
         if (! $disk->exists($this->profile_photo_path)) {
             return null;

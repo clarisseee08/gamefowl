@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Profile;
 
+use App\Actions\Photos\StorePhoto;
+use App\Http\Requests\StoreBroodcockPhotoRequest;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -65,18 +67,18 @@ final class Edit extends Component
             'contact_number' => ['nullable', 'string', 'max:40'],
             'address' => ['nullable', 'string', 'max:255'],
             'position' => ['nullable', 'string', 'max:120'],
-            // 4MB and images only. A phone photo is routinely 8MB, so the limit
-            // has to be stated in the UI as well as enforced here.
-            'photo' => ['nullable', 'image', 'max:4096'],
+            // Same limits and the same accepted types as every other upload in
+            // the system, read from config rather than restated. A phone photo
+            // is routinely 8 MB, so the limit has to be shown in the UI as well
+            // as enforced here.
+            'photo' => ['nullable', ...StoreBroodcockPhotoRequest::optionalSinglePhotoRules()],
         ];
     }
 
     /** @return array<string, string> */
     protected function messages(): array
     {
-        return [
-            'photo.max' => 'That photo is larger than 4 MB. Most phones can send a smaller copy.',
-            'photo.image' => 'That file is not an image.',
+        return StoreBroodcockPhotoRequest::messagesFor('photo') + [
             'email.unique' => 'Another account already uses that email address.',
         ];
     }
@@ -90,11 +92,28 @@ final class Edit extends Component
 
     public function save(): void
     {
-        $data = $this->validate();
         $user = auth()->user();
 
+        // UserPolicy::updateOwnProfile() existed and was called from nowhere.
+        // This component cannot actually be tricked into editing somebody else
+        // - it reads auth()->user() and takes no id - but an ability that is
+        // never invoked is an ability nobody maintains, and the day this screen
+        // grows a parameter the check needs to already be here.
+        $this->authorize('updateOwnProfile', $user);
+
+        $data = $this->validate();
+
         if ($this->photo !== null) {
-            $disk = config('filesystems.default');
+            // gfms.photo_disk, NOT filesystems.default.
+            //
+            // These are not the same disk in production and the difference is
+            // silent data loss. Render sets GFMS_PHOTO_DISK=supabase and never
+            // sets FILESYSTEM_DISK, so the default resolves to 'local' -
+            // storage/app/private inside a container whose filesystem is wiped
+            // on every restart, which on the free instance type is constant.
+            // Bird photos already read this key; profile photos did not, so
+            // they were the only uploads that did not survive a restart.
+            $disk = StorePhoto::disk();
 
             $path = $this->photo->store('profile-photos', $disk);
 
@@ -124,6 +143,8 @@ final class Edit extends Component
     {
         $user = auth()->user();
 
+        $this->authorize('updateOwnProfile', $user);
+
         $this->deleteStoredPhoto($user->profile_photo_disk, $user->profile_photo_path);
 
         $user->profile_photo_path = null;
@@ -135,6 +156,8 @@ final class Edit extends Component
 
     public function updatePassword(): void
     {
+        $this->authorize('updateOwnProfile', auth()->user());
+
         $this->validate([
             'current_password' => ['required', 'current_password'],
             'password' => ['required', 'confirmed', 'min:8'],
@@ -154,7 +177,10 @@ final class Edit extends Component
             return;
         }
 
-        Storage::disk($disk ?: config('filesystems.default'))->delete($path);
+        // The disk is read from the ROW, so a photo uploaded before the disk
+        // changed still resolves to the place it was actually written. The
+        // fallback only covers rows that predate profile_photo_disk existing.
+        Storage::disk($disk ?: StorePhoto::disk())->delete($path);
     }
 
     public function render(): View

@@ -2,6 +2,10 @@
     'photo' => null,
     'alt' => '',
     'placeholder' => 'No photo',
+    // Ask for the small copy by default. Every use of this component is a grid
+    // cell or a table row; the one place that wants full resolution is the
+    // lightbox on a bird's own page, which passes full="true".
+    'full' => false,
 ])
 
 {{--
@@ -15,9 +19,17 @@
 --}}
 <div {{ $attributes->merge(['class' => 'overflow-hidden bg-background']) }}>
     @if ($photo && Route::has('photos.show'))
-        <img src="{{ route('photos.show', $photo) }}"
+        {{-- ?size=thumb serves the ~400px copy written at upload time, falling
+             back to the original for photos that predate thumbnails. Without
+             it a twelve-card catalogue page pulled twelve 4 MB originals out of
+             Tokyo, through four php-fpm workers, to fill boxes 300px wide.
+
+             decoding="async" keeps a slow decode off the main thread, so a long
+             table still scrolls while its images resolve. --}}
+        <img src="{{ route('photos.show', $full ? $photo : ['photo' => $photo, 'size' => 'thumb']) }}"
              alt="{{ $alt }}"
              loading="lazy"
+             decoding="async"
              class="h-full w-full object-cover">
     @elseif ($photo && method_exists($photo, 'url') && $photo->url())
         <img src="{{ $photo->url() }}" alt="{{ $alt }}" loading="lazy" class="h-full w-full object-cover">

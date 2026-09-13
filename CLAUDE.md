@@ -212,8 +212,14 @@ It is functionally complete. Treat it as production code someone's grade depends
 
 ## Design
 
-**Read `.claude/skills/gamefowl-design-system/SKILL.md` before touching any UI.**
-Live component reference at `/design`. Full rationale in `docs/design-brief.md`.
+**Live component reference at `/design`** — every component in every state on one
+page, with measured contrast ratios beside the swatches. Open it before touching
+any UI. Full rationale in `docs/design-brief.md`; the tokens themselves are
+`@theme{}` in `resources/css/app.css`, mirrored from `config/gfms-brand.php`.
+
+(There is no `.claude/skills/` directory in this repo — `.gitignore` excludes it,
+so anything that lived there was never committed and is not available to a fresh
+clone. `/design` and `docs/design-brief.md` are the real references.)
 
 The short version:
 
@@ -223,9 +229,36 @@ The short version:
   and percentage gets `.datum`. Digits must align in a column.
 - **Console minimums** (staff screens, used outdoors on phones): 7:1 contrast,
   44px touch targets, 16px inputs. Catalog is 4.5:1.
-- No shadows, no gradients, no `backdrop-blur`, no `font-bold`, nothing under 11px.
+- No gradients, no `backdrop-blur`, no `font-bold`, nothing under 11px.
+- **Elevation is a three-step scale, not decoration.** `--shadow-e1/e2/e3` and
+  `.elev-1/2/3` in `app.css`; buttons, popovers and the command palette use them.
+  Nothing lifts on its own — a shadow means interactive or layered. (This rule
+  used to read "no shadows"; the direction changed and the scale is now in
+  active use. Don't reintroduce ad-hoc `box-shadow` outside the three tokens.)
 - The CSS class vocabulary (`.badge-ok`, `.btn-primary`, `.input`) is a contract
   shared with five PHP enums. Restyle what a class resolves to; do not rename it.
+
+## Things that changed recently and are easy to get wrong from memory
+
+- **Pens have no screens.** The CRUD was removed; pens remain as data
+  (`broodcocks.pen_id`, the `Pen` model, the report column, the pen selector when
+  registering a hatch). New pens come from `PenSeeder`, not the UI. The full
+  reasoning is in `routes/web.php` where the route group used to be.
+- **Outside birds are not farm stock.** `Broodcock::scopeFarmStock()` is now
+  actually called — dashboard counts, the catalogue and the inventory report all
+  exclude `is_external` birds. The broodcock list defaults to farm stock with an
+  ownership filter. Build one in tests with `Broodcock::factory()->external()`.
+- **Photos are thumbnailed at upload.** `App\Support\Thumbnail` writes a ~400px
+  JPEG beside the original; grids request it with `?size=thumb`. A missing
+  thumbnail is normal — the controller falls back to the original, and a
+  thumbnail failure must never fail an upload. `php artisan
+  photos:backfill-thumbnails` fills in older photos. Needs `gd` (and `exif` for
+  rotation); both are in the Dockerfile.
+- **`migrate:fresh` is refused on every machine**, not just production — the
+  dev and production databases are the same Supabase project. Set
+  `GFMS_ALLOW_DESTRUCTIVE_DB=true` deliberately if you really mean it.
+- `docs/` predates all of this and still describes the pen screens. Treat it as
+  historical unless it agrees with the code.
 
 ## Constraints that are not negotiable
 
@@ -239,8 +272,12 @@ The short version:
 
 ## Testing
 
-- `php artisan test` must stay green. 461 tests.
-- **Visible copy is the test API** — 117 assertions target copy and data, zero
+- `php artisan test` must stay green. 550 tests at last count — treat that as a
+  floor, not a target, and re-check it rather than trusting this line.
+- CI runs the suite, `pint --test` and `npm run build` on every push to `main`
+  and every PR (`.github/workflows/ci.yml`). Actions minutes are metered on this
+  private repo, so narrow the trigger before weakening any of the three checks.
+- **Visible copy is the test API** — ~126 assertions target copy and data, zero
   target CSS class names. Restyling is safe; *rewording* breaks tests. Change
   copy and its test in the same commit.
 - Query-count tests are the performance guard. A reskin that adds a per-row

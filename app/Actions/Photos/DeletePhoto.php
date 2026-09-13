@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Photos;
 
 use App\Models\BroodcockPhoto;
+use App\Support\Thumbnail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -58,7 +59,10 @@ final class DeletePhoto
         // failure is logged for the administrator, never surfaced to the user
         // as if the deletion had failed - because it did not.
         try {
-            Storage::disk($disk)->delete($path);
+            // The thumbnail goes with it. Its path is derived rather than
+            // stored, so there is no row to consult - and an orphaned thumbnail
+            // would be invisible storage nobody ever reclaims.
+            Storage::disk($disk)->delete([$path, Thumbnail::pathFor($path)]);
         } catch (Throwable $e) {
             Log::warning('Photo row deleted but its file could not be removed.', [
                 'disk' => $disk,
