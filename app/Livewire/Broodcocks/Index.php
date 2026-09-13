@@ -9,6 +9,7 @@ use App\Enums\BroodcockStatus;
 use App\Enums\Sex;
 use App\Models\Broodcock;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
@@ -33,6 +34,24 @@ final class Index extends Component
 
     #[Url(except: '')]
     public string $bloodline = '';
+
+    /**
+     * Whose birds to list: 'farm', 'outside' or 'all'.
+     *
+     * Defaults to the farm's OWN stock. Outside parents - borrowed and visiting
+     * birds, created automatically by the breeding form so the pedigree keeps
+     * the branch above them - are not livestock in this farm's care, and they
+     * were previously mixed into this list with nothing to tell them apart.
+     *
+     * They stay reachable rather than hidden: a keeper still has to be able to
+     * correct a borrowed hen's name or bloodline, and a bird you cannot find is
+     * a bird you cannot fix.
+     */
+    #[Url(except: 'farm')]
+    public string $ownership = 'farm';
+
+    /** @var list<string> */
+    private const OWNERSHIP = ['farm', 'outside', 'all'];
 
     #[Url(except: 'created_at')]
     public string $sortBy = 'created_at';
@@ -74,7 +93,9 @@ final class Index extends Component
 
     public function clearFilters(): void
     {
-        $this->reset(['search', 'status', 'class', 'sex', 'bloodline']);
+        // reset() restores declared defaults, so ownership returns to 'farm'
+        // rather than to an empty string that would match nothing.
+        $this->reset(['search', 'status', 'class', 'sex', 'bloodline', 'ownership']);
         $this->resetPage();
     }
 
@@ -84,7 +105,8 @@ final class Index extends Component
             || $this->status !== ''
             || $this->class !== ''
             || $this->sex !== ''
-            || $this->bloodline !== '';
+            || $this->bloodline !== ''
+            || $this->ownership !== 'farm';
     }
 
     /**
@@ -93,7 +115,7 @@ final class Index extends Component
      */
     public function clearFilter(string $filter): void
     {
-        if (! in_array($filter, ['search', 'status', 'class', 'sex', 'bloodline'], true)) {
+        if (! in_array($filter, ['search', 'status', 'class', 'sex', 'bloodline', 'ownership'], true)) {
             return;
         }
 
@@ -191,6 +213,7 @@ final class Index extends Component
             // photo per row. Without this the list issues 2 extra queries per
             // row - and each one is a round trip to Tokyo.
             ->with(['primaryPhoto'])
+            ->tap(fn ($query) => $this->applyOwnership($query))
             ->search($this->search)
             ->status($this->status)
             ->classGrade($this->class)
@@ -210,11 +233,38 @@ final class Index extends Component
     public function bloodlineOptions(): array
     {
         return Broodcock::query()
+            // Scoped the same way as the list, so the filter never offers a
+            // bloodline that only exists on birds the current view excludes.
+            ->tap(fn ($query) => $this->applyOwnership($query))
             ->whereNotNull('bloodline')
             ->distinct()
             ->orderBy('bloodline')
             ->pluck('bloodline')
             ->all();
+    }
+
+    /**
+     * Narrows a query to the selected ownership.
+     *
+     * An unrecognised value falls through to farm stock rather than to "all" -
+     * the URL is user input, and the safe failure for a customer-adjacent list
+     * is to show less, not more.
+     *
+     * @param  Builder<Broodcock>  $query
+     */
+    private function applyOwnership(Builder $query): void
+    {
+        match ($this->ownership) {
+            'all' => null,
+            'outside' => $query->external(),
+            default => $query->farmStock(),
+        };
+    }
+
+    /** @return array<int, string> */
+    public function ownershipOptions(): array
+    {
+        return self::OWNERSHIP;
     }
 
     /** @return array<int, BroodcockStatus> */

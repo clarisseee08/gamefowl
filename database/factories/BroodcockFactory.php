@@ -37,6 +37,10 @@ class BroodcockFactory extends Factory
             // factory-built model only carries the keys the factory sets,
             // and shouldBeStrict() throws on reading one it does not have.
             'for_sale' => false,
+            // Same reason, and the same default the column carries: a bird is
+            // this farm's own unless something says otherwise. Use the
+            // ->external() state to build one that is not.
+            'is_external' => false,
             'name' => fake()->firstName(),
             'breed' => fake()->randomElement(self::BREEDS),
             'bloodline' => fake()->randomElement(self::BLOODLINES),
@@ -86,6 +90,23 @@ class BroodcockFactory extends Factory
     public function unbanded(): static
     {
         return $this->state(fn () => ['band_number' => null]);
+    }
+
+    /**
+     * A bird belonging to somebody else.
+     *
+     * Created in real life by the breeding form when a mating names a borrowed
+     * or visiting parent: she has to be a real row or sire_id/dam_id cannot
+     * point at her and the pedigree loses the whole branch above her. She is a
+     * node in the family tree, not livestock in this farm's care, so she must
+     * not appear in inventory counts, the customer catalogue, or the dashboard.
+     *
+     * No test used to build one of these, which is exactly why every one of
+     * those screens counted her for months without a single failure.
+     */
+    public function external(): static
+    {
+        return $this->state(fn () => ['is_external' => true]);
     }
 
     /** Explicit parentage, for building pedigree fixtures. */
