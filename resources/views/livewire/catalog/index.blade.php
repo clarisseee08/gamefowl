@@ -29,7 +29,6 @@
                 </select>
             </div>
 
-            <div>
             <div class="col-span-2 lg:col-span-1">
                 <label for="sex" class="label">Type</label>
                 <select id="sex" wire:model.live="sex" class="input mt-1">
@@ -38,6 +37,20 @@
                         <option value="{{ $option->value }}">{{ $option->farmTerm() }}</option>
                     @endforeach
                 </select>
+            </div>
+
+            {{-- Availability.
+
+                 A checkbox rather than a select, and off by default: the farm
+                 marks only a handful of birds for sale at a time, so defaulting
+                 this on would greet a customer with an empty catalogue. The
+                 default view is "what this farm keeps"; this narrows it to
+                 "what you can buy". --}}
+            <div class="col-span-2 flex items-end lg:col-span-1">
+                <label class="flex min-h-[44px] cursor-pointer items-center gap-2.5 text-[15px] text-foreground">
+                    <input type="checkbox" wire:model.live="forSaleOnly" class="h-5 w-5 accent-primary">
+                    Available birds only
+                </label>
             </div>
         </div>
 
@@ -116,6 +129,13 @@
                         <div class="mt-3.5 flex flex-wrap gap-1.5 border-t border-border pt-3.5">
                             <span class="badge {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
                             <span class="badge badge-neutral">{{ $bird->sex->farmTerm() }}</span>
+                            {{-- Only the positive case is badged. "Not for sale"
+                                 is the normal state of almost every bird here,
+                                 and labelling the rule rather than the exception
+                                 would put a grey tag on every card in the grid. --}}
+                            @if ($bird->for_sale)
+                                <span class="badge badge-ok">For sale</span>
+                            @endif
                         </div>
                     </div>
                 </a>
