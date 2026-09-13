@@ -267,14 +267,29 @@
                     @endif
                 </p>
 
-                <label class="mt-5 flex cursor-pointer flex-col items-center justify-center rounded-[var(--radius-md)] border border-dashed border-input px-6 py-8 text-center transition-colors hover:border-primary hover:bg-primary-50 focus-within:border-primary focus-within:bg-primary-50">
+                {{-- `relative` IS LOAD-BEARING, not layout tidying. Tailwind's
+                     sr-only is position:absolute, so with no positioned ancestor
+                     the input is placed against the DOCUMENT. Clicking the zone
+                     focuses it, the browser scrolls the WINDOW to bring the
+                     focused element into view, and because the console shell is
+                     a fixed-height overflow-hidden body whose only scroll
+                     container is <main>, that scroll carries the whole layout
+                     off screen with nothing to bring it back. The page goes
+                     blank and stays blank - which is exactly what happened. --}}
+                <label x-data="fileDropzone()"
+                       x-on:dragover.prevent="onDragOver()"
+                       x-on:dragleave="onDragLeave($event)"
+                       x-on:drop.prevent="onDrop($event)"
+                       :class="dragging && 'border-primary bg-primary-50'"
+                       class="relative mt-5 flex cursor-pointer flex-col items-center justify-center rounded-[var(--radius-md)] border border-dashed border-input px-6 py-8 text-center transition-colors hover:border-primary hover:bg-primary-50 focus-within:border-primary focus-within:bg-primary-50">
                     <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round"
                               d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 7.5 12 3m0 0L7.5 7.5M12 3v13.5"/>
                     </svg>
-                    <span class="mt-2 text-[15px] font-medium text-foreground">Tap to choose photos</span>
-                    <span class="mt-0.5 text-[13px] text-muted-foreground">You can pick more than one.</span>
-                    <input type="file" wire:model="photos" accept="image/*" multiple class="sr-only">
+                    <span class="mt-2 text-[15px] font-medium text-foreground"
+                          x-text="dragging ? 'Drop to add them' : 'Tap to choose photos'">Tap to choose photos</span>
+                    <span class="mt-0.5 text-[13px] text-muted-foreground">You can pick more than one, or drag them here.</span>
+                    <input x-ref="input" type="file" wire:model="photos" accept="image/*" multiple class="sr-only">
                 </label>
 
                 <div wire:loading wire:target="photos" class="mt-3 text-[13px] text-muted-foreground">

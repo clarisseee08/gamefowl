@@ -327,4 +327,57 @@ final class DesignSystemGuardTest extends TestCase
 '.implode('
 ', $offenders));
     }
+
+    /**
+     * A visually hidden file input must sit inside a POSITIONED ancestor.
+     *
+     * Tailwind's `sr-only` is position:absolute. With no positioned ancestor
+     * the input is laid out against the document, so clicking the upload zone
+     * focuses an element the browser believes is thousands of pixels down the
+     * page - and it scrolls the WINDOW to reach it.
+     *
+     * On this shell that is fatal rather than untidy. The console body is
+     * fixed-height and overflow-hidden, with <main> as the only scroll
+     * container, so a window scroll drags the entire layout out of view and
+     * nothing ever scrolls it back. The page goes blank, the DOM stays
+     * perfectly intact, every asset still reports 200, and the console shows no
+     * error. It cost a long time to find precisely because nothing looks wrong.
+     *
+     * Adding `relative` to the wrapping label is the whole fix.
+     */
+    public function test_a_visually_hidden_file_input_sits_in_a_positioned_wrapper(): void
+    {
+        $offenders = [];
+
+        foreach ($this->files('resources/views', '.blade.php') as $file) {
+            $body = file_get_contents($file);
+
+            if (! str_contains($body, 'type="file"')) {
+                continue;
+            }
+
+            // Every <label> that contains a file input, with its attributes.
+            if (! preg_match_all("/<label\b[^>]*>.*?<input\b[^>]*type=\"file\"[^>]*>/s", $body, $matches)) {
+                continue;
+            }
+
+            foreach ($matches[0] as $block) {
+                $hidden = str_contains($block, 'sr-only');
+                $positioned = preg_match("/\bclass=\"[^\"]*\brelative\b/", $block) === 1
+                    || str_contains($block, "'relative ")
+                    || str_contains($block, ' relative ');
+
+                if ($hidden && ! $positioned) {
+                    $offenders[] = $this->rel($file);
+                }
+            }
+        }
+
+        $this->assertSame([], array_unique($offenders),
+            'A sr-only file input has no positioned wrapper. Focusing it will scroll the window '
+            .'and blank the console layout - add `relative` to the wrapping <label>:
+'
+            .implode('
+', array_unique($offenders)));
+    }
 }
