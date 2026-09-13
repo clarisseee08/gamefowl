@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Support\RecordCache;
 use Database\Factories\BroodcockPhotoFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -35,6 +36,26 @@ class BroodcockPhoto extends Model
         return [
             'is_primary' => 'boolean',
         ];
+    }
+
+    /**
+     * A photo change alters the catalogue grid, so it invalidates the same
+     * cache a change to the bird itself does.
+     *
+     * Setting a different primary photo does not touch the broodcocks table at
+     * all - it writes is_primary here - so without this the grid would keep
+     * serving the old picture until the cache aged out on its own.
+     *
+     * No `restored`: this model is not soft-deleted.
+     */
+    protected static function booted(): void
+    {
+        $forget = static function (): void {
+            RecordCache::invalidate();
+        };
+
+        static::saved($forget);
+        static::deleted($forget);
     }
 
     public function getActivitylogOptions(): LogOptions
