@@ -62,11 +62,23 @@ return [
      * the thesis specifies; raising it grows the eager-load set exponentially.
      */
     'pedigree_generations' => 3,
-
-    /* Shown on report headers and PDF footers. */
+    /*
+     * What the farm tells the public.
+     *
+     * These feed the footer and the "Visit us" section, and every one of them
+     * defaults to an empty string on purpose: the footer omits a row it has no
+     * value for rather than rendering a label with nothing after it. A farm
+     * that has not supplied a phone number shows no phone number, not "Phone -".
+     *
+     * They live in the environment rather than as committed defaults because
+     * they are a real person's contact details.
+     */
     'farm' => [
         'name' => env('GFMS_FARM_NAME', 'SSGuad Game Farm'),
         'address' => env('GFMS_FARM_ADDRESS', ''),
+        'phone' => env('GFMS_FARM_PHONE', ''),
+        'email' => env('GFMS_FARM_EMAIL', ''),
+        'hours' => env('GFMS_FARM_HOURS', ''),
     ],
 
     /*
