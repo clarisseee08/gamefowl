@@ -61,6 +61,17 @@
                         <span class="badge {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
                         <span class="badge {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
                         <span class="badge badge-neutral">{{ $bird->sex->farmTerm() }}</span>
+
+                        {{-- Availability was the thirteenth row of a thirteen-row
+                             list, reading "For Sale: No" on almost every bird. It
+                             is the one fact a customer opens this page to find, so
+                             it sits with the other identity badges in the exact
+                             vocabulary the catalogue grid already uses: positive
+                             case only, because labelling the rule rather than the
+                             exception puts a tag on every bird on the farm. --}}
+                        @if ($bird->for_sale)
+                            <span class="badge badge-ok">For sale</span>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -117,77 +128,136 @@
 
     {{-- Overview --}}
     @if ($tab === 'overview')
-        <div class="grid gap-6 lg:grid-cols-3">
-            <div class="card p-6 lg:col-span-2">
-                <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-foreground">Details</h2>
-                {{-- A ruled ledger rather than thirteen floating pairs. Label left,
-                     value right, hairline between: the rhythm of the printed record
-                     book this system replaces, and it gives the eye a single column
-                     to run down instead of a zig-zag across a two-column grid.
-                     The boolean marks a registry value - it renders in mono with
-                     tabular figures so dates and weights align down the column. --}}
-                <dl class="mt-4 divide-y divide-border border-t border-border">
-                    @foreach ([
-                        ['Band Number', $bird->displayBand(), true],
-                        ['Name', $bird->name, false],
-                        ['Sex', $bird->sex->label(), false],
-                        ['Bloodline', $bird->bloodline ?: 'Not recorded', false],
-                        ['Class', $bird->class->label(), false],
-                        ['Age', $bird->ageLabel() ?? 'Unknown (no hatch date)', true],
-                        ['Date Hatched', $bird->date_hatched?->format('j F Y') ?? 'Not recorded', true],
-                        ['Date Acquired', $bird->date_acquired?->format('j F Y') ?? 'Not recorded', true],
-                        ['Weight', $bird->weight ? $bird->weight.' kg' : 'Not recorded', true],
-                        ['Colour', $bird->color ?: 'Not recorded', false],
-                        ['Comb Type', $bird->comb_type ?: 'Not recorded', false],
-                        ['Leg Colour', $bird->leg_color ?: 'Not recorded', false],
-                        ['For Sale', $bird->for_sale ? 'Yes' : 'No', false],
-                    ] as [$label, $value, $isDatum])
-                        <div class="flex items-baseline justify-between gap-6 py-2.5">
-                            <dt class="shrink-0 text-[13px] text-muted-foreground">{{ $label }}</dt>
-                            <dd class="{{ $isDatum ? 'datum' : '' }} text-right text-[15px] text-foreground">{{ $value }}</dd>
-                        </div>
+        {{-- THE RECORD.
+
+             What this replaced is most of the redesign. The old Details list ran
+             thirteen rows of equal weight and five of them repeated the header
+             word for word: "Name: Tanikala" directly under a 34px <h1> reading
+             Tanikala, "Band Number: KL-4003" under a band tag reading KL-4003,
+             "Bloodline: Kelso" under the Kelso plate, and Class and Sex under
+             the badges that already state them.
+
+             Thirty-eight per cent of the list was restating the header, and the
+             cost was not untidiness - it pushed the facts a keeper opens this
+             page for (weight, colour, comb, legs, the two dates) below the fold
+             on a phone. What remains is grouped by the question it answers and
+             set in two narrow columns rather than one wide one, because a label
+             and its value have to be trackable across the gap between them. --}}
+        <div class="grid gap-6 lg:grid-cols-5">
+            <div class="card p-6 sm:p-7 lg:col-span-3">
+                @php
+                    /*
+                     * Nothing here is in the header. Band number, name, bloodline,
+                     * class and sex live in the identity block above and are
+                     * deliberately absent.
+                     *
+                     * A row is [label, value, monospaced, what to print when absent].
+                     * The value is null when the farm has not recorded it, which is
+                     * what lets an absent row set itself in muted ink - the eye
+                     * running down the column separates "2.00 kg" from "Not
+                     * recorded" without reading either.
+                     */
+                    $groups = [
+                        'Description' => [
+                            ['Weight', $bird->weight ? $bird->weight.' kg' : null, true, 'Not recorded'],
+                            ['Colour', $bird->color ?: null, false, 'Not recorded'],
+                            ['Comb type', $bird->comb_type ?: null, false, 'Not recorded'],
+                            ['Leg colour', $bird->leg_color ?: null, false, 'Not recorded'],
+                        ],
+                        'In the records' => [
+                            ['Hatched', $bird->date_hatched?->format('j F Y'), true, 'Not recorded'],
+                            ['Acquired', $bird->date_acquired?->format('j F Y'), true, 'Not recorded'],
+                            // The catalogue card prints "Unknown" for an age it
+                            // cannot derive. The same fact reads the same way on
+                            // both surfaces.
+                            ['Age', $bird->ageLabel(), true, 'Unknown'],
+                        ],
+                    ];
+                @endphp
+
+                <div class="grid gap-x-10 gap-y-8 sm:grid-cols-2">
+                    @foreach ($groups as $heading => $rows)
+                        <section>
+                            <h2 class="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{{ $heading }}</h2>
+
+                            {{-- Label left, value right, hairline between: the rhythm of
+                                 the printed record book this system replaces. --}}
+                            <dl class="mt-3 divide-y divide-border border-t border-border">
+                                @foreach ($rows as [$label, $value, $isDatum, $absent])
+                                    <div class="flex items-baseline justify-between gap-4 py-2.5">
+                                        <dt class="shrink-0 text-[13px] text-muted-foreground">{{ $label }}</dt>
+                                        <dd @class([
+                                            'text-right text-[15px]',
+                                            'datum' => $isDatum && $value !== null,
+                                            'text-foreground' => $value !== null,
+                                            'text-muted-foreground' => $value === null,
+                                        ])>{{ $value ?? $absent }}</dd>
+                                    </div>
+                                @endforeach
+                            </dl>
+                        </section>
                     @endforeach
-
-                    @if ($bird->distinguishing_marks)
-                        <div class="py-2.5">
-                            <dt class="text-[13px] text-muted-foreground">Distinguishing Marks</dt>
-                            <dd class="mt-1 text-[15px] text-foreground">{{ $bird->distinguishing_marks }}</dd>
-                        </div>
-                    @endif
-
-                    {{-- Internal notes are never rendered for a customer. This is
-                         a Policy check, not just a CSS hide. --}}
-                    @if ($canSeeInternal && $bird->notes)
-                        <div class="py-2.5">
-                            <dt class="text-[13px] text-muted-foreground">Internal Notes</dt>
-                            <dd class="mt-1 whitespace-pre-line text-[15px] text-foreground">{{ $bird->notes }}</dd>
-                        </div>
-                    @endif
-                </dl>
-            </div>
-
-            <div class="space-y-10">
-                <div class="card p-8">
-                    <h2 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-foreground">Parents</h2>
-                    <div class="mt-4 space-y-3">
-                        @foreach ([['Sire (Father)', $bird->sire], ['Dam (Mother)', $bird->dam]] as [$label, $parent])
-                            <div>
-                                <p class="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{{ $label }}</p>
-                                @if ($parent)
-                                    <a href="{{ route('broodcocks.show', $parent) }}" wire:navigate class="text-sm font-medium text-primary hover:underline">
-                                        {{ $parent->name }} ({{ $parent->displayBand() }})
-                                    </a>
-                                @else
-                                    <p class="text-sm text-muted-foreground">Not recorded</p>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                    <a href="{{ route('broodcocks.pedigree', $bird) }}" wire:navigate class="btn-secondary mt-4 w-full">
-                        View full family tree
-                    </a>
                 </div>
 
+                {{-- Prose runs the full width of the card and is capped at a
+                     readable measure rather than at the column. --}}
+                @if ($bird->distinguishing_marks)
+                    <section class="mt-8">
+                        <h2 class="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Distinguishing marks</h2>
+                        <p class="mt-3 max-w-[60ch] border-t border-border pt-3 text-[15px] leading-relaxed text-foreground">
+                            {{ $bird->distinguishing_marks }}
+                        </p>
+                    </section>
+                @endif
+
+                {{-- Internal notes are never rendered for a customer. A Policy
+                     check, not a CSS hide. --}}
+                @if ($canSeeInternal && $bird->notes)
+                    <section class="mt-8">
+                        <h2 class="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Internal notes</h2>
+                        <p class="mt-3 max-w-[60ch] whitespace-pre-line border-t border-border pt-3 text-[15px] leading-relaxed text-foreground">
+                            {{ $bird->notes }}
+                        </p>
+                    </section>
+                @endif
+            </div>
+
+            {{-- LINEAGE.
+
+                 Each parent is a row carrying its own band, in the grammar the
+                 catalogue and the front page already use, so a keeper recognises
+                 a sire by the same object everywhere in the application. It was
+                 two "Name (BAND)" links under uppercase SIRE (FATHER) and DAM
+                 (MOTHER) labels - an arrangement that buries the band, which IS
+                 this system's identity channel, and stacks a kicker above a name
+                 for no gain. --}}
+            <div class="card p-6 sm:p-7 lg:col-span-2">
+                <h2 class="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Parents</h2>
+
+                <dl class="mt-3 divide-y divide-border border-t border-border">
+                    @foreach ([['Sire', $bird->sire], ['Dam', $bird->dam]] as [$role, $parent])
+                        <div class="flex items-start gap-3 py-3">
+                            <dt class="w-10 shrink-0 pt-px text-[13px] text-muted-foreground">{{ $role }}</dt>
+                            <dd class="min-w-0 flex-1">
+                                @if ($parent)
+                                    <a href="{{ route('broodcocks.show', $parent) }}" wire:navigate
+                                       class="group block min-h-11">
+                                        <span class="block text-[15px] font-medium text-foreground group-hover:underline">{{ $parent->name }}</span>
+                                        <span class="mt-1.5 block">
+                                            <x-band-tag :bloodline="$parent->bloodline" :band="$parent->band_number" size="xs" />
+                                        </span>
+                                    </a>
+                                @else
+                                    <span class="text-[15px] text-muted-foreground">Not recorded</span>
+                                @endif
+                            </dd>
+                        </div>
+                    @endforeach
+                </dl>
+
+                <a href="{{ route('broodcocks.pedigree', $bird) }}" wire:navigate class="btn-secondary mt-5 w-full">
+                    View full family tree
+                </a>
             </div>
         </div>
     @endif
