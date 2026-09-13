@@ -42,66 +42,55 @@
         </div>
     </div>
 
-    {{-- Filters. Every one is optional; leaving a box blank means "all". --}}
-    <div class="card mb-4 overflow-hidden">
-        <div class="grid gap-4 p-4 sm:grid-cols-2 sm:p-5 lg:grid-cols-5">
-            <div class="lg:col-span-2">
-                <label for="filter-search" class="label">Search</label>
-                <input id="filter-search"
-                       type="search"
-                       wire:model.live.debounce.400ms="search"
-                       class="input mt-1"
-                       placeholder="Bird name, band number, product or condition">
-            </div>
+    {{-- Filters. Every one is optional; leaving a box blank means "all".
+         One row: search takes the space that is left, every other control
+         shrinks to its own width, and the count only appears once a filter is
+         actually narrowing the list. --}}
+    <x-filter-bar :active="$this->search !== '' || $this->recordType !== '' || $this->broodcockId !== '' || $this->dateFrom !== '' || $this->dateTo !== ''"
+                  clear="clearFilters"
+                  :summary="'Showing '.number_format($this->rows->total()).' '.Str::plural('record', $this->rows->total()).'.'">
+        <x-slot:search>
+            <label for="filter-search" class="sr-only">Search</label>
+            <input id="filter-search"
+                   type="search"
+                   wire:model.live.debounce.400ms="search"
+                   class="input"
+                   placeholder="Bird name, band number, product or condition">
+        </x-slot:search>
 
-            <div>
-                <label for="filter-type" class="label">Record Type</label>
-                <select id="filter-type" wire:model.live="recordType" class="input mt-1">
-                    <option value="">All types</option>
-                    @foreach ($this->recordTypes as $type)
-                        <option value="{{ $type->value }}">{{ $type->label() }}</option>
-                    @endforeach
-                </select>
-            </div>
+        <x-filter-select id="filter-type" label="Record Type" wire:model.live="recordType">
+            <option value="">All types</option>
+            @foreach ($this->recordTypes as $type)
+                <option value="{{ $type->value }}">{{ $type->label() }}</option>
+            @endforeach
+        </x-filter-select>
 
-            <div>
-                <label for="filter-bird" class="label">Bird</label>
-                <select id="filter-bird" wire:model.live="broodcockId" class="input mt-1">
-                    <option value="">All birds</option>
-                    @foreach ($this->birds as $bird)
-                        <option value="{{ $bird->id }}">{{ $bird->displayName() }}</option>
-                    @endforeach
-                </select>
-            </div>
+        <x-filter-select id="filter-bird" label="Bird" wire:model.live="broodcockId">
+            <option value="">All birds</option>
+            @foreach ($this->birds as $bird)
+                <option value="{{ $bird->id }}">{{ $bird->displayName() }}</option>
+            @endforeach
+        </x-filter-select>
 
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label for="filter-from" class="label">From</label>
-                    <input id="filter-from" type="date" wire:model.live="dateFrom" class="input datum mt-1">
-                </div>
-                <div>
-                    <label for="filter-to" class="label">To</label>
-                    <input id="filter-to" type="date" wire:model.live="dateTo" class="input datum mt-1">
-                </div>
-            </div>
+        {{-- The two dates are one control in two halves, so they stay together
+             on a wrap and read as a range rather than as two unrelated fields. --}}
+        <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
+            <label for="filter-from" class="label shrink-0">From</label>
+            <input id="filter-from" type="date" wire:model.live="dateFrom" class="input datum w-full sm:w-auto">
         </div>
 
-        {{-- The result count is sunk into the card's foot so it reads as a
-             consequence of the filters above it, not as a separate statement. --}}
-        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-muted px-4 py-2.5 sm:px-5">
-            <p class="text-[13px] text-muted-foreground" wire:loading.remove wire:target="search,recordType,broodcockId,dateFrom,dateTo">
-                Showing <strong class="datum font-medium text-foreground">{{ number_format($this->rows->total()) }}</strong>
-                {{ Str::plural('record', $this->rows->total()) }}.
-            </p>
-            <p class="text-[13px] text-muted-foreground" wire:loading wire:target="search,recordType,broodcockId,dateFrom,dateTo">
-                Searching&hellip;
-            </p>
-
-            <button type="button" wire:click="clearFilters" class="btn-quiet -my-1 px-2 text-[13px]">
-                Clear Filters
-            </button>
+        <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
+            <label for="filter-to" class="label shrink-0">To</label>
+            <input id="filter-to" type="date" wire:model.live="dateTo" class="input datum w-full sm:w-auto">
         </div>
-    </div>
+
+        {{-- The search is debounced by 400ms, so a keystroke and its result are
+             most of a second apart. Without this the bar looks unresponsive in
+             between, and a keeper types the query again. --}}
+        <p class="text-[13px] text-muted-foreground" wire:loading wire:target="search,recordType,broodcockId,dateFrom,dateTo">
+            Searching&hellip;
+        </p>
+    </x-filter-bar>
 
     <div class="card overflow-hidden">
         @if ($this->rows->isEmpty())

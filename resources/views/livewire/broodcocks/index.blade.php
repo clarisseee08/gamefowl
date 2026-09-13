@@ -123,91 +123,67 @@
         </div>
     @endif
 
-    {{-- Search and filters --}}
-    <div class="card mb-5 p-5" x-show="filtersOpen" x-cloak x-collapse>
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="lg:col-span-2">
-                <label for="search" class="label">Search</label>
-                <input
-                    id="search"
-                    type="search"
-                    wire:model.live.debounce.300ms="search"
-                    placeholder="Name, band number or bloodline"
-                    class="input mt-1"
-                >
-            </div>
+    {{-- Search and filters. One row: search takes the space that is left, the
+         six selects shrink to their own width and wrap when the row runs out
+         of room. Each field name sits inside its control's border rather than
+         stacked above it - see x-filter-select. --}}
+    <x-filter-bar x-show="filtersOpen" x-cloak x-collapse
+                  :active="$this->hasActiveFilters()"
+                  clear="clearFilters"
+                  :summary="'Showing '.number_format($this->broodcocks->total()).' '.Str::plural('bird', $this->broodcocks->total()).' matching your filters.'">
+        <x-slot:search>
+            <label for="search" class="sr-only">Search</label>
+            <input
+                id="search"
+                type="search"
+                wire:model.live.debounce.300ms="search"
+                placeholder="Name, band number or bloodline"
+                class="input"
+            >
+        </x-slot:search>
 
-            <div>
-                <label for="status" class="label">Status</label>
-                <select id="status" wire:model.live="status" class="input mt-1">
-                    <option value="">All statuses</option>
-                    @foreach ($this->statusOptions() as $option)
-                        <option value="{{ $option->value }}">{{ $option->label() }}</option>
-                    @endforeach
-                </select>
-            </div>
+        <x-filter-select id="status" label="Status" wire:model.live="status">
+            <option value="">All statuses</option>
+            @foreach ($this->statusOptions() as $option)
+                <option value="{{ $option->value }}">{{ $option->label() }}</option>
+            @endforeach
+        </x-filter-select>
 
-            <div>
-                <label for="class" class="label">Class</label>
-                <select id="class" wire:model.live="class" class="input mt-1">
-                    <option value="">All classes</option>
-                    @foreach ($this->classOptions() as $option)
-                        <option value="{{ $option->value }}">{{ $option->label() }}</option>
-                    @endforeach
-                </select>
-            </div>
+        <x-filter-select id="class" label="Class" wire:model.live="class">
+            <option value="">All classes</option>
+            @foreach ($this->classOptions() as $option)
+                <option value="{{ $option->value }}">{{ $option->label() }}</option>
+            @endforeach
+        </x-filter-select>
 
-            <div>
-                <label for="sex" class="label">Sex</label>
-                <select id="sex" wire:model.live="sex" class="input mt-1">
-                    <option value="">Male and female</option>
-                    @foreach ($this->sexOptions() as $option)
-                        <option value="{{ $option->value }}">{{ $option->farmTerm() }} ({{ $option->label() }})</option>
-                    @endforeach
-                </select>
-            </div>
+        <x-filter-select id="sex" label="Sex" wire:model.live="sex">
+            <option value="">Male and female</option>
+            @foreach ($this->sexOptions() as $option)
+                <option value="{{ $option->value }}">{{ $option->farmTerm() }} ({{ $option->label() }})</option>
+            @endforeach
+        </x-filter-select>
 
-            <div>
-                <label for="bloodline" class="label">Bloodline</label>
-                <select id="bloodline" wire:model.live="bloodline" class="input mt-1">
-                    <option value="">All bloodlines</option>
-                    @foreach ($this->bloodlineOptions as $option)
-                        <option value="{{ $option }}">{{ $option }}</option>
-                    @endforeach
-                </select>
-            </div>
+        <x-filter-select id="bloodline" label="Bloodline" wire:model.live="bloodline">
+            <option value="">All bloodlines</option>
+            @foreach ($this->bloodlineOptions as $option)
+                <option value="{{ $option }}">{{ $option }}</option>
+            @endforeach
+        </x-filter-select>
 
-            {{-- Ownership.
+        {{-- Ownership.
 
-                 Defaults to the farm's own birds. Outside parents are created
-                 automatically by the breeding form - a borrowed hen has to be a
-                 real row or the pedigree loses the whole branch above her - so
-                 this list would otherwise fill up with birds the farm does not
-                 own and cannot act on. They stay one selection away rather than
-                 hidden, because a keeper still needs to correct their details. --}}
-            <div>
-                <label for="ownership" class="label">Ownership</label>
-                <select id="ownership" wire:model.live="ownership" class="input mt-1">
-                    <option value="farm">This farm's birds</option>
-                    <option value="outside">Outside birds only</option>
-                    <option value="all">Both</option>
-                </select>
-            </div>
-
-        </div>
-
-        @if ($this->hasActiveFilters())
-            <div class="mt-4 flex items-center justify-between border-t border-border pt-4">
-                <p class="text-sm text-muted-foreground">
-                    Showing {{ number_format($this->broodcocks->total()) }}
-                    {{ Str::plural('bird', $this->broodcocks->total()) }} matching your filters.
-                </p>
-                <button type="button" wire:click="clearFilters" class="btn-secondary">
-                    Clear filters
-                </button>
-            </div>
-        @endif
-    </div>
+             Defaults to the farm's own birds. Outside parents are created
+             automatically by the breeding form - a borrowed hen has to be a
+             real row or the pedigree loses the whole branch above her - so
+             this list would otherwise fill up with birds the farm does not
+             own and cannot act on. They stay one selection away rather than
+             hidden, because a keeper still needs to correct their details. --}}
+        <x-filter-select id="ownership" label="Ownership" wire:model.live="ownership">
+            <option value="farm">This farm's birds</option>
+            <option value="outside">Outside birds only</option>
+            <option value="all">Both</option>
+        </x-filter-select>
+    </x-filter-bar>
 
     {{-- Results --}}
     @if ($this->broodcocks->isEmpty())
