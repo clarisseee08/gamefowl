@@ -53,6 +53,70 @@
                 <h1 class="mt-4 max-w-[16ch] text-[40px] font-semibold leading-[1.05] tracking-[-0.02em] text-foreground sm:text-[52px] sm:tracking-[-0.03em] lg:text-[60px]">
                     {{ $farm['name'] }}
                 </h1>
+
+                {{-- ---------------------------------------------------------
+                     THE REGISTRY LINE — what this farm actually holds, today.
+
+                     A masthead of type alone says nothing a template could not
+                     say. These two figures are the farm's own records, read
+                     through the same farmStock()->onFarm() filter the
+                     catalogue below uses, so the masthead cannot claim a bird
+                     the list does not contain.
+
+                     Both are .datum. They are counts, and every count in this
+                     application is monospaced.
+                --------------------------------------------------------- --}}
+                @if ($this->stockCount > 0)
+                    <dl class="mt-8 flex items-stretch gap-8 border-t border-border pt-6">
+                        <div>
+                            <dt class="text-[12px] font-medium uppercase tracking-[0.07em] text-muted-foreground">On the farm</dt>
+                            <dd class="datum mt-1.5 text-[30px] font-semibold leading-none text-foreground">{{ $this->stockCount }}</dd>
+                        </div>
+
+                        @if (count($this->bloodlines) > 0)
+                            <div class="border-l border-border pl-8">
+                                <dt class="text-[12px] font-medium uppercase tracking-[0.07em] text-muted-foreground">Bloodlines</dt>
+                                <dd class="datum mt-1.5 text-[30px] font-semibold leading-none text-foreground">{{ count($this->bloodlines) }}</dd>
+                            </div>
+                        @endif
+                    </dl>
+                @endif
+
+                {{-- ---------------------------------------------------------
+                     THE BLOODLINES — the only colour the masthead is allowed.
+
+                     Colour in this system means bloodline and nothing else, so
+                     a hero that wants to be more than ink on paper has exactly
+                     one honest route to it: show the bloodlines themselves.
+
+                     The colours come from the same App\Support\BandTag the
+                     catalogue uses, so the ones a visitor meets here are the
+                     ones they then see on the birds below. A decorative
+                     palette would have had to invent colours that mean
+                     nothing; these already mean something.
+
+                     x-bloodline-chip, NOT x-band-tag, and the difference is
+                     not cosmetic. x-band-tag describes one BIRD - its slot is
+                     a band number, and with none it correctly renders "Not yet
+                     banded", which is a true statement about a bird and a
+                     meaningless one about a bloodline. It read "Not yet
+                     banded" three times here before the swap.
+
+                     The chip carries the two-letter code and the name in text,
+                     so colour is never the only channel.
+                --------------------------------------------------------- --}}
+                @if (count($this->bloodlines) > 0)
+                    <div class="mt-6">
+                        <p class="sr-only">Bloodlines kept on this farm</p>
+                        <ul class="flex flex-wrap items-center gap-2">
+                            @foreach ($this->bloodlines as $bloodline)
+                                <li>
+                                    <x-bloodline-chip :bloodline="$bloodline" size="xs" />
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
             </div>
 
             <div class="lg:border-l lg:border-border lg:pl-12">

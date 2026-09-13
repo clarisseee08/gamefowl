@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\Landing;
 
+use App\Models\Broodcock;
+use App\Support\RecordCache;
 use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 /**
@@ -42,6 +45,51 @@ final class Index extends Component
         if (auth()->user()?->isInternal()) {
             $this->redirectRoute('dashboard', navigate: false);
         }
+    }
+
+    /**
+     * The bloodlines this farm actually keeps.
+     *
+     * THE ONLY COLOUR THE MASTHEAD IS ALLOWED. Colour in this system means
+     * bloodline and nothing else, so a hero that wants to be more than ink on
+     * paper has exactly one honest way to get there: show the bloodlines. Band
+     * tags here are the same tags the catalogue below uses, resolved by the
+     * same App\Support\BandTag, so the colours a visitor meets in the masthead
+     * are the ones they then see on the birds.
+     *
+     * Same farmStock()->onFarm() filter the catalogue uses, so the masthead
+     * cannot advertise a bloodline the list below does not contain.
+     *
+     * @return list<string>
+     */
+    #[Computed]
+    public function bloodlines(): array
+    {
+        return RecordCache::remember('landing:bloodlines', fn (): array => Broodcock::query()
+            ->farmStock()
+            ->onFarm()
+            ->whereNotNull('bloodline')
+            ->where('bloodline', '!=', '')
+            ->distinct()
+            ->orderBy('bloodline')
+            ->pluck('bloodline')
+            ->all());
+    }
+
+    /**
+     * How many birds are on the farm right now.
+     *
+     * Cached with everything else: this is the most-hit page in the
+     * application and every uncached query against the production database
+     * costs roughly 240ms of round trip.
+     */
+    #[Computed]
+    public function stockCount(): int
+    {
+        return RecordCache::remember('landing:stock-count', fn (): int => Broodcock::query()
+            ->farmStock()
+            ->onFarm()
+            ->count());
     }
 
     public function render(): View
