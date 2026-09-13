@@ -2,61 +2,85 @@
 #
 # Render's free instance type spins down after 15 minutes with no traffic, and
 # waking it takes 25-60 seconds - which, in front of a panel, reads as a broken
-# system rather than a sleeping one. This pings the health endpoint often enough
-# that it never gets to sleep during the hours anyone is likely to open it.
+# system rather than a sleeping one.
 #
-# THE SCHEDULE IS A BUDGET, NOT A PREFERENCE, AND 24/7 IS NOT BUYABLE HERE.
+# THIS WORKFLOW IS A FALLBACK, NOT THE ANSWER. Read the next section before
+# trusting it with anything that matters.
 #
-# This repository is private, so Actions minutes are metered, and GitHub rounds
-# every job UP to a whole minute - a two-second curl is billed as 60 seconds.
-# That is what makes Actions a poor fit for a heartbeat.
+# ---------------------------------------------------------------------------
+# WHAT THIS ACTUALLY DELIVERS, MEASURED
+# ---------------------------------------------------------------------------
 #
-#   free allowance ............................. 2000 min/month
-#   less keep-supabase-awake (~1/day) ...........  -30
-#   less CI (~20 runs at ~5 min) ................ -100
-#   available for this workflow ................. 1870
+# The schedule below asks for a ping every 12 minutes across a 12-hour window:
+# 60 runs a day. GitHub delivers three or four, and ignores the window while
+# doing it. Counted from the run history over eight consecutive days:
 #
-#   Render sleeps after 15 min idle, so >= 5 pings/hour are required.
-#   5 runs x 1 min x 30 days = 150 min per HOUR of daily coverage.
-#   1870 / 150 = 12.5 hours of coverage per day, and that is the ceiling.
+#   2026-09-06   1 run        expected 60
+#   2026-09-07   3 runs       expected 60
+#   2026-09-08   3 runs       expected 60
+#   2026-09-09   3 runs       expected 60
+#   2026-09-10   3 runs       expected 60
+#   2026-09-11   3 runs       expected 60
+#   2026-09-12   4 runs       expected 60
+#   2026-09-13   3 runs       expected 60
 #
-# So 12 hours is not a cautious choice, it is very nearly the maximum. 24-hour
-# coverage would cost 3600 min/month - roughly twice the entire allowance.
+# They land at roughly 02:15, 07:20 and 12:20 UTC every day - and 02:15 is not
+# even inside the 03:00-14:59 window this file declares, so the window is not
+# being honoured either. Every run reports success; nothing is failing and no
+# minutes are exhausted. GitHub is simply throttling a high-frequency schedule
+# on a private repository, which its own documentation permits it to do.
 #
-# IF ROUND-THE-CLOCK COVERAGE IS WANTED, IT DOES NOT COME FROM HERE. Point a
-# free external pinger (cron-job.org, UptimeRobot) at /up every 5-10 minutes
-# and delete this workflow. Those services exist to do exactly this, bill
-# nothing, and are not subject to the per-minute rounding that makes this file
-# expensive. Render's own free tier allows 750 instance-hours a month against
-# the 720 a month of continuous uptime, so 24/7 is affordable on Render's side
-# - the constraint is entirely GitHub's billing model.
+# So the real coverage is three 15-minute warm patches a day, roughly 45
+# minutes out of 24 hours, not the 12 hours the schedule implies. Two of the
+# five most recent runs found the instance already asleep and took 24s and 25s
+# to get an answer, which is the wake-up cost being paid rather than avoided.
 #
-# It also stays inside Render's other free limit: 12 hours awake per day is
-# ~360 instance-hours a month against an allowance of 750. Pinging around the
-# clock would consume essentially all of it on this one service.
+# Tuning the cron expression does not fix this. The interval is not what is
+# being ignored - the scheduler is.
 #
-# HONEST LIMITATION: GitHub's scheduled workflows are best-effort and are
-# documented as such. Under load they are routinely late by 10-60 minutes, and
-# occasionally skipped. So this makes a cold start much less likely; it cannot
-# make it impossible. Before anything that matters, open the site by hand a few
-# minutes early rather than trusting this.
+# ---------------------------------------------------------------------------
+# THE ACTUAL FIX: AN EXTERNAL PINGER. Five minutes, free, no card.
+# ---------------------------------------------------------------------------
+#
+# These services exist to do exactly this, are not subject to GitHub's
+# throttling or its per-minute billing, and hold the schedule they are given.
+#
+#   cron-job.org  (no card, intervals down to 1 minute)
+#     1. Sign up, then Cronjobs -> Create cronjob
+#     2. URL      https://gfms-laravel.onrender.com/up
+#     3. Schedule "Every 5 minutes"
+#     4. Save. The execution history shows whether it is holding.
+#
+#   UptimeRobot  (alternative; also emails when the site is actually down)
+#     1. Sign up, then + New monitor
+#     2. Type     HTTP(s)
+#     3. URL      https://gfms-laravel.onrender.com/up
+#     4. Interval 5 minutes
+#
+# ONE THING TO CHECK AFTER SETTING IT UP. Render's free tier allows 750
+# instance-hours a month and continuous uptime needs 720, so a single service
+# pinged around the clock fits - but only just, and only if it is the only free
+# service on the account. A second free service sharing the allowance will run
+# both out before the month ends.
+#
+# Once an external pinger is running and you have watched it hold for a day,
+# this workflow can be deleted. It is kept until then so that removing it does
+# not leave zero coverage.
+#
+# BEFORE ANYTHING THAT MATTERS - a defence, a demo - open the site by hand a
+# few minutes early, or trigger this workflow manually from the Actions tab.
+# That is the only way to be certain, whatever is pinging it.
 name: Keep Render warm
 
 on:
   schedule:
     # Every 12 minutes, 03:00-14:59 UTC = 11:00-22:59 Manila.
     #
-    # THE WINDOW IS THE SETTING THAT MATTERS, not the interval. This used to
-    # run 08:00-19:59 Manila and the service was found cold at 22:03 - two
-    # hours after the pinger had stopped for the day. Pinging more often
-    # inside the old window would not have helped at all: at 12-minute
-    # intervals the service is already never idle for the 15 minutes Render
-    # needs before it spins down, so extra runs buy nothing and cost the same
-    # as the useful ones.
-    #
-    # Shifted rather than widened, because widening is not affordable - see
-    # the budget note above. Move these hours to match when the farm actually
-    # opens the site; the cost is identical wherever the 12 hours sit.
+    # Left as-is deliberately. GitHub honours neither the interval nor the
+    # window (see the measurements above), so editing this expression changes
+    # what the file claims and not what happens. It is kept because three
+    # unpredictable pings a day is still better than none while an external
+    # pinger is being set up.
     - cron: '*/12 3-14 * * *'
   workflow_dispatch:
 

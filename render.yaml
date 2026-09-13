@@ -10,6 +10,14 @@ services:
     healthCheckPath: /up
     autoDeploy: true
 
+    # Pinned explicitly. Render follows the repository's DEFAULT branch when
+    # this is omitted, and GitHub's default here is still `main`, which sits 57
+    # commits behind - an early schema commit with no Dockerfile and no
+    # render.yaml at all. Without this line the Blueprint finds nothing to
+    # build, and the closest failure mode is worse: a deploy that succeeds and
+    # serves a version of the system from before the app existed.
+    branch: gfms-laravel
+
     envVars:
       - key: APP_NAME
         value: "Digital Broodcock Farm Record Management System"
@@ -66,10 +74,37 @@ services:
       - key: DB_SSLMODE
         value: require
 
-      # Sessions live in Postgres, so they survive the restarts a free instance
-      # does constantly. File sessions would log everyone out mid-demo.
+      # Reuse the database connection between requests instead of re-opening it
+      # each time, which measured ~700ms per request against this project. See
+      # the comment in config/database.php for the trade this makes.
+      - key: DB_PERSISTENT
+        value: "true"
+
+      # SESSIONS IN THE COOKIE, which keeps the property the previous setting
+      # was chosen for while dropping the cost it carried.
+      #
+      # This used to read `database`, with the note: "Sessions live in Postgres,
+      # so they survive the restarts a free instance does constantly. File
+      # sessions would log everyone out mid-demo." That reasoning was right, and
+      # it is why this is not simply `file` now.
+      #
+      # What it missed is the price. A database session is read AND written on
+      # every single request, and a round trip to this database measured ~240ms,
+      # so it taxed roughly half a second onto every authenticated page before
+      # any of the application's own work started.
+      #
+      # A cookie session is held by the browser. It costs no round trip at all,
+      # and because it does not live on the instance it survives a restart, a
+      # spin-down and a redeploy - which is more than `database` managed and far
+      # more than `file` would.
+      #
+      # THE LIMIT IS 4KB, and that is the thing to watch. It is not close today:
+      # this application puts only a CSRF token, a user id and one-sentence
+      # flash messages in the session, and Livewire keeps component state in the
+      # request payload rather than here. Anything that starts stashing a
+      # collection in the session would need to move back off the cookie.
       - key: SESSION_DRIVER
-        value: database
+        value: cookie
       - key: SESSION_LIFETIME
         value: "120"
       - key: SESSION_SECURE_COOKIE

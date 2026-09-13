@@ -2,7 +2,7 @@
 
 <div>
     <div class="mb-10">
-        <a href="{{ route('breeding.index') }}" class="text-sm font-medium text-primary hover:underline">
+        <a href="{{ route('breeding.index') }}" wire:navigate class="text-sm font-medium text-primary hover:underline">
             &larr; Back to breeding records
         </a>
         <h1 class="mt-2 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-foreground">
@@ -168,7 +168,7 @@
         </section>
 
         <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <a href="{{ route('breeding.index') }}" class="btn-secondary">Cancel</a>
+            <a href="{{ route('breeding.index') }}" wire:navigate class="btn-secondary">Cancel</a>
             <button type="submit" class="btn-primary" wire:loading.attr="disabled">
                 <span wire:loading.remove wire:target="save">
                     {{ $this->isEditing() ? 'Save Changes' : 'Save Breeding Record' }}

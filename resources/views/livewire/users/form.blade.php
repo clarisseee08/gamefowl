@@ -1,6 +1,6 @@
 <div>
     <div class="mb-8">
-        <a href="{{ route('users.index') }}"
+        <a href="{{ route('users.index') }}" wire:navigate
            class="inline-flex min-h-11 items-center text-[15px] font-medium text-primary hover:underline">
             &larr; Back to user accounts
         </a>
@@ -125,7 +125,7 @@
         </section>
 
         <div class="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:justify-end">
-            <a href="{{ route('users.index') }}" class="btn-secondary">Cancel</a>
+            <a href="{{ route('users.index') }}" wire:navigate class="btn-secondary">Cancel</a>
             <button type="submit" class="btn-primary" wire:loading.attr="disabled">
                 <span wire:loading.remove wire:target="save">
                     {{ $this->isEditing() ? 'Save Changes' : 'Create Account' }}
