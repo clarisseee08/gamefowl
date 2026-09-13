@@ -143,78 +143,87 @@
                 Recording the sire and dam is what lets the system build this bird's family
                 tree. Only male birds can be a sire and only female birds can be a dam.
                 If a parent is not on the list &mdash; bought in already mated, borrowed for
-                a season, never registered &mdash; tick the box and type the name instead.
-                It is recorded as a bird so the family tree keeps that branch.
+                a season, never registered &mdash; pick &ldquo;Someone else's bird&rdquo; at
+                the end of the list and type the name. It is recorded as a bird so the family
+                tree keeps that branch.
             </p>
 
-            {{-- The same two-way parent control the breeding form uses: choose
-                 from the farm's birds, or tick the box and type a name. A typed
-                 name becomes a real broodcock row flagged is_external, because
-                 sire_id and dam_id are foreign keys - storing the name as free
-                 text would leave the id NULL and cut the tree off above it. --}}
+            {{-- ONE CONTROL PER PARENT, not two.
+
+                 The way out of the list is the last option IN the list. It used
+                 to be a checkbox underneath, and ticking it REPLACED the
+                 dropdown - so the keeper lost sight of the bird they had just
+                 chosen, and the escape hatch sat somewhere they were not
+                 looking. The typed fields now appear under the dropdown, which
+                 keeps showing what was picked.
+
+                 A typed name becomes a real broodcock row flagged is_external,
+                 because sire_id and dam_id are foreign keys: storing the name as
+                 free text would leave the id NULL and cut the tree off above
+                 that bird. --}}
             <div class="mt-8 grid gap-6 sm:grid-cols-2">
                 <div>
-                    <label for="{{ $sire_is_external ? 'sire_external_name' : 'sire_id' }}" class="label">Sire (Father)</label>
+                    <label for="sire_choice" class="label">Sire (Father)</label>
+
+                    <select id="sire_choice" wire:model.live="sire_choice"
+                            class="input mt-1 @error('sire_id') input-error @enderror">
+                        <option value="">Not known</option>
+                        @foreach ($this->sireOptions as $option)
+                            <option value="{{ $option->id }}">
+                                {{ $option->name }}{{ $option->band_number ? ' ('.$option->band_number.')' : '' }}
+                            </option>
+                        @endforeach
+                        <option value="{{ App\Livewire\Broodcocks\Form::OFF_LIST }}">Someone else's bird</option>
+                    </select>
+                    @error('sire_id') <p class="error">{{ $message }}</p> @enderror
 
                     @if ($sire_is_external)
-                        <input id="sire_external_name" type="text" wire:model.blur="sire_external_name"
-                               placeholder="Name of the outside cock"
-                               class="input mt-1 @error('sire_external_name') input-error @enderror">
-                        @error('sire_external_name') <p class="error">{{ $message }}</p> @enderror
+                        {{-- Indented off a hairline so the fields read as belonging
+                             to the choice above rather than as two more questions. --}}
+                        <div class="mt-4 border-l border-border pl-4">
+                            <label for="sire_external_name" class="label">Name of the outside cock</label>
+                            <input id="sire_external_name" type="text" wire:model.blur="sire_external_name"
+                                   class="input mt-1 @error('sire_external_name') input-error @enderror">
+                            @error('sire_external_name') <p class="error">{{ $message }}</p> @enderror
 
-                        <label for="sire_external_bloodline" class="label mt-4">Bloodline</label>
-                        <input id="sire_external_bloodline" type="text" wire:model.blur="sire_external_bloodline"
-                               class="input mt-1 @error('sire_external_bloodline') input-error @enderror">
-                        <p class="help">Optional. Recorded so the bird carries its bloodline tag.</p>
-                        @error('sire_external_bloodline') <p class="error">{{ $message }}</p> @enderror
-                    @else
-                        <select id="sire_id" wire:model.blur="sire_id" class="input mt-1 @error('sire_id') input-error @enderror">
-                            <option value="">Not known</option>
-                            @foreach ($this->sireOptions as $option)
-                                <option value="{{ $option->id }}">
-                                    {{ $option->name }}{{ $option->band_number ? ' ('.$option->band_number.')' : '' }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('sire_id') <p class="error">{{ $message }}</p> @enderror
+                            <label for="sire_external_bloodline" class="label mt-4">Bloodline</label>
+                            <input id="sire_external_bloodline" type="text" wire:model.blur="sire_external_bloodline"
+                                   class="input mt-1 @error('sire_external_bloodline') input-error @enderror">
+                            <p class="help">Optional. Recorded so the bird carries its bloodline tag.</p>
+                            @error('sire_external_bloodline') <p class="error">{{ $message }}</p> @enderror
+                        </div>
                     @endif
-
-                    <label class="mt-2 flex min-h-11 cursor-pointer items-center gap-2.5">
-                        <input type="checkbox" wire:model.live="sire_is_external" class="h-5 w-5 accent-primary">
-                        <span class="text-[15px] text-foreground">Not one of the farm's birds</span>
-                    </label>
                 </div>
 
                 <div>
-                    <label for="{{ $dam_is_external ? 'dam_external_name' : 'dam_id' }}" class="label">Dam (Mother)</label>
+                    <label for="dam_choice" class="label">Dam (Mother)</label>
+
+                    <select id="dam_choice" wire:model.live="dam_choice"
+                            class="input mt-1 @error('dam_id') input-error @enderror">
+                        <option value="">Not known</option>
+                        @foreach ($this->damOptions as $option)
+                            <option value="{{ $option->id }}">
+                                {{ $option->name }}{{ $option->band_number ? ' ('.$option->band_number.')' : '' }}
+                            </option>
+                        @endforeach
+                        <option value="{{ App\Livewire\Broodcocks\Form::OFF_LIST }}">Someone else's bird</option>
+                    </select>
+                    @error('dam_id') <p class="error">{{ $message }}</p> @enderror
 
                     @if ($dam_is_external)
-                        <input id="dam_external_name" type="text" wire:model.blur="dam_external_name"
-                               placeholder="Name of the outside hen"
-                               class="input mt-1 @error('dam_external_name') input-error @enderror">
-                        @error('dam_external_name') <p class="error">{{ $message }}</p> @enderror
+                        <div class="mt-4 border-l border-border pl-4">
+                            <label for="dam_external_name" class="label">Name of the outside hen</label>
+                            <input id="dam_external_name" type="text" wire:model.blur="dam_external_name"
+                                   class="input mt-1 @error('dam_external_name') input-error @enderror">
+                            @error('dam_external_name') <p class="error">{{ $message }}</p> @enderror
 
-                        <label for="dam_external_bloodline" class="label mt-4">Bloodline</label>
-                        <input id="dam_external_bloodline" type="text" wire:model.blur="dam_external_bloodline"
-                               class="input mt-1 @error('dam_external_bloodline') input-error @enderror">
-                        <p class="help">Optional. Recorded so the bird carries its bloodline tag.</p>
-                        @error('dam_external_bloodline') <p class="error">{{ $message }}</p> @enderror
-                    @else
-                        <select id="dam_id" wire:model.blur="dam_id" class="input mt-1 @error('dam_id') input-error @enderror">
-                            <option value="">Not known</option>
-                            @foreach ($this->damOptions as $option)
-                                <option value="{{ $option->id }}">
-                                    {{ $option->name }}{{ $option->band_number ? ' ('.$option->band_number.')' : '' }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('dam_id') <p class="error">{{ $message }}</p> @enderror
+                            <label for="dam_external_bloodline" class="label mt-4">Bloodline</label>
+                            <input id="dam_external_bloodline" type="text" wire:model.blur="dam_external_bloodline"
+                                   class="input mt-1 @error('dam_external_bloodline') input-error @enderror">
+                            <p class="help">Optional. Recorded so the bird carries its bloodline tag.</p>
+                            @error('dam_external_bloodline') <p class="error">{{ $message }}</p> @enderror
+                        </div>
                     @endif
-
-                    <label class="mt-2 flex min-h-11 cursor-pointer items-center gap-2.5">
-                        <input type="checkbox" wire:model.live="dam_is_external" class="h-5 w-5 accent-primary">
-                        <span class="text-[15px] text-foreground">Not one of the farm's birds</span>
-                    </label>
                 </div>
             </div>
         </section>
