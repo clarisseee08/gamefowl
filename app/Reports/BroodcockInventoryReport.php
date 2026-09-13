@@ -276,6 +276,12 @@ final class BroodcockInventoryReport implements ReportDefinition
     private function query(): Builder
     {
         return Broodcock::query()
+            // An INVENTORY is what the farm owns. Outside parents are pedigree
+            // nodes recorded to keep a family tree whole - not livestock in the
+            // farm's care - so counting them here inflates "Total Birds" on the
+            // report a panel is most likely to open, and it inflates it by a
+            // number that grows every time a borrowed hen is entered.
+            ->farmStock()
             ->status($this->filters['status'] ?? null)
             ->classGrade($this->filters['class'] ?? null)
             ->sex($this->filters['sex'] ?? null)

@@ -42,8 +42,13 @@ final class Overview extends Component
     #[Computed]
     public function flock(): array
     {
+        // farmStock(): a borrowed hen recorded to complete a pedigree is not
+        // this farm's livestock, and counting her here overstates the flock on
+        // the screen the owner reads first.
+        //
         // One query, not four: conditional aggregation instead of four counts.
         $row = Broodcock::query()
+            ->farmStock()
             ->selectRaw('count(*) as total')
             ->selectRaw('sum(case when status = ? then 1 else 0 end) as active', [BroodcockStatus::Active->value])
             ->selectRaw('sum(case when status = ? then 1 else 0 end) as breeding', [BroodcockStatus::Breeding->value])
@@ -68,6 +73,7 @@ final class Overview extends Component
     public function byStatus(): Collection
     {
         return Broodcock::query()
+            ->farmStock()
             ->selectRaw('status, count(*) as total')
             ->groupBy('status')
             ->orderByDesc('total')
@@ -79,6 +85,7 @@ final class Overview extends Component
     public function byClass(): Collection
     {
         return Broodcock::query()
+            ->farmStock()
             ->selectRaw('class, count(*) as total')
             ->groupBy('class')
             ->orderByDesc('total')
@@ -90,6 +97,7 @@ final class Overview extends Component
     public function byBloodline(): Collection
     {
         return Broodcock::query()
+            ->farmStock()
             ->selectRaw('bloodline, count(*) as total')
             ->whereNotNull('bloodline')
             ->groupBy('bloodline')
@@ -240,11 +248,20 @@ final class Overview extends Component
         ];
     }
 
-    /** Birds with no parents recorded - the pedigree gaps worth filling. */
+    /**
+     * Birds with no parents recorded - the pedigree gaps worth filling.
+     *
+     * farmStock() is not a detail here: an outside bird has no parents BY
+     * DEFINITION - she exists only as a node so the tree keeps the branch above
+     * her - so counting outside birds made this tile report a backlog of
+     * pedigree work that nobody can ever do, and which grows every time a
+     * borrowed hen is recorded.
+     */
     #[Computed]
     public function birdsWithoutPedigree(): int
     {
         return Broodcock::query()
+            ->farmStock()
             ->whereNull('sire_id')
             ->whereNull('dam_id')
             ->count();
