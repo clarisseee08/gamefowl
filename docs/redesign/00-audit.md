@@ -3,18 +3,18 @@
 Audited 2026-09-14, branch `redesign/ui-system`. Facts only, no proposals.
 `file:line` on every claim. No application file was edited.
 
-> **Snapshot warning.** `resources/css/app.css` was **being rewritten while this
-> audit ran** — it grew 643 → 846 lines mid-pass (`git diff --stat`: +217/−14 vs
-> HEAD). All `app.css` citations below were re-anchored against the **846-line
-> state**, verified stable (identical md5 across two samples). If it has moved
-> again, re-anchor by selector name rather than trusting these numbers.
-
 > **READ FIRST.** `.claude/skills/gamefowl-design-system/SKILL.md` is declared the
 > binding design law by `CLAUDE.md`, and **nearly every token name in it is
-> stale**. It documents the superseded "field ledger" direction; `app.css` and
-> `config/gfms-brand.php` implement a later one. An agent following the skill in
-> good faith shipped **7 dead utility classes into the appointments queue today**.
-> Table in §4.1; live bug is offender #1 in §8.
+> stale** — it documents the superseded "field ledger" direction while `app.css`
+> and `config/gfms-brand.php` implement a later one. An agent following the skill
+> in good faith shipped **7 dead utility classes into the appointments queue
+> today**. Drift table in §4.1; the live bug is offender #1 in §8.
+>
+> **Snapshot warning.** `resources/css/app.css` was **being rewritten while this
+> audit ran** — 643 → 846 lines mid-pass (+217/−14 vs HEAD). Every `app.css`
+> citation below is re-anchored to the **846-line state**, verified stable
+> (identical md5 across two samples). If it has moved again, re-anchor by
+> selector name rather than trusting these numbers.
 
 ---
 
@@ -22,25 +22,22 @@ Audited 2026-09-14, branch `redesign/ui-system`. Facts only, no proposals.
 
 | Thing | Reality | Evidence |
 |---|---|---|
-| Framework | Laravel 12, PHP 8.2 | `composer.json` |
-| UI | Livewire 4, class-based components | `config/livewire.php:97` |
+| Framework / UI | Laravel 12, PHP 8.2; Livewire 4 class-based components | `composer.json`, `config/livewire.php:97` |
 | Templating | Blade, 56 `.blade.php` files | `resources/views/**` |
-| CSS | Tailwind v4 CSS-first. No `tailwind.config.js`, no PostCSS | `app.css:8` |
-| Content set | Auto-detection **disabled**; three explicit `@source` lines | `app.css:8`, `:38-40` |
+| CSS | Tailwind v4 CSS-first. No `tailwind.config.js`, no PostCSS. Auto-detection **disabled**; three explicit `@source` lines | `app.css:8`, `:38-40` |
 | Tokens | `@theme { }` | `app.css:66-232` |
 | Colour truth | `config/gfms-brand.php`, mirrored into `@theme`; `tests/Unit/BrandTokensAreMirroredTest.php` fails on drift | `app.css:51-54` |
-| Build | Vite 7 + `@tailwindcss/vite` | `package.json` |
-| Bundle on disk | `public/build/assets/app-CG9T0-Qd.css`, 54.3 KB, committed | `tests/Unit/PublicAssetsAreCommittedTest.php` |
+| Build | Vite 7 + `@tailwindcss/vite`; bundle `public/build/assets/app-CG9T0-Qd.css` (54.3 KB) committed | `package.json`, `tests/Unit/PublicAssetsAreCommittedTest.php` |
 
 **Fonts — three faces, not the two the skill names.** `app.css:16-36` loads
 **Poppins** 600/700 (headings only), **Inter** 400/500/600 + latin-ext (body/UI),
 **JetBrains Mono** 400/500/600 (via `.datum`). Declared `app.css:76-78`; Poppins
 bound to `h1–h4` at `app.css:267-268` and stated to be the only use of
-`--font-display`. `@fontsource/fira-sans` and `@fontsource/fira-code` are still
-in `package.json` dependencies but **no longer imported** — dead packages.
+`--font-display`. `@fontsource/fira-sans` and `@fontsource/fira-code` remain in
+`package.json` but are **no longer imported** — dead packages.
 
 **View composition.** Three layouts (§3), used as `<x-layouts::app>` /
-`<x-layouts::catalog>` / `<x-layouts::guest>`. Livewire components that set no
+`<x-layouts::catalog>` / `<x-layouts::guest>`. Livewire components setting no
 layout inherit `layouts::app` from `config/livewire.php:47`. Three pick their
 shell at runtime from the viewer's role via `ChoosesShellByViewer`
 (`app/Livewire/Concerns/ChoosesShellByViewer.php:25-30`); its lines 18-21 warn
@@ -52,9 +49,10 @@ that `#[Layout]` silently overrides `render()`, so the two must not be combined.
 
 32 application routes in `routes/web.php`, plus Fortify's auth paths — `/login`,
 `/logout`, `/forgot-password`, `/reset-password`, `/user/confirm-password`
-(`routes/web.php:28-31`; self-registration is disabled). `Route::livewire()` is
-the idiom (`web.php:38`), so `route:list` shows almost none of these.
-*default* layout = inherited from `config/livewire.php:47` (= `layouts::app`).
+(`web.php:28-31`; self-registration disabled), which render `auth/*.blade.php` in
+`layouts::guest`. `Route::livewire()` is the idiom (`web.php:38`), so
+`route:list` shows almost none of these. *default* layout = inherited from
+`config/livewire.php:47` (`layouts::app`).
 
 ### Public (`active` middleware only)
 
@@ -91,7 +89,6 @@ moved above the auth group, `/broodcocks/create` resolves as a bird with id
 
 **Pens have no screens, deliberately** — `web.php:174-189` records the removal
 and its consequence. Do not restore them during a reskin.
-
 **Nested components, no route of their own:** `Appointments\RequestForm` (mounted
 `landing/index.blade.php:107`) · `Catalog\Browse` (`landing/index.blade.php:86`
 and `/catalog`) · `Dashboard\Overview` · `Health\BroodcockHealthHistory` ·
@@ -113,12 +110,12 @@ and `/catalog`) · `Dashboard\Overview` · `Health\BroodcockHealthHistory` ·
 |---|---|---|
 | `band-tag.blade.php` | **The signature.** Bloodline capsule; colour is an inline hex from PHP (`:47`) because bloodline is free text; unbanded is an honest state, never a dash (`:56-64`). | **12** |
 | `brand-mark.blade.php` | Farm badge `<img>`; picks smallest generated PNG ≥ 2× render size (`:24-26`). | 4 |
-| `brand-lockup.blade.php` | Mark + wordmark; `sm`/`md`/`lg`, `brand`/`onDark`. | 1 |
 | `partials/head-meta.blade.php` | Shared `<head>`: title, OG, Twitter, favicons. | 3 (all layouts) |
+| `photo-thumb.blade.php` | Photo with `?size=thumb` + placeholder fallback (`:22-28`). | 3 |
 | `app-sidebar.blade.php` (218) | Console rail; nav built server-side from role (`:15-60`); icons as inline path data (`:11-13`). | 1 |
 | `app-topbar.blade.php` (100) | 56px bar inside the content column; route-derived breadcrumbs (`:4-11`); palette triggers. | 1 |
 | `command-palette.blade.php` (151) | Ctrl/⌘-K palette. | 1 |
-| `photo-thumb.blade.php` | Photo with `?size=thumb` + placeholder fallback (`:22-28`). | 3 |
+| `brand-lockup.blade.php` | Mark + wordmark; `sm`/`md`/`lg`, `brand`/`onDark`. | 1 |
 | `sparkline.blade.php` (109) | Inline trend SVG. | 1 |
 | `icon/user.blade.php` | The **only** icon component. | 1 |
 
@@ -131,39 +128,19 @@ and `/catalog`) · `Dashboard\Overview` · `Health\BroodcockHealthHistory` ·
 **15 new ramp steps arrived in this branch's in-progress edit** (see the snapshot
 warning) and are not in that config.
 
-**Neutrals** `background #fbfbfa` `:83` · `card #ffffff` `:84` · `muted #f4f5f3`
-`:85` · `popover #ffffff` `:86` · `border #e4e6e2` `:87` · `input #dfe2dd` `:88`
-· `foreground #161c19` `:90` · `muted-foreground #4e5550` `:91` (7.40:1, the
-Console floor) · `card-foreground`, `popover-foreground` `#161c19`.
+| Group | Tokens | Role |
+|---|---|---|
+| **Neutrals** `:83-93` | `background #fbfbfa` · `card #ffffff` · `muted #f4f5f3` · `popover #ffffff` · `border #e4e6e2` · `input #dfe2dd` · `foreground #161c19` · `muted-foreground #4e5550` (7.40:1 — the Console floor) · `card-foreground`, `popover-foreground` `#161c19` | ink / paper / rule |
+| **Ink ramp — NEW** `:110-120` | `ink-50 #f7f8f6` → `ink-950 #0d110f`, 10 steps | **not in `config/gfms-brand.php`** |
+| **Primary** `:131-143` | `primary-50 #faf0ef` … `primary #8b2626` `:136` … `primary-950 #1e0909`, + `-foreground`. Steps 300/500/800/950 are new | **the interactive colour** — buttons, links, active nav, focus ring. Red not green because 8.74:1 vs 6.07:1 on card (`config/gfms-brand.php:86-88`) |
+| **Brand** `:148-152` | `brand #486c2f` · `-deep #243619` · `-deeper #1a2711` · `-foreground #edf3ea` · `-muted-fg #bfcfbb` | **chrome only** — sidebar, mark, rail, auth panel, PDF. Never interactive; `DesignSystemGuardTest.php:197` |
+| **Semantic** `:156-169` | `success #1f7a4d`/`success-bg #e8f4ee` · `warning #755006`/`warning-bg #f1e5a1` · `destructive #d32f2f`/`-bg #fef5f4`/`-foreground #ffffff` · `info #3c4a8a`/`info-bg #eceef8` · `accent #ef6905` (**fill only**, 3.14:1 on white) | status |
+| **Band / bloodline** `:174-184` | `band-ember #e8552e` · `band-amber #f2a413` · `band-jade #1f9e6b` · `band-cobalt #1d5fd0` · `band-plum #8e44ad` · `band-rose #d6336c`; foregrounds `band-fg-light #ffffff` / `band-fg-dark #10201b` | **the only chroma that means bloodline** |
+| **Print** `:188-190` | `print-rule #e4e6e2` · `print-rule-strong` · `print-zebra` | dompdf |
 
-**Ink ramp — NEW, 10 steps** `ink-50 #f7f8f6` `:110` → `ink-950 #0d110f` `:120`.
-Not in `config/gfms-brand.php`.
-
-**Primary — the interactive colour (deep red)** `primary-50 #faf0ef` `:131` …
-`primary #8b2626` `:136` … `primary-950 #1e0909` `:142`, plus `-foreground`.
-Steps `300/500/800/950` are new. Red holds this role because it is 8.74:1 on
-card and the green is 6.07:1 (`config/gfms-brand.php:86-88`).
-
-**Brand — chrome only (green)** `brand #486c2f` `:148` · `-deep #243619` ·
-`-deeper #1a2711` · `-foreground #edf3ea` · `-muted-fg #bfcfbb` `:152`. Sidebar,
-mark, 3px rail, auth panel, PDF. Never interactive — enforced by
-`DesignSystemGuardTest.php:197`.
-
-**Semantic** `success #1f7a4d` / `success-bg #e8f4ee` `:156` · `warning #755006`
-/ `warning-bg #f1e5a1` · `destructive #d32f2f` / `-bg #fef5f4` / `-foreground
-#ffffff` · `info #3c4a8a` / `info-bg #eceef8`. `accent #ef6905` `:168` —
-**fill only**, 3.14:1 on white.
-
-**Band / bloodline — the only chroma that means bloodline**
-`band-ember #e8552e` `:174` · `band-amber #f2a413` · `band-jade #1f9e6b` ·
-`band-cobalt #1d5fd0` · `band-plum #8e44ad` · `band-rose #d6336c` `:179`.
-Foregrounds `band-fg-light #ffffff` / `band-fg-dark #10201b` `:184`, resolved per
-band by `App\Support\BandTag::foreground()`. Curated bloodline→slot map
-`config/gfms-brand.php:198-205`; anything else falls to `crc32`
-(`app/Support/BandTag.php:71-80`).
-
-**Print-only** `print-rule #e4e6e2` `:188` · `print-rule-strong` ·
-`print-zebra`.
+Band foreground is resolved per band by `App\Support\BandTag::foreground()`;
+curated bloodline→slot map at `config/gfms-brand.php:198-205`, anything else
+falls to a `crc32` hash (`app/Support/BandTag.php:71-80`).
 
 ### 4.1 SKILL.md ↔ `app.css` token drift — complete list
 
@@ -188,15 +165,13 @@ Every left-hand name compiles to **no CSS and no warning**.
 | "no shadows; elevation is a hairline" | 10 + `CLAUDE.md` | `--shadow-e1/e2/e3` `:198-200`; `.card` has `box-shadow` `:406-409`; `.card-interactive` lifts `:412-421` | **reversed on purpose** (`app.css:401-405`) |
 | "**five** PHP enums return `badgeClasses()`" | 77-79 | **six** — `AppointmentStatus` added today (`app/Enums/AppointmentStatus.php:45`) | **stale count** |
 
-**A note the skill does NOT carry:** `text-ink-80` is not rescued by the new ink
-ramp — that ramp is `ink-50…ink-950` (`:110-120`), and `ink-80` is not a step in
-it. Verified absent from the 61-token list and from the compiled bundle.
+**Note:** `text-ink-80` is *not* rescued by the new ink ramp — that ramp is
+`ink-50…ink-950` (`:110-120`) and `ink-80` is not a step in it. Verified absent
+from the 61-token list and from the compiled bundle.
 
-Two docs carry the same stale direction. `docs/design-brief.md` — which
-SKILL.md:12 cites as the full rationale — still lists `--color-paper`,
-`--color-ink`, `--color-action #16324F` and the six old band hexes
-(`design-brief.md:105-155`), **and asserts at `:6-8` that "where it and the code
-disagree, the code is wrong."** That is now false.
+`docs/design-brief.md` — which SKILL.md:12 cites as the full rationale — carries
+the same stale direction (`:105-155`) **and asserts at `:6-8` that "where it and
+the code disagree, the code is wrong."** That is now false;
 `docs/redesign-progress.md:1-12` records the actual current direction.
 
 Accurate in SKILL.md and worth keeping: `.badge-info`/`.badge-neutral` (`:64-68`),
@@ -207,14 +182,11 @@ the `.table-hairline` descendant rule (`:70-71`), the band-tag contract
 
 ## 5. Logo and brand assets — FROZEN, do not touch
 
-| Asset | Path |
-|---|---|
-| Source artwork (1080px, 1.9 MB, never served) | `resources/brand/logo-source.png` |
-| Generated marks | `public/images/brand/logo-{32,64,128,192,512}.png` |
-| Favicon | `public/favicon.ico` |
-| Apple touch icon | `public/apple-touch-icon.png` |
+**Files.** `resources/brand/logo-source.png` (1080px, 1.9 MB, never served) ·
+`public/images/brand/logo-{32,64,128,192,512}.png` (generated) ·
+`public/favicon.ico` · `public/apple-touch-icon.png`.
 
-Every reference: `components/brand-mark.blade.php:30` (the `asset()` call) ·
+**Every reference.** `brand-mark.blade.php:30` (the `asset()` call) ·
 `partials/head-meta.blade.php:33` (ico), `:34` (192 png), `:35` (apple-touch),
 `:36` (og:image), `:37` (`theme-color` from `gfms-brand.brand_deep`) ·
 `brand-lockup.blade.php:30` · `app-sidebar.blade.php:109` ·
@@ -235,65 +207,51 @@ cubic-bezier(0.16,1,0.3,1)` `:222` · `--ease-in cubic-bezier(0.4,0,1,1)` ·
 `--ease-in-out cubic-bezier(0.4,0,0.2,1)` `:224`. Legacy aliases
 `--ease-out-quart`→`--ease-in-out` `:229`, `--ease-enter`→`--ease-out`,
 `--t-fast/-base/-enter` `:239-241`, all marked "must not be used in new work."
-`app.css:203-204` states: *"Nothing outside it may be used, and a raw duration or
-easing anywhere in a view is a defect."*
+`:203-204` states: *"Nothing outside it may be used, and a raw duration or easing
+anywhere in a view is a defect."*
 
 ### Rules in `app.css` — original set
-| Line | What | Timing | Property |
-|---|---|---|---|
-| 347-351 | `@utility btn` | `--t-fast` | bg, border, color, **box-shadow**, transform |
-| 357 | `.btn:active` | — | `scale(0.98)` |
-| 390-391 | `.input` | `--t-fast` | **border-color**, **box-shadow** |
-| 413-415 | `.card-interactive` | `--t-base` | **box-shadow**, **border-color**, transform |
-| 417-421 | `.card-interactive:hover` | — | `translateY(-1px)` + `--shadow-e2` |
-| 469 | `.row-hover` | `--t-fast` | **background-color** |
-| 476 | `.row-actions` | `--t-fast` | opacity |
-| 481-490 | `.skeleton` + `@keyframes gfms-pulse` | **1.6s infinite** | opacity |
-| 496-501 | `.enter-pop` + `@keyframes gfms-pop` | `--t-enter` | opacity + translateY(4px) |
-| 515-516 | `.nav-item` | `--t-fast` | **background-color**, **color** |
-| 311-317, 324-328 | two `prefers-reduced-motion` blocks | 0.01ms blanket kill; `animation-iteration-count: 1` | — |
-| 615-617 | `.meter` — a deliberate **absence** of width animation | — | — |
+`@utility btn` `:347-351` `--t-fast` on bg, border, color, **box-shadow**,
+transform · `.btn:active` `:357` `scale(0.98)` · `.input` `:390-391` `--t-fast`
+on **border-color**, **box-shadow** · `.card-interactive` `:413-415` `--t-base`
+on **box-shadow**, **border-color**, transform, with `translateY(-1px)` +
+`--shadow-e2` on hover `:417-421` · `.row-hover` `:469` `--t-fast`
+**background-color** · `.row-actions` `:476` `--t-fast` opacity · `.skeleton` +
+`@keyframes gfms-pulse` `:481-490` opacity, **1.6s infinite** · `.enter-pop` +
+`@keyframes gfms-pop` `:496-501` `--t-enter`, opacity + translateY(4px) ·
+`.nav-item` `:515-516` `--t-fast` **background-color**, **color**. Two
+`prefers-reduced-motion` blocks `:311-317` and `:324-328` — 0.01ms blanket kill
+plus `animation-iteration-count: 1`. `.meter` `:615-617` is a deliberate
+**absence** of width animation.
 
 ### Rules added by the in-progress redesign (`app.css:666-846`)
 Header `:666-686` states two governing rules — transform/opacity only, nothing
 over 300ms — and names **three deliberate exceptions**. **None of these classes
 is used by any view yet** (checked all 12; zero hits).
-`.focus-ring` `:693-708` opacity, `--dur-fast` · `.tooltip` `:715-729` opacity +
-scale, `--dur-fast`, 400ms enter delay / 0ms leave · `.toast-enter-active`
-`:741-746` / `.toast-leave-active` `:747-752` translateY + opacity,
-`--dur-base` in, `--dur-fast` out · `.modal-backdrop` `:759-763` and
-`.modal-panel` `:766-777` opacity + `scale(0.97)`, `--dur-slow` ·
-`.drawer` `:781-786` `translateX`, `--dur-slow` · `.tab` `:791-794` colour,
-`--dur-instant` · `.tab-indicator` `:796-800` transform **+ width** —
-*exception 1* · `.accordion-content` `:805-811` **grid-template-rows 0fr→1fr** —
-*exception 2* · `.empty-state` `:816-821` no motion, by design ·
-`.breadcrumb-link` `:831-834` and `.page-link` `:839-844` colour/background,
-`--dur-instant`.
+`.focus-ring` `:693-708` opacity `--dur-fast` · `.tooltip` `:715-729` opacity +
+scale, 400ms enter delay / 0ms leave · `.toast-enter-active` `:741-746` /
+`.toast-leave-active` `:747-752` translateY + opacity, `--dur-base` in,
+`--dur-fast` out · `.modal-backdrop` `:759-763` and `.modal-panel` `:766-777`
+opacity + `scale(0.97)` `--dur-slow` · `.drawer` `:781-786` `translateX`
+`--dur-slow` · `.tab` `:791-794` colour `--dur-instant` · `.tab-indicator`
+`:796-800` transform **+ width** — *exception 1* · `.accordion-content`
+`:805-811` **grid-template-rows 0fr→1fr** — *exception 2* · `.empty-state`
+`:816-821` no motion, by design · `.breadcrumb-link` `:831-834` and `.page-link`
+`:839-844` colour/background `--dur-instant`.
 
 `app.css:671` cites **`docs/redesign/01-system.md`** as the motion whitelist.
 **That file does not exist** — `docs/redesign/` contains only this audit.
 
 ### Hits in Blade views (16 lines)
-| File:line | Declares |
-|---|---|
-| `components/app-sidebar.blade.php:78` | `transition-[width] duration-200` — **animates `width`** |
-| `components/app-sidebar.blade.php:180` | `transition-colors` |
-| `components/command-palette.blade.php:100-103` | `transition-opacity ease-out duration-200` / `ease-in duration-150` |
-| `components/command-palette.blade.php:109-111` | `transition ease-out duration-260` — **260ms is off-scale** |
-| `layouts/app.blade.php:48-51` | `transition-opacity ease-out duration-200` / `ease-in duration-150` |
-| `layouts/app.blade.php:56-59` | `transition ease-out duration-260` / `ease-in duration-150` — **off-scale**; translate-x |
-| `livewire/broodcocks/form.blade.php:293` | `transition-colors` |
-| `livewire/broodcocks/pedigree.blade.php:79` | `transition` (bare) |
-| `livewire/broodcocks/show.blade.php:95` | `transition` (bare) — tab underline |
-| `livewire/performance/form.blade.php:124` | `transition-colors` |
-| `livewire/photos/gallery.blade.php:73` | `transition-opacity duration-150` |
-| `livewire/photos/gallery.blade.php:156` | `x-transition.opacity` |
-| `livewire/photos/upload.blade.php:64` | `transition-colors duration-150` |
-| `livewire/photos/upload.blade.php:107` | `transition-all duration-150` on a `:style="width: …%"` — **animates `width`** |
-| `livewire/users/form.blade.php:69` | `transition-colors` |
-| `livewire/users/index.blade.php:139` | `transition-colors duration-100` |
+- `app-sidebar.blade.php:78` `transition-[width] duration-200` — **animates `width`**; `:180` `transition-colors`
+- `command-palette.blade.php:100-103` `transition-opacity ease-out duration-200` / `ease-in duration-150`; `:109-111` `transition ease-out duration-260` — **260ms off-scale**
+- `layouts/app.blade.php:48-51` same scrim pair; `:56-59` `ease-out duration-260` / `ease-in duration-150` — **off-scale**, translate-x
+- `photos/upload.blade.php:107` `transition-all duration-150` on a `:style="width: …%"` — **animates `width`**; `:64` `transition-colors duration-150`
+- `photos/gallery.blade.php:73` `transition-opacity duration-150`; `:156` `x-transition.opacity`
+- `broodcocks/pedigree.blade.php:79` and `broodcocks/show.blade.php:95` bare `transition`
+- `transition-colors` only: `broodcocks/form.blade.php:293`, `performance/form.blade.php:124`, `users/form.blade.php:69`, `users/index.blade.php:139` (`duration-100`)
 
-`x-transition` (Alpine) appears at `layouts/app.blade.php:48-59`,
+`x-transition` (Alpine) appears only at `layouts/app.blade.php:48-59`,
 `command-palette.blade.php:100-111`, `photos/gallery.blade.php:156` — the
 off-canvas sheet, the palette, and the lightbox.
 
@@ -310,14 +268,11 @@ lines violate `app.css:203-204` as written.
 ## 7. The CSS class contract — restyle, never rename
 
 ### Classes an enum's `badgeClasses()` returns — six enums, ~22 call sites
-`AppointmentStatus:48-51` → `badge badge-info`, `badge badge-ok`,
-`badge badge-alert`, `badge badge-neutral` · `BroodcockClass:38-40` →
-`badge-ok`, `badge-info`, `badge-neutral` · `BroodcockStatus:74-79` → `badge-ok`,
-`badge-info`, `badge-neutral`, `badge-warn`, `badge-alert` ·
-`HealthRecordType:41-45` → `badge-ok`, `badge-info`, `badge-neutral`,
-`badge-warn` · `PerformanceEventType:40-43` → `badge-info`, `badge-ok`,
-`badge-neutral`, `badge-warn` · `PerformanceResult:33-36` → `badge-ok`,
-`badge-alert`, `badge-warn`, `badge-neutral`.
+The whole emitted set is `badge`, `badge-ok`, `badge-warn`, `badge-alert`,
+`badge-info`, `badge-neutral`. Sources: `AppointmentStatus:48-51` (the only one
+that also emits the base `badge`), `BroodcockClass:38-40`,
+`BroodcockStatus:74-79`, `HealthRecordType:41-45`, `PerformanceEventType:40-43`,
+`PerformanceResult:33-36`.
 
 **Gap:** `BadgeVocabularyTest::enums()` (`tests/Unit/BadgeVocabularyTest.php:31-40`)
 lists only **five** — `AppointmentStatus` is absent, so its badges are unguarded.
@@ -342,10 +297,10 @@ max-width column (`max-w-7xl…4xl`, `container mx-auto`, `mx-auto` + px/rem;
 contains a double quote.
 
 ### Vocabulary `app.css` defines
-**Original:** `.btn` (`@utility` `:343`) `.btn-primary/-secondary/-danger/-quiet`
-`:373-376` · `.input` `:383` `.input-error` `:394` `.label` `.help` `.error`
-`:397-399` · `.card` `:406` `.card-interactive` `:412` `.elev-1/2/3` `:422-424` ·
-`.badge` `:431` `.badge-ok/-warn/-alert/-info/-neutral` `:435-439` ·
+**Original (41):** `.btn` (`@utility` `:343`) `.btn-primary/-secondary/-danger/
+-quiet` `:373-376` · `.input` `:383` `.input-error` `:394` `.label` `.help`
+`.error` `:397-399` · `.card` `:406` `.card-interactive` `:412` `.elev-1/2/3`
+`:422-424` · `.badge` `:431` `.badge-ok/-warn/-alert/-info/-neutral` `:435-439` ·
 `.band-tag` `:447` `.band-code` `.band-number` `.band-tag-none` `:461` ·
 `.datum` (`@utility` `:336`) · `.table-hairline` `:466` (**descendant selector
 `tbody tr + tr` — goes on `<table>`**) · `.row-hover` `:469` `.row-actions`
@@ -354,19 +309,14 @@ contains a double quote.
 `.scroll-slim` `:550` `.scroll-slim-dark` `:576` · `.brand-rail` `:600` ·
 `.page-title-marked` `:604` · `.meter` `:614` · `.ped-branch` `:626`
 `.ped-node` `:641` `.ped-empty` `:659`.
-**Added by the in-progress redesign, none yet used:** `.focus-ring` `.tooltip`
-`.toast` `.toast-enter` `.toast-enter-active` `.toast-leave-active`
-`.modal-backdrop` `.modal-backdrop-open` `.modal-panel` `.modal-panel-open`
-`.drawer` `.drawer-open` `.tab` `.tab-active` `.tab-indicator`
-`.accordion-content` `.accordion-open` `.empty-state` `.empty-state-title`
-`.empty-state-body` `.avatar` `.breadcrumb` `.breadcrumb-link`
-`.breadcrumb-current` `.page-link` `.page-link-current` (`:693-846`).
 
-Defined but **absent from SKILL.md**: everything in the "added" list above, plus
-`.card-interactive`, `.elev-1/2/3`, `.row-hover`, `.row-actions`, `.skeleton`,
-`.popover`, `.enter-pop`, `.nav-item*`, `.nav-section`, `.scroll-slim*`,
-`.brand-rail`, `.page-title-marked`, `.meter`, `.band-code`, `.band-number`,
-`.btn`.
+**Added by the in-progress redesign (26), none yet used** — `:693-846`, listed
+in §6.
+
+Defined but **absent from SKILL.md**: all 26 of those, plus `.card-interactive`,
+`.elev-1/2/3`, `.row-hover`, `.row-actions`, `.skeleton`, `.popover`,
+`.enter-pop`, `.nav-item*`, `.nav-section`, `.scroll-slim*`, `.brand-rail`,
+`.page-title-marked`, `.meter`, `.band-code`, `.band-number`, `.btn`.
 
 ---
 
@@ -376,9 +326,9 @@ Defined but **absent from SKILL.md**: everything in the "added" list above, plus
 `livewire/appointments/index.blade.php:43` `bg-pearl`; `:45 :46 :47 :48 :49 :50`
 `text-ink-80`. Neither token exists in the 61-token set; both confirmed absent
 from `public/build/assets/app-CG9T0-Qd.css`. The table head renders with **no
-ground and no colour rule** and does not read as a head. The file's own comment
-at `:4` promises "7:1 contrast". Direct consequence of the stale SKILL.md, and
-nothing in the suite catches it (§7).
+ground and no colour rule** and does not read as a head, while the file's own
+comment at `:4` promises "7:1 contrast". Direct consequence of the stale
+SKILL.md, and nothing in the suite catches it (§7).
 
 **2. `.table-hairline` on a `<tbody>`, where it matches nothing.**
 `livewire/users/index.blade.php:137`. The rule is `.table-hairline tbody tr + tr`
@@ -387,17 +337,17 @@ selects nothing and the users table ships with **no row separators**.
 SKILL.md:70-71 calls this out by name. Correct usages: `mortality/index:234`,
 `performance/index:195`, `appointments/index:42`, `design/gallery:240`.
 
-**3. `docs/design-brief.md` claims primacy while being a direction out of date.**
-`:6-8` — *"It is the source of truth; where it and the code disagree, the code is
-wrong."* Its palette (`:105-155`) is the field-ledger set: `--color-paper`,
-`--color-ink`, `--color-action #16324F`, bands `crimson`/`forest`/`slate`.
-SKILL.md:12 sends every agent to it. Anyone obeying it writes offender #1 again.
+**3. `docs/design-brief.md` claims primacy while being out of date.** `:6-8` —
+*"It is the source of truth; where it and the code disagree, the code is wrong."*
+Its palette (`:105-155`) is the field-ledger set: `--color-paper`, `--color-ink`,
+`--color-action #16324F`, bands `crimson`/`forest`/`slate`. SKILL.md:12 sends
+every agent to it. Anyone obeying it writes offender #1 again.
 
 **4. `app.css:671` points at a whitelist that does not exist.** The new
 primitives block says each rule "implements exactly one row of the Motion
 whitelist in `docs/redesign/01-system.md`" and calls it "the contract".
 `docs/redesign/` contains only this audit. 26 new classes are therefore governed
-by a document nobody can read, and none of them is used by a view yet.
+by a document nobody can read, and none is used by a view yet.
 
 **5. Radius tokens exist and are mostly ignored.** `--radius-sm: 6px`,
 `--radius-md: 10px`, `--radius-lg: 14px` (`app.css:192-194`). Views use
@@ -407,12 +357,11 @@ common, is not one of the three steps. Heaviest: `photos/upload.blade.php` (6),
 `mortality/index.blade.php` (5), `performance/broodcock-timeline.blade.php` (4).
 
 **6. No type scale in the token layer.** `@theme` defines fonts, colour, radius,
-shadow, duration and easing — **no `--text-*`**. Every size is arbitrary, and 21
-distinct ones are in use: `text-[15px]` ×153, `[11px]` ×103, `[13px]` ×84,
-`[14px]` ×50, `[12px]` ×46, `[17px]` ×42, `[21px]` ×24, `[22px]` ×19, `[32px]`
-×18, `[34px]` ×14, `[18px]` ×13, `[19px]` ×10, `[26px]` ×7, `[24px]` ×5,
-`[28px]` ×4, `[44px]` ×2, `[30px]` ×2, `[16px]` ×2, `[56px]`, `[40px]`,
-`[10px]`. 21/22px and 18/19px are neighbours no system needs.
+shadow, duration and easing — **no `--text-*`**. Every size is an arbitrary
+value, and 21 distinct ones are in use: 15px ×153, 11px ×103, 13px ×84, 14px
+×50, 12px ×46, 17px ×42, 21px ×24, 22px ×19, 32px ×18, 34px ×14, 18px ×13, 19px
+×10, 26px ×7, 24px ×5, 28px ×4, 44px ×2, 30px ×2, 16px ×2, 56px, 40px, 10px.
+21/22px and 18/19px are neighbours no system needs.
 
 **7. Stale colour names in comments, describing a swap that already happened.**
 `app.css:503` "The console sidebar, on the deep **comb red**" — the sidebar is
@@ -439,27 +388,24 @@ each in `photos/upload.blade.php` and `app-sidebar.blade.php`. Nine more nav
 icons are raw path strings in a PHP array at `app-sidebar.blade.php:15-46`.
 
 **10. Shipped comments describing code that is no longer there.**
-`livewire/landing/index.blade.php:92-94` — "The form **arrives here in the next
-step**. Until it does, this section carries the farm's own contact details" — the
-form is mounted 15 lines below at `:107`.
-`partials/head-meta.blade.php:31` — "The **SVG** is the mark itself, so it stays
-sharp at any density" — there is no SVG favicon; the set is ICO + PNG (`:33-35`).
-`broodcocks/pedigree.blade.php:91-94` explains an `ink-80`/`ink-48` choice using
-tokens that do not exist. `users/index.blade.php:26` describes a "**pearl**
-ground" on an element classed `bg-muted`.
+`landing/index.blade.php:92-94` — "The form **arrives here in the next step**.
+Until it does, this section carries the farm's own contact details" — the form is
+mounted 15 lines below at `:107`. `partials/head-meta.blade.php:31` — "The
+**SVG** is the mark itself" — there is no SVG favicon; the set is ICO + PNG
+(`:33-35`). `broodcocks/pedigree.blade.php:91-94` explains an `ink-80`/`ink-48`
+choice using tokens that do not exist. `users/index.blade.php:26` describes a
+"**pearl** ground" on an element classed `bg-muted`.
 
 ### Below the top ten
-- `components/photo-thumb.blade.php:37` uses `text-[10px]`; SKILL.md:127 bans
-  anything under 11px, and 3 views consume this component. (Otherwise clean:
-  **zero** `font-bold`, `backdrop-blur`, gradients, or stock palette classes.)
-- `components/brand-mark.blade.php:37` sets `style="width:…;height:…"`,
-  duplicating the `width`/`height` attributes two lines above.
+- `photo-thumb.blade.php:37` uses `text-[10px]`; SKILL.md:127 bans anything under
+  11px, and 3 views consume it. Otherwise clean: **zero** `font-bold`,
+  `backdrop-blur`, gradients, or stock palette classes anywhere.
+- `brand-mark.blade.php:37` sets `style="width:…;height:…"`, duplicating the
+  `width`/`height` attributes two lines above.
 - `app-topbar.blade.php:17-28` `$sectionLabels` has no key for `appointments` or
-  `profile`; the sidebar calls that section "Visits"
-  (`app-sidebar.blade.php:35`). Latent only — `$actionLabels` has no `index`
-  entry (`:30-36`), so no breadcrumb renders there.
-- `@fontsource/fira-sans` and `@fontsource/fira-code` are installed but no longer
-  imported — dead dependencies in `package.json`.
+  `profile`; the sidebar calls that section "Visits" (`app-sidebar.blade.php:35`).
+  Latent only — `$actionLabels` has no `index` entry (`:30-36`), so no breadcrumb
+  renders there.
 - The 15 new ink/primary ramp steps are in `app.css` but **not** in
   `config/gfms-brand.php`. `BrandTokensAreMirroredTest` asserts config→css, so it
   will not flag the one-way addition; the PDF templates cannot use them.
