@@ -77,6 +77,24 @@ final class Form extends Component
 
     public ?string $dam_id = null;
 
+    /**
+     * The value the parent dropdowns use for "not one of ours".
+     *
+     * A sentinel rather than a real id, because the dropdown has to express
+     * three different things in one control: no parent recorded (''), a bird
+     * on the farm (its id), and a bird the farm does not own (this).
+     */
+    public const OFF_LIST = 'external';
+
+    /*
+     * What the dropdown is showing, which is NOT the same as which bird was
+     * chosen - it also has to hold the sentinel above. sire_id stays the
+     * foreign key and nothing downstream needs to know this property exists.
+     */
+    public ?string $sire_choice = null;
+
+    public ?string $dam_choice = null;
+
     /*
      * A parent that is not on the list.
      *
@@ -127,6 +145,12 @@ final class Form extends Component
                 'status' => $broodcock->status->value,
                 'sire_id' => $broodcock->sire_id ? (string) $broodcock->sire_id : null,
                 'dam_id' => $broodcock->dam_id ? (string) $broodcock->dam_id : null,
+                // The dropdown simply shows whichever bird is on record. By the
+                // time a hand-entered parent has been saved it is a broodcock
+                // row like any other, and parentOptions() includes the selected
+                // id explicitly - so editing never needs the sentinel.
+                'sire_choice' => $broodcock->sire_id ? (string) $broodcock->sire_id : null,
+                'dam_choice' => $broodcock->dam_id ? (string) $broodcock->dam_id : null,
                 'notes' => $broodcock->notes,
             ]);
 
@@ -137,6 +161,43 @@ final class Form extends Component
         $this->class = BroodcockClass::Ordinary->value;
         $this->sex = Sex::Male->value;
         $this->status = BroodcockStatus::Active->value;
+    }
+
+    public function updatedSireChoice(?string $value): void
+    {
+        $this->applyParentChoice('sire', $value);
+    }
+
+    public function updatedDamChoice(?string $value): void
+    {
+        $this->applyParentChoice('dam', $value);
+    }
+
+    /**
+     * Translate the dropdown back into the two things the save path reads.
+     *
+     * The dropdown is one control expressing three states; sire_id and
+     * sire_is_external are what everything downstream - validation, the
+     * pedigree loop check, ResolveExternalParent - actually consults. Nothing
+     * below this method knows the dropdown changed shape.
+     *
+     * CLEARING THE TYPED NAME IS THE POINT, not tidiness. Choose the off-list
+     * option, type "Visiting Cock", then change your mind and pick a farm bird:
+     * without this the name sits in a property the save path is no longer
+     * reading, until some later edit sets the flag again and quietly registers
+     * a bird nobody asked for.
+     */
+    private function applyParentChoice(string $role, ?string $value): void
+    {
+        $isOffList = $value === self::OFF_LIST;
+
+        $this->{$role.'_is_external'} = $isOffList;
+        $this->{$role.'_id'} = ($isOffList || $value === null || $value === '') ? null : $value;
+
+        if (! $isOffList) {
+            $this->{$role.'_external_name'} = null;
+            $this->{$role.'_external_bloodline'} = null;
+        }
     }
 
     public function isEditing(): bool

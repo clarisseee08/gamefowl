@@ -223,4 +223,83 @@ final class ExternalParentTest extends TestCase
 
         $this->assertFalse($bird->fresh()->is_external);
     }
+
+    // -----------------------------------------------------------------
+    // The control itself.
+    //
+    // The way out of the list is now the last option IN the dropdown rather
+    // than a checkbox beneath it that replaced the dropdown when ticked. The
+    // tests above are unaffected: they set dam_is_external directly, which is
+    // still the flag the save path reads.
+    // -----------------------------------------------------------------
+
+    public function test_the_parent_dropdown_offers_a_way_out_of_the_list(): void
+    {
+        Livewire::actingAs($this->staff())
+            ->test(Form::class)
+            ->assertSee("Someone else's bird", false)
+            ->assertDontSee("Not one of the farm's birds", false);
+    }
+
+    public function test_choosing_the_off_list_option_opens_the_name_fields(): void
+    {
+        Livewire::actingAs($this->staff())
+            ->test(Form::class)
+            ->set('dam_choice', 'external')
+            ->assertSet('dam_is_external', true)
+            ->assertSet('dam_id', null)
+            ->assertSee('Name of the outside hen');
+    }
+
+    public function test_choosing_a_farm_bird_leaves_the_name_fields_closed(): void
+    {
+        $dam = Broodcock::factory()->create(['sex' => Sex::Female]);
+
+        Livewire::actingAs($this->staff())
+            ->test(Form::class)
+            ->set('dam_choice', (string) $dam->id)
+            ->assertSet('dam_is_external', false)
+            ->assertSet('dam_id', (string) $dam->id);
+    }
+
+    public function test_switching_back_to_a_farm_bird_discards_a_half_typed_name(): void
+    {
+        $dam = Broodcock::factory()->create(['sex' => Sex::Female]);
+
+        Livewire::actingAs($this->staff())
+            ->test(Form::class)
+            ->set('dam_choice', 'external')
+            ->set('dam_external_name', 'Ilocos Hen')
+            ->set('dam_external_bloodline', 'Sweater')
+            ->set('dam_choice', (string) $dam->id)
+            ->assertSet('dam_is_external', false)
+            ->assertSet('dam_external_name', null)
+            ->assertSet('dam_external_bloodline', null);
+    }
+
+    /** End to end through the new control rather than the underlying flag. */
+    public function test_a_dam_chosen_from_the_dropdown_is_saved_as_an_outside_bird(): void
+    {
+        $sire = Broodcock::factory()->create(['sex' => Sex::Male]);
+
+        Livewire::actingAs($this->staff())
+            ->test(Form::class)
+            ->set('sire_choice', (string) $sire->id)
+            ->set('dam_choice', 'external')
+            ->set('dam_external_name', 'Borrowed Hen')
+            ->set('dam_external_bloodline', 'Kelso')
+            ->set('mating_date', today()->toDateString())
+            ->set('eggs_set', 6)
+            ->set('eggs_fertile', 5)
+            ->set('eggs_hatched', 4)
+            ->set('offspring_count', 0)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $dam = Broodcock::query()->where('name', 'Borrowed Hen')->first();
+
+        $this->assertNotNull($dam, 'The typed name should become a real broodcock row.');
+        $this->assertTrue($dam->is_external);
+        $this->assertSame($dam->id, BreedingRecord::query()->first()?->dam_id);
+    }
 }

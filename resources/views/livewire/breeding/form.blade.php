@@ -16,79 +16,84 @@
             <p class="mt-3 text-[17px] leading-relaxed text-muted-foreground">
                 Only male birds can be chosen as the sire and only female birds as the dam.
                 If a parent is not one of the farm's own birds &mdash; a borrowed or visiting
-                breeder &mdash; tick &ldquo;Not one of the farm's birds&rdquo; and type its name
-                instead. It is recorded as a bird so the family tree keeps that branch.
+                breeder &mdash; pick &ldquo;Someone else's bird&rdquo; at the end of the list
+                and type its name. It is recorded as a bird so the family tree keeps that
+                branch.
             </p>
 
+            {{-- One control per parent: the way out of the list is the last
+                 option IN the list, not a checkbox underneath that replaced the
+                 dropdown when ticked. See the broodcock form for the same
+                 control and the reasoning behind it. --}}
             <div class="mt-8 grid gap-6 sm:grid-cols-2">
                 <div>
-                    <label for="{{ $sire_is_external ? 'sire_external_name' : 'sire_id' }}" class="label">
+                    <label for="sire_choice" class="label">
                         Sire (Father) <span class="text-destructive">*</span>
                     </label>
 
+                    <select id="sire_choice" wire:model.live="sire_choice"
+                            class="input mt-1 @error('sire_id') input-error @enderror">
+                        <option value="">Choose a male bird</option>
+                        @foreach ($this->sires as $bird)
+                            <option value="{{ $bird->id }}">
+                                {{ $bird->name }}{{ $bird->band_number ? ' ('.$bird->band_number.')' : '' }}
+                                {{ $bird->bloodline ? ' - '.$bird->bloodline : '' }}
+                            </option>
+                        @endforeach
+                        <option value="{{ App\Livewire\Breeding\Form::OFF_LIST }}">Someone else's bird</option>
+                    </select>
+                    @error('sire_id') <p class="error">{{ $message }}</p> @enderror
+
                     @if ($sire_is_external)
-                        <input id="sire_external_name" type="text" wire:model.blur="sire_external_name"
-                               placeholder="Name of the outside cock"
-                               class="input mt-1 @error('sire_external_name') input-error @enderror">
-                        @error('sire_external_name') <p class="error">{{ $message }}</p> @enderror
+                        {{-- Indented off a hairline so the fields read as belonging
+                             to the choice above rather than as two more questions. --}}
+                        <div class="mt-4 border-l border-border pl-4">
+                            <label for="sire_external_name" class="label">Name of the outside cock</label>
+                            <input id="sire_external_name" type="text" wire:model.blur="sire_external_name"
+                                   class="input mt-1 @error('sire_external_name') input-error @enderror">
+                            @error('sire_external_name') <p class="error">{{ $message }}</p> @enderror
 
-                        <label for="sire_external_bloodline" class="label mt-4">Bloodline</label>
-                        <input id="sire_external_bloodline" type="text" wire:model.blur="sire_external_bloodline"
-                               class="input mt-1 @error('sire_external_bloodline') input-error @enderror">
-                        <p class="help">Optional. Recorded so the bird carries its bloodline tag.</p>
-                        @error('sire_external_bloodline') <p class="error">{{ $message }}</p> @enderror
-                    @else
-                        <select id="sire_id" wire:model.blur="sire_id" class="input mt-1 @error('sire_id') input-error @enderror">
-                            <option value="">Choose a male bird</option>
-                            @foreach ($this->sires as $bird)
-                                <option value="{{ $bird->id }}">
-                                    {{ $bird->name }}{{ $bird->band_number ? ' ('.$bird->band_number.')' : '' }}
-                                    {{ $bird->bloodline ? ' - '.$bird->bloodline : '' }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('sire_id') <p class="error">{{ $message }}</p> @enderror
+                            <label for="sire_external_bloodline" class="label mt-4">Bloodline</label>
+                            <input id="sire_external_bloodline" type="text" wire:model.blur="sire_external_bloodline"
+                                   class="input mt-1 @error('sire_external_bloodline') input-error @enderror">
+                            <p class="help">Optional. Recorded so the bird carries its bloodline tag.</p>
+                            @error('sire_external_bloodline') <p class="error">{{ $message }}</p> @enderror
+                        </div>
                     @endif
-
-                    <label class="mt-2 flex min-h-11 cursor-pointer items-center gap-2.5">
-                        <input type="checkbox" wire:model.live="sire_is_external" class="h-5 w-5 accent-primary">
-                        <span class="text-[15px] text-foreground">Not one of the farm's birds</span>
-                    </label>
                 </div>
 
                 <div>
-                    <label for="{{ $dam_is_external ? 'dam_external_name' : 'dam_id' }}" class="label">
+                    <label for="dam_choice" class="label">
                         Dam (Mother) <span class="text-destructive">*</span>
                     </label>
 
+                    <select id="dam_choice" wire:model.live="dam_choice"
+                            class="input mt-1 @error('dam_id') input-error @enderror">
+                        <option value="">Choose a female bird</option>
+                        @foreach ($this->dams as $bird)
+                            <option value="{{ $bird->id }}">
+                                {{ $bird->name }}{{ $bird->band_number ? ' ('.$bird->band_number.')' : '' }}
+                                {{ $bird->bloodline ? ' - '.$bird->bloodline : '' }}
+                            </option>
+                        @endforeach
+                        <option value="{{ App\Livewire\Breeding\Form::OFF_LIST }}">Someone else's bird</option>
+                    </select>
+                    @error('dam_id') <p class="error">{{ $message }}</p> @enderror
+
                     @if ($dam_is_external)
-                        <input id="dam_external_name" type="text" wire:model.blur="dam_external_name"
-                               placeholder="Name of the outside hen"
-                               class="input mt-1 @error('dam_external_name') input-error @enderror">
-                        @error('dam_external_name') <p class="error">{{ $message }}</p> @enderror
+                        <div class="mt-4 border-l border-border pl-4">
+                            <label for="dam_external_name" class="label">Name of the outside hen</label>
+                            <input id="dam_external_name" type="text" wire:model.blur="dam_external_name"
+                                   class="input mt-1 @error('dam_external_name') input-error @enderror">
+                            @error('dam_external_name') <p class="error">{{ $message }}</p> @enderror
 
-                        <label for="dam_external_bloodline" class="label mt-4">Bloodline</label>
-                        <input id="dam_external_bloodline" type="text" wire:model.blur="dam_external_bloodline"
-                               class="input mt-1 @error('dam_external_bloodline') input-error @enderror">
-                        <p class="help">Optional. Recorded so the bird carries its bloodline tag.</p>
-                        @error('dam_external_bloodline') <p class="error">{{ $message }}</p> @enderror
-                    @else
-                        <select id="dam_id" wire:model.blur="dam_id" class="input mt-1 @error('dam_id') input-error @enderror">
-                            <option value="">Choose a female bird</option>
-                            @foreach ($this->dams as $bird)
-                                <option value="{{ $bird->id }}">
-                                    {{ $bird->name }}{{ $bird->band_number ? ' ('.$bird->band_number.')' : '' }}
-                                    {{ $bird->bloodline ? ' - '.$bird->bloodline : '' }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('dam_id') <p class="error">{{ $message }}</p> @enderror
+                            <label for="dam_external_bloodline" class="label mt-4">Bloodline</label>
+                            <input id="dam_external_bloodline" type="text" wire:model.blur="dam_external_bloodline"
+                                   class="input mt-1 @error('dam_external_bloodline') input-error @enderror">
+                            <p class="help">Optional. Recorded so the bird carries its bloodline tag.</p>
+                            @error('dam_external_bloodline') <p class="error">{{ $message }}</p> @enderror
+                        </div>
                     @endif
-
-                    <label class="mt-2 flex min-h-11 cursor-pointer items-center gap-2.5">
-                        <input type="checkbox" wire:model.live="dam_is_external" class="h-5 w-5 accent-primary">
-                        <span class="text-[15px] text-foreground">Not one of the farm's birds</span>
-                    </label>
                 </div>
 
                 <div>
