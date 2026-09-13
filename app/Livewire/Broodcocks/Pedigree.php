@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Broodcocks;
 
+use App\Livewire\Concerns\ChoosesShellByViewer;
 use App\Models\Broodcock;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
@@ -35,6 +36,8 @@ use Livewire\Component;
  */
 final class Pedigree extends Component
 {
+    use ChoosesShellByViewer;
+
     public Broodcock $broodcock;
 
     public function mount(Broodcock $broodcock): void
@@ -164,6 +167,7 @@ final class Pedigree extends Component
 
     public function render(): View
     {
-        return view('livewire.broodcocks.pedigree');
+        return view('livewire.broodcocks.pedigree')
+            ->layout($this->viewerShell());
     }
 }

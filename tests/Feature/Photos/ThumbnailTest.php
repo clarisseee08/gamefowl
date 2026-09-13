@@ -6,6 +6,7 @@ namespace Tests\Feature\Photos;
 
 use App\Actions\Photos\DeletePhoto;
 use App\Actions\Photos\StorePhoto;
+use App\Enums\BroodcockStatus;
 use App\Models\Broodcock;
 use App\Models\BroodcockPhoto;
 use App\Models\User;
@@ -175,14 +176,34 @@ final class ThumbnailTest extends TestCase
         );
     }
 
-    /** A thumbnail request is still an authorized request. */
-    public function test_a_guest_cannot_fetch_a_thumbnail(): void
+    /**
+     * A thumbnail request is still an authorized request.
+     *
+     * The size parameter must not become a way around the policy. It is the
+     * kind of thing that would be easy to miss: the full-size route is checked,
+     * the thumbnail is "just a smaller copy of the same picture", and the check
+     * quietly applies to one and not the other.
+     */
+    public function test_the_thumbnail_route_is_authorized_the_same_way_as_the_original(): void
+    {
+        $hidden = Broodcock::factory()->create(['status' => BroodcockStatus::Deceased]);
+        $photo = $this->upload($hidden, UploadedFile::fake()->image('cock.jpg'));
+
+        $this->get(route('photos.show', ['photo' => $photo, 'size' => 'thumb']))
+            ->assertForbidden();
+
+        $this->get(route('photos.show', $photo))
+            ->assertForbidden();
+    }
+
+    /** And a guest may fetch one for a bird the catalogue does show. */
+    public function test_a_guest_can_fetch_a_thumbnail_of_a_publicly_visible_bird(): void
     {
         $bird = Broodcock::factory()->create();
         $photo = $this->upload($bird, UploadedFile::fake()->image('cock.jpg'));
 
         $this->get(route('photos.show', ['photo' => $photo, 'size' => 'thumb']))
-            ->assertRedirect(route('login'));
+            ->assertOk();
     }
 
     public function test_the_thumbnail_is_served_as_a_jpeg_with_nosniff(): void

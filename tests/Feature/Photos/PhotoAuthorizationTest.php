@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Photos;
 
+use App\Enums\BroodcockStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\BroodcockPhotoController;
 use App\Livewire\Photos\Gallery;
@@ -197,11 +198,32 @@ final class PhotoAuthorizationTest extends TestCase
         $this->assertSame('nosniff', $response->headers->get('X-Content-Type-Options'));
     }
 
-    public function test_a_guest_cannot_load_a_photo_file(): void
+    /**
+     * A guest may load a photo of a bird the catalogue would show them.
+     *
+     * This previously redirected to login. The catalogue is public now, and a
+     * public catalogue whose images 302 to a sign-in form is a page of broken
+     * thumbnails.
+     */
+    public function test_a_guest_can_load_a_photo_of_a_publicly_visible_bird(): void
     {
         $photo = $this->photoWithFile();
 
-        $this->get(route('photos.show', $photo))->assertRedirect(route('login'));
+        $this->get(route('photos.show', $photo))->assertOk();
+    }
+
+    /**
+     * But only of such a bird. Photo ids are sequential, so without this the
+     * public could page through every photograph the farm has ever taken -
+     * including of birds that died, which the catalogue never lists.
+     */
+    public function test_a_guest_cannot_load_a_photo_of_a_bird_the_catalogue_hides(): void
+    {
+        $photo = $this->photoWithFile();
+
+        $photo->broodcock->update(['status' => BroodcockStatus::Deceased]);
+
+        $this->get(route('photos.show', $photo))->assertForbidden();
     }
 
     public function test_a_deactivated_user_cannot_load_a_photo_file(): void
