@@ -98,39 +98,52 @@
             Visit the farm
         </h2>
         <p class="mt-3 max-w-[58ch] text-[17px] leading-relaxed text-muted-foreground">
-            Visitors are welcome by arrangement. Get in touch and the farm will confirm a
-            time that suits.
+            Visitors are welcome by arrangement. Leave your details and the farm will ring
+            you back to settle a time &mdash; nothing is booked until you have spoken to
+            someone.
         </p>
 
-        @if ($hasContact)
-            <dl class="mt-8 grid max-w-3xl gap-6 sm:grid-cols-2">
-                @if ($farm['phone'])
-                    <div>
-                        <dt class="text-[15px] text-muted-foreground">Phone</dt>
-                        <dd class="datum mt-1 text-[19px] text-foreground">{{ $farm['phone'] }}</dd>
-                    </div>
-                @endif
-                @if ($farm['email'])
-                    <div>
-                        <dt class="text-[15px] text-muted-foreground">Email</dt>
-                        <dd class="mt-1 text-[19px] text-foreground">
-                            <a href="mailto:{{ $farm['email'] }}" class="hover:underline">{{ $farm['email'] }}</a>
-                        </dd>
-                    </div>
-                @endif
-                @if ($farm['address'])
-                    <div>
-                        <dt class="text-[15px] text-muted-foreground">Where to find us</dt>
-                        <dd class="mt-1 max-w-[38ch] text-[17px] leading-relaxed text-foreground">{{ $farm['address'] }}</dd>
-                    </div>
-                @endif
-                @if ($farm['hours'])
-                    <div>
-                        <dt class="text-[15px] text-muted-foreground">Visiting hours</dt>
-                        <dd class="mt-1 max-w-[38ch] text-[17px] leading-relaxed text-foreground">{{ $farm['hours'] }}</dd>
-                    </div>
-                @endif
-            </dl>
-        @endif
+        <div class="mt-8 grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+            <livewire:appointments.request-form />
+
+            @if ($hasContact)
+                {{-- The form is the easy path, not the only one. A customer who
+                     would rather telephone should not have to fill in a form to
+                     find the number. --}}
+                <div class="lg:border-l lg:border-border lg:pl-10">
+                    <h3 class="text-[13px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">
+                        Or get in touch directly
+                    </h3>
+                    <dl class="mt-5 space-y-5">
+                        @if ($farm['phone'])
+                            <div>
+                                <dt class="text-[15px] text-muted-foreground">Phone</dt>
+                                <dd class="datum mt-1 text-[19px] text-foreground">{{ $farm['phone'] }}</dd>
+                            </div>
+                        @endif
+                        @if ($farm['email'])
+                            <div>
+                                <dt class="text-[15px] text-muted-foreground">Email</dt>
+                                <dd class="mt-1 text-[17px] text-foreground">
+                                    <a href="mailto:{{ $farm['email'] }}" class="hover:underline">{{ $farm['email'] }}</a>
+                                </dd>
+                            </div>
+                        @endif
+                        @if ($farm['address'])
+                            <div>
+                                <dt class="text-[15px] text-muted-foreground">Where to find us</dt>
+                                <dd class="mt-1 max-w-[34ch] text-[17px] leading-relaxed text-foreground">{{ $farm['address'] }}</dd>
+                            </div>
+                        @endif
+                        @if ($farm['hours'])
+                            <div>
+                                <dt class="text-[15px] text-muted-foreground">Visiting hours</dt>
+                                <dd class="mt-1 max-w-[34ch] text-[17px] leading-relaxed text-foreground">{{ $farm['hours'] }}</dd>
+                            </div>
+                        @endif
+                    </dl>
+                </div>
+            @endif
+        </div>
     </section>
 </div>
