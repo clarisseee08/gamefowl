@@ -10,11 +10,17 @@
 # `npm run dev` and is simply absent from the production bundle, so the failure
 # only ever appears on Render. Building here is what catches it.
 #
-# THE BUDGET. This repository is private, so Actions minutes are metered and
-# GitHub rounds every job up to a whole minute. keep-render-warm already costs
-# ~1800 minutes a month and keep-supabase-awake ~30, against a free allowance of
-# 2000 - so there are only ~170 minutes left for this workflow. That is roughly
-# 30 runs a month at the ~5 minutes a cold run takes, which is why:
+# THE BUDGET, AND IT IS FAR LESS TIGHT THAN THIS FILE USED TO SAY.
+#
+# The estimate here was ~1800 minutes a month for keep-render-warm, leaving
+# ~170 for this workflow. Counting its actual run history gives three or four
+# runs a DAY rather than the sixty its cron asks for - GitHub throttles
+# high-frequency schedules on private repositories - so it costs nearer 100
+# minutes a month, not 1800. An external pinger now does that job properly and
+# keep-render-warm is only a fallback, so the real figure heads towards zero.
+#
+# Actions minutes are still metered and GitHub still rounds every job up to a
+# whole minute, so the measures below stay worth keeping:
 #
 #   - it runs on pushes to main and on pull requests, NOT on every branch push;
 #   - Composer and npm caches are restored, which takes a warm run under 3 min;
@@ -81,9 +87,6 @@ jobs:
       - name: Check formatting
         run: vendor/bin/pint --test
 
-      - name: Run the test suite
-        run: php artisan test --compact
-
       # 20 to match the Dockerfile's assets stage. A newer Node very probably
       # builds the same bundle; "very probably" is not what CI is for.
       - name: Set up Node 20
@@ -95,5 +98,20 @@ jobs:
       - name: Install JS dependencies
         run: npm ci --no-audit --no-fund
 
+      # BEFORE THE TESTS, and that ordering is the whole point of this step's
+      # position rather than a preference.
+      #
+      # This job failed on every run in this repository's history - 61 tests at
+      # a time, all with "Vite manifest not found at public/build/manifest.json"
+      # - because the suite ran here and the assets were built afterwards.
+      # public/build is gitignored, so on a clean runner no manifest existed
+      # when the tests asked for one, and every test that renders a layout
+      # carrying @vite died on it.
+      #
+      # It looked like a test failure and was a step-ordering one. The build has
+      # to happen before anything renders a view.
       - name: Build production assets
         run: npm run build
+
+      - name: Run the test suite
+        run: php artisan test --compact

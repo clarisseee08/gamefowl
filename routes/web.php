@@ -7,10 +7,12 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DesignGalleryController;
 use App\Http\Controllers\DiagnosticsController;
 use App\Http\Controllers\ReportController;
+use App\Livewire\Appointments;
 use App\Livewire\Breeding;
 use App\Livewire\Broodcocks;
 use App\Livewire\Catalog;
 use App\Livewire\Health;
+use App\Livewire\Landing;
 use App\Livewire\Mortality;
 use App\Livewire\Performance;
 use App\Livewire\Profile;
@@ -51,11 +53,7 @@ use Illuminate\Support\Facades\Route;
  * public hit the auth middleware and was shown a login form as the first thing
  * the farm's website said to them.
  */
-Route::get('/', function () {
-    return redirect()->route(
-        auth()->user()?->isInternal() ? 'dashboard' : 'catalog.index'
-    );
-})->name('home');
+Route::livewire('/', Landing\Index::class)->name('home')->middleware('active');
 
 /*
 |--------------------------------------------------------------------------
@@ -149,6 +147,16 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         Route::get('/{report}/csv', [ReportController::class, 'csv'])->name('csv');
         Route::get('/{report}/pdf', [ReportController::class, 'pdf'])->name('pdf');
     });
+
+    /*
+     * Visit requests - INTERNAL ONLY.
+     *
+     * The asking is public and lives on the front page; this is the queue of
+     * what everybody asked, which is farm business. AppointmentPolicy denies
+     * customers outright: names, phone numbers and who is interested in which
+     * bird are not theirs to read.
+     */
+    Route::livewire('/appointments', Appointments\Index::class)->name('appointments.index');
 
     /*
      * User management - OWNER ONLY.

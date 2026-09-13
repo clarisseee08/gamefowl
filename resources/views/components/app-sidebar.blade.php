@@ -30,6 +30,10 @@
             // last thing this particular section should invite. A trend line.
             ['label' => 'Mortality',   'route' => 'mortality.index',   'internal' => true,
              'icon' => 'M2.25 6 9 12.75l4.286-4.286a11.948 11.948 0 0 1 4.306 6.43l.776 2.898m0 0 3.182-5.511m-3.182 5.51-5.511-3.181'],
+            // A calendar, because what arrives here is somebody proposing a
+            // date. Internal: the asking is public, the queue is not.
+            ['label' => 'Visits',      'route' => 'appointments.index', 'internal' => true,
+             'icon' => 'M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5'],
         ],
         'Analyse' => [
             ['label' => 'Reports',     'route' => 'reports.index',     'internal' => true,

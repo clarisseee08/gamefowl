@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Broodcocks;
 
 use App\Livewire\Broodcocks\Index;
-use App\Livewire\Catalog\Index as Catalog;
+use App\Livewire\Catalog\Browse as Catalog;
 use App\Livewire\Dashboard\Overview;
 use App\Models\Broodcock;
 use App\Models\User;
