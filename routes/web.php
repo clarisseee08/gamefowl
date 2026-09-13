@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\BroodcockPhotoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DesignGalleryController;
+use App\Http\Controllers\DiagnosticsController;
 use App\Http\Controllers\ReportController;
 use App\Livewire\Breeding;
 use App\Livewire\Broodcocks;
@@ -193,6 +194,19 @@ Route::middleware(['auth', 'active'])->group(function (): void {
      * rather than trusting the group, since this sits outside the policy layer.
      */
     Route::get('/design', DesignGalleryController::class)->name('design');
+
+    /*
+     * Environment diagnostics. OWNER ONLY.
+     *
+     * Render's free plan gives no shell and no one-off jobs, so there is
+     * otherwise no way to ask the running container which extensions loaded,
+     * whether a directory is writable, or whether the storage bucket can be
+     * reached. Every production-only failure on this deployment has been one
+     * of those, and all of them are invisible from the outside.
+     *
+     * It reports no secret VALUES - only whether each credential is set.
+     */
+    Route::get('/diagnostics', DiagnosticsController::class)->name('diagnostics');
 });
 
 /*
