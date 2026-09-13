@@ -243,12 +243,20 @@
                 </p>
             @else
                 <ul class="mt-4 divide-y divide-border">
-                    {{-- Overdue rows carry a severity stripe. Without it, "141 days
-                         overdue" and "due in 29 days" differ only by the wash on a pill,
-                         and on a phone in daylight that difference disappears - which is
-                         exactly when this list is read. --}}
+                    {{-- THE SEVERITY STRIPE IS GONE, and the comment that defended it
+                         was describing a list that no longer exists.
+
+                         It argued that without a coloured left rule, "141 days overdue"
+                         and "due in 29 days" differ only by the wash on a pill - which
+                         would be a fair point about a MIXED list. This one is
+                         Overview::overdueVaccinations, which is scopeOverdue() and
+                         nothing else, so every row carried the same stripe and it
+                         separated nothing from anything. A mark that every item has is
+                         decoration by definition; the section heading already says
+                         these are overdue, and each row states how late it is in
+                         words. --}}
                     @foreach ($this->overdueVaccinations as $record)
-                        <li class="flex items-center justify-between gap-3 border-l-2 border-destructive py-2.5 pl-3">
+                        <li class="flex items-center justify-between gap-3 py-2.5">
                             <div class="min-w-0">
                                 <p class="truncate text-[15px] font-medium text-foreground">
                                     {{ $record->broodcock?->name ?? 'Unknown bird' }}
