@@ -41,6 +41,23 @@ return [
     'per_page' => (int) env('GFMS_PER_PAGE', 15),
 
     /*
+     * Whether migrate:fresh, migrate:refresh, migrate:reset, migrate:rollback
+     * and db:wipe are allowed to run.
+     *
+     * OFF EVERYWHERE by default, including local development, because there is
+     * no separate development database - every .env and render.yaml point at
+     * the same Supabase project. A local `migrate:fresh` therefore destroys the
+     * farm's real records, not a disposable copy.
+     *
+     * Turn it on only to rebuild a database you are certain is your own, and
+     * turn it straight back off. See AppServiceProvider::boot().
+     */
+    'allow_destructive_db' => filter_var(
+        env('GFMS_ALLOW_DESTRUCTIVE_DB', false),
+        FILTER_VALIDATE_BOOLEAN
+    ),
+
+    /*
      * How many ancestor generations the pedigree view renders. Three is what
      * the thesis specifies; raising it grows the eager-load set exponentially.
      */
@@ -62,8 +79,8 @@ return [
      *
      * NOTE: the internals are deliberately NOT renamed. config/gfms-brand.php,
      * the GFMS_* env keys, route names, table names and CSS prefixes all stay.
-     * Renaming them buys nothing visible and risks a 472-test suite against a
-     * deadline.
+     * Renaming them buys nothing visible and risks the whole test suite against
+     * a deadline.
      */
     'system' => [
         'name' => env('APP_NAME', 'Digital Broodcock Farm Record Management System'),
