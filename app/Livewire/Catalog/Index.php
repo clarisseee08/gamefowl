@@ -8,6 +8,7 @@ use App\Enums\BroodcockClass;
 use App\Enums\Sex;
 use App\Livewire\Concerns\ChoosesShellByViewer;
 use App\Models\Broodcock;
+use App\Support\RecordCache;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
@@ -92,7 +93,12 @@ final class Index extends Component
     #[Computed]
     public function birds(): LengthAwarePaginator
     {
-        return Broodcock::query()
+        // Cached because each of the queries below costs a ~240ms round trip in
+        // production regardless of how little it asks for - see
+        // App\Support\RecordCache for the measurements. The key carries every
+        // filter and the page number, so a customer who has narrowed the list
+        // is never handed somebody else's view of it.
+        return RecordCache::remember($this->birdsCacheKey(), fn (): LengthAwarePaginator => Broodcock::query()
             // Photo per card, so it must be eager-loaded or the grid is one
             // extra query per bird against a database in Tokyo.
             ->with('primaryPhoto')
@@ -110,21 +116,43 @@ final class Index extends Component
             ->sex($this->sex)
             ->classGrade($this->class)
             ->orderBy('name')
-            ->paginate(12);
+            ->paginate(12));
+    }
+
+    /**
+     * One cache key per distinct view of the catalogue.
+     *
+     * Hashed rather than concatenated because `search` is free text typed by a
+     * customer. Pasted straight into a key it brings slashes, colons and
+     * whatever length it likes into a filename on the cache disk.
+     */
+    private function birdsCacheKey(): string
+    {
+        return 'catalog:grid:'.md5(serialize([
+            $this->search,
+            $this->bloodline,
+            $this->sex,
+            $this->class,
+            $this->forSaleOnly,
+            $this->getPage(),
+        ]));
     }
 
     /** @return array<int, string> */
     #[Computed]
     public function bloodlineOptions(): array
     {
-        return Broodcock::query()
+        // The filter dropdown only changes when a bird carrying a bloodline
+        // nobody has used before is registered, which is rare - but unCached it
+        // cost a full round trip on every single page view.
+        return RecordCache::remember('catalog:bloodlines', fn (): array => Broodcock::query()
             ->farmStock()
             ->onFarm()
             ->whereNotNull('bloodline')
             ->distinct()
             ->orderBy('bloodline')
             ->pluck('bloodline')
-            ->all();
+            ->all());
     }
 
     /** @return array<int, Sex> */
