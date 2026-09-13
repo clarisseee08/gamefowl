@@ -168,6 +168,7 @@ final class Pedigree extends Component
     public function render(): View
     {
         return view('livewire.broodcocks.pedigree')
-            ->layout($this->viewerShell());
+            ->layout($this->viewerShell())
+            ->title($this->broodcock->name.' — family tree');
     }
 }

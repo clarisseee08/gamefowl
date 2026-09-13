@@ -270,6 +270,7 @@ final class Overview extends Component
 
     public function render(): View
     {
-        return view('livewire.dashboard.overview');
+        return view('livewire.dashboard.overview')
+            ->title('Dashboard');
     }
 }

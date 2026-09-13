@@ -123,6 +123,7 @@ final class Index extends Component
 
     public function render(): View
     {
-        return view('livewire.breeding.index');
+        return view('livewire.breeding.index')
+            ->title('Breeding Records');
     }
 }

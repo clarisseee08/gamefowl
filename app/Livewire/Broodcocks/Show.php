@@ -93,6 +93,7 @@ final class Show extends Component
     public function render(): View
     {
         return view('livewire.broodcocks.show')
-            ->layout($this->viewerShell());
+            ->layout($this->viewerShell())
+            ->title($this->bird->name);
     }
 }

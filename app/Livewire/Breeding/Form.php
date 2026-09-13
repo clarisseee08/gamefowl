@@ -291,6 +291,7 @@ final class Form extends Component
 
     public function render(): View
     {
-        return view('livewire.breeding.form');
+        return view('livewire.breeding.form')
+            ->title($this->isEditing() ? 'Edit Breeding Record' : 'Record a Mating');
     }
 }

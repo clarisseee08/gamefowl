@@ -68,7 +68,12 @@ final class Show extends Component
             ->where('sire_id', $this->record->sire_id)
             ->where('dam_id', $this->record->dam_id)
             ->orderBy('date_hatched')
-            ->get(['id', 'name', 'band_number', 'sex', 'status', 'date_hatched']);
+            // bloodline is selected because each row carries a band tag, and
+            // BandTag resolves its colour from the bloodline. It is a column on
+            // this table, so this adds no query and no join - but leaving it out
+            // throws MissingAttributeException rather than rendering a grey tag,
+            // which is how the test caught it.
+            ->get(['id', 'name', 'band_number', 'bloodline', 'sex', 'status', 'date_hatched']);
     }
 
     /** @return Collection<int, Pen> */
@@ -129,6 +134,7 @@ final class Show extends Component
 
     public function render(): View
     {
-        return view('livewire.breeding.show');
+        return view('livewire.breeding.show')
+            ->title($this->breeding->sire->name.' × '.$this->breeding->dam->name);
     }
 }
