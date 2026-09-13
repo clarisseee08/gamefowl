@@ -7,6 +7,7 @@ namespace App\Livewire\Landing;
 use App\Models\Broodcock;
 use App\Support\RecordCache;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -52,10 +53,13 @@ final class Index extends Component
      *
      * THE ONLY COLOUR THE MASTHEAD IS ALLOWED. Colour in this system means
      * bloodline and nothing else, so a hero that wants to be more than ink on
-     * paper has exactly one honest way to get there: show the bloodlines. Band
-     * tags here are the same tags the catalogue below uses, resolved by the
-     * same App\Support\BandTag, so the colours a visitor meets in the masthead
-     * are the ones they then see on the birds.
+     * paper has exactly one honest way to get there: show the bloodlines.
+     *
+     * Rendered as x-bloodline-chip rather than x-band-tag - a band tag
+     * describes one BIRD, and given no band number it correctly renders "Not
+     * yet banded", which is meaningless about a bloodline. The chip shares the
+     * same App\Support\BandTag resolver, so the colours a visitor meets in the
+     * masthead are the ones they then see on the birds below.
      *
      * Same farmStock()->onFarm() filter the catalogue uses, so the masthead
      * cannot advertise a bloodline the list below does not contain.
@@ -90,6 +94,46 @@ final class Index extends Component
             ->farmStock()
             ->onFarm()
             ->count());
+    }
+
+    /**
+     * A few birds, for the masthead's register.
+     *
+     * WHY THE HERO SHOWS STOCK AT ALL. The design brief calls the Catalog
+     * surface photo-led, and a masthead of type and a rule says nothing a
+     * template could not say about any farm. These are this farm's birds,
+     * named, banded and dated.
+     *
+     * BANDED BIRDS FIRST, then for sale, then the youngest.
+     *
+     * Banding leads the sort because the band tag is the motif this whole
+     * design is built on, and an unbanded bird renders "Not yet banded" -
+     * which is the correct thing to say about that bird and reads as an error
+     * state three times over in a masthead. Birds are banded at an age rather
+     * than at hatch, so the unbanded ones here are simply the youngest.
+     *
+     * For sale comes next: a visitor who can buy something should meet what is
+     * available before what is merely kept. The farm marks only a handful at a
+     * time, so the sort falls through to recent stock rather than leaving rows
+     * empty.
+     *
+     * primaryPhoto is eager-loaded because this renders one row per bird and
+     * an uncached query against production costs ~240ms of round trip.
+     *
+     * @return Collection<int, Broodcock>
+     */
+    #[Computed]
+    public function featuredBirds()
+    {
+        return RecordCache::remember('landing:featured', fn () => Broodcock::query()
+            ->with('primaryPhoto')
+            ->farmStock()
+            ->onFarm()
+            ->orderByRaw('CASE WHEN band_number IS NULL OR band_number = ? THEN 1 ELSE 0 END', [''])
+            ->orderByDesc('for_sale')
+            ->orderByDesc('date_hatched')
+            ->limit(3)
+            ->get());
     }
 
     public function render(): View

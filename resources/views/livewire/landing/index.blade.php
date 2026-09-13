@@ -117,18 +117,97 @@
                         </ul>
                     </div>
                 @endif
-            </div>
 
-            <div class="lg:border-l lg:border-border lg:pl-12">
-                <p class="max-w-[58ch] text-[19px] leading-relaxed text-muted-foreground">
-                    Broodcocks bred and raised here, with the pedigree of every bird kept from
-                    the day it hatched. Browse what is on the farm, and come and see them.
+                {{-- The sentence and the actions sit with the identity, not
+                     beside the register. Each column now carries one job -
+                     who this farm is and what to do about it on the left, what
+                     it currently holds on the right - and the two are a
+                     similar height instead of a short column against a tall
+                     one. --}}
+                <p class="mt-8 max-w-[46ch] text-[19px] leading-relaxed text-muted-foreground">
+                    Broodcocks bred and raised here, with the pedigree of every bird kept
+                    from the day it hatched.
                 </p>
 
-                <div class="mt-8 flex flex-wrap items-center gap-3">
+                <div class="mt-7 flex flex-wrap items-center gap-3">
                     <a href="#stock" class="btn-primary">See our stock</a>
                     <a href="#visit" class="btn-secondary">Arrange a visit</a>
                 </div>
+            </div>
+
+            {{-- ---------------------------------------------------------
+                 THE REGISTER — the masthead's right-hand page.
+
+                 This was a paragraph and two buttons floating in a column,
+                 which is the arrangement every landing page has. It is now an
+                 extract from the farm's own book: three birds, ruled, each
+                 carrying its band, its bloodline and its age.
+
+                 The whole design is "a printed record book crossed with the
+                 physical anodised leg band", and until now that concept only
+                 appeared at the bottom of the page in the catalogue. A
+                 masthead that IS a ledger spread states it on arrival.
+
+                 PHOTO-LED WHEN THERE ARE PHOTOS. Each row leads with the
+                 bird's picture, and falls back to its bloodline's plate -
+                 the same two-letter code on the same tinted ground the
+                 catalogue cards use. That matters here: the farm currently
+                 has no photographs at all, so a hero that assumed them would
+                 have shipped three empty boxes.
+            --------------------------------------------------------- --}}
+            <div class="lg:border-l lg:border-border lg:pl-12">
+                {{-- A heading, so the register is not three birds arriving with
+                     no explanation of why these three. --}}
+                <p class="text-[12px] font-medium uppercase tracking-[0.07em] text-muted-foreground">
+                    Currently on the farm
+                </p>
+
+                @if ($this->featuredBirds->isNotEmpty())
+                    <ul class="mt-4 border-t border-border">
+                        @foreach ($this->featuredBirds as $bird)
+                            @php $hex = \App\Support\BandTag::hex($bird->bloodline); @endphp
+                            <li class="border-b border-border">
+                                <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate
+                                   class="group flex items-center gap-4 py-3">
+                                    {{-- 56px square. The plate is the bloodline's own
+                                         colour at 12% - a tint, not a fill, so it reads
+                                         as stationery rather than as a coloured block. --}}
+                                    <span class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[var(--radius-sm)]"
+                                          style="background-color: {{ $hex }}1f">
+                                        @if ($bird->primaryPhoto)
+                                            <x-photo-thumb :photo="$bird->primaryPhoto" :alt="'Photo of '.$bird->name"
+                                                           class="h-14 w-14" />
+                                        @else
+                                            <span class="datum text-[15px] font-semibold" style="color: {{ $hex }}">
+                                                {{ \App\Support\BandTag::code($bird->bloodline) }}
+                                            </span>
+                                        @endif
+                                    </span>
+
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block truncate text-[17px] font-medium text-foreground group-hover:underline">
+                                            {{ $bird->name }}
+                                        </span>
+                                        <span class="mt-0.5 block truncate text-[14px] text-muted-foreground">
+                                            {{ $bird->bloodline ?: 'Bloodline not recorded' }}
+                                            @if ($bird->ageLabel())
+                                                <span aria-hidden="true"> · </span><span class="datum">{{ $bird->ageLabel() }}</span>
+                                            @endif
+                                        </span>
+                                    </span>
+
+                                    <x-band-tag :bloodline="$bird->bloodline" :band="$bird->band_number" size="xs"
+                                                class="shrink-0" />
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+
+                    <a href="#stock" wire:navigate
+                       class="mt-4 inline-flex min-h-11 items-center text-[15px] font-medium text-primary hover:underline">
+                        See all {{ $this->stockCount }} birds
+                    </a>
+                @endif
             </div>
         </div>
     </section>
