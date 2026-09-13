@@ -45,6 +45,15 @@
         init() {
             this.sync();
 
+            {{-- A SECOND READ, ONE TICK LATER. wire:model compiles to an Alpine
+                 x-model on the native select, and Alpine walks the tree in
+                 document order - so this x-data initialises before that binding
+                 exists, and the first read sees whatever option the browser
+                 defaulted to. On a bar whose filters come off the query string
+                 that is the wrong one, and nothing announces the correction:
+                 setting select.value mutates no attribute and fires no event. --}}
+            this.$nextTick(() => this.sync());
+
             {{-- WHY AN OBSERVER AND NOT A GETTER.
 
                  The trigger's text was a getter reading

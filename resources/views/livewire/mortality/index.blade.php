@@ -129,13 +129,12 @@
             </div>
 
             <div>
-                <label for="filter-cause" class="label">Cause of Death</label>
-                <select id="filter-cause" wire:model.live="cause" class="input mt-1">
+                <x-form-select id="filter-cause" label="Cause of Death" wire:model.live="cause">
                     <option value="">All causes</option>
                     @foreach ($this->causeOptions as $option)
                         <option value="{{ $option }}">{{ $option }}</option>
                     @endforeach
-                </select>
+                </x-form-select>
             </div>
 
             <div class="flex items-end pt-1">

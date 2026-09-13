@@ -19,13 +19,12 @@
             </p>
         </div>
 
-        <div class="w-full sm:w-auto">
-            <label for="status" class="label">Showing</label>
-            <select id="status" wire:model.live="status" class="input mt-1 sm:w-56">
+        <div class="w-full sm:w-56">
+            <x-form-select id="status" label="Showing" wire:model.live="status">
                 @foreach ($this->statusOptions() as $option)
                     <option value="{{ $option->value }}">{{ $option->label() }}</option>
                 @endforeach
-            </select>
+            </x-form-select>
         </div>
     </div>
 

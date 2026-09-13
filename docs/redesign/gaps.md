@@ -21,3 +21,16 @@ One line per gap: route, what was needed, what was used instead.
   app.css sets width once with no transition. The bar borrows the accordion/tab step
   (`transform` only, `--dur-base`, `--ease-in-out`) rather than inventing a duration;
   if a progress row is ever added to the whitelist this should be reconciled with it.
+- `x-form-select` — the Motion whitelist names `--dur-base` / `--dur-fast` for a dropdown,
+  but Tailwind exposes no `duration-*` utility that reads those tokens, so the enter/leave
+  classes are `duration-200` / `duration-150` — the same literals `x-dropdown` and
+  `x-filter-select` already ship. The numbers match the tokens exactly; a `duration-base`
+  utility would let all three stop repeating them.
+- `/mortality/create` — the bird picker's HTML `required` attribute is gone. On a select the
+  browser can no longer show, constraint validation blocks the submit and anchors its bubble
+  to a hidden element, so the form stops with nothing on screen to explain it. The server
+  rule is untouched and its message renders under the control; no other converted select
+  carried the attribute.
+- `x-form-select` — the system has no way to name a control without printing the name, so
+  the component takes a `label-hidden` flag for the dashboard's trend picker, whose heading
+  already says what it does. It replaces an `aria-label` and changes no visible copy.
