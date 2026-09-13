@@ -43,9 +43,25 @@
         {{-- A <label> wrapping the input gives a full-width, thumb-sized target
              on a phone instead of the browser's small default file button.
              The input itself is sr-only, so the whole zone must carry the
-             keyboard focus state on its behalf - hence focus-within. --}}
-        <label @class([
-            'flex w-full flex-col items-center justify-center gap-2 rounded-[4px] border-2 border-dashed px-4 py-10 text-center transition-colors duration-150',
+             keyboard focus state on its behalf - hence focus-within.
+
+             `relative` IS LOAD-BEARING, not layout tidying. Tailwind's sr-only
+             is `position:absolute`, so without a positioned ancestor the input
+             is placed against the DOCUMENT rather than this label. Clicking the
+             zone focuses it, the browser scrolls the WINDOW to bring the
+             focused element into view - and since the console shell is a
+             fixed-height `overflow-hidden` body whose only scroll container is
+             <main>, that window scroll moves the entire layout off screen and
+             nothing ever scrolls it back. The page goes blank and stays blank.
+             Contained by `relative`, the input is already in view and no scroll
+             is needed. --}}
+        <label x-data="fileDropzone({ disabled: @js($this->isFull) })"
+               x-on:dragover.prevent="onDragOver()"
+               x-on:dragleave="onDragLeave($event)"
+               x-on:drop.prevent="onDrop($event)"
+               :class="dragging && 'border-primary bg-primary-50'"
+               @class([
+            'relative flex w-full flex-col items-center justify-center gap-2 rounded-[4px] border-2 border-dashed px-4 py-10 text-center transition-colors duration-150',
             'cursor-pointer border-border bg-muted hover:border-primary hover:bg-primary-50 focus-within:border-primary focus-within:bg-primary-50' => ! $this->isFull,
             'cursor-not-allowed border-border bg-background' => $this->isFull,
         ])>
@@ -59,14 +75,16 @@
                       d="M3 16.5V18a2.25 2.25 0 0 0 2.25 2.25h13.5A2.25 2.25 0 0 0 21 18v-1.5M16.5 7.5 12 3m0 0L7.5 7.5M12 3v13.5"/>
             </svg>
 
-            <span class="text-[18px] font-medium text-foreground">
+            <span class="text-[18px] font-medium text-foreground"
+                  x-text="dragging ? 'Drop to add them' : 'Tap to choose photos'">
                 Tap to choose photos
             </span>
             <span class="max-w-[42ch] text-[15px] leading-snug text-muted-foreground">
-                You can pick more than one. JPG, PNG or WEBP, up to <span class="datum">{{ $maxMb }} MB</span> each.
+                You can pick more than one, or drag them here. JPG, PNG or WEBP, up to <span class="datum">{{ $maxMb }} MB</span> each.
             </span>
 
-            <input type="file"
+            <input x-ref="input"
+                   type="file"
                    class="sr-only"
                    wire:model="photos"
                    multiple
