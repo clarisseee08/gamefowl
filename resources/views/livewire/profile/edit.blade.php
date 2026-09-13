@@ -54,7 +54,14 @@
                     Uploading…
                 </div>
 
-                <label class="btn-secondary mt-4 cursor-pointer">
+                {{-- `relative` contains the sr-only input, which is
+                     position:absolute. Without a positioned ancestor it lands
+                     against the DOCUMENT, and focusing it scrolls the WINDOW -
+                     which on this fixed-height, overflow-hidden shell carries
+                     the whole layout off screen and leaves a blank page with no
+                     way back. A button rather than a dropzone, so no drop
+                     handlers here; the bug is the same either way. --}}
+                <label class="btn-secondary relative mt-4 cursor-pointer">
                     {{ $user->hasProfilePhoto() ? 'Change photo' : 'Choose a photo' }}
                     <input type="file" wire:model="photo" accept="image/*" class="sr-only">
                 </label>
