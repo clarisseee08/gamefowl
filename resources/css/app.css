@@ -690,7 +690,16 @@
    The banned alternative is a ring that grows - animating width or box-shadow
    so the outline expands outward. It looks considered and it is a repaint on
    every frame, on the element the user is actively interacting with. */
-@utility focus-ring {
+/* A plain rule, NOT @utility, and the distinction is load-bearing.
+
+   @utility is usage-gated: Tailwind emits it only once a scanned file
+   actually uses the class. The ::after below is plain CSS and emits
+   unconditionally, so declaring the base as a utility produced an absolutely
+   positioned ring whose `position: relative` anchor did not exist until the
+   first view happened to use it - a ring measured against whatever ancestor
+   happened to be positioned instead. Verified absent from the bundle before
+   this was changed. */
+.focus-ring {
     position: relative;
 }
 .focus-ring::after {
