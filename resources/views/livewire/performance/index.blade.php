@@ -30,63 +30,49 @@
         @endcan
     </div>
 
-    {{-- Search and filters --}}
-    <div class="card mb-6 p-5">
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="lg:col-span-2">
-                <label for="search" class="label">Search by Bird</label>
-                <input
-                    id="search"
-                    type="search"
-                    wire:model.live.debounce.300ms="search"
-                    placeholder="Bird name, band number, breed or bloodline"
-                    class="input mt-1"
-                >
-            </div>
+    {{-- Search and filters. One row: search takes the space that is left, and
+         every other control shrinks to its own width and wraps when the row
+         runs out of room. --}}
+    <x-filter-bar :active="$this->hasActiveFilters()"
+                  clear="clearFilters"
+                  :summary="'Showing '.number_format($this->records->total()).' '.Str::plural('record', $this->records->total()).' matching your filters.'">
+        <x-slot:search>
+            <label for="search" class="sr-only">Search by Bird</label>
+            <input
+                id="search"
+                type="search"
+                wire:model.live.debounce.300ms="search"
+                placeholder="Bird name, band number, breed or bloodline"
+                class="input"
+            >
+        </x-slot:search>
 
-            <div>
-                <label for="eventType" class="label">Type of Event</label>
-                <select id="eventType" wire:model.live="eventType" class="input mt-1">
-                    <option value="">All types of event</option>
-                    @foreach ($this->eventTypeOptions() as $option)
-                        <option value="{{ $option->value }}">{{ $option->label() }}</option>
-                    @endforeach
-                </select>
-            </div>
+        <x-filter-select id="eventType" label="Type of Event" wire:model.live="eventType">
+            <option value="">All types of event</option>
+            @foreach ($this->eventTypeOptions() as $option)
+                <option value="{{ $option->value }}">{{ $option->label() }}</option>
+            @endforeach
+        </x-filter-select>
 
-            <div>
-                <label for="result" class="label">Result</label>
-                <select id="result" wire:model.live="result" class="input mt-1">
-                    <option value="">All results</option>
-                    @foreach ($this->resultOptions() as $option)
-                        <option value="{{ $option->value }}">{{ $option->label() }}</option>
-                    @endforeach
-                </select>
-            </div>
+        <x-filter-select id="result" label="Result" wire:model.live="result">
+            <option value="">All results</option>
+            @foreach ($this->resultOptions() as $option)
+                <option value="{{ $option->value }}">{{ $option->label() }}</option>
+            @endforeach
+        </x-filter-select>
 
-            <div>
-                <label for="from" class="label">From Date</label>
-                <input id="from" type="date" wire:model.live="from" class="input mt-1">
-            </div>
-
-            <div>
-                <label for="to" class="label">To Date</label>
-                <input id="to" type="date" wire:model.live="to" class="input mt-1">
-            </div>
+        {{-- The two dates are one control in two halves, so they stay together
+             on a wrap and read as a range rather than as two unrelated fields. --}}
+        <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
+            <label for="from" class="label shrink-0">From Date</label>
+            <input id="from" type="date" wire:model.live="from" class="input datum w-full sm:w-auto">
         </div>
 
-        @if ($this->hasActiveFilters())
-            <div class="mt-5 flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-                <p class="text-[15px] text-muted-foreground">
-                    Showing <span class="datum">{{ number_format($this->records->total()) }}</span>
-                    {{ Str::plural('record', $this->records->total()) }} matching your filters.
-                </p>
-                <button type="button" wire:click="clearFilters" class="btn-secondary">
-                    Clear filters
-                </button>
-            </div>
-        @endif
-    </div>
+        <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
+            <label for="to" class="label shrink-0">To Date</label>
+            <input id="to" type="date" wire:model.live="to" class="input datum w-full sm:w-auto">
+        </div>
+    </x-filter-bar>
 
     {{-- Results --}}
     @if ($this->records->isEmpty())

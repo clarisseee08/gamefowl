@@ -1,7 +1,7 @@
 ---
 version: 2
 name: GFMS-registry-software
-description: A gamefowl breeding registry that presents as a live product rather than a printed document. Tinted-neutral surfaces with a three-step elevation system, a peacock brand scale, and full semantic colour pairs for status. The console is a full-bleed application shell whose main region is the only scroll container. Colour still means bloodline and nothing else - the band tag, modelled on the anodised leg band a gamefowl actually wears, is the one identity channel and resolves its own foreground so every band stays legible. Console density is tuned for one-handed use outdoors in Philippine daylight, where 7:1 contrast is a legibility requirement rather than a style preference.
+description: A gamefowl breeding registry that presents as a live product rather than a printed document. Tinted-neutral surfaces with a three-step elevation system, a deep-red interactive scale, and full semantic colour pairs for status. The console is a full-bleed application shell whose main region is the only scroll container. Colour still means bloodline and nothing else - the band tag, modelled on the anodised leg band a gamefowl actually wears, is the one identity channel and resolves its own foreground so every band stays legible. Console density is tuned for one-handed use outdoors in Philippine daylight, where 7:1 contrast is a legibility requirement rather than a style preference.
 
 colors:
   background: "#fbfbfa"
@@ -14,20 +14,20 @@ colors:
   muted-foreground: "#4e5550"
   card-foreground: "#161c19"
   popover-foreground: "#161c19"
-  primary-50: "#edf7f7"
-  primary-100: "#d2ecec"
-  primary-200: "#a6d8d9"
-  primary-400: "#35a0a6"
-  primary: "#0d6e75"
-  primary-600: "#0a5c62"
-  primary-700: "#08494e"
-  primary-900: "#052b2e"
+  primary-50: "#faf0ef"
+  primary-100: "#f1dad8"
+  primary-200: "#e0b4b0"
+  primary-400: "#b5453f"
+  primary: "#8b2626"
+  primary-600: "#74201f"
+  primary-700: "#5c1a19"
+  primary-900: "#331010"
   primary-foreground: "#ffffff"
   success: "#1f7a4d"
   success-bg: "#e8f4ee"
-  warning: "#906308"
+  warning: "#755006"
   warning-bg: "#fbf3e2"
-  destructive: "#b3261e"
+  destructive: "#d32f2f"
   destructive-bg: "#fbeae9"
   destructive-foreground: "#ffffff"
   info: "#3c4a8a"
@@ -46,79 +46,89 @@ colors:
 
 typography:
   display:
-    fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Poppins, ui-sans-serif, system-ui, sans-serif"
     fontSize: 30px
     fontWeight: 600
     lineHeight: 1.15
     letterSpacing: -0.015em
   page-title:
-    fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Poppins, ui-sans-serif, system-ui, sans-serif"
     fontSize: 26px
     fontWeight: 600
     lineHeight: 1.2
     letterSpacing: -0.015em
   figure:
-    fontFamily: "Fira Code, ui-monospace, monospace"
+    fontFamily: "JetBrains Mono, ui-monospace, monospace"
     fontSize: 34px
     fontWeight: 600
     lineHeight: 1.05
     letterSpacing: -0.01em
   figure-sm:
-    fontFamily: "Fira Code, ui-monospace, monospace"
+    fontFamily: "JetBrains Mono, ui-monospace, monospace"
     fontSize: 28px
     fontWeight: 600
     lineHeight: 1
     letterSpacing: -0.01em
   title:
-    fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Poppins, ui-sans-serif, system-ui, sans-serif"
     fontSize: 19px
     fontWeight: 600
     lineHeight: 1.3
     letterSpacing: -0.015em
   subtitle:
-    fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Poppins, ui-sans-serif, system-ui, sans-serif"
     fontSize: 18px
     fontWeight: 500
     lineHeight: 1.35
     letterSpacing: 0
+  # The Catalog surface's body size. The two-surface split gives the public
+  # pages 17px and the console 15px, so this step is real and in active use
+  # across 18 views - it was simply missing from this ramp, which is why a
+  # design hook kept flagging a documented size as off-scale.
+  bodyCatalog:
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
+    fontSize: 17px
+    fontWeight: 400
+    lineHeight: 1.6
+    letterSpacing: 0
   input:
-    fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: 16px
     fontWeight: 400
     lineHeight: 1.4
     letterSpacing: 0
   body:
-    fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: 15px
     fontWeight: 400
     lineHeight: 1.5
     letterSpacing: 0
   body-dense:
-    fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: 14px
     fontWeight: 400
     lineHeight: 1.45
     letterSpacing: 0
   label:
-    fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: 13px
     fontWeight: 500
     lineHeight: 1.3
     letterSpacing: 0.01em
   caption:
-    fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: 12px
     fontWeight: 400
     lineHeight: 1.4
     letterSpacing: 0
   micro:
-    fontFamily: "Fira Sans, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: 11px
     fontWeight: 600
     lineHeight: 1.2
     letterSpacing: 0.07em
   datum:
-    fontFamily: "Fira Code, ui-monospace, monospace"
+    fontFamily: "JetBrains Mono, ui-monospace, monospace"
     fontSize: 15px
     fontWeight: 400
     lineHeight: 1.45

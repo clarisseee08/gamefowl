@@ -129,13 +129,12 @@
             </div>
 
             <div>
-                <label for="filter-cause" class="label">Cause of Death</label>
-                <select id="filter-cause" wire:model.live="cause" class="input mt-1">
+                <x-form-select id="filter-cause" label="Cause of Death" wire:model.live="cause">
                     <option value="">All causes</option>
                     @foreach ($this->causeOptions as $option)
                         <option value="{{ $option }}">{{ $option }}</option>
                     @endforeach
-                </select>
+                </x-form-select>
             </div>
 
             <div class="flex items-end pt-1">
@@ -143,7 +142,7 @@
                         wire:click="clearFilters"
                         @disabled(! $this->hasFilters())
                         class="btn-secondary w-full">
-                    Clear Filters
+                    Clear filters
                 </button>
             </div>
         </div>
@@ -174,7 +173,7 @@
 
             <div class="mt-6">
                 @if ($this->hasFilters())
-                    <button type="button" wire:click="clearFilters" class="btn-secondary">Clear Filters</button>
+                    <button type="button" wire:click="clearFilters" class="btn-secondary">Clear filters</button>
                 @elseif ($this->canCreate)
                     <a href="{{ route('mortality.create') }}" wire:navigate class="btn-primary">Record a Death</a>
                 @endif

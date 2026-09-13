@@ -23,15 +23,12 @@
 
             <div class="mt-6 grid gap-5 border-t border-border pt-6 sm:grid-cols-2">
                 <div class="sm:col-span-2">
-                    <label for="broodcock_id" class="label">Bird <span class="text-destructive">*</span></label>
-                    <select id="broodcock_id" wire:model.live="broodcock_id"
-                            class="input mt-1 @error('broodcock_id') input-error @enderror">
+                    <x-form-select id="broodcock_id" label="Bird" required wire:model.live="broodcock_id">
                         <option value="">Choose a bird</option>
                         @foreach ($this->birdOptions as $bird)
                             <option value="{{ $bird->id }}">{{ $bird->displayName() }}</option>
                         @endforeach
-                    </select>
-                    @error('broodcock_id') <p class="error">{{ $message }}</p> @enderror
+                    </x-form-select>
                 </div>
 
                 <div>
@@ -44,14 +41,11 @@
                 </div>
 
                 <div>
-                    <label for="event_type" class="label">Type of Event <span class="text-destructive">*</span></label>
-                    <select id="event_type" wire:model.live="event_type"
-                            class="input mt-1 @error('event_type') input-error @enderror">
+                    <x-form-select id="event_type" label="Type of Event" required wire:model.live="event_type">
                         @foreach ($this->eventTypeOptions() as $option)
                             <option value="{{ $option->value }}">{{ $option->label() }}</option>
                         @endforeach
-                    </select>
-                    @error('event_type') <p class="error">{{ $message }}</p> @enderror
+                    </x-form-select>
                 </div>
             </div>
         </section>
@@ -67,15 +61,12 @@
                      server forces "Not applicable" regardless of what is sent. --}}
                 @if ($this->resultApplies())
                     <div class="sm:col-span-2">
-                        <label for="result" class="label">Result <span class="text-destructive">*</span></label>
-                        <select id="result" wire:model.live.blur="result"
-                                class="input mt-1 @error('result') input-error @enderror">
+                        <x-form-select id="result" label="Result" required wire:model.live.blur="result">
                             <option value="">Choose the result</option>
                             @foreach ($this->resultOptions() as $option)
                                 <option value="{{ $option->value }}">{{ $option->label() }}</option>
                             @endforeach
-                        </select>
-                        @error('result') <p class="error">{{ $message }}</p> @enderror
+                        </x-form-select>
                     </div>
                 @else
                     <div class="sm:col-span-2 rounded-[4px] border border-border bg-muted px-4 py-3">

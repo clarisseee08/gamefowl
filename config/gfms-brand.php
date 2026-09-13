@@ -215,4 +215,105 @@ return [
         'zebra' => '#F7F8F6',
     ],
 
+    /*
+     * DARK. The surfaces and the ink, and nothing else.
+     *
+     * WHAT IS NOT HERE IS THE POINT. The bands, the brand green, primary and
+     * the five semantic pairs are all absent, because they do not change: a
+     * Sweater bird is cobalt under any theme, and colour in this system means
+     * bloodline. A dark theme that re-tinted the bands would be inventing a
+     * second meaning for the one channel that already has one.
+     *
+     * The band tag needs no adjustment either. It is a FILLED capsule, so its
+     * legibility is its own text against its own colour - which
+     * App\Support\BandTag::foreground already resolves per band - not the tag
+     * against the page.
+     *
+     * THE SAME 7:1 CONSOLE FLOOR APPLIES, and these values were measured
+     * against it rather than picked by eye. The binding pair is
+     * muted_foreground on muted, which is the narrowest gap in either theme:
+     *
+     *   foreground       on background  17.85:1
+     *   foreground       on card        16.23:1
+     *   foreground       on muted       13.19:1
+     *   muted_foreground on background  10.24:1
+     *   muted_foreground on card         9.32:1
+     *   muted_foreground on muted        7.57:1   <- the binding constraint
+     *
+     * An earlier muted of #2E3531 put that last pair at 6.77:1. It reads as
+     * fine and it is below the floor, which is exactly why the test measures
+     * rather than trusting the eye.
+     *
+     * PDFs DO NOT USE THIS. dompdf reads the light values above directly, and
+     * paper has no dark mode.
+     */
+    'dark' => [
+        'background' => '#0D110F',   // the page
+        'card' => '#161C19',         // raised surfaces
+        'muted' => '#272D2A',        // wells, table headers, inactive
+        'popover' => '#1B2220',
+        'border' => '#2E3531',
+        'input' => '#39413C',
+
+        'foreground' => '#F7F8F6',
+        'muted_foreground' => '#B9C0BA',
+        'card_foreground' => '#F7F8F6',
+        'popover_foreground' => '#F7F8F6',
+
+        /*
+         * PRIMARY INVERTS, and leaving it out was a real bug rather than a
+         * near miss.
+         *
+         * primary is the interactive colour - link text, active nav, the focus
+         * ring - and #8B2626 measures 1.98:1 against the dark card. Not
+         * "slightly low": a link nobody can see. It shipped that way in the
+         * first dark build and looked like a styling nicety until measured.
+         *
+         * primary_200 is the same hue, four steps lighter, and it is doing two
+         * jobs at once:
+         *
+         *   as link text on the dark card    9.33:1
+         *   as a button fill, with dark ink  9.33:1
+         *
+         * Which is why primary_foreground inverts with it. A light fill
+         * keeping white text would have measured 1.85:1 - the same bug moved
+         * from the link to the button.
+         */
+        'primary' => '#E0B4B0',
+        'primary_foreground' => '#161C19',
+
+        /*
+         * THE SEMANTIC PAIRS INVERT TOO, and leaving them out was the same bug
+         * as leaving primary out - it just took longer to spot because it is
+         * only wrong on four tokens rather than on every link.
+         *
+         * The light values are ink-on-paper: dark inks on pale tints. Carried
+         * unchanged onto a #0D110F page they become dark-on-dark. The worst was
+         * warning, #755006, an olive that measures 2.57:1 on the dark card: the
+         * dashboard's vaccination-compliance figure was rendering in a colour
+         * nobody could read, on the one screen a keeper opens every morning.
+         *
+         * So each ink lightens and each ground darkens, and every value here
+         * was measured rather than picked - BrandTokensAreMirroredTest re-measures
+         * them. The floor is the Console 7:1 on background, card AND muted,
+         * because these are dashboard text, not decoration.
+         *
+         * DESTRUCTIVE IS DELIBERATELY WARMER THAN PRIMARY. In light the two are
+         * separated by luminance (1.76:1, so Delete does not look like Save).
+         * In dark that axis is spent: anything dark enough to differ from
+         * #E0B4B0 in luminance drops under 7:1. So the separation moves to hue
+         * and chroma instead - #FFA88F is hue 13 at 0.44 saturation against
+         * primary's hue 5 at 0.21, which is coral against dusty rose.
+         */
+        'success' => '#6FD39B',          //  9.44:1 on card, 7.67:1 on muted
+        'success_bg' => '#182B21',       //  8.15:1 under its own ink
+        'warning' => '#E9C46A',          // 10.35:1 on card, 8.41:1 on muted
+        'warning_bg' => '#2E2716',       //  8.86:1 under its own ink
+        'destructive' => '#FFA88F',      //  9.26:1 on card, 7.52:1 on muted
+        'destructive_bg' => '#301B1A',   //  8.67:1 under its own ink
+        'destructive_foreground' => '#161C19',  // 9.26:1 on the destructive fill
+        'info' => '#AEBBEF',             //  9.19:1 on card, 7.46:1 on muted
+        'info_bg' => '#1E2336',          //  8.27:1 under its own ink
+    ],
+
 ];

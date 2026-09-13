@@ -9,16 +9,31 @@
 
 /* Self-hosted, no CDN. A demo in a provincial venue cannot depend on Google
    Fonts resolving, and an earlier stack declared 'SF Pro' - which ships only on
-   Apple platforms, so every Windows machine silently rendered Segoe UI. */
-@import '@fontsource/fira-sans/latin-400.css';
-@import '@fontsource/fira-sans/latin-500.css';
-@import '@fontsource/fira-sans/latin-600.css';
-@import '@fontsource/fira-code/latin-400.css';
-@import '@fontsource/fira-code/latin-500.css';
+   Apple platforms, so every Windows machine silently rendered Segoe UI.
+   @fontsource ships woff2 with font-display: swap already set, so there is no
+   render-blocking <link> anywhere in this application.
+
+   THREE ROLES, THREE FACES, and the roles are enforced by review:
+     Poppins        headings only, never body
+     Inter          body, UI, forms, tables
+     JetBrains Mono every number, via .datum and tabular-nums
+
+   latin-ext is loaded alongside latin: Filipino place names in the farm's own
+   records carry diacritics that bare latin does not cover, and a missing
+   glyph falls back mid-word to a different face. */
+@import '@fontsource/poppins/latin-600.css';
+@import '@fontsource/poppins/latin-700.css';
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-600.css';
+@import '@fontsource/inter/latin-ext-400.css';
+@import '@fontsource/inter/latin-ext-500.css';
+@import '@fontsource/jetbrains-mono/latin-400.css';
+@import '@fontsource/jetbrains-mono/latin-500.css';
 /* 600 is loaded because headline figures are .datum AND semibold. Without the
    real weight the browser synthesises bold by smearing the 500, which is
    visibly worse at the 32-44px sizes the dashboard uses. */
-@import '@fontsource/fira-code/latin-600.css';
+@import '@fontsource/jetbrains-mono/latin-600.css';
 
 @source '../views/**/*.blade.php';
 @source '../js/**/*.js';
@@ -49,8 +64,18 @@
  */
 
 @theme {
-    --font-sans: 'Fira Sans', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'Fira Code', ui-monospace, 'Cascadia Mono', Menlo, monospace;
+    /* THE THREE ROLES. Each face does one job and no other.
+
+       --font-display is headings only. Using it for body text is the single
+       most common way a type system degrades, because Poppins is a geometric
+       face: even, circular, and tiring to read in long runs at 15-17px.
+
+       --font-mono carries every number through .datum, not just code. Band
+       numbers, dates, weights, counts, rates and percentages all have to align
+       in a column, which proportional figures cannot do. */
+    --font-display: 'Poppins', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Menlo, monospace;
 
     /* Surfaces — tinted neutrals. Never pure white for the page, never pure
        black for text: a #FFF page under a #FFF card leaves no elevation to
@@ -67,19 +92,54 @@
     --color-card-foreground: #161c19;
     --color-popover-foreground: #161c19;
 
+    /* ------------------------------------------------------------------
+       THE INK RAMP. Neutrals only - no hue is introduced here.
+
+       Every step is a value this stylesheet already held, given a position on
+       a scale so that a surface, a rule and a caption stop being three
+       unrelated hex literals. The semantic names above still resolve to the
+       same colours and remain the ones views should reach for; this ramp
+       exists for the in-between steps that had no name at all.
+
+       50/100 = the two paper grounds. 200/300 = rule and input border.
+       400 = the strong rule. 700 = muted-foreground, measured at 7.40:1 and
+       therefore the LIGHTEST text the console surface may use. 900 = ink.
+
+       500 and 600 are mid-greys: legal on a caption over paper, never on the
+       console's 7:1 floor. ------------------------------------------------ */
+    --color-ink-50: #f7f8f6;
+    --color-ink-100: #f4f5f3;
+    --color-ink-200: #e4e6e2;
+    --color-ink-300: #dfe2dd;
+    --color-ink-400: #c7cbc5;
+    --color-ink-500: #9aa199;
+    --color-ink-600: #6e756f;
+    --color-ink-700: #4e5550;
+    --color-ink-800: #2e3531;
+    --color-ink-900: #161c19;
+    --color-ink-950: #0d110f;
+
     /* Primary — the farm's deep red, as a full scale rather than a single
        accent. THE INTERACTIVE COLOUR: buttons, links, active nav, focus rings.
        Red carries this role rather than the green because it measures 8.74:1 on
        card against the green's 6.07:1, and link text must clear the Console
-       7:1 floor. */
+       7:1 floor.
+
+       Completed to a full 50-950 ramp. Same hue throughout - these are tints
+       and shades of the existing #8b2626, not new colours. 500 is an explicit
+       alias for the base so a call site can say primary-500 and mean it. */
     --color-primary-50: #faf0ef;
     --color-primary-100: #f1dad8;
     --color-primary-200: #e0b4b0;
+    --color-primary-300: #cd7b76;
     --color-primary-400: #b5453f;
     --color-primary: #8b2626;
+    --color-primary-500: #8b2626;
     --color-primary-600: #74201f;
     --color-primary-700: #5c1a19;
+    --color-primary-800: #471414;
     --color-primary-900: #331010;
+    --color-primary-950: #1e0909;
     --color-primary-foreground: #ffffff;
 
     /* Brand — the farm's green. CHROME ONLY: sidebar, mark, top rail, auth
@@ -139,16 +199,46 @@
     --shadow-e2: 0 4px 12px rgb(22 28 25 / 0.08), 0 2px 4px rgb(22 28 25 / 0.04);
     --shadow-e3: 0 16px 40px rgb(22 28 25 / 0.14);
 
-    --ease-out-quart: cubic-bezier(0.2, 0, 0.38, 0.9);
-    --ease-enter: cubic-bezier(0, 0, 0.38, 0.9);
+    /* ------------------------------------------------------------------
+       MOTION. This is the complete set. Nothing outside it may be used, and
+       a raw duration or easing anywhere in a view is a defect.
+
+       Four durations, named for what they move rather than how long they
+       take, so the choice is "is this a button or a modal" rather than "does
+       150 feel right here".
+
+       EXITS RUN ONE STEP FASTER THAN ENTRANCES. A thing arriving is being
+       introduced and can afford the time; a thing leaving is in the way, and
+       waiting for it is the most common reason an interface feels sluggish.
+
+       NOTHING EXCEEDS 300ms. Past roughly a third of a second a transition
+       stops reading as motion and starts reading as latency.
+       ------------------------------------------------------------------ */
+    --dur-instant: 100ms;   /* hover / focus colour shifts */
+    --dur-fast: 150ms;      /* buttons, inputs, tooltips, toggles */
+    --dur-base: 200ms;      /* dropdowns, popovers, tabs, accordions */
+    --dur-slow: 300ms;      /* modals, drawers */
+
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);      /* entrances */
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);          /* exits */
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);    /* moves, resizes */
+
+    /* Retained so the existing rules below keep compiling while call sites
+       migrate. Aliases, not a second system - they resolve to the tokens
+       above and must not be used in new work. */
+    --ease-out-quart: var(--ease-in-out);
+    --ease-enter: var(--ease-out);
 }
 
 :root {
     --ring-color: rgb(139 38 38 / 0.35);          /* primary @ 35% */
     --ring-color-destructive: rgb(211 47 47 / 0.25); /* destructive @ 25% */
-    --t-fast: 120ms;
-    --t-base: 200ms;
-    --t-enter: 260ms;
+
+    /* Legacy aliases. Same reason as the easings above: these resolve to the
+       four durations rather than competing with them. */
+    --t-fast: var(--dur-fast);
+    --t-base: var(--dur-base);
+    --t-enter: var(--dur-base);
 }
 
 @layer base {
@@ -169,11 +259,15 @@
         -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Tightened tracking. Untracked headings are a large part of why the
-       previous build read as a document rather than a product. */
+    /* Headings, and the ONLY place --font-display appears.
+       Tightened tracking: untracked headings are a large part of why the
+       previous build read as a document rather than a product. Poppins is
+       geometric and runs wide, so it needs more negative tracking than the
+       body face did. */
     h1, h2, h3, h4 {
+        font-family: var(--font-display);
         font-weight: 600;
-        letter-spacing: -0.015em;
+        letter-spacing: -0.02em;
         text-wrap: balance;
     }
 
@@ -201,18 +295,50 @@
     }
 
     /*
-     * Reduced motion removes TRAVEL and lift while preserving state change.
-     * A blanket 0.01ms kill destroys useful feedback and is itself an
-     * accessibility defect - a user who cannot see the transition still needs
-     * to see that something happened.
+     * Reduced motion. The blanket kill, mandated by the redesign brief.
+     *
+     * WHAT THIS REPLACED, because the argument was a real one and should not
+     * have to be rediscovered: this block used to hold transitions at 100ms
+     * and restrict them to colour and opacity, on the reasoning that reduced
+     * motion means remove TRAVEL, not remove FEEDBACK - a user who cannot see
+     * a transition still needs to see that something happened, and a blanket
+     * 0.01ms kill takes the acknowledgement away with the animation.
+     *
+     * The brief specifies this version verbatim and it is what ships. The cost
+     * is that state changes now land instantly with no acknowledgement for
+     * users who have asked for reduced motion. Revisit if that is reported.
      */
     @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after {
             animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+
+    /*
+     * Additive, not a departure from the block above: without it an animation
+     * declared `infinite` still loops forever at 0.01ms - invisible, and
+     * spinning a repaint on the low-end Android phones this runs on.
+     */
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
             animation-iteration-count: 1 !important;
-            transition-property: opacity, color, background-color, border-color, box-shadow !important;
-            transition-duration: 100ms !important;
-            transform: none !important;
+        }
+    }
+
+    /*
+     * Also additive, and a genuine bug in the two blocks above: they kill
+     * DURATION but say nothing about DELAY, and a staggered entrance is built
+     * entirely out of delays. A control with a 600ms delay and a 0.01ms
+     * duration is invisible for six hundred milliseconds and then appears -
+     * strictly worse than the animation it was meant to replace, and only for
+     * the users who asked for less motion.
+     */
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-delay: 0ms !important;
+            transition-delay: 0ms !important;
         }
     }
 }
@@ -233,11 +359,25 @@
     @apply inline-flex min-h-11 items-center justify-center gap-2
            rounded-[var(--radius-sm)] px-4 py-2.5 text-[15px] font-medium leading-none
            focus:outline-none disabled:cursor-not-allowed disabled:opacity-40;
-    transition: background-color var(--t-fast) var(--ease-out-quart),
-                border-color var(--t-fast) var(--ease-out-quart),
-                color var(--t-fast) var(--ease-out-quart),
-                box-shadow var(--t-fast) var(--ease-out-quart),
-                transform var(--t-fast) var(--ease-out-quart);
+
+    /* Whitelist rows: "Button hover - bg colour, --dur-instant" and
+       "Button press - scale(0.98), --dur-instant".
+
+       box-shadow is NOT in this list and used to be. Animating it forces a
+       repaint of the element's whole shadow region on every frame, which is
+       the reason the rule exists; the focus ring below gets the same effect
+       from opacity on a layer that is already painted. */
+    transition: background-color var(--dur-instant) var(--ease-in-out),
+                border-color var(--dur-instant) var(--ease-in-out),
+                color var(--dur-instant) var(--ease-in-out),
+                transform var(--dur-instant) var(--ease-in-out);
+}
+
+/* The press. scale rather than translate, so the button compresses toward its
+   own centre instead of sliding - and 0.98 rather than anything deeper,
+   because a button that visibly moves reads as a bug at this size. */
+.btn:active:not(:disabled) {
+    transform: scale(0.98);
 }
 
 @layer components {
@@ -252,16 +392,66 @@
 
     /* 16px floor - below that iOS zooms the page on focus and one-handed entry
        falls apart. */
+    /* 16px is not a preference. Anything smaller and iOS Safari zooms the
+       viewport on focus, which throws the user out of the form they were
+       filling in. */
     .input {
         @apply block w-full rounded-[var(--radius-sm)] border border-input bg-card
                px-3 py-2.5 text-[16px] text-foreground
                placeholder:text-muted-foreground focus:border-primary focus:outline-none;
-        transition: border-color var(--t-fast) var(--ease-out-quart),
-                    box-shadow var(--t-fast) var(--ease-out-quart);
+
+        /* Whitelist row: "Input focus - border colour, --dur-fast". Border
+           only; the shadow transition that used to sit here animated a
+           property the brief bans. */
+        transition: border-color var(--dur-fast) var(--ease-in-out);
     }
     .input:focus { box-shadow: 0 0 0 3px var(--ring-color); }
     .input-error { @apply border-destructive; }
     .input-error:focus { box-shadow: 0 0 0 3px var(--ring-color-destructive); }
+
+    /*
+     * Show / hide on a password field.
+     *
+     * 44px wide, which the base layer's unconditional button min-height turns
+     * into a 44px square: this is typed one-handed in a coop yard, and a 24px
+     * icon hit area is the kind of target that gets missed twice before it is
+     * hit. The field it sits in takes pr-12 so a long password never runs
+     * underneath it.
+     *
+     * Colour only on the transition - the whitelist row is "Button hover - bg
+     * colour, --dur-instant", and this is the same move on a text colour.
+     */
+    .password-reveal {
+        @apply absolute inset-y-0 right-0 flex w-11 items-center justify-center
+               rounded-r-[var(--radius-sm)] text-muted-foreground hover:text-foreground;
+        transition: color var(--dur-instant) var(--ease-in-out);
+    }
+
+    /*
+     * WHICH THEME ICON IS SHOWING, decided by the same selectors that decide
+     * the theme.
+     *
+     * The toggle used to switch its icon with Alpine x-show plus x-cloak, which
+     * meant the control could not go on an auth page at all: Alpine ships
+     * inside Livewire's bundle and the guest layout has no Livewire component
+     * on it, so the icons would have stayed cloaked and the button would have
+     * rendered empty.
+     *
+     * Keying off :root instead makes the icon correct on the first paint in all
+     * four cases - system light, system dark, chosen light, chosen dark - with
+     * no script and nothing to flash. The default is the light icon; the media
+     * query flips it only while no explicit choice is stored, exactly as the
+     * theme block above does.
+     */
+    [data-theme-icon='dark'] { display: none; }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) [data-theme-icon='light'] { display: none; }
+        :root:not([data-theme='light']) [data-theme-icon='dark'] { display: block; }
+    }
+
+    :root[data-theme='dark'] [data-theme-icon='light'] { display: none; }
+    :root[data-theme='dark'] [data-theme-icon='dark'] { display: block; }
 
     .label { @apply block text-[13px] font-medium tracking-[0.01em] text-foreground; }
     .help  { @apply mt-1 text-[12px] leading-snug text-muted-foreground; }
@@ -468,6 +658,69 @@
      */
     .brand-rail { height: 3px; background-color: var(--color-brand); }
 
+    /* ------------------------------------------------------------------
+       THE LEG BAND — the auth screen's bound edge.
+
+       A gamefowl's identity is a numbered anodised ring on its leg, and that
+       object is what this entire system is modelled on. On the sign-in screen
+       it was a 160x6px strip in a bottom corner: 1.1% of the panel it sat in,
+       and the only thing on the page that said gamefowl farm rather than
+       generic login. So it becomes the page's structure instead — the six band
+       colours running floor to ceiling down the left edge of the screen.
+
+       IRREGULAR AND RE-SEQUENCED, both deliberately. config/gfms-brand.php
+       lists the bands ember, amber, jade, cobalt, plum, rose, which is spectral
+       order, and six equal spectral stripes is a flag rather than a band. The
+       view re-sequences them so no two adjacent segments are neighbouring hues
+       and weights them to an uneven rhythm, which is what a strip of real rings
+       actually looks like.
+    ------------------------------------------------------------------ */
+    .leg-band {
+        @apply flex w-3.5 shrink-0 flex-col sm:w-5 lg:w-7;
+
+        /* Slow, because this is a consequence being shown rather than a
+           control acknowledging a tap. */
+        transition: filter var(--dur-slow) var(--ease-in-out);
+    }
+
+    /* Each segment drops from the top in turn, the way rings go onto a strip. */
+    .leg-band-seg {
+        transform: scaleY(0);
+        transform-origin: top;
+        animation: gfms-band-drop 420ms var(--ease-out) var(--band-delay, 0ms) forwards;
+    }
+
+    /*
+     * A bird that fails its check loses its band.
+     *
+     * Not a shake and not a red flash - the page simply arrives with the colour
+     * drained out of it, and the colour returns the moment the keeper starts
+     * typing again. The failure is stated in words by the alert; this is the
+     * page agreeing with it rather than scolding anyone.
+     */
+    .leg-band-drained { filter: saturate(0.06); }
+
+    @keyframes gfms-band-drop {
+        from { transform: scaleY(0); }
+        to   { transform: scaleY(1); }
+    }
+
+    /* ------------------------------------------------------------------
+       The auth screen's one authored entrance.
+
+       Everything is already in the DOM and already laid out; this governs only
+       the order things become visible in, so a stylesheet that fails to load
+       leaves a plain, complete, usable page rather than an empty one.
+    ------------------------------------------------------------------ */
+    .rise-in {
+        animation: gfms-rise 460ms var(--ease-out) var(--rise-delay, 0ms) both;
+    }
+
+    @keyframes gfms-rise {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: none; }
+    }
+
     /* Page titles carry a short brand marker, so the colour reaches the content
        region without being spent on anything interactive. */
     .page-title-marked {
@@ -530,4 +783,338 @@
                px-3 py-2.5 text-center text-[12px] text-muted-foreground;
         opacity: 0.6;
     }
+}
+
+/* =====================================================================
+   PRIMITIVES ADDED BY THE REDESIGN
+   =====================================================================
+
+   Each block below implements exactly one row of the Motion whitelist in
+   docs/redesign/01-system.md and no more. The whitelist is the contract: if
+   an effect is not a row there, it is not implemented here, however good it
+   would look.
+
+   Two rules govern every one of them:
+
+     Animate transform and opacity ONLY. Both are composited, so they cost no
+     layout and no repaint. Everything else - height, width, top, margin,
+     box-shadow - forces the browser to recompute geometry on every frame, on
+     phones that cannot spare it.
+
+     Nothing exceeds 300ms. Past roughly a third of a second a transition
+     stops reading as motion and starts reading as latency.
+
+   The three deliberate exceptions are marked where they occur.
+   ===================================================================== */
+
+/* Focus ring. OPACITY ONLY, on a ring that is already at full size.
+
+   The banned alternative is a ring that grows - animating width or box-shadow
+   so the outline expands outward. It looks considered and it is a repaint on
+   every frame, on the element the user is actively interacting with. */
+/* A plain rule, NOT @utility, and the distinction is load-bearing.
+
+   @utility is usage-gated: Tailwind emits it only once a scanned file
+   actually uses the class. The ::after below is plain CSS and emits
+   unconditionally, so declaring the base as a utility produced an absolutely
+   positioned ring whose `position: relative` anchor did not exist until the
+   first view happened to use it - a ring measured against whatever ancestor
+   happened to be positioned instead. Verified absent from the bundle before
+   this was changed. */
+.focus-ring {
+    position: relative;
+}
+.focus-ring::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: inherit;
+    border: 2px solid var(--color-primary);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-fast) var(--ease-out);
+}
+.focus-ring:focus-visible::after {
+    opacity: 1;
+}
+
+/* Tooltip. opacity + scale, --dur-fast, and a 400ms delay before it appears.
+
+   The delay is the whole design. Without it, every pointer crossing the
+   screen trails a wake of tooltips. Leaving has no delay: a tooltip in the
+   way should go immediately. */
+.tooltip {
+    @apply pointer-events-none absolute z-50 rounded-[var(--radius-sm)]
+           bg-ink-900 px-2.5 py-1.5 text-[13px] leading-snug text-ink-50;
+    opacity: 0;
+    transform: scale(0.96);
+    transition: opacity var(--dur-fast) var(--ease-in) 0ms,
+                transform var(--dur-fast) var(--ease-in) 0ms;
+}
+.tooltip-trigger:hover .tooltip,
+.tooltip-trigger:focus-visible .tooltip {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity var(--dur-fast) var(--ease-out) 400ms,
+                transform var(--dur-fast) var(--ease-out) 400ms;
+}
+
+/* Toast. translateY + opacity, --dur-base. */
+.toast {
+    @apply rounded-[var(--radius-md)] border border-border bg-card px-4 py-3
+           text-[15px] text-foreground;
+    box-shadow: var(--shadow-e2);
+}
+.toast-enter {
+    opacity: 0;
+    transform: translateY(8px);
+}
+.toast-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity var(--dur-base) var(--ease-out),
+                transform var(--dur-base) var(--ease-out);
+}
+.toast-leave-active {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity var(--dur-fast) var(--ease-in),
+                transform var(--dur-fast) var(--ease-in);
+}
+
+/* Modal. Backdrop fades; panel fades and scales up from 0.97.
+
+   Scaling UP on entry rather than down means the panel appears to come
+   toward the reader. Starting at 0.97 rather than lower keeps the text
+   inside it legible for the whole transition instead of arriving blurred. */
+.modal-backdrop {
+    @apply fixed inset-0 z-40 bg-ink-950/50;
+    opacity: 0;
+    transition: opacity var(--dur-slow) var(--ease-out);
+}
+.modal-backdrop-open { opacity: 1; }
+
+.modal-panel {
+    @apply relative z-50 w-full rounded-[var(--radius-lg)] border border-border bg-card;
+    box-shadow: var(--shadow-e3);
+    opacity: 0;
+    transform: scale(0.97);
+    transition: opacity var(--dur-slow) var(--ease-out),
+                transform var(--dur-slow) var(--ease-out);
+}
+.modal-panel-open {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Drawer. translateX, --dur-slow. Never `left` or `width` - both force
+   layout on every frame; a transform does not. */
+.drawer {
+    @apply fixed inset-y-0 z-50 w-[min(22rem,85vw)] border-r border-border bg-card;
+    transform: translateX(-100%);
+    transition: transform var(--dur-slow) var(--ease-out);
+}
+.drawer-open { transform: translateX(0); }
+
+/* Tabs. The indicator is the one place width is animated, and it is a
+   whitelist exception rather than an oversight: an underline that slides
+   without resizing cannot track tabs of differing widths. */
+.tab {
+    @apply relative inline-flex min-h-11 items-center px-3 text-[15px] text-muted-foreground;
+    transition: color var(--dur-instant) var(--ease-in-out);
+}
+.tab-active { @apply text-foreground; }
+.tab-indicator {
+    @apply absolute bottom-0 h-0.5 bg-primary;
+    transition: transform var(--dur-base) var(--ease-in-out),
+                width var(--dur-base) var(--ease-in-out);
+}
+
+/* Accordion. grid-template-rows 0fr -> 1fr, the second whitelist exception.
+   It is how a collapse animates to CONTENT height without measuring it in
+   JavaScript, which is the usual alternative and worse. */
+.accordion-content {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--dur-base) var(--ease-in-out);
+}
+.accordion-content > * { overflow: hidden; }
+.accordion-open { grid-template-rows: 1fr; }
+
+/* Empty state. No motion: it is the resting state of a screen, and a thing
+   that animates in every time a filter returns nothing is a thing that
+   punishes the user for filtering. */
+.empty-state {
+    @apply flex flex-col items-center justify-center rounded-[var(--radius-md)]
+           border border-border bg-card px-6 py-12 text-center;
+}
+.empty-state-title { @apply text-[17px] text-foreground; }
+.empty-state-body { @apply mt-2 max-w-[46ch] text-[15px] text-muted-foreground; }
+
+/* Avatar. */
+.avatar {
+    @apply inline-flex shrink-0 items-center justify-center overflow-hidden
+           rounded-full bg-ink-200 text-ink-700;
+}
+
+/* Breadcrumb. */
+.breadcrumb { @apply flex flex-wrap items-center gap-1.5 text-[14px]; }
+.breadcrumb-link {
+    @apply text-muted-foreground;
+    transition: color var(--dur-instant) var(--ease-in-out);
+}
+.breadcrumb-link:hover { @apply text-foreground; }
+.breadcrumb-current { @apply text-foreground; }
+
+/* Pagination. */
+.page-link {
+    @apply inline-flex min-h-11 min-w-11 items-center justify-center
+           rounded-[var(--radius-sm)] px-3 text-[15px] text-muted-foreground;
+    transition: background-color var(--dur-instant) var(--ease-in-out),
+                color var(--dur-instant) var(--ease-in-out);
+}
+.page-link:hover { @apply bg-muted text-foreground; }
+.page-link-current { @apply bg-muted text-foreground; }
+
+/* =====================================================================
+   DARK THEME
+   =====================================================================
+
+   A second set of VALUES, not a second set of components. Every surface in
+   this stylesheet is already a semantic token - bg-card, text-foreground,
+   border-border - so a theme is a block that redefines what those resolve
+   to, and not one view or one component changes.
+
+   That was designed for: the @theme block at the top of this file says the
+   shadcn-style semantic pairs were chosen partly because they make "a dark
+   theme a second :root block rather than a second set of components". This
+   is that block.
+
+   WHAT IS DELIBERATELY ABSENT. The bands, the brand green, primary and the
+   five semantic pairs are not redefined. A Sweater bird is cobalt under any
+   theme, because colour in this system means bloodline - and a dark theme
+   that re-tinted the bands would be inventing a second meaning for the one
+   channel that already has one. The band tag also needs no adjustment: it is
+   a FILLED capsule, so its legibility is its own text against its own colour,
+   which App\Support\BandTag::foreground resolves per band.
+
+   THREE STATES, NOT TWO. An explicit choice must be able to beat the
+   operating system in both directions, so:
+
+     :root                              light, the default
+     prefers-color-scheme: dark         dark, unless the user chose light
+     [data-theme='dark']                dark, whatever the OS says
+     [data-theme='light']               light, whatever the OS says
+
+   The values are duplicated across the two dark selectors rather than shared
+   through a third custom property, because a variable pointing at a variable
+   is one more indirection to unpick when a colour is wrong.
+
+   THE 7:1 CONSOLE FLOOR HOLDS HERE TOO, and BrandTokensAreMirroredTest
+   measures it. The binding pair is muted_foreground on muted at 7.57:1; an
+   earlier muted put it at 6.77:1 and looked perfectly fine, which is the
+   whole reason that test measures instead of trusting the eye.
+
+   PDFs ARE UNAFFECTED. dompdf reads config/gfms-brand.php directly and cannot
+   read a custom property at all, so print stays on paper where it belongs.
+   ===================================================================== */
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+        color-scheme: dark;
+
+        --color-background: #0D110F;
+        --color-card: #161C19;
+        --color-muted: #272D2A;
+        --color-popover: #1B2220;
+        --color-border: #2E3531;
+        --color-input: #39413C;
+
+        --color-foreground: #F7F8F6;
+        --color-muted-foreground: #B9C0BA;
+        --color-card-foreground: #F7F8F6;
+        --color-popover-foreground: #F7F8F6;
+
+        /* Inverted. #8B2626 measures 1.98:1 on the dark card - an invisible
+           link. Same hue, four steps lighter: 9.33:1 as text AND as a fill
+           with dark ink on it. */
+        --color-primary: #E0B4B0;
+        --color-primary-foreground: #161C19;
+
+        /* The semantic pairs invert for the same reason primary does. Carried
+           over unchanged they are dark inks on pale tints sitting on a #0D110F
+           page: warning #755006 measures 2.57:1 on the dark card, which is what
+           the dashboard's compliance figure was being drawn in. Measured, not
+           picked - BrandTokensAreMirroredTest re-measures every one of them. */
+        --color-success: #6FD39B;
+        --color-success-bg: #182B21;
+        --color-warning: #E9C46A;
+        --color-warning-bg: #2E2716;
+        --color-destructive: #FFA88F;
+        --color-destructive-bg: #301B1A;
+        --color-destructive-foreground: #161C19;
+        --color-info: #AEBBEF;
+        --color-info-bg: #1E2336;
+
+        /* The ink ramp inverts with the surfaces it describes, or every step
+           that meant "paper" would still mean paper on a dark ground. */
+        --color-ink-50: #0D110F;
+        --color-ink-100: #161C19;
+        --color-ink-200: #272D2A;
+        --color-ink-300: #2E3531;
+        --color-ink-400: #39413C;
+        --color-ink-500: #6E756F;
+        --color-ink-600: #8A918B;
+        --color-ink-700: #B9C0BA;
+        --color-ink-800: #D7DCD8;
+        --color-ink-900: #F7F8F6;
+        --color-ink-950: #FFFFFF;
+    }
+}
+
+:root[data-theme='dark'] {
+    color-scheme: dark;
+
+    --color-background: #0D110F;
+    --color-card: #161C19;
+    --color-muted: #272D2A;
+    --color-popover: #1B2220;
+    --color-border: #2E3531;
+    --color-input: #39413C;
+
+    --color-foreground: #F7F8F6;
+    --color-muted-foreground: #B9C0BA;
+    --color-card-foreground: #F7F8F6;
+    --color-popover-foreground: #F7F8F6;
+
+    /* Inverted - see the note in the media query above. */
+    --color-primary: #E0B4B0;
+    --color-primary-foreground: #161C19;
+
+    /* Inverted - see the note in the media query above. */
+    --color-success: #6FD39B;
+    --color-success-bg: #182B21;
+    --color-warning: #E9C46A;
+    --color-warning-bg: #2E2716;
+    --color-destructive: #FFA88F;
+    --color-destructive-bg: #301B1A;
+    --color-destructive-foreground: #161C19;
+    --color-info: #AEBBEF;
+    --color-info-bg: #1E2336;
+
+    --color-ink-50: #0D110F;
+    --color-ink-100: #161C19;
+    --color-ink-200: #272D2A;
+    --color-ink-300: #2E3531;
+    --color-ink-400: #39413C;
+    --color-ink-500: #6E756F;
+    --color-ink-600: #8A918B;
+    --color-ink-700: #B9C0BA;
+    --color-ink-800: #D7DCD8;
+    --color-ink-900: #F7F8F6;
+    --color-ink-950: #FFFFFF;
+}
+
+:root[data-theme='light'] {
+    color-scheme: light;
 }

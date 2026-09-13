@@ -23,40 +23,29 @@
         </div>
     @endif
 
-    {{-- Filters. A well, not a card-in-a-card: the pearl ground says "controls",
-         the canvas below says "records". --}}
-    <div class="card mb-6 p-5">
-        <div class="grid gap-4 sm:grid-cols-3">
-            <div>
-                <label for="search" class="label">Search</label>
-                <input id="search" type="search" wire:model.live.debounce.300ms="search"
-                       placeholder="Name, email or position" class="input mt-1">
-            </div>
-            <div>
-                <label for="role" class="label">Role</label>
-                <select id="role" wire:model.live="role" class="input mt-1">
-                    <option value="">All roles</option>
-                    @foreach ($this->roleOptions() as $option)
-                        <option value="{{ $option->value }}">{{ $option->label() }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label for="status" class="label">Status</label>
-                <select id="status" wire:model.live="status" class="input mt-1">
-                    <option value="">Active and inactive</option>
-                    <option value="active">Active only</option>
-                    <option value="inactive">Deactivated only</option>
-                </select>
-            </div>
-        </div>
+    {{-- Filters. One row: search takes the space that is left, the two selects
+         shrink to their own width. The field name sits inside each control's
+         border rather than stacked above it - see x-filter-select. --}}
+    <x-filter-bar :active="$this->hasActiveFilters()" clear="clearFilters">
+        <x-slot:search>
+            <label for="search" class="sr-only">Search</label>
+            <input id="search" type="search" wire:model.live.debounce.300ms="search"
+                   placeholder="Name, email or position" class="input">
+        </x-slot:search>
 
-        @if ($this->hasActiveFilters())
-            <div class="mt-5 border-t border-border pt-4 text-right">
-                <button type="button" wire:click="clearFilters" class="btn-secondary">Clear filters</button>
-            </div>
-        @endif
-    </div>
+        <x-filter-select id="role" label="Role" wire:model.live="role">
+            <option value="">All roles</option>
+            @foreach ($this->roleOptions() as $option)
+                <option value="{{ $option->value }}">{{ $option->label() }}</option>
+            @endforeach
+        </x-filter-select>
+
+        <x-filter-select id="status" label="Status" wire:model.live="status">
+            <option value="">Active and inactive</option>
+            <option value="active">Active only</option>
+            <option value="inactive">Deactivated only</option>
+        </x-filter-select>
+    </x-filter-bar>
 
     @if ($this->users->isEmpty())
         <div class="card px-6 py-16 text-center">
@@ -121,7 +110,11 @@
         {{-- Desktop: the ledger proper. --}}
         <div class="card hidden overflow-hidden sm:block">
             <div class="overflow-x-auto">
-                <table class="min-w-full">
+                {{-- .table-hairline resolves to `.table-hairline tbody tr + tr`,
+                     so it belongs on the TABLE. It used to sit on the <tbody>
+                     below, where the descendant selector matched nothing and
+                     the rows shipped with no separators at all. --}}
+                <table class="table-hairline min-w-full">
                     <thead class="border-b border-border bg-muted">
                         <tr>
                             @foreach (['Name', 'Email', 'Role', 'Position', 'Contact', 'Status'] as $heading)
@@ -134,7 +127,7 @@
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="table-hairline">
+                    <tbody>
                         @foreach ($this->users as $person)
                             <tr wire:key="user-row-{{ $person->id }}" class="transition-colors duration-100 hover:bg-muted">
                                 <td class="whitespace-nowrap px-4 py-3 text-[15px] font-medium text-foreground">

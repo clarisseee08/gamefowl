@@ -27,12 +27,8 @@
                  control and the reasoning behind it. --}}
             <div class="mt-8 grid gap-6 sm:grid-cols-2">
                 <div>
-                    <label for="sire_choice" class="label">
-                        Sire (Father) <span class="text-destructive">*</span>
-                    </label>
-
-                    <select id="sire_choice" wire:model.live="sire_choice"
-                            class="input mt-1 @error('sire_id') input-error @enderror">
+                    <x-form-select id="sire_choice" label="Sire (Father)" required error="sire_id"
+                                   wire:model.live="sire_choice">
                         <option value="">Choose a male bird</option>
                         @foreach ($this->sires as $bird)
                             <option value="{{ $bird->id }}">
@@ -41,8 +37,7 @@
                             </option>
                         @endforeach
                         <option value="{{ App\Livewire\Breeding\Form::OFF_LIST }}">Someone else's bird</option>
-                    </select>
-                    @error('sire_id') <p class="error">{{ $message }}</p> @enderror
+                    </x-form-select>
 
                     @if ($sire_is_external)
                         {{-- Indented off a hairline so the fields read as belonging
@@ -63,12 +58,8 @@
                 </div>
 
                 <div>
-                    <label for="dam_choice" class="label">
-                        Dam (Mother) <span class="text-destructive">*</span>
-                    </label>
-
-                    <select id="dam_choice" wire:model.live="dam_choice"
-                            class="input mt-1 @error('dam_id') input-error @enderror">
+                    <x-form-select id="dam_choice" label="Dam (Mother)" required error="dam_id"
+                                   wire:model.live="dam_choice">
                         <option value="">Choose a female bird</option>
                         @foreach ($this->dams as $bird)
                             <option value="{{ $bird->id }}">
@@ -77,8 +68,7 @@
                             </option>
                         @endforeach
                         <option value="{{ App\Livewire\Breeding\Form::OFF_LIST }}">Someone else's bird</option>
-                    </select>
-                    @error('dam_id') <p class="error">{{ $message }}</p> @enderror
+                    </x-form-select>
 
                     @if ($dam_is_external)
                         <div class="mt-4 border-l border-border pl-4">

@@ -46,7 +46,7 @@
             <nav class="ml-6 hidden items-center gap-5 sm:flex" aria-label="Main">
                 <a href="{{ route('catalog.index') }}" wire:navigate
                    class="text-[15px] text-muted-foreground hover:text-foreground">Our stock</a>
-                <a href="{{ route('home') }}#visit" wire:navigate
+                <a href="{{ route('home') }}#visit"
                    class="text-[15px] text-muted-foreground hover:text-foreground">Visit us</a>
             </nav>
 
@@ -68,6 +68,8 @@
 
                  The sign-in link is deliberately quiet: this is a shop window,
                  and the farm's own staff are the only people it is for. --}}
+            <x-theme-toggle />
+
             @auth
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
@@ -161,7 +163,7 @@
                                class="text-foreground hover:underline">Our stock</a>
                         </li>
                         <li>
-                            <a href="{{ route('home') }}#visit" wire:navigate
+                            <a href="{{ route('home') }}#visit"
                                class="text-foreground hover:underline">Visit us</a>
                         </li>
                         @guest

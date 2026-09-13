@@ -32,39 +32,35 @@
         @endforeach
     </div>
 
-    {{-- Filters --}}
-    <div class="card mb-10 p-6">
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-                <label for="search" class="label">Search by bird</label>
-                <input id="search" type="search" wire:model.live.debounce.300ms="search"
-                       placeholder="Sire or dam name / band" class="input mt-1">
-            </div>
-            <div>
-                <label for="from" class="label">Mated from</label>
-                <input id="from" type="date" wire:model.live="from" class="input mt-1">
-            </div>
-            <div>
-                <label for="to" class="label">Mated up to</label>
-                <input id="to" type="date" wire:model.live="to" class="input mt-1">
-            </div>
-            <div>
-                <label for="bloodline" class="label">Bloodline (sire)</label>
-                <select id="bloodline" wire:model.live="bloodline" class="input mt-1">
-                    <option value="">All bloodlines</option>
-                    @foreach ($this->bloodlineOptions as $option)
-                        <option value="{{ $option }}">{{ $option }}</option>
-                    @endforeach
-                </select>
-            </div>
+    {{-- Filters. One row: search takes the space that is left, the date range
+         and the bloodline shrink to their own width and wrap when they run out
+         of room. --}}
+    <x-filter-bar :active="$this->hasActiveFilters()" clear="clearFilters">
+        <x-slot:search>
+            <label for="search" class="sr-only">Search by bird</label>
+            <input id="search" type="search" wire:model.live.debounce.300ms="search"
+                   placeholder="Sire or dam name / band" class="input">
+        </x-slot:search>
+
+        {{-- The two dates are one control in two halves, so they stay together
+             on a wrap and read as a range rather than as two unrelated fields. --}}
+        <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
+            <label for="from" class="label shrink-0">Mated from</label>
+            <input id="from" type="date" wire:model.live="from" class="input datum w-full sm:w-auto">
         </div>
 
-        @if ($this->hasActiveFilters())
-            <div class="mt-4 border-t border-border pt-4 text-right">
-                <button type="button" wire:click="clearFilters" class="btn-secondary">Clear filters</button>
-            </div>
-        @endif
-    </div>
+        <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
+            <label for="to" class="label shrink-0">Mated up to</label>
+            <input id="to" type="date" wire:model.live="to" class="input datum w-full sm:w-auto">
+        </div>
+
+        <x-filter-select id="bloodline" label="Bloodline (sire)" wire:model.live="bloodline">
+            <option value="">All bloodlines</option>
+            @foreach ($this->bloodlineOptions as $option)
+                <option value="{{ $option }}">{{ $option }}</option>
+            @endforeach
+        </x-filter-select>
+    </x-filter-bar>
 
     @if ($this->records->isEmpty())
         <div class="card p-12 text-center">

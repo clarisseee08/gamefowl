@@ -157,11 +157,16 @@
                     as a 200-egg one.
                 </p>
             </div>
-            <select wire:model.live="trendMonths" class="input mt-3 sm:mt-0 sm:w-auto" aria-label="Trend period">
-                <option value="6">Last 6 months</option>
-                <option value="12">Last 12 months</option>
-                <option value="24">Last 24 months</option>
-            </select>
+            {{-- The heading beside it already says what the control does, so
+                 the label stays in the accessibility tree and off the page -
+                 exactly what the aria-label it replaces was doing. --}}
+            <div class="mt-3 sm:mt-0 sm:w-48">
+                <x-form-select id="trendMonths" label="Trend period" label-hidden wire:model.live="trendMonths">
+                    <option value="6">Last 6 months</option>
+                    <option value="12">Last 12 months</option>
+                    <option value="24">Last 24 months</option>
+                </x-form-select>
+            </div>
         </div>
 
         <div class="mt-5 grid gap-4 sm:grid-cols-3">

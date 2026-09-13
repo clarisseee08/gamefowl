@@ -97,13 +97,12 @@
     @if ($this->totalEvents > 0)
         <div class="card mb-6 p-4 sm:flex sm:items-end sm:gap-4">
             <div class="sm:w-72">
-                <label for="timeline-type" class="label">Show</label>
-                <select id="timeline-type" wire:model.live="eventType" class="input mt-1">
+                <x-form-select id="timeline-type" label="Show" wire:model.live="eventType">
                     <option value="">All types of event</option>
                     @foreach ($this->eventTypeOptions() as $option)
                         <option value="{{ $option->value }}">{{ $option->label() }}</option>
                     @endforeach
-                </select>
+                </x-form-select>
             </div>
 
             <p class="mt-3 text-[15px] text-muted-foreground sm:mt-0 sm:pb-3">

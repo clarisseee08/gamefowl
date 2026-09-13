@@ -19,13 +19,12 @@
             </p>
         </div>
 
-        <div class="w-full sm:w-auto">
-            <label for="status" class="label">Showing</label>
-            <select id="status" wire:model.live="status" class="input mt-1 sm:w-56">
+        <div class="w-full sm:w-56">
+            <x-form-select id="status" label="Showing" wire:model.live="status">
                 @foreach ($this->statusOptions() as $option)
                     <option value="{{ $option->value }}">{{ $option->label() }}</option>
                 @endforeach
-            </select>
+            </x-form-select>
         </div>
     </div>
 
@@ -40,14 +39,14 @@
         <div class="card overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="table-hairline w-full text-left">
-                    <thead class="bg-pearl">
+                    <thead class="bg-muted">
                         <tr>
-                            <th class="px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-ink-80">Who</th>
-                            <th class="px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-ink-80">When</th>
-                            <th class="px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-ink-80">Party</th>
-                            <th class="px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-ink-80">About</th>
-                            <th class="px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-ink-80">Status</th>
-                            <th class="px-4 py-3 text-right text-[13px] font-semibold uppercase tracking-[0.06em] text-ink-80">Decide</th>
+                            <th class="px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Who</th>
+                            <th class="px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">When</th>
+                            <th class="px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Party</th>
+                            <th class="px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">About</th>
+                            <th class="px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Status</th>
+                            <th class="px-4 py-3 text-right text-[13px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Decide</th>
                         </tr>
                     </thead>
                     <tbody>
