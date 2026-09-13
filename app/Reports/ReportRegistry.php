@@ -17,19 +17,13 @@ use InvalidArgumentException;
 final class ReportRegistry
 {
     /*
-     * ┌─────────────────────────────────────────────────────────────────┐
-     * │ WORK IN PROGRESS - the five report classes below are NOT written │
-     * │ yet. The interface, this registry, ReportController and the PDF  │
-     * │ layout are complete and are the contract they must satisfy.      │
-     * │                                                                  │
-     * │ Nothing calls this registry yet (there are no /reports routes),  │
-     * │ so the application and the test suite are unaffected. Calling    │
-     * │ all() or make() before the classes exist WILL fatal.             │
-     * │                                                                  │
-     * │ Remaining to build: the 5 report classes + their PDF templates,  │
-     * │ the reports index screen, routes, dashboard, user management,    │
-     * │ customer portal and the database seeder.                         │
-     * └─────────────────────────────────────────────────────────────────┘
+     * Adding a report is one line here plus two files: the class, and its PDF
+     * template at the path its pdfView() returns. CSV export, PDF export and
+     * the audit row are inherited from ReportController and need no work.
+     *
+     * ReportExportTest walks these keys and asserts each one produces a real
+     * CSV and a real PDF, so a report registered without its template fails the
+     * suite rather than a download.
      *
      * @var array<string, class-string<ReportDefinition>>
      */
