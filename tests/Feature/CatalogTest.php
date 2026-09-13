@@ -126,4 +126,107 @@ final class CatalogTest extends TestCase
 
         $this->assertSame($small, $large, 'The photo relation is not eager-loaded on the catalogue grid.');
     }
+
+    // -----------------------------------------------------------------
+    // Availability
+    //
+    // `for_sale` was a write-only column: set on the bird form, shown on the
+    // bird's own page, and consulted by nothing. Its index - ['for_sale',
+    // 'status'] - was added specifically "to serve the catalogue", which never
+    // read it.
+    // -----------------------------------------------------------------
+
+    public function test_the_catalogue_shows_every_bird_by_default_not_only_those_for_sale(): void
+    {
+        Broodcock::factory()->create(['name' => 'Bagwis', 'for_sale' => false]);
+        Broodcock::factory()->create(['name' => 'Dalisay', 'for_sale' => true]);
+
+        // The farm marks almost nothing for sale, so a catalogue that defaulted
+        // to available-only would greet a customer with an empty page.
+        Livewire::actingAs(User::factory()->customer()->create())
+            ->test(Index::class)
+            ->assertSee('Bagwis')
+            ->assertSee('Dalisay');
+    }
+
+    public function test_a_customer_can_narrow_the_catalogue_to_available_birds(): void
+    {
+        Broodcock::factory()->create(['name' => 'Bagwis', 'for_sale' => false]);
+        Broodcock::factory()->create(['name' => 'Dalisay', 'for_sale' => true]);
+
+        Livewire::actingAs(User::factory()->customer()->create())
+            ->test(Index::class)
+            ->set('forSaleOnly', true)
+            ->assertSee('Dalisay')
+            ->assertDontSee('Bagwis');
+    }
+
+    public function test_a_bird_offered_for_sale_says_so_on_its_card(): void
+    {
+        Broodcock::factory()->create(['name' => 'Dalisay', 'for_sale' => true]);
+
+        Livewire::actingAs(User::factory()->customer()->create())
+            ->test(Index::class)
+            ->assertSee('For sale');
+    }
+
+    public function test_clearing_the_filters_restores_the_full_catalogue(): void
+    {
+        Broodcock::factory()->create(['name' => 'Bagwis', 'for_sale' => false]);
+
+        Livewire::actingAs(User::factory()->customer()->create())
+            ->test(Index::class)
+            ->set('forSaleOnly', true)
+            ->call('clearFilters')
+            ->assertSet('forSaleOnly', false)
+            ->assertSee('Bagwis');
+    }
+
+    // -----------------------------------------------------------------
+    // Which shell the catalogue renders inside
+    //
+    // A customer gets the bare catalogue shell - it is the whole application
+    // to them, and a console rail would offer screens they cannot open. Staff
+    // get the console shell, because for them this is one screen among many
+    // and stripping the sidebar left them with a single "Console" button where
+    // every other screen has navigation.
+    // -----------------------------------------------------------------
+
+    public function test_staff_keep_the_console_sidebar_on_the_catalogue(): void
+    {
+        Broodcock::factory()->create();
+
+        $this->actingAs(User::factory()->staff()->create())
+            ->get(route('catalog.index'))
+            ->assertOk()
+            // The sidebar, by the screens only it links to.
+            ->assertSee('Broodcocks')
+            ->assertSee('Reports');
+    }
+
+    public function test_an_owner_keeps_the_console_sidebar_on_the_catalogue(): void
+    {
+        Broodcock::factory()->create();
+
+        $this->actingAs(User::factory()->owner()->create())
+            ->get(route('catalog.index'))
+            ->assertOk()
+            ->assertSee('Broodcocks')
+            // Owner-only nav, so this also proves the rail is role-aware here.
+            ->assertSee('Users');
+    }
+
+    /** A customer must never be shown navigation for screens they cannot open. */
+    public function test_a_customer_gets_the_bare_catalogue_shell(): void
+    {
+        Broodcock::factory()->create();
+
+        $this->actingAs(User::factory()->customer()->create())
+            ->get(route('catalog.index'))
+            ->assertOk()
+            ->assertDontSee('Main navigation', escape: false)
+            ->assertDontSee('Mortality')
+            ->assertDontSee('Breeding')
+            ->assertDontSee('Users');
+    }
 }

@@ -1,0 +1,99 @@
+# The test suite, Pint, and a PRODUCTION asset build.
+#
+# This exists because several comments in the codebase already claimed it did.
+# App\Livewire\Broodcocks\Pedigree says "PedigreePerformanceTest asserts the
+# query count, so a regression fails CI rather than quietly making the page
+# slow" - which was only true once this file existed.
+#
+# WHY `npm run build` AND NOT JUST THE TESTS. Tailwind v4 resolves class names
+# by scanning source at build time. A class assembled at runtime works under
+# `npm run dev` and is simply absent from the production bundle, so the failure
+# only ever appears on Render. Building here is what catches it.
+#
+# THE BUDGET. This repository is private, so Actions minutes are metered and
+# GitHub rounds every job up to a whole minute. keep-render-warm already costs
+# ~1800 minutes a month and keep-supabase-awake ~30, against a free allowance of
+# 2000 - so there are only ~170 minutes left for this workflow. That is roughly
+# 30 runs a month at the ~5 minutes a cold run takes, which is why:
+#
+#   - it runs on pushes to main and on pull requests, NOT on every branch push;
+#   - Composer and npm caches are restored, which takes a warm run under 3 min;
+#   - a new push cancels the run it superseded rather than queueing behind it.
+#
+# If the allowance starts to bite, narrow the `push` trigger before weakening
+# any of the three checks - a green suite is the thing protecting everything
+# else in this repository.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests, Pint, production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # 8.2 to match composer.json's ^8.2, the Dockerfile's php:8.2-fpm-alpine,
+      # and the version the suite is developed against. Testing on a version the
+      # production image does not run would prove nothing about production.
+      - name: Set up PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          # pdo_sqlite is what phpunit.xml's in-memory database needs. The rest
+          # mirror the Dockerfile so a missing-extension failure surfaces here.
+          extensions: pdo_sqlite, sqlite3, bcmath, zip, intl, mbstring
+          coverage: none
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ runner.os }}-php8.2-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-php8.2-
+
+      # WITH dev dependencies, unlike the Dockerfile: PHPUnit, Pint, Faker and
+      # Collision all live in require-dev and all three checks below need them.
+      - name: Install PHP dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare the environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      # Pint first: it is the fastest check, so a formatting-only failure costs
+      # seconds rather than a full suite run.
+      - name: Check formatting
+        run: vendor/bin/pint --test
+
+      - name: Run the test suite
+        run: php artisan test --compact
+
+      # 20 to match the Dockerfile's assets stage. A newer Node very probably
+      # builds the same bundle; "very probably" is not what CI is for.
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install JS dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build production assets
+        run: npm run build

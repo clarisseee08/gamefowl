@@ -20,6 +20,14 @@
         ['key' => 'class', 'label' => 'Class', 'value' => $class],
         ['key' => 'sex', 'label' => 'Sex', 'value' => $sex],
         ['key' => 'bloodline', 'label' => 'Bloodline', 'value' => $bloodline],
+        // 'farm' is the default view, not a filter someone applied, so it is
+        // deliberately not chipped - a chip you cannot meaningfully remove is
+        // noise. The two non-default choices are.
+        ['key' => 'ownership', 'label' => 'Ownership', 'value' => match ($ownership) {
+            'outside' => 'Outside birds only',
+            'all' => 'Farm and outside birds',
+            default => '',
+        }],
     ])->filter(fn ($c) => $c['value'] !== '' && $c['value'] !== null);
 @endphp
 
@@ -169,7 +177,23 @@
                 </select>
             </div>
 
+            {{-- Ownership.
+
+                 Defaults to the farm's own birds. Outside parents are created
+                 automatically by the breeding form - a borrowed hen has to be a
+                 real row or the pedigree loses the whole branch above her - so
+                 this list would otherwise fill up with birds the farm does not
+                 own and cannot act on. They stay one selection away rather than
+                 hidden, because a keeper still needs to correct their details. --}}
             <div>
+                <label for="ownership" class="label">Ownership</label>
+                <select id="ownership" wire:model.live="ownership" class="input mt-1">
+                    <option value="farm">This farm's birds</option>
+                    <option value="outside">Outside birds only</option>
+                    <option value="all">Both</option>
+                </select>
+            </div>
+
         </div>
 
         @if ($this->hasActiveFilters())
@@ -308,6 +332,12 @@
                                     <a href="{{ route('broodcocks.show', $bird) }}" class="hover:text-primary hover:underline">
                                         {{ $bird->name }}
                                     </a>
+                                    {{-- Only when the list can contain both. Badging every
+                                         row in the default view would label the ordinary
+                                         case, which is the opposite of what a badge is for. --}}
+                                    @if ($bird->is_external && $ownership !== 'outside')
+                                        <span class="badge badge-neutral ml-1.5" title="Belongs to another farm; recorded so the pedigree stays complete">Outside</span>
+                                    @endif
                                 </td>
                                 <td x-show="cols.sex" class="whitespace-nowrap px-4 py-2.5 text-[14px] text-muted-foreground">{{ $bird->sex->label() }}</td>
                                 <td x-show="cols.bloodline" class="whitespace-nowrap px-4 py-2.5 text-[14px] text-muted-foreground">{{ $bird->bloodline ?? '—' }}</td>

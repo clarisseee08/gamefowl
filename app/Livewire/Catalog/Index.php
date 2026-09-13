@@ -10,7 +10,6 @@ use App\Models\Broodcock;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -28,12 +27,19 @@ use Livewire\WithPagination;
  * not what enforces access.
  */
 /*
- * The catalogue is the PUBLIC surface and gets its own shell: full-bleed like
- * the console, but without the console sidebar. A dense app rail is wrong for a
+ * THE SHELL DEPENDS ON WHO IS LOOKING - see layoutForViewer().
+ *
+ * For a CUSTOMER this is the whole application, and it gets the bare catalogue
+ * shell: full-bleed, no console sidebar. A dense app rail is wrong for a
  * photo-led browse, and it would show a customer navigation for screens they
  * cannot open.
+ *
+ * For STAFF it is one screen among many, and stripping the sidebar stranded
+ * them: every other console screen has the rail, this one replaced it with a
+ * single "Console" button, so the way back to Broodcocks was two clicks and a
+ * guess. The original reasoning was right about customers and wrong about the
+ * people who use this system all day.
  */
-#[Layout('layouts::catalog')]
 final class Index extends Component
 {
     use WithPagination;
@@ -50,6 +56,18 @@ final class Index extends Component
     #[Url(except: '')]
     public string $class = '';
 
+    /**
+     * Show only birds the farm is actually offering.
+     *
+     * OFF by default, and that is a judgement rather than an oversight. The
+     * farm marks almost nothing for sale at any given time, so defaulting this
+     * on would present an empty catalogue to a customer who came to look at the
+     * stock. The catalogue's job is to show what the farm HAS; this narrows it
+     * to what the farm will part with.
+     */
+    #[Url(except: false)]
+    public bool $forSaleOnly = false;
+
     public function mount(): void
     {
         $this->authorize('viewAny', Broodcock::class);
@@ -64,14 +82,14 @@ final class Index extends Component
 
     public function clearFilters(): void
     {
-        $this->reset(['search', 'bloodline', 'sex', 'class']);
+        $this->reset(['search', 'bloodline', 'sex', 'class', 'forSaleOnly']);
         $this->resetPage();
     }
 
     public function hasActiveFilters(): bool
     {
         return $this->search !== '' || $this->bloodline !== ''
-            || $this->sex !== '' || $this->class !== '';
+            || $this->sex !== '' || $this->class !== '' || $this->forSaleOnly;
     }
 
     /** @return LengthAwarePaginator<int, Broodcock> */
@@ -82,9 +100,15 @@ final class Index extends Component
             // Photo per card, so it must be eager-loaded or the grid is one
             // extra query per bird against a database in Tokyo.
             ->with('primaryPhoto')
+            // farmStock(): a borrowed or visiting hen is recorded so the
+            // pedigree stays whole, but she belongs to somebody else. Offering
+            // her in the customer catalogue advertises stock this farm cannot
+            // sell, which is a conversation the farm has to walk back.
+            ->farmStock()
             // Sold and deceased birds are not part of the catalogue. This is
             // presentation, not security - the Policy still governs access.
             ->onFarm()
+            ->when($this->forSaleOnly, fn ($query) => $query->where('for_sale', true))
             ->search($this->search)
             ->bloodline($this->bloodline)
             ->sex($this->sex)
@@ -98,6 +122,7 @@ final class Index extends Component
     public function bloodlineOptions(): array
     {
         return Broodcock::query()
+            ->farmStock()
             ->onFarm()
             ->whereNotNull('bloodline')
             ->distinct()
@@ -120,6 +145,28 @@ final class Index extends Component
 
     public function render(): View
     {
-        return view('livewire.catalog.index');
+        return view('livewire.catalog.index')
+            ->layout($this->layoutForViewer())
+            ->title('Catalogue');
+    }
+
+    /**
+     * Which shell this screen renders inside.
+     *
+     * Set HERE rather than with a #[Layout] attribute, and that is forced
+     * rather than stylistic: Livewire applies the attribute inside its render
+     * hook, AFTER render() has returned, and it overwrites whatever the view
+     * asked for. An attribute plus a ->layout() call is not a conflict the
+     * framework resolves in your favour - the attribute simply wins, silently.
+     *
+     * Staff get the console shell so the catalogue keeps the sidebar every
+     * other internal screen has. Customers get the bare shell, which is the
+     * only navigation they could use anyway.
+     */
+    private function layoutForViewer(): string
+    {
+        return auth()->user()?->isInternal()
+            ? 'layouts::app'
+            : 'layouts::catalog';
     }
 }

