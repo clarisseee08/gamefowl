@@ -172,7 +172,7 @@ final class HealthComplianceReport implements ReportDefinition
             'Records in range' => $records->count(),
             'Overdue' => $records->filter(fn (HealthRecord $r): bool => $r->isOverdue())->count(),
             'Due within '.$this->warningDays().' days' => $records
-                ->filter(fn (HealthRecord $r): bool => $this->isDueSoon($r))
+                ->filter(fn (HealthRecord $r): bool => $r->isDueSoon())
                 ->count(),
 
             // Null, not 0. "No bird has a follow-up scheduled" and "every
@@ -237,10 +237,17 @@ final class HealthComplianceReport implements ReportDefinition
         return 'reports.pdf.health-compliance';
     }
 
-    /** The due-soon look-ahead, in days. Farm policy, so it lives in config. */
+    /**
+     * The due-soon look-ahead, in days.
+     *
+     * Delegates rather than re-reading the config key, so the report, the
+     * schedule screen and the badge on an individual row cannot disagree about
+     * what "due soon" means - they did, before HealthRecord::isDueSoon() was
+     * taught to read the config at all.
+     */
     public function warningDays(): int
     {
-        return (int) config('gfms.vaccination_warning_days', HealthRecord::UPCOMING_WINDOW_DAYS);
+        return HealthRecord::warningDays();
     }
 
     // -----------------------------------------------------------------
@@ -302,22 +309,6 @@ final class HealthComplianceReport implements ReportDefinition
             }),
             default => throw new InvalidArgumentException("Unknown compliance state [{$this->compliance}]."),
         };
-    }
-
-    /**
-     * Due-soon against the configured window rather than the model's constant.
-     *
-     * HealthRecord::isDueSoon() hard-codes UPCOMING_WINDOW_DAYS; the report is
-     * required to honour config('gfms.vaccination_warning_days'), which the
-     * farm can change. When they are equal - the default - the two agree.
-     */
-    private function isDueSoon(HealthRecord $record): bool
-    {
-        if ($record->next_due_date === null || $record->isOverdue()) {
-            return false;
-        }
-
-        return $record->next_due_date->lessThanOrEqualTo(today()->addDays($this->warningDays()));
     }
 
     // -----------------------------------------------------------------

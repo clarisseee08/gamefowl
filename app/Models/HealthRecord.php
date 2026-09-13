@@ -22,7 +22,14 @@ class HealthRecord extends Model
     use LogsActivity;
     use SoftDeletes;
 
-    /** Days ahead that counts as "coming up soon" on the vaccination schedule. */
+    /**
+     * DEFAULT days ahead that counts as "coming up soon".
+     *
+     * The live value is config('gfms.vaccination_warning_days') - this is only
+     * what that key falls back to. Read it through warningDays() rather than
+     * directly, or the badge on a row will disagree with the screen counting
+     * the rows.
+     */
     public const UPCOMING_WINDOW_DAYS = 30;
 
     /** @var list<string> */
@@ -70,13 +77,27 @@ class HealthRecord extends Model
             && $this->next_due_date->isBefore(today());
     }
 
+    /**
+     * The configured look-ahead window, in days.
+     *
+     * Farm policy, so it lives in config rather than in this class. Everything
+     * that asks "is this due soon?" - the badge on a row, the schedule screen,
+     * the compliance report - must go through here or they contradict each
+     * other on the same record, which is precisely what happened when this
+     * method read the constant directly.
+     */
+    public static function warningDays(): int
+    {
+        return (int) config('gfms.vaccination_warning_days', self::UPCOMING_WINDOW_DAYS);
+    }
+
     public function isDueSoon(): bool
     {
         if ($this->next_due_date === null || $this->isOverdue()) {
             return false;
         }
 
-        return $this->next_due_date->lessThanOrEqualTo(today()->addDays(self::UPCOMING_WINDOW_DAYS));
+        return $this->next_due_date->lessThanOrEqualTo(today()->addDays(self::warningDays()));
     }
 
     /** Plain-language schedule state for the UI. */
@@ -125,8 +146,10 @@ class HealthRecord extends Model
     }
 
     /** @param Builder<HealthRecord> $query */
-    public function scopeDueSoon(Builder $query, int $days = self::UPCOMING_WINDOW_DAYS): void
+    public function scopeDueSoon(Builder $query, ?int $days = null): void
     {
+        $days ??= self::warningDays();
+
         $query->whereNotNull('next_due_date')
             ->whereDate('next_due_date', '>=', today())
             ->whereDate('next_due_date', '<=', today()->addDays($days));
