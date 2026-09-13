@@ -180,7 +180,7 @@
                                          never the farm's private notes - the Policy decides. --}}
                                     @can('viewRemarks', $record)
                                         @if ($record->remarks)
-                                            <p class="mt-1.5 max-w-[40ch] border-l-2 border-border pl-2 text-[12px] leading-snug text-muted-foreground"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
+                                            <p class="mt-1.5 max-w-[40ch] border-l border-border pl-2 text-[12px] leading-snug text-muted-foreground"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
                                         @endif
                                     @endcan
                                 </td>

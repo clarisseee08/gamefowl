@@ -503,8 +503,16 @@
      * free text resolved at runtime - a dynamic Tailwind class would survive
      * `npm run dev` and vanish from `npm run build`.
      */
+    /*
+     * whitespace-nowrap is load-bearing, not tidiness.
+     *
+     * A band number is one identifier. In a narrow table column the tag was
+     * breaking it across two lines - "HT-" above "3301" - which is not a
+     * smaller version of the band, it is a different string. The physical
+     * object this is modelled on does not wrap, and neither does this.
+     */
     .band-tag {
-        @apply inline-flex items-center rounded-[3px] font-medium leading-none;
+        @apply inline-flex items-center whitespace-nowrap rounded-[3px] font-medium leading-none;
     }
     .band-tag .band-code {
         @apply rounded-[2px] px-1.5 py-0.5 text-[11px] font-semibold tracking-[0.04em];
