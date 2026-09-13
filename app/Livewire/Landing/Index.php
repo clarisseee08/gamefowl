@@ -132,7 +132,12 @@ final class Index extends Component
             ->orderByRaw('CASE WHEN band_number IS NULL OR band_number = ? THEN 1 ELSE 0 END', [''])
             ->orderByDesc('for_sale')
             ->orderByDesc('date_hatched')
-            ->limit(3)
+            // Four, not three. The masthead's left page is now a full-height
+            // nameplate, and three rows left the register short enough that the
+            // rule dividing the spread ran past the bottom of its own column.
+            // A fourth row is more of the thing the register is for, and it
+            // costs nothing: the query is limited and cached either way.
+            ->limit(4)
             ->get());
     }
 
