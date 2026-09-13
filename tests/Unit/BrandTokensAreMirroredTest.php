@@ -204,6 +204,46 @@ final class BrandTokensAreMirroredTest extends TestCase
     }
 
     /**
+     * The dark theme's semantic pairs, measured.
+     *
+     * These were simply absent, and the failure mode was the same one primary
+     * hit: the light values are dark inks on pale tints, and carried unchanged
+     * onto a #0D110F page they become dark on dark. warning #755006 measures
+     * 2.57:1 on the dark card - which is the colour the dashboard was drawing
+     * its vaccination-compliance figure in, on the one screen a keeper opens
+     * every morning.
+     *
+     * The floor here is the Console 7:1 on every ground rather than the 4.5:1
+     * the light pairs are held to, because these render as dashboard text on
+     * screens used outdoors - the same reason muted_foreground is held to 7:1.
+     */
+    public function test_every_dark_semantic_pair_is_legible(): void
+    {
+        $dark = $this->brand()['dark'];
+
+        foreach (['success', 'warning', 'destructive', 'info'] as $token) {
+            foreach (['background', 'card', 'muted'] as $ground) {
+                $ratio = BandTag::contrast($dark[$token], $dark[$ground]);
+
+                $this->assertGreaterThanOrEqual(7.0, $ratio,
+                    sprintf('dark %s on dark %s is %.2f:1 — below the Console 7:1 floor.',
+                        $token, $ground, $ratio));
+            }
+
+            $onOwnGround = BandTag::contrast($dark[$token], $dark[$token.'_bg']);
+
+            $this->assertGreaterThanOrEqual(4.5, $onOwnGround,
+                sprintf('dark %s on dark %s_bg is %.2f:1.', $token, $token, $onOwnGround));
+        }
+
+        $onFill = BandTag::contrast($dark['destructive_foreground'], $dark['destructive']);
+
+        $this->assertGreaterThanOrEqual(4.5, $onFill,
+            sprintf('dark destructive_foreground on the dark destructive fill is %.2f:1 — '
+                .'a Delete button nobody can read.', $onFill));
+    }
+
+    /**
      * The interactive colour has to survive the theme it is read on.
      *
      * This is the pair the first dark build got wrong. primary is link text,

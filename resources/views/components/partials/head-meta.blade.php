@@ -46,8 +46,8 @@
     app.js.
 
     It writes nothing when no choice has been stored, which leaves the CSS
-    media query in charge. Three states, and the absence of the attribute is
-    one of them: follow the operating system.
+    media query in charge: a visitor who has never touched the toggle follows
+    their operating system, and the first click is what pins it.
 
     try/catch because localStorage throws outright in a private window and in
     some embedded webviews, and a theme preference is not worth a blank page.

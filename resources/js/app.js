@@ -73,3 +73,140 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 });
+
+/**
+ * The auth screen's leg band fills back in when the keeper starts typing.
+ *
+ * A failed sign-in renders the band drained of colour - a bird that fails its
+ * check loses its band - and this takes the drain off again on the first
+ * keystroke, so the page stops disagreeing with someone who is already fixing
+ * it. The colour returns over --dur-slow via the transition on .leg-band.
+ *
+ * DELIBERATELY NOT ALPINE. Alpine ships inside Livewire's bundle and the guest
+ * layout has no Livewire component on it, so window.Alpine is undefined on
+ * every auth page. An x-data here binds nothing and reports no error.
+ *
+ * The drained class is server-rendered, so with no JS at all the band stays
+ * drained - still a true statement about what just happened.
+ */
+const drainedBand = document.querySelector('.leg-band-drained');
+
+if (drainedBand) {
+    document.addEventListener(
+        'input',
+        () => drainedBand.classList.remove('leg-band-drained'),
+        { once: true },
+    );
+}
+
+/**
+ * Show / hide on a password field.
+ *
+ * Vanilla for the same reason the leg band is: Alpine ships inside Livewire's
+ * bundle and the auth pages carry no Livewire component, so x-* attributes are
+ * dead there. Delegated from the document so it also covers a field rendered
+ * after load.
+ *
+ * The label states what the button will DO next. A toggle labelled with its
+ * current state is ambiguous the moment anyone stops to think about it.
+ */
+document.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-reveals]');
+
+    if (! button) {
+        return;
+    }
+
+    const field = document.getElementById(button.dataset.reveals);
+
+    if (! field) {
+        return;
+    }
+
+    const reveal = field.type === 'password';
+
+    field.type = reveal ? 'text' : 'password';
+    button.setAttribute('aria-pressed', reveal ? 'true' : 'false');
+    button.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
+    /*
+     * toggleAttribute, NOT `.hidden = x`.
+     *
+     * `hidden` is an IDL attribute of HTMLElement, and these are SVGElements.
+     * `svg.hidden = true` therefore sets a plain JS property on the object,
+     * changes no content attribute, matches no selector, and throws nothing -
+     * so the type flipped, the label updated, and the icon silently did not.
+     */
+    button.querySelector('[data-icon="show"]').toggleAttribute('hidden', reveal);
+    button.querySelector('[data-icon="hide"]').toggleAttribute('hidden', ! reveal);
+
+    // Toggling type moves focus to the button; hand it back so the next
+    // keystroke lands in the field rather than nowhere.
+    field.focus({ preventScroll: true });
+});
+
+/**
+ * Light / dark, two states.
+ *
+ * The stored choice is what pins it; with nothing stored the CSS media query
+ * is in charge, so a visitor who never touches this still follows their
+ * device. head-meta stamps the attribute before first paint, and app.css picks
+ * the icon off the same :root selectors, so this only has to flip the state.
+ *
+ * Vanilla, because the guest layout has no Livewire component on it and
+ * therefore no Alpine - which is why the toggle could not previously be put on
+ * the sign-in screen at all.
+ */
+document.addEventListener('click', (event) => {
+    if (! event.target.closest('[data-theme-toggle]')) {
+        return;
+    }
+
+    const root = document.documentElement;
+    const chosen = root.getAttribute('data-theme');
+
+    const isDark = chosen
+        ? chosen === 'dark'
+        : window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    const next = isDark ? 'light' : 'dark';
+
+    root.setAttribute('data-theme', next);
+
+    try {
+        localStorage.setItem('gfms-theme', next);
+    } catch (e) {
+        // Private windows and some embedded webviews throw outright. The
+        // attribute is already set, so the flip still works for this page.
+    }
+});
+
+/**
+ * Caps Lock, announced while typing a password.
+ *
+ * A masked field is the one place a stuck Caps Lock costs a real attempt, and
+ * on the console that attempt counts against a rate limiter.
+ *
+ * getModifierState only exists on keyboard events, so the state is genuinely
+ * unknowable until the first key - which is why this cannot be shown on focus
+ * alone and should never pretend otherwise. It clears on blur rather than
+ * lingering over a field nobody is typing in.
+ */
+document.querySelectorAll('[data-capslock-for]').forEach((warning) => {
+    const field = document.getElementById(warning.dataset.capslockFor);
+
+    if (! field) {
+        return;
+    }
+
+    const sync = (event) => {
+        if (typeof event.getModifierState !== 'function') {
+            return;
+        }
+
+        warning.toggleAttribute('hidden', ! event.getModifierState('CapsLock'));
+    };
+
+    field.addEventListener('keydown', sync);
+    field.addEventListener('keyup', sync);
+    field.addEventListener('blur', () => warning.toggleAttribute('hidden', true));
+});

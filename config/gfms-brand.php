@@ -281,6 +281,39 @@ return [
          */
         'primary' => '#E0B4B0',
         'primary_foreground' => '#161C19',
+
+        /*
+         * THE SEMANTIC PAIRS INVERT TOO, and leaving them out was the same bug
+         * as leaving primary out - it just took longer to spot because it is
+         * only wrong on four tokens rather than on every link.
+         *
+         * The light values are ink-on-paper: dark inks on pale tints. Carried
+         * unchanged onto a #0D110F page they become dark-on-dark. The worst was
+         * warning, #755006, an olive that measures 2.57:1 on the dark card: the
+         * dashboard's vaccination-compliance figure was rendering in a colour
+         * nobody could read, on the one screen a keeper opens every morning.
+         *
+         * So each ink lightens and each ground darkens, and every value here
+         * was measured rather than picked - BrandTokensAreMirroredTest re-measures
+         * them. The floor is the Console 7:1 on background, card AND muted,
+         * because these are dashboard text, not decoration.
+         *
+         * DESTRUCTIVE IS DELIBERATELY WARMER THAN PRIMARY. In light the two are
+         * separated by luminance (1.76:1, so Delete does not look like Save).
+         * In dark that axis is spent: anything dark enough to differ from
+         * #E0B4B0 in luminance drops under 7:1. So the separation moves to hue
+         * and chroma instead - #FFA88F is hue 13 at 0.44 saturation against
+         * primary's hue 5 at 0.21, which is coral against dusty rose.
+         */
+        'success' => '#6FD39B',          //  9.44:1 on card, 7.67:1 on muted
+        'success_bg' => '#182B21',       //  8.15:1 under its own ink
+        'warning' => '#E9C46A',          // 10.35:1 on card, 8.41:1 on muted
+        'warning_bg' => '#2E2716',       //  8.86:1 under its own ink
+        'destructive' => '#FFA88F',      //  9.26:1 on card, 7.52:1 on muted
+        'destructive_bg' => '#301B1A',   //  8.67:1 under its own ink
+        'destructive_foreground' => '#161C19',  // 9.26:1 on the destructive fill
+        'info' => '#AEBBEF',             //  9.19:1 on card, 7.46:1 on muted
+        'info_bg' => '#1E2336',          //  8.27:1 under its own ink
     ],
 
 ];
