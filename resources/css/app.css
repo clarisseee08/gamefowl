@@ -97,14 +97,48 @@
        Red carries this role rather than the green because it measures 8.74:1 on
        card against the green's 6.07:1, and link text must clear the Console
        7:1 floor. */
+    /* ------------------------------------------------------------------
+       THE INK RAMP. Neutrals only - no hue is introduced here.
+
+       Every step is a value this stylesheet already held, given a position on
+       a scale so that a surface, a rule and a caption stop being three
+       unrelated hex literals. The semantic names above still resolve to the
+       same colours and remain the ones views should reach for; this ramp
+       exists for the in-between steps that had no name at all.
+
+       50/100 = the two paper grounds. 200/300 = rule and input border.
+       400 = the strong rule. 700 = muted-foreground, measured at 7.40:1 and
+       therefore the LIGHTEST text the console surface may use. 900 = ink.
+
+       500 and 600 are mid-greys: legal on a caption over paper, never on the
+       console's 7:1 floor. ------------------------------------------------ */
+    --color-ink-50: #f7f8f6;
+    --color-ink-100: #f4f5f3;
+    --color-ink-200: #e4e6e2;
+    --color-ink-300: #dfe2dd;
+    --color-ink-400: #c7cbc5;
+    --color-ink-500: #9aa199;
+    --color-ink-600: #6e756f;
+    --color-ink-700: #4e5550;
+    --color-ink-800: #2e3531;
+    --color-ink-900: #161c19;
+    --color-ink-950: #0d110f;
+
+    /* The primary ramp, completed. Same hue throughout - these are tints and
+       shades of the existing #8b2626, not new colours. 500 is an explicit
+       alias for the base so a call site can say primary-500 and mean it. */
     --color-primary-50: #faf0ef;
     --color-primary-100: #f1dad8;
     --color-primary-200: #e0b4b0;
+    --color-primary-300: #cd7b76;
     --color-primary-400: #b5453f;
     --color-primary: #8b2626;
+    --color-primary-500: #8b2626;
     --color-primary-600: #74201f;
     --color-primary-700: #5c1a19;
+    --color-primary-800: #471414;
     --color-primary-900: #331010;
+    --color-primary-950: #1e0909;
     --color-primary-foreground: #ffffff;
 
     /* Brand — the farm's green. CHROME ONLY: sidebar, mark, top rail, auth
