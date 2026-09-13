@@ -143,7 +143,7 @@
                         wire:click="clearFilters"
                         @disabled(! $this->hasFilters())
                         class="btn-secondary w-full">
-                    Clear Filters
+                    Clear filters
                 </button>
             </div>
         </div>
@@ -174,7 +174,7 @@
 
             <div class="mt-6">
                 @if ($this->hasFilters())
-                    <button type="button" wire:click="clearFilters" class="btn-secondary">Clear Filters</button>
+                    <button type="button" wire:click="clearFilters" class="btn-secondary">Clear filters</button>
                 @elseif ($this->canCreate)
                     <a href="{{ route('mortality.create') }}" wire:navigate class="btn-primary">Record a Death</a>
                 @endif
