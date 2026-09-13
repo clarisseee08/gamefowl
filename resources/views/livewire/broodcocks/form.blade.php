@@ -1,6 +1,6 @@
 <div>
     <div class="mb-10">
-        <a href="{{ route('broodcocks.index') }}" class="text-sm font-medium text-primary hover:underline">
+        <a href="{{ route('broodcocks.index') }}" wire:navigate class="text-sm font-medium text-primary hover:underline">
             &larr; Back to broodcocks
         </a>
         <h1 class="mt-2 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-foreground">
@@ -327,7 +327,7 @@
         @endcan
 
         <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <a href="{{ $this->isEditing() ? route('broodcocks.show', $broodcock) : route('broodcocks.index') }}"
+            <a href="{{ $this->isEditing() ? route('broodcocks.show', $broodcock) : route('broodcocks.index') }}" wire:navigate
                class="btn-secondary">Cancel</a>
 
             <button type="submit" class="btn-primary" wire:loading.attr="disabled">

@@ -82,7 +82,7 @@
     @else
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6">
             @foreach ($this->birds as $bird)
-                <a href="{{ route('broodcocks.show', $bird) }}"
+                <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate
                    class="card card-interactive group overflow-hidden">
                     @if ($bird->primaryPhoto)
                         <x-photo-thumb :photo="$bird->primaryPhoto" :alt="'Photo of '.$bird->name"

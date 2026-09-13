@@ -2,7 +2,7 @@
 
 <div>
     <div class="mb-10">
-        <a href="{{ route('breeding.index') }}" class="text-sm font-medium text-primary hover:underline">
+        <a href="{{ route('breeding.index') }}" wire:navigate class="text-sm font-medium text-primary hover:underline">
             &larr; Back to breeding records
         </a>
 
@@ -20,7 +20,7 @@
             </div>
 
             @can('update', $breeding)
-                <a href="{{ route('breeding.edit', $breeding) }}" class="btn-secondary mt-4 sm:mt-0">Edit</a>
+                <a href="{{ route('breeding.edit', $breeding) }}" wire:navigate class="btn-secondary mt-4 sm:mt-0">Edit</a>
             @endcan
         </div>
     </div>
@@ -49,7 +49,7 @@
                 @foreach ([['Sire', $breeding->sire], ['Dam', $breeding->dam]] as [$label, $parent])
                     <div>
                         <p class="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{{ $label }}</p>
-                        <a href="{{ route('broodcocks.show', $parent) }}" class="text-sm font-medium text-primary hover:underline">
+                        <a href="{{ route('broodcocks.show', $parent) }}" wire:navigate class="text-sm font-medium text-primary hover:underline">
                             {{ $parent->name }} ({{ $parent->band_number ?? 'no band' }})
                         </a>
                         <p class="text-xs text-muted-foreground">{{ $parent->bloodline ?? 'Bloodline not recorded' }}</p>
@@ -164,7 +164,7 @@
                         @foreach ($this->offspring as $child)
                             <li class="flex items-center justify-between py-3">
                                 <div>
-                                    <a href="{{ route('broodcocks.show', $child) }}" class="text-sm font-medium text-primary hover:underline">
+                                    <a href="{{ route('broodcocks.show', $child) }}" wire:navigate class="text-sm font-medium text-primary hover:underline">
                                         {{ $child->name }}
                                     </a>
                                     <p class="text-xs text-muted-foreground">

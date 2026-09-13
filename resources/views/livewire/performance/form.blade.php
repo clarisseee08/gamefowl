@@ -2,7 +2,7 @@
      labels and their fields visually paired on a wide screen. --}}
 <div class="max-w-3xl">
     <div class="mb-8 border-b border-border pb-6">
-        <a href="{{ route('performance.index') }}"
+        <a href="{{ route('performance.index') }}" wire:navigate
            class="-mt-2 inline-flex min-h-11 items-center text-[13px] font-medium text-primary hover:underline">
             &larr; Back to performance records
         </a>
@@ -166,7 +166,7 @@
         @endif
 
         <div class="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:justify-end">
-            <a href="{{ route('performance.index') }}" class="btn-secondary">Cancel</a>
+            <a href="{{ route('performance.index') }}" wire:navigate class="btn-secondary">Cancel</a>
             <button type="submit" class="btn-primary" wire:loading.attr="disabled" wire:target="save">
                 <span wire:loading.remove wire:target="save">
                     {{ $this->isEditing() ? 'Save Changes' : 'Save Performance Record' }}

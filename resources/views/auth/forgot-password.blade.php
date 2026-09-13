@@ -32,7 +32,7 @@
 
         <button type="submit" class="btn-primary w-full">Email password reset link</button>
 
-        <a href="{{ route('login') }}" class="block text-center text-sm font-medium text-primary hover:underline">
+        <a href="{{ route('login') }}" wire:navigate class="block text-center text-sm font-medium text-primary hover:underline">
             Back to sign in
         </a>
     </form>

@@ -380,4 +380,56 @@ final class DesignSystemGuardTest extends TestCase
             .implode('
 ', array_unique($offenders)));
     }
+
+    /**
+     * An x-data expression must not contain a double quote.
+     *
+     * THIS ONE COST AN AFTERNOON. x-data is an HTML attribute delimited by
+     * double quotes, so the first `"` inside the expression ends the attribute.
+     * The browser gets a truncated fragment of JavaScript, Alpine reports
+     * "Invalid or unexpected token" against a wall of escaped JSON, and the
+     * component silently stops working - while the markup still looks correct
+     * in the editor and every server-side test still passes.
+     *
+     * It happened writing a querySelectorAll('[role="option"]') into the
+     * command palette. The fix is the unquoted form, [role=option], which is
+     * valid CSS for a bare identifier.
+     *
+     * The check models what the browser does rather than what the file means:
+     * take everything from x-data=" to the very next ", and see whether the
+     * braces balance. They only balance if nothing truncated it early.
+     */
+    public function test_no_alpine_expression_is_cut_short_by_a_double_quote(): void
+    {
+        $offenders = [];
+
+        foreach ($this->files('resources/views', '.blade.php') as $file) {
+            $source = file_get_contents($file);
+
+            if ($source === false) {
+                continue;
+            }
+
+            // Exactly what the HTML parser sees: up to the NEXT double quote.
+            preg_match_all('/x-data="([^"]*)"/s', $source, $matches);
+
+            foreach ($matches[1] as $expression) {
+                if (! str_contains($expression, '{')) {
+                    continue;   // a bare object name, nothing to balance
+                }
+
+                if (substr_count($expression, '{') !== substr_count($expression, '}')) {
+                    $offenders[] = $this->rel($file);
+                }
+            }
+        }
+
+        $this->assertSame([], array_unique($offenders),
+            'An x-data expression is truncated by a double quote inside it. Alpine will fail '
+            .'at runtime with "Invalid or unexpected token" and the component will do nothing. '
+            .'Use single quotes, or an unquoted CSS attribute selector:
+'
+            .implode('
+', array_unique($offenders)));
+    }
 }

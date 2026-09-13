@@ -17,7 +17,7 @@
                 Three generations of ancestors, built from the sire and dam recorded on each bird.
             </p>
         </div>
-        <a href="{{ route('broodcocks.show', $broodcock) }}" class="btn-secondary mt-4 sm:mt-0">
+        <a href="{{ route('broodcocks.show', $broodcock) }}" wire:navigate class="btn-secondary mt-4 sm:mt-0">
             Back to bird
         </a>
     </div>
@@ -40,7 +40,7 @@
             <p class="mt-3 text-sm text-muted-foreground">
                 No parents have been recorded for this bird yet.
                 @can('update', $broodcock)
-                    <a href="{{ route('broodcocks.edit', $broodcock) }}" class="font-medium text-primary hover:underline">
+                    <a href="{{ route('broodcocks.edit', $broodcock) }}" wire:navigate class="font-medium text-primary hover:underline">
                         Edit this bird
                     </a>
                     to add its sire and dam.
@@ -74,7 +74,7 @@
                                 @foreach ($pair as $ancestor)
                                     <div @class(['ped-node' => $index > 0])>
                                         @if ($ancestor)
-                                            <a href="{{ route('broodcocks.show', $ancestor) }}"
+                                            <a href="{{ route('broodcocks.show', $ancestor) }}" wire:navigate
                                                @class([
                                                    'block rounded-[4px] border p-3 transition hover:border-muted-foreground',
                                                    'border-border bg-muted' => $index === 0,

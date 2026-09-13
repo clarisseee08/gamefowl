@@ -21,7 +21,7 @@
         </div>
 
         @can('create', App\Models\PerformanceRecord::class)
-            <a href="{{ route('performance.create') }}" class="btn-primary mt-5 w-full shrink-0 sm:mt-0 sm:w-auto">
+            <a href="{{ route('performance.create') }}" wire:navigate class="btn-primary mt-5 w-full shrink-0 sm:mt-0 sm:w-auto">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                 </svg>
@@ -108,7 +108,7 @@
                     appear here and on the bird's own timeline.
                 </p>
                 @can('create', App\Models\PerformanceRecord::class)
-                    <a href="{{ route('performance.create') }}" class="btn-primary mt-6">
+                    <a href="{{ route('performance.create') }}" wire:navigate class="btn-primary mt-6">
                         Add your first performance record
                     </a>
                 @endcan
@@ -175,7 +175,7 @@
 
                     <div class="mt-4 flex flex-wrap gap-2">
                         @can('update', $record)
-                            <a href="{{ route('performance.edit', $record) }}" class="btn-secondary flex-1">Edit</a>
+                            <a href="{{ route('performance.edit', $record) }}" wire:navigate class="btn-secondary flex-1">Edit</a>
                         @endcan
                         @can('delete', $record)
                             <button type="button" wire:click="confirmDelete({{ $record->id }})" class="btn-secondary text-destructive hover:border-destructive flex-1">
@@ -263,7 +263,7 @@
                                      reading it threw under Model::shouldBeStrict(). --}}
                                 <td class="whitespace-nowrap px-3 py-3 text-[15px] font-medium text-foreground">
                                     @if ($record->broodcock !== null)
-                                        <a href="{{ route('broodcocks.show', $record->broodcock) }}"
+                                        <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate
                                            class="inline-flex items-center gap-2 text-primary hover:underline">
                                             <x-band-tag :bloodline="$record->broodcock->bloodline"
                                                         :band="$record->broodcock->band_number" size="xs" />
@@ -322,7 +322,7 @@
                                         @can('update', $record)
                                             {{-- min-h-11 by hand: the base rule only sizes
                                                  buttons, and this action is a link. --}}
-                                            <a href="{{ route('performance.edit', $record) }}"
+                                            <a href="{{ route('performance.edit', $record) }}" wire:navigate
                                                class="inline-flex min-h-11 items-center font-medium text-primary hover:underline">
                                                 Edit<span class="sr-only">, {{ $record->event_type->label() }} record</span>
                                             </a>

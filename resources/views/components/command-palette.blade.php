@@ -75,8 +75,19 @@
             this.active = (this.active + delta + n) % n;
         },
         go() {
-            const target = this.results[this.active];
-            if (target) window.location = target.url;
+            // Click the anchor rather than assigning window.location. The anchor
+            // carries wire:navigate, so Enter and a mouse click take the same
+            // client-side path instead of one of them reloading the document.
+            //
+            // $root, NOT $el. Alpine resolves $el to the element the expression
+            // is running on, and this method is invoked from @keydown.enter on
+            // the <input> - so $el is the input, and the search for results
+            // inside it silently finds nothing. $root is the x-data element.
+            //
+            // No double quotes in this selector either: x-data is an HTML
+            // attribute, so the first double quote inside it ends the attribute and
+            // Alpine receives truncated JavaScript. [role=option] is the unquoted form.
+            this.$root.querySelectorAll('[role=option]')[this.active]?.click();
         },
     }"
     x-on:keydown.window.prevent.cmd.k="show()"
@@ -119,7 +130,7 @@
                 <ul class="max-h-[50vh] overflow-y-auto py-1.5" role="listbox">
                     <template x-for="(item, i) in results" :key="item.url + i">
                         <li>
-                            <a :href="item.url"
+                            <a :href="item.url" wire:navigate
                                @mouseenter="active = i"
                                :class="active === i ? 'bg-primary-50 text-primary-700' : 'text-foreground'"
                                class="flex min-h-11 items-center gap-3 px-4 text-[14px]"

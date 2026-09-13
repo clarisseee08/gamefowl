@@ -25,7 +25,7 @@
 
     <header class="sticky top-0 z-30 border-b border-border bg-card">
         <div class="flex h-14 items-center gap-4 px-4 sm:px-6 lg:px-8">
-            <a href="{{ route('catalog.index') }}"
+            <a href="{{ route('catalog.index') }}" wire:navigate
                class="inline-flex min-h-11 shrink-0 items-center gap-2.5 text-[15px] font-semibold text-foreground">
 <x-brand-mark :size="30" />
                 <span class="truncate">{{ config('gfms.farm.name') }}</span>
@@ -36,7 +36,7 @@
             @if ($user?->isInternal())
                 {{-- The way back to the console, shown only to staff. A visitor
                      never sees a door they cannot open. --}}
-                <a href="{{ route('dashboard') }}"
+                <a href="{{ route('dashboard') }}" wire:navigate
                    class="btn-secondary h-11 min-h-0 px-3 text-[14px]">
                     Console
                 </a>
@@ -55,7 +55,7 @@
                     <button type="submit" class="btn-quiet h-11 min-h-0 px-3 text-[14px]">Sign out</button>
                 </form>
             @else
-                <a href="{{ route('login') }}" class="btn-quiet h-11 min-h-0 px-3 text-[14px]">Sign in</a>
+                <a href="{{ route('login') }}" wire:navigate class="btn-quiet h-11 min-h-0 px-3 text-[14px]">Sign in</a>
             @endauth
         </div>
     </header>
