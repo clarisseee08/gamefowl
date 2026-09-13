@@ -18,8 +18,20 @@
 <div>
     {{-- Header --}}
     <div class="mb-10">
-        <a href="{{ route('broodcocks.index') }}" wire:navigate class="text-sm font-medium text-primary hover:underline">
-            &larr; Back to broodcocks
+        {{-- WHERE BACK GOES DEPENDS ON WHO IS LOOKING, because this page is
+             public and the broodcock index is not.
+
+             It pointed at broodcocks.index for everyone. A customer reaching a
+             bird from the catalogue or the front page therefore met a link
+             that bounced them to a login form - the exact thing the sidebar
+             comment warns about, that a visitor should never see a door they
+             cannot open. Staff keep the console index; everyone else goes back
+             to the catalogue, which is where they actually came from. --}}
+        @php $backToConsole = auth()->user()?->isInternal() ?? false; @endphp
+
+        <a href="{{ $backToConsole ? route('broodcocks.index') : route('catalog.index') }}" wire:navigate
+           class="text-sm font-medium text-primary hover:underline">
+            &larr; {{ $backToConsole ? 'Back to broodcocks' : 'Back to the catalogue' }}
         </a>
 
         <div class="mt-3 sm:flex sm:items-start sm:justify-between">

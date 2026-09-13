@@ -1,6 +1,6 @@
 # 00 — UI audit (read-only inventory)
 
-Audited 2026-09-14, branch `redesign/ui-system`. Facts only, no proposals.
+Audited 2026-09-14, branch `redesign/ui-system`. Facts only, no proposals;
 `file:line` on every claim. No application file was edited.
 
 > **READ FIRST.** `.claude/skills/gamefowl-design-system/SKILL.md` is declared the
@@ -87,8 +87,8 @@ above the auth group, `/broodcocks/create` resolves as a bird with id `"create"`
 | `/design` `:204` | `DesignGalleryController` | `design/gallery.blade.php` (321) | `layouts::app` | **the component reference** |
 | `/diagnostics` `:217` | `DiagnosticsController` | `diagnostics.blade.php` | `layouts::app` | low — owner only |
 
-**Pens have no screens, deliberately** — `web.php:174-189` records the removal
-and its consequence. Do not restore them during a reskin.
+**Pens have no screens, deliberately** — `web.php:174-189` records the removal and
+its consequence; do not restore them during a reskin.
 **Nested components, no route of their own:** `Appointments\RequestForm` (mounted
 `landing/index.blade.php:107`) · `Catalog\Browse` (`landing/index.blade.php:86`
 and `/catalog`) · `Dashboard\Overview` · `Health\BroodcockHealthHistory` ·
@@ -196,8 +196,7 @@ the generated files.
 ---
 
 ## 6. Existing motion
-
-### Token set (`app.css:202-230`)
+### Motion token set (`app.css:202-230`)
 Durations `--dur-instant: 100ms` `:217` · `--dur-fast: 150ms` · `--dur-base:
 200ms` · `--dur-slow: 300ms` `:220`. Easings `--ease-out
 cubic-bezier(0.16,1,0.3,1)` `:222` · `--ease-in cubic-bezier(0.4,0,1,1)` ·
@@ -336,11 +335,11 @@ Its palette (`:105-155`) is the field-ledger set: `--color-paper`, `--color-ink`
 `--color-action #16324F`, bands `crimson`/`forest`/`slate`. SKILL.md:12 sends
 every agent to it. Anyone obeying it writes offender #1 again.
 
-**4. `app.css:671` points at a whitelist that does not exist.** The new
-primitives block says each rule "implements exactly one row of the Motion
-whitelist in `docs/redesign/01-system.md`" and calls it "the contract".
-`docs/redesign/` contains only this audit. 26 new classes are therefore governed
-by a document nobody can read, and none is used by a view yet.
+**4. `app.css:671` points at a whitelist that does not exist.** The new primitives
+block says each rule "implements exactly one row of the Motion whitelist in
+`docs/redesign/01-system.md`" and calls it "the contract". `docs/redesign/`
+contains only this audit — 26 new classes governed by an unreadable document,
+none used by a view yet.
 
 **5. Radius tokens exist and are mostly ignored.** `--radius-sm: 6px`,
 `--radius-md: 10px`, `--radius-lg: 14px` (`app.css:192-194`). Views use
@@ -380,9 +379,8 @@ Six SVGs each in `performance/index`, `performance/broodcock-timeline`,
 icons are raw path strings in a PHP array at `app-sidebar.blade.php:15-46`.
 
 **10. Shipped comments describing code that is no longer there.**
-`landing/index.blade.php:92-94` — "The form **arrives here in the next step**.
-Until it does, this section carries the farm's own contact details" — the form is
-mounted 15 lines below at `:107`. `partials/head-meta.blade.php:31` — "The
+`landing/index.blade.php:92-94` — "The form **arrives here in the next step**" —
+it is mounted 15 lines below at `:107`. `partials/head-meta.blade.php:31` — "The
 **SVG** is the mark itself" — there is no SVG favicon; the set is ICO + PNG
 (`:33-35`). `broodcocks/pedigree.blade.php:91-94` explains an `ink-80`/`ink-48`
 choice using tokens that do not exist. `users/index.blade.php:26` describes a
@@ -391,13 +389,12 @@ choice using tokens that do not exist. `users/index.blade.php:26` describes a
 ### Below the top ten
 - `photo-thumb.blade.php:37` uses `text-[10px]`; SKILL.md:127 bans anything under
   11px, and 3 views consume it. Otherwise clean: **zero** `font-bold`,
-  `backdrop-blur`, gradients, or stock palette classes anywhere.
+  `backdrop-blur`, gradient, or stock palette class anywhere in the tree.
 - `brand-mark.blade.php:37` sets `style="width:…;height:…"`, duplicating the
   `width`/`height` attributes two lines above.
 - `app-topbar.blade.php:17-28` `$sectionLabels` has no key for `appointments` or
   `profile`; the sidebar calls that section "Visits" (`app-sidebar.blade.php:35`).
-  Latent only — `$actionLabels` has no `index` entry (`:30-36`), so no breadcrumb
-  renders there.
+  Latent — `$actionLabels` has no `index` entry (`:30-36`), so none renders there.
 - The 15 new ink/primary ramp steps are in `app.css` but **not** in
   `config/gfms-brand.php`. `BrandTokensAreMirroredTest` asserts config→css, so it
   will not flag the one-way addition; the PDF templates cannot use them.

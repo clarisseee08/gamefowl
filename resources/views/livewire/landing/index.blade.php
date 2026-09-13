@@ -203,7 +203,7 @@
                         @endforeach
                     </ul>
 
-                    <a href="#stock" wire:navigate
+                    <a href="#stock"
                        class="mt-4 inline-flex min-h-11 items-center text-[15px] font-medium text-primary hover:underline">
                         See all {{ $this->stockCount }} birds
                     </a>

@@ -35,3 +35,30 @@
 <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 <meta property="og:image" content="{{ asset('images/brand/logo-512.png') }}">
 <meta name="theme-color" content="{{ config('gfms-brand.brand_deep') }}">
+
+{{--
+    THEME, APPLIED BEFORE THE FIRST PAINT.
+
+    This is inline and synchronous on purpose. Any deferred script - a module,
+    a bundle, Alpine - runs after the browser has already painted, so a visitor
+    who chose dark would watch the page flash white and then correct itself on
+    every single navigation. That flash is the entire reason this is not in
+    app.js.
+
+    It writes nothing when no choice has been stored, which leaves the CSS
+    media query in charge. Three states, and the absence of the attribute is
+    one of them: follow the operating system.
+
+    try/catch because localStorage throws outright in a private window and in
+    some embedded webviews, and a theme preference is not worth a blank page.
+--}}
+<script>
+    (function () {
+        try {
+            var choice = localStorage.getItem('gfms-theme');
+            if (choice === 'dark' || choice === 'light') {
+                document.documentElement.setAttribute('data-theme', choice);
+            }
+        } catch (e) {}
+    })();
+</script>
