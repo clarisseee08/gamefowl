@@ -22,6 +22,26 @@ mkdir -p storage/framework/cache/data \
 chown -R www-data:www-data storage bootstrap/cache
 
 # ---------------------------------------------------------------
+# 2b. nginx's temp directories.
+#
+#     Also done in the Dockerfile; repeated here because getting it
+#     wrong costs every file upload on the site and the symptom -
+#     a 500 from an endpoint that never reaches PHP - points
+#     nowhere near nginx. Cheap to assert, expensive to rediscover.
+#
+#     nginx.conf runs workers as www-data; Alpine's package owns
+#     /var/lib/nginx as `nginx`. A POST body too large for
+#     client_body_buffer_size is spooled to disk there first, so
+#     every photo upload hits it.
+# ---------------------------------------------------------------
+mkdir -p /var/lib/nginx/tmp/client_body \
+         /var/lib/nginx/tmp/proxy \
+         /var/lib/nginx/tmp/fastcgi \
+         /var/lib/nginx/tmp/uwsgi \
+         /var/lib/nginx/tmp/scgi
+chown -R www-data:www-data /var/lib/nginx
+
+# ---------------------------------------------------------------
 # 3. Warm caches at RUNTIME, not build time.
 #
 #    config:cache freezes the values env() returns at the moment it
