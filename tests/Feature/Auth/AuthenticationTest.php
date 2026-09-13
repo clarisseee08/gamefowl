@@ -25,6 +25,58 @@ final class AuthenticationTest extends TestCase
             ->assertSee('Sign in to your account');
     }
 
+    /**
+     * The three controls the sign-in screen grew, asserted as markup because
+     * each one is inert without the hook the script looks for.
+     *
+     * All three are driven by vanilla JS reading a data attribute, and that is
+     * not a style preference: Alpine ships inside Livewire's bundle and the
+     * guest layout has no Livewire component on it, so window.Alpine is
+     * undefined on every auth page. An x-data here binds nothing, throws
+     * nothing, and reports nothing - which is exactly how the theme toggle came
+     * to be missing from this screen in the first place.
+     *
+     * So this asserts the contract between the markup and app.js. A rename on
+     * either side fails here rather than in someone's hands.
+     */
+    public function test_the_login_screen_ships_its_controls(): void
+    {
+        $response = $this->get('/login')->assertOk();
+
+        // Show / hide, wired to the password field by id.
+        $response->assertSee('data-reveals="password"', false)
+            ->assertSee('aria-label="Show password"', false);
+
+        // Caps Lock, present in the DOM from the start so the live region is
+        // announced when it is un-hidden rather than inserted.
+        $response->assertSee('data-capslock-for="password"', false)
+            ->assertSee('Caps Lock is on.');
+
+        // Light / dark, which every other shell had and this one did not.
+        $response->assertSee('data-theme-toggle', false);
+    }
+
+    /**
+     * A failed sign-in drains the leg band, and it is rendered drained by PHP.
+     *
+     * The first attempt at this bound the class with Alpine and did nothing at
+     * all. Asserting the server-rendered class is what makes the difference
+     * visible to the suite: without JS the band stays drained, which is still
+     * a true statement about what just happened.
+     */
+    public function test_a_failed_sign_in_drains_the_leg_band(): void
+    {
+        $this->get('/login')->assertOk()->assertDontSee('leg-band-drained', false);
+
+        $this->followingRedirects()
+            ->from('/login')
+            ->post('/login', [
+                'email' => 'nobody@example.invalid',
+                'password' => 'not-the-password',
+            ])
+            ->assertSee('leg-band-drained', false);
+    }
+
     public function test_a_user_can_sign_in_with_correct_credentials(): void
     {
         $user = User::factory()->staff()->create();
