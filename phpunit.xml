@@ -26,6 +26,21 @@
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="DB_URL" value=""/>
+        <!--
+            Pinned so the suite can never reach real photo storage.
+
+            Without this the tests inherit GFMS_PHOTO_DISK from .env, and .env
+            now points at the live Supabase bucket - so any test that touches a
+            photo without calling Storage::fake() would read from, or write to,
+            the farm's production files. PublicCatalogueTest is exactly such a
+            test: it builds photo rows and fetches them over HTTP.
+
+            'public' is a local directory, and Storage::fake() swaps even that
+            for a temporary one. Two layers, because the outer one is the only
+            one that holds when somebody forgets the inner.
+        -->
+        <env name="GFMS_PHOTO_DISK" value="public"/>
+        <env name="FILESYSTEM_DISK" value="local"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
