@@ -41,7 +41,7 @@
          farm.
     --------------------------------------------------------------- --}}
     <section class="border-b border-border pb-12 pt-6 sm:pb-16 sm:pt-10">
-        <div class="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-12">
+        <div class="grid gap-8 lg:grid-cols-2 lg:gap-12">
             <div>
                 <p class="text-[13px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">
                     {{ $farm['address'] ?: 'Gamefowl breeding farm' }}
