@@ -14,14 +14,14 @@ use App\Models\User;
  */
 final class HealthRecordPolicy
 {
-    public function viewAny(User $user): bool
+    public function viewAny(?User $user): bool
     {
-        return $user->is_active;
+        return $user === null || $user->is_active;
     }
 
-    public function view(User $user, HealthRecord $record): bool
+    public function view(?User $user, HealthRecord $record): bool
     {
-        return $user->is_active;
+        return $user === null || $user->is_active;
     }
 
     public function create(User $user): bool
@@ -56,8 +56,8 @@ final class HealthRecordPolicy
     }
 
     /** Internal remarks are never shown to customers. */
-    public function viewRemarks(User $user, HealthRecord $record): bool
+    public function viewRemarks(?User $user, HealthRecord $record): bool
     {
-        return $user->is_active && $user->isInternal();
+        return $user !== null && $user->is_active && $user->isInternal();
     }
 }

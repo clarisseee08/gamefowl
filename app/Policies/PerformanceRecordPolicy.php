@@ -13,14 +13,14 @@ use App\Models\User;
  */
 final class PerformanceRecordPolicy
 {
-    public function viewAny(User $user): bool
+    public function viewAny(?User $user): bool
     {
-        return $user->is_active;
+        return $user === null || $user->is_active;
     }
 
-    public function view(User $user, PerformanceRecord $record): bool
+    public function view(?User $user, PerformanceRecord $record): bool
     {
-        return $user->is_active;
+        return $user === null || $user->is_active;
     }
 
     public function create(User $user): bool
@@ -48,8 +48,8 @@ final class PerformanceRecordPolicy
         return false;
     }
 
-    public function viewRemarks(User $user, PerformanceRecord $record): bool
+    public function viewRemarks(?User $user, PerformanceRecord $record): bool
     {
-        return $user->is_active && $user->isInternal();
+        return $user !== null && $user->is_active && $user->isInternal();
     }
 }
