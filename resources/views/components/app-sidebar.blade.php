@@ -188,15 +188,26 @@
             </div>
         </a>
 
-        <form method="POST" action="{{ route('logout') }}" x-show="! collapsed" x-cloak class="mt-1">
-                @csrf
-                <button type="submit"
-                        class="inline-flex h-9 w-9 items-center justify-center rounded-[var(--radius-sm)] text-brand-muted-fg hover:bg-brand-deeper hover:text-brand-foreground"
-                        aria-label="Sign out" title="Sign out">
-                    <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"/>
-                    </svg>
+        {{-- Sign out is NOT hidden on the collapsed rail.
+
+             It used to be inside x-show="! collapsed", which meant collapsing
+             the sidebar removed the only way to sign out anywhere in the
+             console - the top bar carries no account menu. On a shared farm
+             phone that is not a cosmetic problem: the next person to pick it up
+             is signed in as whoever used it last, and the sidebar state
+             persists in localStorage, so it stayed broken until someone
+             happened to expand it again. --}}
+        <form method="POST" action="{{ route('logout') }}" class="mt-1">
+            @csrf
+            <button type="submit"
+                    class="inline-flex h-9 items-center gap-2.5 rounded-[var(--radius-sm)] px-2 text-[13px] text-brand-muted-fg hover:bg-brand-deeper hover:text-brand-foreground"
+                    :class="collapsed ? 'w-full justify-center px-0' : ''"
+                    aria-label="Sign out" title="Sign out">
+                <svg class="h-[18px] w-[18px] shrink-0" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"/>
+                </svg>
+                <span x-show="! collapsed" x-cloak>Sign out</span>
             </button>
         </form>
     </div>

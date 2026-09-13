@@ -99,6 +99,41 @@ services:
       # SUPABASE_S3_REGION and SUPABASE_S3_BUCKET already default correctly
       # (ap-northeast-1 / gfms-laravel) in config/filesystems.php.
 
+      # ---- Mail ----
+      #
+      # WITHOUT THESE THE PASSWORD RESET FLOW IS A NO-OP. Laravel's default
+      # MAIL_MAILER is `log`, so an unset mailer does not disable the feature -
+      # Fortify still renders "Forgot your password?", still accepts the
+      # address, still shows "We have emailed your password reset link", and
+      # writes the link to the container's stderr. The user waits for an email
+      # that was never sent.
+      #
+      # ANY SMTP PROVIDER WORKS. Resend and Brevo both have free tiers large
+      # enough for a farm of this size; a Gmail account with an App Password
+      # also works but is rate-limited and easy to get locked out of.
+      #
+      # Whichever you use, the FROM address must be at a domain that provider
+      # has verified. An unverified sender is accepted by the API and then
+      # silently dropped, which looks identical to this misconfiguration.
+      - key: MAIL_MAILER
+        value: smtp
+      - key: MAIL_HOST
+        sync: false           # e.g. smtp.resend.com
+      - key: MAIL_PORT
+        value: "587"
+      # STARTTLS on 587. Use "smtps" with MAIL_PORT 465 if your provider wants
+      # implicit TLS instead; the two must agree or the connection just hangs.
+      - key: MAIL_SCHEME
+        value: smtp
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false           # an API key or App Password, never a login password
+      - key: MAIL_FROM_ADDRESS
+        sync: false           # must be at the domain verified with the provider
+      - key: MAIL_FROM_NAME
+        value: "SSGuad Game Farm"
+
       # Only needed when a NEW migration is shipped. The shared database is
       # already migrated, so this stays "false" for the first deploy too.
       # Set it to "true", deploy, confirm, then set it straight back.
