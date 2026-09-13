@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Broodcocks;
 
+use App\Actions\Broodcocks\ResolveExternalParent;
 use App\Actions\Photos\StorePhoto;
 use App\Enums\BroodcockClass;
 use App\Enums\BroodcockStatus;
@@ -15,6 +16,7 @@ use App\Models\BroodcockPhoto;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -75,6 +77,31 @@ final class Form extends Component
 
     public ?string $dam_id = null;
 
+    /*
+     * A parent that is not on the list.
+     *
+     * The dropdowns can only ever offer birds already on record, which left no
+     * way to enter a bird the farm does not own - bought in already mated,
+     * borrowed for a season, or simply never registered. The keeper's only
+     * options were to leave the pedigree blank or to invent a farm bird.
+     *
+     * Ticking the box swaps the dropdown for a name field. The name becomes a
+     * REAL broodcock row flagged is_external, exactly as the breeding form
+     * already does, because sire_id and dam_id are foreign keys: a free-text
+     * name would leave the id NULL and cut the family tree off above that bird.
+     */
+    public bool $sire_is_external = false;
+
+    public ?string $sire_external_name = null;
+
+    public ?string $sire_external_bloodline = null;
+
+    public bool $dam_is_external = false;
+
+    public ?string $dam_external_name = null;
+
+    public ?string $dam_external_bloodline = null;
+
     public ?string $notes = null;
 
     public function mount(?Broodcock $broodcock = null): void
@@ -129,7 +156,11 @@ final class Form extends Component
         // GFMS_PHOTO_MAX_KB entirely, and, lacking the `mimes` rule the
         // uploader applies, accepted SVG and GIF that the uploader on the very
         // next screen rejects. One upload path, one set of rules.
-        return StoreBroodcockRequest::rulesFor($this->broodcock) + [
+        return StoreBroodcockRequest::rulesFor(
+            $this->broodcock,
+            $this->sire_is_external,
+            $this->dam_is_external,
+        ) + [
             'for_sale' => ['boolean'],
             'photos' => StoreBroodcockPhotoRequest::optionalPhotoBagRules(),
             'photos.*' => StoreBroodcockPhotoRequest::singlePhotoRules(),
@@ -176,10 +207,12 @@ final class Form extends Component
             }
         }
 
-        // A single-table write, but wrapped anyway: the activity-log entry is
-        // written by an Eloquent event in the same request, and the two should
-        // succeed or fail together.
+        // Two tables now, when a parent was typed in by hand: the outside bird
+        // is created inside the SAME transaction as the record that points at
+        // it, so a failed save never leaves an orphan bird behind.
         $saved = DB::transaction(function () use ($data): Broodcock {
+            $data = $this->resolveHandEnteredParents($data);
+
             if ($this->isEditing()) {
                 $this->broodcock->update($data);
 
@@ -196,6 +229,56 @@ final class Form extends Component
             : "{$saved->name} has been added to the farm records.");
 
         $this->redirectRoute('broodcocks.show', $saved, navigate: true);
+    }
+
+    /**
+     * Turns a hand-typed parent name into a real broodcock row and swaps its id
+     * into the data being written.
+     *
+     * Also strips the six form-only keys. They are validated with the rest of
+     * the form but none of them is a column on `broodcocks`, and passing one
+     * through hits a MassAssignmentException.
+     *
+     * THE LOOP CHECK RUNS AGAIN HERE, and it is not redundant. The validation
+     * rule could not check it: when the box is ticked there is no id yet, only
+     * a name. Usually the resolved bird is brand new and harmless - but
+     * firstOrCreate matches on name and sex, so it can return an EXISTING
+     * outside bird, and nothing stops a keeper having since given that bird
+     * parents of its own. Without this, the one path that skips the rule is
+     * also the one path that can reach an established bird.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function resolveHandEnteredParents(array $data): array
+    {
+        $resolver = app(ResolveExternalParent::class);
+
+        foreach ([
+            ['sire', Sex::Male, $this->sire_is_external, $this->sire_external_name, $this->sire_external_bloodline],
+            ['dam', Sex::Female, $this->dam_is_external, $this->dam_external_name, $this->dam_external_bloodline],
+        ] as [$role, $sex, $isExternal, $name, $bloodline]) {
+            if ($isExternal && filled($name)) {
+                $parent = $resolver->handle($sex, (string) $name, $bloodline);
+
+                if ($this->isEditing()
+                    && StoreBroodcockRequest::isSelfOrDescendedFrom($parent->id, (int) $this->broodcock->id)) {
+                    throw ValidationException::withMessages([
+                        "{$role}_external_name" => "That bird is descended from this one, so it cannot also be its {$role}.",
+                    ]);
+                }
+
+                $data["{$role}_id"] = $parent->id;
+            }
+        }
+
+        unset(
+            $data['sire_is_external'], $data['dam_is_external'],
+            $data['sire_external_name'], $data['dam_external_name'],
+            $data['sire_external_bloodline'], $data['dam_external_bloodline'],
+        );
+
+        return $data;
     }
 
     /**

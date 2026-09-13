@@ -240,6 +240,25 @@ The short version:
 
 ## Things that changed recently and are easy to get wrong from memory
 
+- **The catalogue and bird pages are PUBLIC.** No account needed for
+  `/catalog`, `/broodcocks/{id}` and `/broodcocks/{id}/pedigree`. Everything
+  else still requires `auth`. The rule: **a guest is treated as the equivalent
+  of an active customer** — the read side of the policies takes `?User $user`,
+  and Laravel will not call a policy method for a guest unless the parameter is
+  nullable. Views already hid internal fields from customers (`$canSeeInternal`),
+  so this changed who can reach a screen, not what it renders.
+- **A guest only sees birds the catalogue would list** —
+  `Broodcock::isPubliclyVisible()` (`! is_external && status->isOnFarm()`). Ids
+  in URLs are guessable; without it, `/broodcocks/31` shows the public a dead
+  bird. `PublicCatalogueTest` pins that this stays in step with the catalogue's
+  own filter.
+- **A parent can be typed in by hand** on the broodcock form as well as the
+  breeding form, via `ResolveExternalParent`. A typed name becomes a real
+  `is_external` broodcock row — never a free-text column, because `sire_id`/
+  `dam_id` are foreign keys and a name would cut the family tree off above it.
+- **`BroodcockStatus::onFarmValues()`** is the one source for the on-farm status
+  list. It used to be hand-written in `scopeOnFarm` and the dashboard.
+
 - **Pens have no screens.** The CRUD was removed; pens remain as data
   (`broodcocks.pen_id`, the `Pen` model, the report column, the pen selector when
   registering a hatch). New pens come from `PenSeeder`, not the UI. The full
@@ -272,7 +291,7 @@ The short version:
 
 ## Testing
 
-- `php artisan test` must stay green. 550 tests at last count — treat that as a
+- `php artisan test` must stay green. 593 tests at last count — treat that as a
   floor, not a target, and re-check it rather than trusting this line.
 - CI runs the suite, `pint --test` and `npm run build` on every push to `main`
   and every PR (`.github/workflows/ci.yml`). Actions minutes are metered on this
