@@ -11,26 +11,26 @@ use Tests\TestCase;
 /**
  * Smoke test for the application entry point.
  *
- * "/" used to redirect everyone to the dashboard, on the reasoning that this
- * system had no anonymous content. It has anonymous content now: the catalogue
- * is the farm's public advertisement, so the first thing the site says to a
- * member of the public is the stock, not a login form.
+ * "/" has been three things. It redirected everyone to the dashboard, on the
+ * reasoning that the system had no anonymous content. Then it redirected the
+ * public to the catalogue, once the catalogue became the farm's advertisement.
+ * It is now a page in its own right: a redirect is a fine answer to "where
+ * should this person go", but it is a poor front door, and a visitor arriving
+ * at a grid of birds was never told whose farm it was or how to reach it.
  *
- * Staff still land on the dashboard, because that is where their working day
- * starts. The route reads the role rather than picking one and being wrong for
+ * Staff still go to the dashboard, because that is where their working day
+ * starts. The page reads the role rather than picking one and being wrong for
  * half the people who open it.
  */
 final class ExampleTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_the_root_url_sends_a_visitor_to_the_catalogue(): void
+    public function test_the_root_url_gives_a_visitor_the_farms_front_page(): void
     {
-        $this->get('/')->assertRedirect(route('catalog.index'));
-
-        $this->followingRedirects()
-            ->get('/')
+        $this->get('/')
             ->assertOk()
+            ->assertSee(config('gfms.farm.name'))
             // No login wall, and the shop-window shell rather than the console.
             ->assertSee('Sign in');
     }
