@@ -18,7 +18,7 @@
 <div>
     {{-- Header --}}
     <div class="mb-10">
-        <a href="{{ route('broodcocks.index') }}" class="text-sm font-medium text-primary hover:underline">
+        <a href="{{ route('broodcocks.index') }}" wire:navigate class="text-sm font-medium text-primary hover:underline">
             &larr; Back to broodcocks
         </a>
 
@@ -54,10 +54,10 @@
             </div>
 
             <div class="mt-4 flex flex-wrap gap-2 sm:mt-0">
-                <a href="{{ route('broodcocks.pedigree', $bird) }}" class="btn-secondary">Family Tree</a>
+                <a href="{{ route('broodcocks.pedigree', $bird) }}" wire:navigate class="btn-secondary">Family Tree</a>
 
                 @can('update', $bird)
-                    <a href="{{ route('broodcocks.edit', $bird) }}" class="btn-secondary">Edit</a>
+                    <a href="{{ route('broodcocks.edit', $bird) }}" wire:navigate class="btn-secondary">Edit</a>
                 @endcan
 
                 @can('delete', $bird)
@@ -162,7 +162,7 @@
                             <div>
                                 <p class="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{{ $label }}</p>
                                 @if ($parent)
-                                    <a href="{{ route('broodcocks.show', $parent) }}" class="text-sm font-medium text-primary hover:underline">
+                                    <a href="{{ route('broodcocks.show', $parent) }}" wire:navigate class="text-sm font-medium text-primary hover:underline">
                                         {{ $parent->name }} ({{ $parent->displayBand() }})
                                     </a>
                                 @else
@@ -171,7 +171,7 @@
                             </div>
                         @endforeach
                     </div>
-                    <a href="{{ route('broodcocks.pedigree', $bird) }}" class="btn-secondary mt-4 w-full">
+                    <a href="{{ route('broodcocks.pedigree', $bird) }}" wire:navigate class="btn-secondary mt-4 w-full">
                         View full family tree
                     </a>
                 </div>
@@ -256,7 +256,7 @@
                         @foreach ($this->offspring as $child)
                             <tr class="group row-hover">
                                 <td class="px-6 py-4 text-sm font-medium">
-                                    <a href="{{ route('broodcocks.show', $child) }}" class="text-primary hover:underline">
+                                    <a href="{{ route('broodcocks.show', $child) }}" wire:navigate class="text-primary hover:underline">
                                         {{ $child->displayBand() }}
                                     </a>
                                 </td>

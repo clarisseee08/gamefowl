@@ -35,7 +35,7 @@
         </div>
 
         @can('create', App\Models\PerformanceRecord::class)
-            <a href="{{ route('performance.create', ['broodcock' => $broodcock->id]) }}" class="btn-primary shrink-0">
+            <a href="{{ route('performance.create', ['broodcock' => $broodcock->id]) }}" wire:navigate class="btn-primary shrink-0">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                 </svg>
@@ -136,7 +136,7 @@
                     will appear here.
                 </p>
                 @can('create', App\Models\PerformanceRecord::class)
-                    <a href="{{ route('performance.create', ['broodcock' => $broodcock->id]) }}" class="btn-primary mt-6">
+                    <a href="{{ route('performance.create', ['broodcock' => $broodcock->id]) }}" wire:navigate class="btn-primary mt-6">
                         Add the first record
                     </a>
                 @endcan
@@ -258,7 +258,7 @@
 
                             <div class="flex items-center gap-4">
                                 @can('update', $event)
-                                    <a href="{{ route('performance.edit', $event) }}"
+                                    <a href="{{ route('performance.edit', $event) }}" wire:navigate
                                        class="inline-flex min-h-11 items-center text-[15px] font-medium text-primary hover:underline">
                                         Edit<span class="sr-only">, {{ $event->event_type->label() }} on {{ $event->event_date->format('d M Y') }}</span>
                                     </a>

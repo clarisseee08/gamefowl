@@ -9,7 +9,7 @@
         </div>
 
         @can('create', App\Models\User::class)
-            <a href="{{ route('users.create') }}" class="btn-primary mt-5 w-full sm:mt-0 sm:w-auto">Add User</a>
+            <a href="{{ route('users.create') }}" wire:navigate class="btn-primary mt-5 w-full sm:mt-0 sm:w-auto">Add User</a>
         @endcan
     </div>
 
@@ -101,7 +101,7 @@
                     @canany(['update', 'deactivate'], $person)
                         <div class="mt-3 flex flex-wrap items-center gap-x-5 border-t border-border pt-2">
                             @can('update', $person)
-                                <a href="{{ route('users.edit', $person) }}"
+                                <a href="{{ route('users.edit', $person) }}" wire:navigate
                                    class="inline-flex min-h-11 items-center text-[15px] font-medium text-primary hover:underline">
                                     Edit<span class="sr-only">, {{ $person->full_name }}</span>
                                 </a>
@@ -156,7 +156,7 @@
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3 text-right">
                                     @can('update', $person)
-                                        <a href="{{ route('users.edit', $person) }}"
+                                        <a href="{{ route('users.edit', $person) }}" wire:navigate
                                            class="inline-flex min-h-11 items-center text-[15px] font-medium text-primary hover:underline">
                                             Edit<span class="sr-only">, {{ $person->full_name }}</span>
                                         </a>

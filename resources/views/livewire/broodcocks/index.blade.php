@@ -90,7 +90,7 @@
             </div>
 
             @can('create', App\Models\Broodcock::class)
-                <a href="{{ route('broodcocks.create') }}" class="btn-primary h-11 min-h-0 px-3.5 text-[14px]">
+                <a href="{{ route('broodcocks.create') }}" wire:navigate class="btn-primary h-11 min-h-0 px-3.5 text-[14px]">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                     </svg>
@@ -227,7 +227,7 @@
                     breeding and performance afterwards.
                 </p>
                 @can('create', App\Models\Broodcock::class)
-                    <a href="{{ route('broodcocks.create') }}" class="btn-primary mt-6">Add your first broodcock</a>
+                    <a href="{{ route('broodcocks.create') }}" wire:navigate class="btn-primary mt-6">Add your first broodcock</a>
                 @endcan
             @endif
         </div>
@@ -235,7 +235,7 @@
         {{-- Mobile: cards. Farm staff are mostly on phones. --}}
         <div class="space-y-3 sm:hidden">
             @foreach ($this->broodcocks as $bird)
-                <a href="{{ route('broodcocks.show', $bird) }}" class="card flex gap-4 p-4">
+                <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate class="card flex gap-4 p-4">
                     <x-photo-thumb :photo="$bird->primaryPhoto" :alt="$bird->name"
                                    class="h-16 w-16 shrink-0 rounded-lg" />
                     <div class="min-w-0 flex-1">
@@ -329,7 +329,7 @@
                                     <x-band-tag :bloodline="$bird->bloodline" :band="$bird->band_number" size="xs" />
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-2.5 text-[14px] font-medium text-foreground">
-                                    <a href="{{ route('broodcocks.show', $bird) }}" class="hover:text-primary hover:underline">
+                                    <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate class="hover:text-primary hover:underline">
                                         {{ $bird->name }}
                                     </a>
                                     {{-- Only when the list can contain both. Badging every
@@ -352,12 +352,12 @@
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-2.5 text-right">
                                     <span class="row-actions inline-flex items-center gap-1">
-                                        <a href="{{ route('broodcocks.show', $bird) }}"
+                                        <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate
                                            class="btn-quiet h-8 min-h-0 px-2 text-[13px]">
                                             View<span class="sr-only">, {{ $bird->name }}</span>
                                         </a>
                                         @can('update', $bird)
-                                            <a href="{{ route('broodcocks.edit', $bird) }}"
+                                            <a href="{{ route('broodcocks.edit', $bird) }}" wire:navigate
                                                class="btn-quiet h-8 min-h-0 px-2 text-[13px]">
                                                 Edit<span class="sr-only">, {{ $bird->name }}</span>
                                             </a>

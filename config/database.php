@@ -112,6 +112,26 @@ return [
             // Belt-and-braces alongside search_path, in case PostGIS is ever
             // enabled on this project.
             'dont_drop' => ['spatial_ref_sys'],
+
+            // CONNECTION REUSE, and the single largest saving available here.
+            //
+            // php-fpm discards the PDO handle at the end of every request, so
+            // by default each page re-pays the handshake to open a new one -
+            // measured at ~700ms against this Supabase project, before a single
+            // row is read. A persistent handle is kept open by the worker and
+            // handed to the next request instead.
+            //
+            // OPT-IN RATHER THAN ALWAYS-ON, because the trade is real. A
+            // persistent connection is reused in whatever state the previous
+            // request left it, and if the pooler has closed it in the meantime
+            // the next query fails rather than quietly reconnecting. On Render
+            // that buys back most of a second per page against four workers
+            // holding four connections, which is worth it. Against a local
+            // SQLite file there is nothing to win and a class of confusing
+            // failures to invite, so it stays off unless asked for.
+            'options' => [
+                PDO::ATTR_PERSISTENT => (bool) env('DB_PERSISTENT', false),
+            ],
         ],
 
         'sqlsrv' => [

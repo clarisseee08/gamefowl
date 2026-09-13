@@ -68,7 +68,7 @@
     --}}
     <nav class="flex min-w-0 flex-1 items-center gap-2 text-[13px]" aria-label="Breadcrumb">
         @if ($sectionRoute && $crumb)
-            <a href="{{ $sectionRoute }}" class="truncate text-muted-foreground hover:text-foreground">{{ $sectionLabel }}</a>
+            <a href="{{ $sectionRoute }}" wire:navigate class="truncate text-muted-foreground hover:text-foreground">{{ $sectionLabel }}</a>
             <span class="text-muted-foreground" aria-hidden="true">/</span>
             <span class="truncate font-medium text-foreground" aria-current="page">{{ $crumb }}</span>
         @endif

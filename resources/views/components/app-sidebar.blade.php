@@ -93,7 +93,7 @@
     <div class="flex h-14 shrink-0 items-center gap-2 px-3"
          style="border-bottom: 1px solid var(--color-brand-deeper)"
          :class="collapsed ? 'justify-center px-2' : ''">
-        <a href="{{ route('dashboard') }}"
+        <a href="{{ route('dashboard') }}" wire:navigate
            class="flex min-w-0 flex-1 items-center gap-2.5 rounded-[var(--radius-sm)] p-1 hover:bg-brand-deeper"
            :class="collapsed ? 'flex-none justify-center' : ''"
            title="{{ config('gfms.system.name') }}">
@@ -153,7 +153,7 @@
             @endif
 
             @foreach ($items as $item)
-                <a href="{{ route($item['route']) }}"
+                <a href="{{ route($item['route']) }}" wire:navigate
                    @class(['nav-item mb-0.5', 'nav-item-active' => $isActive($item['route'])])
                    :class="collapsed ? 'justify-center px-0' : ''"
                    title="{{ $item['label'] }}"
@@ -172,7 +172,7 @@
     <div class="shrink-0 p-2" style="border-top: 1px solid var(--color-brand-deeper)">
         {{-- The whole block is the link to your own profile: a name you can
              click is a more obvious affordance than a separate icon beside it. --}}
-        <a href="{{ route('profile.edit') }}"
+        <a href="{{ route('profile.edit') }}" wire:navigate
            @class(['flex items-center gap-2.5 rounded-[var(--radius-sm)] px-2 py-1.5 transition-colors hover:bg-brand-deeper',
                    'bg-brand-deeper' => request()->routeIs('profile.*')])>
             @if ($user?->hasProfilePhoto() && $user->profilePhotoUrl())
