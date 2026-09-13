@@ -169,7 +169,7 @@
 
                                 <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
                                     <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Product</span>
-                                    <p class="text-[15px] leading-snug text-foreground">{{ $record->product_name ?: '—' }}</p>
+                                    <p class="text-[15px] leading-snug text-foreground">{{ $record->product_name ?: 'Not recorded' }}</p>
                                     @if ($record->dosage)
                                         <p class="mt-0.5 text-[12px] text-muted-foreground">Dosage: <span class="datum">{{ $record->dosage }}</span></p>
                                     @endif

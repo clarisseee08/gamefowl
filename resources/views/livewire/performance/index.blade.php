@@ -127,11 +127,11 @@
                     <dl class="mt-3.5 grid grid-cols-3 gap-3 border-t border-border pt-3">
                         <div>
                             <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Weight</dt>
-                            <dd class="datum mt-1 text-[15px] text-foreground">{{ $record->weight !== null ? $record->weight.' kg' : '—' }}</dd>
+                            <dd class="datum mt-1 text-[15px] text-foreground">{{ $record->weight !== null ? $record->weight.' kg' : 'Not recorded' }}</dd>
                         </div>
                         <div>
                             <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Duration</dt>
-                            <dd class="datum mt-1 text-[15px] text-foreground">{{ $record->durationLabel() ?? '—' }}</dd>
+                            <dd class="datum mt-1 text-[15px] text-foreground">{{ $record->durationLabel() ?? 'Not recorded' }}</dd>
                         </div>
                         <div>
                             <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Rating</dt>
@@ -276,10 +276,10 @@
                                     </span>
                                 </td>
                                 <td class="datum whitespace-nowrap px-3 py-3 text-right text-[15px] text-foreground">
-                                    {{ $record->weight !== null ? $record->weight.' kg' : '—' }}
+                                    {{ $record->weight !== null ? $record->weight.' kg' : 'Not recorded' }}
                                 </td>
                                 <td class="datum whitespace-nowrap px-3 py-3 text-right text-[15px] text-foreground">
-                                    {{ $record->durationLabel() ?? '—' }}
+                                    {{ $record->durationLabel() ?? 'Not recorded' }}
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-3">
                                     @if ($record->rating === null)
@@ -301,7 +301,7 @@
                                 </td>
                                 <td class="hidden max-w-[11rem] truncate px-3 py-3 text-[15px] text-muted-foreground 2xl:table-cell"
                                     title="{{ $record->recordedBy?->full_name }}">
-                                    {{ $record->recordedBy?->full_name ?? '—' }}
+                                    {{ $record->recordedBy?->full_name ?? 'Not recorded' }}
                                 </td>
                                 <td class="sticky right-0 whitespace-nowrap border-l border-border bg-card px-3 py-3 text-right text-[15px] group-hover:bg-muted">
                                     <div class="flex items-center justify-end gap-4">

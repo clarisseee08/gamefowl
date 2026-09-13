@@ -141,14 +141,14 @@
                 <div>
                     <p class="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Fertility Rate</p>
                     <p class="mt-1 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-foreground">
-                        {{ $rates['fertility'] !== null ? $rates['fertility'].'%' : '—' }}
+                        {{ $rates['fertility'] !== null ? $rates['fertility'].'%' : 'No data' }}
                     </p>
                     <p class="text-xs text-muted-foreground">Fertile eggs ÷ eggs set</p>
                 </div>
                 <div>
                     <p class="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Hatch Rate</p>
                     <p class="mt-1 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-foreground">
-                        {{ $rates['hatch'] !== null ? $rates['hatch'].'%' : '—' }}
+                        {{ $rates['hatch'] !== null ? $rates['hatch'].'%' : 'No data' }}
                     </p>
                     <p class="text-xs text-muted-foreground">Hatched ÷ fertile eggs</p>
                 </div>

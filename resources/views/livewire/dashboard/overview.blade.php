@@ -200,7 +200,7 @@
                     @endphp
                     <div class="flex w-16 flex-col items-center gap-2">
                         <span class="datum text-[12px] font-medium {{ $month['fertility'] !== null ? 'text-muted-foreground' : 'text-muted-foreground' }}">
-                            {{ $month['fertility'] !== null ? $month['fertility'].'%' : '—' }}
+                            {{ $month['fertility'] !== null ? $month['fertility'].'%' : 'No data' }}
                         </span>
 
                         <div class="flex w-full items-end justify-center" style="height: {{ $track }}px">
