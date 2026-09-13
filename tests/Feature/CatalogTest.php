@@ -36,9 +36,17 @@ final class CatalogTest extends TestCase
             ->get(route('catalog.index'))->assertOk();
     }
 
-    public function test_a_guest_cannot_browse_the_catalogue(): void
+    /**
+     * The catalogue is public. It used to require an account; it is the farm's
+     * advertisement, and asking a prospective buyer to register before they can
+     * look at stock defeats the point of having one.
+     *
+     * What a guest is shown, and what they are kept away from, is covered in
+     * PublicCatalogueTest - this just pins that the door is open.
+     */
+    public function test_a_guest_can_browse_the_catalogue(): void
     {
-        $this->get(route('catalog.index'))->assertRedirect(route('login'));
+        $this->get(route('catalog.index'))->assertOk();
     }
 
     public function test_a_deactivated_customer_cannot_browse_the_catalogue(): void

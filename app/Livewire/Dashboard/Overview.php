@@ -52,12 +52,13 @@ final class Overview extends Component
             ->selectRaw('count(*) as total')
             ->selectRaw('sum(case when status = ? then 1 else 0 end) as active', [BroodcockStatus::Active->value])
             ->selectRaw('sum(case when status = ? then 1 else 0 end) as breeding', [BroodcockStatus::Breeding->value])
-            ->selectRaw('sum(case when status in (?, ?, ?, ?) then 1 else 0 end) as on_farm', [
-                BroodcockStatus::Active->value,
-                BroodcockStatus::Breeding->value,
-                BroodcockStatus::Resting->value,
-                BroodcockStatus::Retired->value,
-            ])
+            // Placeholders built from the enum rather than a hand-written list:
+            // the same four statuses were spelled out here and in scopeOnFarm,
+            // and BroodcockStatus::isOnFarm() was the real answer all along.
+            ->selectRaw(
+                'sum(case when status in ('.implode(', ', array_fill(0, count(BroodcockStatus::onFarmValues()), '?')).') then 1 else 0 end) as on_farm',
+                BroodcockStatus::onFarmValues()
+            )
             ->first();
 
         return [

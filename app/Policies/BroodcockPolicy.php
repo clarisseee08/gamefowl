@@ -16,14 +16,36 @@ use App\Models\User;
  */
 final class BroodcockPolicy
 {
-    /** Everyone signed in can see the catalogue, including customers. */
-    public function viewAny(User $user): bool
+    /**
+     * Everyone can see the catalogue, including visitors who are not signed in.
+     *
+     * The farm advertises itself publicly, so $user is NULLABLE here and
+     * throughout the read side of this policy. A null user is a guest, and a
+     * guest is treated as the equivalent of an active customer - the surface
+     * that role was already designed and tested against. This changes who can
+     * reach a screen, never what the screen shows.
+     *
+     * Laravel will not even call a policy method for a guest unless the User
+     * parameter is nullable; without the `?` it silently denies instead.
+     */
+    public function viewAny(?User $user): bool
     {
-        return $user->is_active;
+        return $user === null || $user->is_active;
     }
 
-    public function view(User $user, Broodcock $broodcock): bool
+    /**
+     * A guest may only see a bird the catalogue would already have shown them.
+     *
+     * Ids in URLs are guessable, so without isPubliclyVisible() a visitor could
+     * walk /broodcocks/1, /broodcocks/2 and find birds that have died or that
+     * belong to another farm entirely - neither of which the catalogue lists.
+     */
+    public function view(?User $user, Broodcock $broodcock): bool
     {
+        if ($user === null) {
+            return $broodcock->isPubliclyVisible();
+        }
+
         return $user->is_active;
     }
 
@@ -58,10 +80,10 @@ final class BroodcockPolicy
         return false;
     }
 
-    /** Internal remarks and notes are hidden from customers. */
-    public function viewInternalNotes(User $user, Broodcock $broodcock): bool
+    /** Internal remarks and notes are hidden from customers - and from guests. */
+    public function viewInternalNotes(?User $user, Broodcock $broodcock): bool
     {
-        return $user->is_active && $user->isInternal();
+        return $user !== null && $user->is_active && $user->isInternal();
     }
 
     /** Recording a death is a farm-staff action. */
