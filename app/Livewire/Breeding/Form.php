@@ -24,6 +24,23 @@ final class Form extends Component
     public ?string $dam_id = null;
 
     /**
+     * The value the parent dropdowns use for "not one of ours".
+     *
+     * A sentinel rather than a real id: the dropdown has to express three
+     * things in one control - no parent recorded, a bird on the farm, and a
+     * bird the farm does not own.
+     */
+    public const OFF_LIST = 'external';
+
+    /*
+     * What the dropdown is showing, which is not the same as which bird was
+     * chosen - it also holds the sentinel above. sire_id stays the foreign key.
+     */
+    public ?string $sire_choice = null;
+
+    public ?string $dam_choice = null;
+
+    /**
      * An outside parent - a bird the farm does not own, typed as a name
      * instead of chosen from the list. Borrowed and visiting hens are normal
      * practice here, and before this they could not be recorded at all.
@@ -61,6 +78,8 @@ final class Form extends Component
             $this->fill([
                 'sire_id' => (string) $record->sire_id,
                 'dam_id' => (string) $record->dam_id,
+                'sire_choice' => (string) $record->sire_id,
+                'dam_choice' => (string) $record->dam_id,
                 'mating_date' => $record->mating_date->toDateString(),
                 'eggs_set' => $record->eggs_set,
                 'eggs_fertile' => $record->eggs_fertile,
@@ -106,6 +125,42 @@ final class Form extends Component
     public function updated(string $property): void
     {
         $this->validateOnly($property);
+    }
+
+    public function updatedSireChoice(?string $value): void
+    {
+        $this->applyParentChoice('sire', $value);
+    }
+
+    public function updatedDamChoice(?string $value): void
+    {
+        $this->applyParentChoice('dam', $value);
+    }
+
+    /**
+     * Translate the dropdown back into the two things the save path reads.
+     *
+     * sire_id and sire_is_external are what validation and
+     * ResolveExternalParent actually consult; the dropdown is one control
+     * expressing three states, and nothing below this method knows it changed.
+     *
+     * Clearing the typed name is the point rather than tidiness: pick the
+     * off-list option, type a name, then change your mind and choose a farm
+     * bird, and without this the name sits in a property the save path is no
+     * longer reading - until a later edit sets the flag again and quietly
+     * registers a bird nobody asked for.
+     */
+    private function applyParentChoice(string $role, ?string $value): void
+    {
+        $isOffList = $value === self::OFF_LIST;
+
+        $this->{$role.'_is_external'} = $isOffList;
+        $this->{$role.'_id'} = ($isOffList || $value === null || $value === '') ? null : $value;
+
+        if (! $isOffList) {
+            $this->{$role.'_external_name'} = null;
+            $this->{$role.'_external_bloodline'} = null;
+        }
     }
 
     /**

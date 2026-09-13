@@ -262,4 +262,94 @@ final class HandEnteredParentTest extends TestCase
             'A bird the farm does not own was counted as its stock.'
         );
     }
+
+    // -----------------------------------------------------------------
+    // The control itself.
+    //
+    // The escape hatch used to be a checkbox UNDER the dropdown, and ticking
+    // it replaced the dropdown entirely - so the keeper lost sight of what
+    // they had picked, and the way out of the list was not visible from the
+    // list. It is now the last option IN the dropdown.
+    //
+    // The tests above cover what gets SAVED and are unchanged by this: they
+    // set sire_is_external directly, which is still the flag the save path
+    // reads. These cover the mapping from the dropdown onto that flag.
+    // -----------------------------------------------------------------
+
+    public function test_the_parent_dropdown_offers_a_way_out_of_the_list(): void
+    {
+        $this->form()
+            ->assertSee("Someone else's bird", false)
+            ->assertDontSee("Not one of the farm's birds", false);
+    }
+
+    public function test_choosing_the_off_list_option_opens_the_name_fields(): void
+    {
+        $this->form()
+            ->set('sire_choice', 'external')
+            ->assertSet('sire_is_external', true)
+            ->assertSet('sire_id', null)
+            ->assertSee('Name of the outside cock');
+    }
+
+    public function test_choosing_a_farm_bird_leaves_the_name_fields_closed(): void
+    {
+        $sire = Broodcock::factory()->create(['sex' => Sex::Male->value]);
+
+        $this->form()
+            ->set('sire_choice', (string) $sire->id)
+            ->assertSet('sire_is_external', false)
+            ->assertSet('sire_id', (string) $sire->id);
+    }
+
+    /**
+     * A half-typed name must not survive changing your mind.
+     *
+     * Without this, picking the off-list option, typing "Visiting Cock", then
+     * going back to a farm bird leaves that name sitting in a property the
+     * save path no longer looks at - until some later edit sets the flag again
+     * and silently creates a bird nobody asked for.
+     */
+    public function test_switching_back_to_a_farm_bird_discards_a_half_typed_name(): void
+    {
+        $sire = Broodcock::factory()->create(['sex' => Sex::Male->value]);
+
+        $this->form()
+            ->set('sire_choice', 'external')
+            ->set('sire_external_name', 'Visiting Cock')
+            ->set('sire_external_bloodline', 'Sweater')
+            ->set('sire_choice', (string) $sire->id)
+            ->assertSet('sire_is_external', false)
+            ->assertSet('sire_external_name', null)
+            ->assertSet('sire_external_bloodline', null);
+    }
+
+    public function test_choosing_not_known_clears_both_the_id_and_the_typed_name(): void
+    {
+        $this->form()
+            ->set('sire_choice', 'external')
+            ->set('sire_external_name', 'Visiting Cock')
+            ->set('sire_choice', '')
+            ->assertSet('sire_is_external', false)
+            ->assertSet('sire_id', null)
+            ->assertSet('sire_external_name', null);
+    }
+
+    /** End to end through the new control rather than the underlying flag. */
+    public function test_a_parent_chosen_from_the_dropdown_is_saved_as_an_outside_bird(): void
+    {
+        $this->form()
+            ->set('sire_choice', 'external')
+            ->set('sire_external_name', 'Borrowed Cock')
+            ->set('sire_external_bloodline', 'Kelso')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $sire = Broodcock::query()->where('name', 'Borrowed Cock')->first();
+
+        $this->assertNotNull($sire, 'The typed name should become a real broodcock row.');
+        $this->assertTrue($sire->is_external);
+        $this->assertSame('Kelso', $sire->bloodline);
+        $this->assertSame($sire->id, Broodcock::query()->where('name', 'Bagwis')->first()?->sire_id);
+    }
 }
