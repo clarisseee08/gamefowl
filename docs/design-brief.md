@@ -3,9 +3,23 @@
 The design law for the Digital Broodcock Farm Record Management System.
 Every visual decision in this codebase is measured against this document.
 
-> **Status:** this brief was written *after* the application was built, from the
-> product's own requirements and data. It is the source of truth; where it and
-> the code disagree, the code is wrong.
+> **Status — SUPERSEDED IN PART, corrected 2026-09-14.**
+>
+> This brief was written *after* the application was built, and it used to say:
+> *"It is the source of truth; where it and the code disagree, the code is
+> wrong."* **That is no longer true, and it was the most dangerous sentence in
+> this documentation** — it instructed the reader to trust a stale document over
+> the working stylesheet.
+>
+> The palette and token names below (`--color-paper`, `--color-ink`,
+> `--color-action #16324F`, and the band hexes) are from the pre-direction-change
+> design and **define nothing**. Tailwind emits no CSS and no warning for a
+> utility it does not know, so using one renders as nothing and fails no test.
+>
+> For tokens and primitives, **`resources/css/app.css` is the source of truth**,
+> and `docs/redesign/01-system.md` is its written contract. What remains
+> authoritative here is the *reasoning* — who the user is, what the two surfaces
+> are for, and why colour means bloodline — not the hex values.
 
 ---
 
