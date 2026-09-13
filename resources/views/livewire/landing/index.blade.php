@@ -40,90 +40,136 @@
          down, arranging a visit would mean scrolling past every bird on the
          farm.
     --------------------------------------------------------------- --}}
-    <section class="border-b border-border pb-12 pt-6 sm:pb-16 sm:pt-10">
+    <section class="border-b border-border pb-12 pt-8 sm:pb-16 sm:pt-14">
         <div class="grid gap-8 lg:grid-cols-2 lg:gap-12">
-            <div>
-                <p class="text-[13px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">
-                    {{ $farm['address'] ?: 'Gamefowl breeding farm' }}
-                </p>
+            {{-- ---------------------------------------------------------
+                 THE NAMEPLATE.
 
+                 This column read flat for a reason that had nothing to do with
+                 how much was on it, and everything to do with how evenly it was
+                 distributed. It ran six stacked blocks - an address eyebrow, the
+                 name, a pair of big figures, the chips, a sentence, two buttons -
+                 each one quiet, none of them a peak. A masthead with no peak is
+                 a stack, and a stack always reads as a template.
+
+                 So one move, made completely: the farm's name at full strength,
+                 breaking across the column the way a flag does on the front of a
+                 record book. Everything else is turned DOWN to make that legible,
+                 not up to keep pace with it.
+
+                 TWO THINGS WERE DELETED, and both were the same mistake twice.
+
+                 The eyebrow - the full postal address set in small caps ABOVE the
+                 name. A label above a heading is the one device this craft floor
+                 bans outright: the heading carries its own weight. The address
+                 was not lost; it moves below the name as a dateline, which is
+                 where a masthead has always put its locality, and it is still
+                 printed in full in the footer.
+
+                 The figure pair - ON THE FARM 26 / BLOODLINES 3, set as two big
+                 numerals either side of a divider. That is the stock dashboard
+                 template, and it was also saying what the column beside it and
+                 the chips below it already said. The figures are kept, because
+                 they are the farm's own records and they are true; they are set
+                 as a census line instead, which is what they always were.
+            --------------------------------------------------------- --}}
+            <div>
                 {{-- Tracking tightens as the size climbs. Poppins is geometric and
-                     runs wide, and the base -0.02em is set for a page title rather
-                     than for sixty-point type. --}}
-                <h1 class="mt-4 max-w-[16ch] text-[40px] font-semibold leading-[1.05] tracking-[-0.02em] text-foreground sm:text-[52px] sm:tracking-[-0.03em] lg:text-[60px]">
+                     runs wide, and the -0.02em that suits a page title is far too
+                     loose at ninety-six points. The measure is deliberately NOT
+                     capped: the old max-w-[16ch] held this to a single line across
+                     half an empty column, which is exactly what made a sixty-point
+                     headline look timid. --}}
+                <h1 class="text-balance text-[44px] font-semibold leading-[1] tracking-[-0.03em] text-foreground sm:text-[64px] sm:leading-[0.96] sm:tracking-[-0.035em] lg:text-[84px] xl:text-[96px]">
                     {{ $farm['name'] }}
                 </h1>
 
                 {{-- ---------------------------------------------------------
-                     THE REGISTRY LINE — what this farm actually holds, today.
+                     THE DATELINE — what this book holds, and where it is kept.
 
-                     A masthead of type alone says nothing a template could not
-                     say. These two figures are the farm's own records, read
-                     through the same farmStock()->onFarm() filter the
-                     catalogue below uses, so the masthead cannot claim a bird
-                     the list does not contain.
+                     One ruled line under the flag. The two figures are the farm's
+                     own records, read through the same farmStock()->onFarm()
+                     filter the catalogue below uses, so the masthead cannot claim
+                     a bird the list does not contain. Both are .datum - they are
+                     counts, and every count in this application is monospaced.
 
-                     Both are .datum. They are counts, and every count in this
-                     application is monospaced.
+                     Pluralised, because a farm that holds one bird should not be
+                     told it holds "1 birds" on its own front page.
+
+                     EVERY SEPARATOR LEADS ITS OWN SEGMENT and is tied to the
+                     first word after it with a non-breaking space. As separate
+                     children the dots could end a wrapped line, and at 390px one
+                     duly did: the address dropped to the next line and left a
+                     lone interpunct hanging off the end of the one above.
                 --------------------------------------------------------- --}}
-                @if ($this->stockCount > 0)
-                    <dl class="mt-8 flex items-stretch gap-8 border-t border-border pt-6">
-                        <div>
-                            <dt class="text-[12px] font-medium uppercase tracking-[0.07em] text-muted-foreground">On the farm</dt>
-                            <dd class="datum mt-1.5 text-[30px] font-semibold leading-none text-foreground">{{ $this->stockCount }}</dd>
-                        </div>
+                @if ($this->stockCount > 0 || $farm['address'])
+                    <p class="mt-7 flex flex-wrap items-baseline gap-x-2 gap-y-1 border-t border-border pt-5 text-[15px] text-muted-foreground">
+                        @if ($this->stockCount > 0)
+                            <span>
+                                <span class="datum text-foreground">{{ $this->stockCount }}</span>
+                                {{ \Illuminate\Support\Str::plural('bird', $this->stockCount) }}
+                            </span>
 
-                        @if (count($this->bloodlines) > 0)
-                            <div class="border-l border-border pl-8">
-                                <dt class="text-[12px] font-medium uppercase tracking-[0.07em] text-muted-foreground">Bloodlines</dt>
-                                <dd class="datum mt-1.5 text-[30px] font-semibold leading-none text-foreground">{{ count($this->bloodlines) }}</dd>
-                            </div>
+                            @if (count($this->bloodlines) > 0)
+                                <span>
+                                    <span aria-hidden="true">&middot;</span>&nbsp;<span class="datum text-foreground">{{ count($this->bloodlines) }}</span>
+                                    {{ \Illuminate\Support\Str::plural('bloodline', count($this->bloodlines)) }}
+                                </span>
+                            @endif
                         @endif
-                    </dl>
+
+                        @if ($farm['address'])
+                            <span>
+                                @if ($this->stockCount > 0)
+                                    <span aria-hidden="true">&middot;</span>&nbsp;@endif{{ $farm['address'] }}
+                            </span>
+                        @endif
+                    </p>
                 @endif
 
                 {{-- ---------------------------------------------------------
                      THE BLOODLINES — the only colour the masthead is allowed.
 
-                     Colour in this system means bloodline and nothing else, so
-                     a hero that wants to be more than ink on paper has exactly
-                     one honest route to it: show the bloodlines themselves.
+                     Colour in this system means bloodline and nothing else, so a
+                     hero that wants to be more than ink on paper has exactly one
+                     honest route to it: show the bloodlines themselves. The
+                     colours come from the same App\Support\BandTag the catalogue
+                     uses, so the ones a visitor meets here are the ones they then
+                     see on the birds below. A decorative palette would have had
+                     to invent colours that mean nothing; these already mean
+                     something.
 
-                     The colours come from the same App\Support\BandTag the
-                     catalogue uses, so the ones a visitor meets here are the
-                     ones they then see on the birds below. A decorative
-                     palette would have had to invent colours that mean
-                     nothing; these already mean something.
+                     At md rather than xs. They were three specks under a headline
+                     they were meant to answer - the system's own signature object,
+                     opted out of at the one place it would carry the most. Same
+                     component, same colours, no new primitive: just run at the
+                     size the system already defines for it.
 
-                     x-bloodline-chip, NOT x-band-tag, and the difference is
-                     not cosmetic. x-band-tag describes one BIRD - its slot is
-                     a band number, and with none it correctly renders "Not yet
-                     banded", which is a true statement about a bird and a
-                     meaningless one about a bloodline. It read "Not yet
-                     banded" three times here before the swap.
-
-                     The chip carries the two-letter code and the name in text,
-                     so colour is never the only channel.
+                     x-bloodline-chip, NOT x-band-tag, and the difference is not
+                     cosmetic. x-band-tag describes one BIRD - its slot is a band
+                     number, and with none it correctly renders "Not yet banded",
+                     which is a true statement about a bird and a meaningless one
+                     about a bloodline. It read "Not yet banded" three times here
+                     before the swap. The chip carries the two-letter code and the
+                     name in text, so colour is never the only channel.
                 --------------------------------------------------------- --}}
                 @if (count($this->bloodlines) > 0)
-                    <div class="mt-6">
+                    <div class="mt-5">
                         <p class="sr-only">Bloodlines kept on this farm</p>
                         <ul class="flex flex-wrap items-center gap-2">
                             @foreach ($this->bloodlines as $bloodline)
                                 <li>
-                                    <x-bloodline-chip :bloodline="$bloodline" size="xs" />
+                                    <x-bloodline-chip :bloodline="$bloodline" size="md" />
                                 </li>
                             @endforeach
                         </ul>
                     </div>
                 @endif
 
-                {{-- The sentence and the actions sit with the identity, not
-                     beside the register. Each column now carries one job -
-                     who this farm is and what to do about it on the left, what
-                     it currently holds on the right - and the two are a
-                     similar height instead of a short column against a tall
-                     one. --}}
+                {{-- The sentence and the actions sit with the identity, not beside
+                     the register. Each column carries one job - who this farm is
+                     and what to do about it on the left, what it currently holds
+                     on the right. --}}
                 <p class="mt-8 max-w-[46ch] text-[19px] leading-relaxed text-muted-foreground">
                     Broodcocks bred and raised here, with the pedigree of every bird kept
                     from the day it hatched.
@@ -140,7 +186,7 @@
 
                  This was a paragraph and two buttons floating in a column,
                  which is the arrangement every landing page has. It is now an
-                 extract from the farm's own book: three birds, ruled, each
+                 extract from the farm's own book: four birds, ruled, each
                  carrying its band, its bloodline and its age.
 
                  The whole design is "a printed record book crossed with the
