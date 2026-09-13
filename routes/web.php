@@ -11,6 +11,7 @@ use App\Livewire\Breeding;
 use App\Livewire\Broodcocks;
 use App\Livewire\Catalog;
 use App\Livewire\Health;
+use App\Livewire\Landing;
 use App\Livewire\Mortality;
 use App\Livewire\Performance;
 use App\Livewire\Profile;
@@ -51,11 +52,7 @@ use Illuminate\Support\Facades\Route;
  * public hit the auth middleware and was shown a login form as the first thing
  * the farm's website said to them.
  */
-Route::get('/', function () {
-    return redirect()->route(
-        auth()->user()?->isInternal() ? 'dashboard' : 'catalog.index'
-    );
-})->name('home');
+Route::livewire('/', Landing\Index::class)->name('home')->middleware('active');
 
 /*
 |--------------------------------------------------------------------------

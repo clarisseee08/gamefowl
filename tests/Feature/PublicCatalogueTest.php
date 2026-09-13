@@ -65,9 +65,15 @@ final class PublicCatalogueTest extends TestCase
     }
 
     /** The front door is the shop window, not a login form. */
-    public function test_the_site_root_sends_a_visitor_to_the_catalogue(): void
+    /*
+     * The root was a redirect to the catalogue until the farm got a front page.
+     * It is now a page carrying the farm's name, its story and the same stock.
+     */
+    public function test_the_site_root_gives_a_visitor_the_front_page(): void
     {
-        $this->get('/')->assertRedirect(route('catalog.index'));
+        $this->get('/')
+            ->assertOk()
+            ->assertSee(config('gfms.farm.name'));
     }
 
     public function test_the_site_root_sends_staff_to_the_dashboard(): void
