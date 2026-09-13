@@ -46,6 +46,14 @@
         <ul class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             @foreach ($this->photos as $photo)
                 @php
+                    /*
+                     * Two URLs, not one. The grid tile is a ~250px box and gets
+                     * the small copy; the lightbox is the whole point of
+                     * clicking and gets the original. Serving the original into
+                     * both meant a twelve-photo gallery pulled twelve full-size
+                     * files out of Tokyo before you had clicked anything.
+                     */
+                    $thumb = route('photos.show', ['photo' => $photo, 'size' => 'thumb']);
                     $src = route('photos.show', $photo);
                     $label = $photo->caption ?: 'Photo of '.$photo->broodcock->displayName();
                 @endphp
@@ -58,9 +66,10 @@
                             x-on:click="open = true; src = @js($src); label = @js($label)"
                             aria-label="Enlarge this photo">
                         <span class="block aspect-4/5 overflow-hidden border-b border-border bg-muted">
-                            <img src="{{ $src }}"
+                            <img src="{{ $thumb }}"
                                  alt="{{ $label }}"
                                  loading="lazy"
+                                 decoding="async"
                                  class="h-full w-full object-cover transition-opacity duration-150 group-hover:opacity-90">
                         </span>
 

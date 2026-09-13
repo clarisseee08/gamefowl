@@ -53,17 +53,34 @@ RUN npm run build
 # for a defence, and the version costs nothing to match.
 FROM php:8.2-fpm-alpine AS runtime
 
+# gd and exif are here for App\Support\Thumbnail, which resizes every uploaded
+# photo once at upload time. Without them the thumbnail step is skipped and the
+# grids fall back to streaming full-size originals - which is what they did
+# before, and which costs the farm's mobile data on every page.
+#
+# The -dev packages are BUILD-ONLY and are removed with .build-deps below; the
+# bare libjpeg-turbo/libpng/libwebp/freetype lines are the runtime halves that
+# must stay, or gd loads and then fails on every actual image.
 RUN apk add --no-cache \
         nginx \
         supervisor \
         libpq \
         libzip \
         icu-libs \
+        libjpeg-turbo \
+        libpng \
+        libwebp \
+        freetype \
     && apk add --no-cache --virtual .build-deps \
         $PHPIZE_DEPS \
         postgresql-dev \
         libzip-dev \
         icu-dev \
+        libjpeg-turbo-dev \
+        libpng-dev \
+        libwebp-dev \
+        freetype-dev \
+    && docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
     && docker-php-ext-install -j"$(nproc)" \
         pdo_pgsql \
         pgsql \
@@ -71,6 +88,8 @@ RUN apk add --no-cache \
         zip \
         intl \
         opcache \
+        gd \
+        exif \
     && apk del .build-deps \
     && rm -rf /tmp/* /var/cache/apk/*
 
