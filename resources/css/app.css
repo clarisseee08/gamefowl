@@ -853,3 +853,120 @@
 }
 .page-link:hover { @apply bg-muted text-foreground; }
 .page-link-current { @apply bg-muted text-foreground; }
+
+/* =====================================================================
+   DARK THEME
+   =====================================================================
+
+   A second set of VALUES, not a second set of components. Every surface in
+   this stylesheet is already a semantic token - bg-card, text-foreground,
+   border-border - so a theme is a block that redefines what those resolve
+   to, and not one view or one component changes.
+
+   That was designed for: the @theme block at the top of this file says the
+   shadcn-style semantic pairs were chosen partly because they make "a dark
+   theme a second :root block rather than a second set of components". This
+   is that block.
+
+   WHAT IS DELIBERATELY ABSENT. The bands, the brand green, primary and the
+   five semantic pairs are not redefined. A Sweater bird is cobalt under any
+   theme, because colour in this system means bloodline - and a dark theme
+   that re-tinted the bands would be inventing a second meaning for the one
+   channel that already has one. The band tag also needs no adjustment: it is
+   a FILLED capsule, so its legibility is its own text against its own colour,
+   which App\Support\BandTag::foreground resolves per band.
+
+   THREE STATES, NOT TWO. An explicit choice must be able to beat the
+   operating system in both directions, so:
+
+     :root                              light, the default
+     prefers-color-scheme: dark         dark, unless the user chose light
+     [data-theme='dark']                dark, whatever the OS says
+     [data-theme='light']               light, whatever the OS says
+
+   The values are duplicated across the two dark selectors rather than shared
+   through a third custom property, because a variable pointing at a variable
+   is one more indirection to unpick when a colour is wrong.
+
+   THE 7:1 CONSOLE FLOOR HOLDS HERE TOO, and BrandTokensAreMirroredTest
+   measures it. The binding pair is muted_foreground on muted at 7.57:1; an
+   earlier muted put it at 6.77:1 and looked perfectly fine, which is the
+   whole reason that test measures instead of trusting the eye.
+
+   PDFs ARE UNAFFECTED. dompdf reads config/gfms-brand.php directly and cannot
+   read a custom property at all, so print stays on paper where it belongs.
+   ===================================================================== */
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+        color-scheme: dark;
+
+        --color-background: #0D110F;
+        --color-card: #161C19;
+        --color-muted: #272D2A;
+        --color-popover: #1B2220;
+        --color-border: #2E3531;
+        --color-input: #39413C;
+
+        --color-foreground: #F7F8F6;
+        --color-muted-foreground: #B9C0BA;
+        --color-card-foreground: #F7F8F6;
+        --color-popover-foreground: #F7F8F6;
+
+        /* Inverted. #8B2626 measures 1.98:1 on the dark card - an invisible
+           link. Same hue, four steps lighter: 9.33:1 as text AND as a fill
+           with dark ink on it. */
+        --color-primary: #E0B4B0;
+        --color-primary-foreground: #161C19;
+
+        /* The ink ramp inverts with the surfaces it describes, or every step
+           that meant "paper" would still mean paper on a dark ground. */
+        --color-ink-50: #0D110F;
+        --color-ink-100: #161C19;
+        --color-ink-200: #272D2A;
+        --color-ink-300: #2E3531;
+        --color-ink-400: #39413C;
+        --color-ink-500: #6E756F;
+        --color-ink-600: #8A918B;
+        --color-ink-700: #B9C0BA;
+        --color-ink-800: #D7DCD8;
+        --color-ink-900: #F7F8F6;
+        --color-ink-950: #FFFFFF;
+    }
+}
+
+:root[data-theme='dark'] {
+    color-scheme: dark;
+
+    --color-background: #0D110F;
+    --color-card: #161C19;
+    --color-muted: #272D2A;
+    --color-popover: #1B2220;
+    --color-border: #2E3531;
+    --color-input: #39413C;
+
+    --color-foreground: #F7F8F6;
+    --color-muted-foreground: #B9C0BA;
+    --color-card-foreground: #F7F8F6;
+    --color-popover-foreground: #F7F8F6;
+
+    /* Inverted - see the note in the media query above. */
+    --color-primary: #E0B4B0;
+    --color-primary-foreground: #161C19;
+
+    --color-ink-50: #0D110F;
+    --color-ink-100: #161C19;
+    --color-ink-200: #272D2A;
+    --color-ink-300: #2E3531;
+    --color-ink-400: #39413C;
+    --color-ink-500: #6E756F;
+    --color-ink-600: #8A918B;
+    --color-ink-700: #B9C0BA;
+    --color-ink-800: #D7DCD8;
+    --color-ink-900: #F7F8F6;
+    --color-ink-950: #FFFFFF;
+}
+
+:root[data-theme='light'] {
+    color-scheme: light;
+}
