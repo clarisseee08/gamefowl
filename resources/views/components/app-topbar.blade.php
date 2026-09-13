@@ -33,7 +33,6 @@
         'show' => null,      // the page header already names the record
         'pedigree' => 'Family Tree',
         'schedule' => 'Schedule',
-        'assign' => 'Assign Birds',
     ];
 
     $sectionLabel = $sectionLabels[$section] ?? Str::headline($section);
