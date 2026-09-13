@@ -121,7 +121,11 @@
         {{-- Desktop: the ledger proper. --}}
         <div class="card hidden overflow-hidden sm:block">
             <div class="overflow-x-auto">
-                <table class="min-w-full">
+                {{-- .table-hairline resolves to `.table-hairline tbody tr + tr`,
+                     so it belongs on the TABLE. It used to sit on the <tbody>
+                     below, where the descendant selector matched nothing and
+                     the rows shipped with no separators at all. --}}
+                <table class="table-hairline min-w-full">
                     <thead class="border-b border-border bg-muted">
                         <tr>
                             @foreach (['Name', 'Email', 'Role', 'Position', 'Contact', 'Status'] as $heading)
@@ -134,7 +138,7 @@
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="table-hairline">
+                    <tbody>
                         @foreach ($this->users as $person)
                             <tr wire:key="user-row-{{ $person->id }}" class="transition-colors duration-100 hover:bg-muted">
                                 <td class="whitespace-nowrap px-4 py-3 text-[15px] font-medium text-foreground">
