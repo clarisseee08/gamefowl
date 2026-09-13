@@ -46,8 +46,14 @@ final class Index extends Component
 
     public function render(): View
     {
+        /*
+         * Not the farm's name. head-meta already appends
+         * config('gfms.system.short'), which on this installation IS the farm's
+         * name - passing it here produced "SSGuad Game Farm · SSGuad Game Farm"
+         * in the browser tab.
+         */
         return view('livewire.landing.index')
             ->layout('layouts::catalog')
-            ->title(config('gfms.farm.name'));
+            ->title('Broodcocks and breeding stock');
     }
 }
