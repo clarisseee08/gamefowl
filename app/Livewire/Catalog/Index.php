@@ -6,6 +6,7 @@ namespace App\Livewire\Catalog;
 
 use App\Enums\BroodcockClass;
 use App\Enums\Sex;
+use App\Livewire\Concerns\ChoosesShellByViewer;
 use App\Models\Broodcock;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -27,21 +28,16 @@ use Livewire\WithPagination;
  * not what enforces access.
  */
 /*
- * THE SHELL DEPENDS ON WHO IS LOOKING - see layoutForViewer().
+ * PUBLIC. No account is needed to reach this screen - it is the farm's
+ * advertisement, and requiring a login to look at stock defeats the purpose.
+ * BroodcockPolicy::viewAny() accepts a null user; the query below is what
+ * decides which birds a visitor is shown.
  *
- * For a CUSTOMER this is the whole application, and it gets the bare catalogue
- * shell: full-bleed, no console sidebar. A dense app rail is wrong for a
- * photo-led browse, and it would show a customer navigation for screens they
- * cannot open.
- *
- * For STAFF it is one screen among many, and stripping the sidebar stranded
- * them: every other console screen has the rail, this one replaced it with a
- * single "Console" button, so the way back to Broodcocks was two clicks and a
- * guess. The original reasoning was right about customers and wrong about the
- * people who use this system all day.
+ * THE SHELL DEPENDS ON WHO IS LOOKING - see ChoosesShellByViewer.
  */
 final class Index extends Component
 {
+    use ChoosesShellByViewer;
     use WithPagination;
 
     #[Url(as: 'q', except: '')]
@@ -146,27 +142,7 @@ final class Index extends Component
     public function render(): View
     {
         return view('livewire.catalog.index')
-            ->layout($this->layoutForViewer())
+            ->layout($this->viewerShell())
             ->title('Catalogue');
-    }
-
-    /**
-     * Which shell this screen renders inside.
-     *
-     * Set HERE rather than with a #[Layout] attribute, and that is forced
-     * rather than stylistic: Livewire applies the attribute inside its render
-     * hook, AFTER render() has returned, and it overwrites whatever the view
-     * asked for. An attribute plus a ->layout() call is not a conflict the
-     * framework resolves in your favour - the attribute simply wins, silently.
-     *
-     * Staff get the console shell so the catalogue keeps the sidebar every
-     * other internal screen has. Customers get the bare shell, which is the
-     * only navigation they could use anyway.
-     */
-    private function layoutForViewer(): string
-    {
-        return auth()->user()?->isInternal()
-            ? 'layouts::app'
-            : 'layouts::catalog';
     }
 }
