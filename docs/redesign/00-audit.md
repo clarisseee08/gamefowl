@@ -10,11 +10,12 @@ Audited 2026-09-14, branch `redesign/ui-system`. Facts only, no proposals.
 > in good faith shipped **7 dead utility classes into the appointments queue
 > today**. Drift table in §4.1; the live bug is offender #1 in §8.
 >
-> **Snapshot warning.** `resources/css/app.css` was **being rewritten while this
-> audit ran** — 643 → 846 lines mid-pass (+217/−14 vs HEAD). Every `app.css`
-> citation below is re-anchored to the **846-line state**, verified stable
-> (identical md5 across two samples). If it has moved again, re-anchor by
-> selector name rather than trusting these numbers.
+> **Snapshot warning.** This branch is **under active edit by other agents.**
+> `resources/css/app.css` was rewritten mid-audit (643 → 846 lines, +217/−14 vs
+> HEAD); every `app.css` citation below is re-anchored to the **846-line state**,
+> verified stable by md5. `DESIGN.md` and `livewire/landing/index.blade.php`
+> changed after their sections were written. Re-anchor by selector or class name
+> rather than trusting a line number that no longer resolves.
 
 ---
 
@@ -31,17 +32,17 @@ Audited 2026-09-14, branch `redesign/ui-system`. Facts only, no proposals.
 
 **Fonts — three faces, not the two the skill names.** `app.css:16-36` loads
 **Poppins** 600/700 (headings only), **Inter** 400/500/600 + latin-ext (body/UI),
-**JetBrains Mono** 400/500/600 (via `.datum`). Declared `app.css:76-78`; Poppins
-bound to `h1–h4` at `app.css:267-268` and stated to be the only use of
-`--font-display`. `@fontsource/fira-sans` and `@fontsource/fira-code` remain in
-`package.json` but are **no longer imported** — dead packages.
+**JetBrains Mono** 400/500/600 (via `.datum`); declared `:76-78`, with Poppins
+bound to `h1–h4` at `:267-268` as the only use of `--font-display`.
+`@fontsource/fira-sans` and `@fontsource/fira-code` remain in `package.json` but
+are **no longer imported** — dead packages.
 
 **View composition.** Three layouts (§3), used as `<x-layouts::app>` /
-`<x-layouts::catalog>` / `<x-layouts::guest>`. Livewire components setting no
-layout inherit `layouts::app` from `config/livewire.php:47`. Three pick their
-shell at runtime from the viewer's role via `ChoosesShellByViewer`
-(`app/Livewire/Concerns/ChoosesShellByViewer.php:25-30`); its lines 18-21 warn
-that `#[Layout]` silently overrides `render()`, so the two must not be combined.
+`<x-layouts::catalog>` / `<x-layouts::guest>`. Components setting no layout
+inherit `layouts::app` from `config/livewire.php:47`; three pick their shell at
+runtime from the viewer's role via `ChoosesShellByViewer`
+(`app/Livewire/Concerns/ChoosesShellByViewer.php:25-30`), whose lines 18-21 warn
+that `#[Layout]` silently overrides `render()` — the two must not be combined.
 
 ---
 
@@ -64,9 +65,8 @@ that `#[Layout]` silently overrides `render()`, so the two must not be combined.
 | `/broodcocks/{broodcock}/pedigree` `:241` | `Broodcocks\Pedigree` | `livewire/broodcocks/pedigree.blade.php` | viewer-chosen (`Pedigree.php:171`) | high — the stated selling point (`web.php:235-238`) |
 | `/photos/{photo}` `:94` | `BroodcockPhotoController` | — streams a private bucket object | — | high |
 
-The two bird routes are **declared last deliberately** (`web.php:225-233`):
-moved above the auth group, `/broodcocks/create` resolves as a bird with id
-`"create"`.
+The two bird routes are **declared last deliberately** (`web.php:225-233`): moved
+above the auth group, `/broodcocks/create` resolves as a bird with id `"create"`.
 
 ### Behind `auth` + `active`
 
@@ -124,9 +124,8 @@ and `/catalog`) · `Dashboard\Overview` · `Health\BroodcockHealthHistory` ·
 ## 4. Palette
 
 **61 `--color-*` tokens** in `app.css:66-232`, shadcn-style semantic pairs
-(`app.css:56-59`). The 46 originals are mirrored in `config/gfms-brand.php`; the
-**15 new ramp steps arrived in this branch's in-progress edit** (see the snapshot
-warning) and are not in that config.
+(`:56-59`). The 46 originals are mirrored in `config/gfms-brand.php`; the **15
+new ramp steps arrived in this branch's in-progress edit** and are not.
 
 | Group | Tokens | Role |
 |---|---|---|
@@ -139,8 +138,8 @@ warning) and are not in that config.
 | **Print** `:188-190` | `print-rule #e4e6e2` · `print-rule-strong` · `print-zebra` | dompdf |
 
 Band foreground is resolved per band by `App\Support\BandTag::foreground()`;
-curated bloodline→slot map at `config/gfms-brand.php:198-205`, anything else
-falls to a `crc32` hash (`app/Support/BandTag.php:71-80`).
+curated bloodline→slot map at `config/gfms-brand.php:198-205`, anything else falls
+to a `crc32` hash (`app/Support/BandTag.php:71-80`).
 
 ### 4.1 SKILL.md ↔ `app.css` token drift — complete list
 
@@ -168,12 +167,10 @@ Every left-hand name compiles to **no CSS and no warning**.
 **Note:** `text-ink-80` is *not* rescued by the new ink ramp — that ramp is
 `ink-50…ink-950` (`:110-120`) and `ink-80` is not a step in it. Verified absent
 from the 61-token list and from the compiled bundle.
-
 `docs/design-brief.md` — which SKILL.md:12 cites as the full rationale — carries
 the same stale direction (`:105-155`) **and asserts at `:6-8` that "where it and
 the code disagree, the code is wrong."** That is now false;
 `docs/redesign-progress.md:1-12` records the actual current direction.
-
 Accurate in SKILL.md and worth keeping: `.badge-info`/`.badge-neutral` (`:64-68`),
 the `.table-hairline` descendant rule (`:70-71`), the band-tag contract
 (`:93-107`), `.datum` (`:82-87`), the two-surface table (`:111-118`).
@@ -214,15 +211,15 @@ anywhere in a view is a defect."*
 `@utility btn` `:347-351` `--t-fast` on bg, border, color, **box-shadow**,
 transform · `.btn:active` `:357` `scale(0.98)` · `.input` `:390-391` `--t-fast`
 on **border-color**, **box-shadow** · `.card-interactive` `:413-415` `--t-base`
-on **box-shadow**, **border-color**, transform, with `translateY(-1px)` +
+on **box-shadow**, **border-color**, transform, `translateY(-1px)` +
 `--shadow-e2` on hover `:417-421` · `.row-hover` `:469` `--t-fast`
 **background-color** · `.row-actions` `:476` `--t-fast` opacity · `.skeleton` +
 `@keyframes gfms-pulse` `:481-490` opacity, **1.6s infinite** · `.enter-pop` +
 `@keyframes gfms-pop` `:496-501` `--t-enter`, opacity + translateY(4px) ·
 `.nav-item` `:515-516` `--t-fast` **background-color**, **color**. Two
-`prefers-reduced-motion` blocks `:311-317` and `:324-328` — 0.01ms blanket kill
-plus `animation-iteration-count: 1`. `.meter` `:615-617` is a deliberate
-**absence** of width animation.
+`prefers-reduced-motion` blocks `:311-317`, `:324-328` — 0.01ms blanket kill plus
+`animation-iteration-count: 1`. `.meter` `:615-617` is a deliberate **absence**
+of width animation.
 
 ### Rules added by the in-progress redesign (`app.css:666-846`)
 Header `:666-686` states two governing rules — transform/opacity only, nothing
@@ -258,10 +255,10 @@ off-canvas sheet, the palette, and the lightbox.
 **Animating a property other than `transform`/`opacity`:** the two **width**
 cases (`app-sidebar:78`, `photos/upload:107`) are the genuine layout-thrash
 offenders. Colour/shadow transitions (`transition-colors`, `.row-hover`,
-`.nav-item`, `.input`, `.btn`) are cheap but are still outside the
-transform/opacity rule the new block declares at `:677-680`.
-**Every `duration-*` / `ease-*` in a view is a raw value, not a token** — 12 view
-lines violate `app.css:203-204` as written.
+`.nav-item`, `.input`, `.btn`) are cheap but still fall outside the
+transform/opacity rule the new block declares at `:677-680`. And **every
+`duration-*` / `ease-*` in a view is a raw value, not a token** — 12 view lines
+violate `app.css:203-204` as written.
 
 ---
 
@@ -270,10 +267,8 @@ lines violate `app.css:203-204` as written.
 ### Classes an enum's `badgeClasses()` returns — six enums, ~22 call sites
 The whole emitted set is `badge`, `badge-ok`, `badge-warn`, `badge-alert`,
 `badge-info`, `badge-neutral`. Sources: `AppointmentStatus:48-51` (the only one
-that also emits the base `badge`), `BroodcockClass:38-40`,
-`BroodcockStatus:74-79`, `HealthRecordType:41-45`, `PerformanceEventType:40-43`,
-`PerformanceResult:33-36`.
-
+that also emits the base `badge`), `BroodcockClass:38-40`, `BroodcockStatus:74-79`,
+`HealthRecordType:41-45`, `PerformanceEventType:40-43`, `PerformanceResult:33-36`.
 **Gap:** `BadgeVocabularyTest::enums()` (`tests/Unit/BadgeVocabularyTest.php:31-40`)
 lists only **five** — `AppointmentStatus` is absent, so its badges are unguarded.
 
@@ -287,14 +282,13 @@ templates excluded (`:126-128`).
 
 ### Enforced by `tests/Unit/DesignSystemGuardTest.php` (9 checks)
 `:72` no stock Tailwind palette class in a view · `:91` none in the compiled
-bundle (skips when absent; a bundle is present) · `:123` no hardcoded hex outside
+bundle (skips when absent; one is present) · `:123` no hardcoded hex outside
 `config/gfms-brand.php` and `app.css` · `:162` PDF templates carry no hardcoded
 colour · `:197` brand green never on `btn-primary`/`-secondary`/`-danger`/
 `-quiet`/`input`/`badge` · `:240` no console view re-introduces a centred
-max-width column (`max-w-7xl…4xl`, `container mx-auto`, `mx-auto` + px/rem;
-`ch` widths allowed) · `:303` every view balances its `<div>`s · `:348` an
-`sr-only` file input needs a positioned wrapper · `:402` no `x-data` expression
-contains a double quote.
+max-width column (`max-w-7xl…4xl`, `container mx-auto`, `mx-auto` + px/rem; `ch`
+allowed) · `:303` every view balances its `<div>`s · `:348` an `sr-only` file
+input needs a positioned wrapper · `:402` no `x-data` expression contains a `"`.
 
 ### Vocabulary `app.css` defines
 **Original (41):** `.btn` (`@utility` `:343`) `.btn-primary/-secondary/-danger/
@@ -310,13 +304,12 @@ contains a double quote.
 `.page-title-marked` `:604` · `.meter` `:614` · `.ped-branch` `:626`
 `.ped-node` `:641` `.ped-empty` `:659`.
 
-**Added by the in-progress redesign (26), none yet used** — `:693-846`, listed
-in §6.
-
-Defined but **absent from SKILL.md**: all 26 of those, plus `.card-interactive`,
-`.elev-1/2/3`, `.row-hover`, `.row-actions`, `.skeleton`, `.popover`,
-`.enter-pop`, `.nav-item*`, `.nav-section`, `.scroll-slim*`, `.brand-rail`,
-`.page-title-marked`, `.meter`, `.band-code`, `.band-number`, `.btn`.
+**Added by the in-progress redesign (26), none yet used** — `:693-846`, listed in
+§6. Defined but **absent from SKILL.md**: all 26 of those, plus
+`.card-interactive`, `.elev-1/2/3`, `.row-hover`, `.row-actions`, `.skeleton`,
+`.popover`, `.enter-pop`, `.nav-item*`, `.nav-section`, `.scroll-slim*`,
+`.brand-rail`, `.page-title-marked`, `.meter`, `.band-code`, `.band-number`,
+`.btn`.
 
 ---
 
@@ -353,24 +346,24 @@ by a document nobody can read, and none is used by a view yet.
 `--radius-md: 10px`, `--radius-lg: 14px` (`app.css:192-194`). Views use
 `rounded-[var(--radius-*)]` 20 times and hardcode `rounded-[4px]`/`[3px]`/`[2px]`
 /`[6px]`/`[1px]` **40 times across 17 files** — and `4px`, by far the most
-common, is not one of the three steps. Heaviest: `photos/upload.blade.php` (6),
-`mortality/index.blade.php` (5), `performance/broodcock-timeline.blade.php` (4).
+common, is not one of the three steps. Heaviest: `photos/upload` (6),
+`mortality/index` (5), `performance/broodcock-timeline` (4).
 
 **6. No type scale in the token layer.** `@theme` defines fonts, colour, radius,
 shadow, duration and easing — **no `--text-*`**. Every size is an arbitrary
-value, and 21 distinct ones are in use: 15px ×153, 11px ×103, 13px ×84, 14px
-×50, 12px ×46, 17px ×42, 21px ×24, 22px ×19, 32px ×18, 34px ×14, 18px ×13, 19px
-×10, 26px ×7, 24px ×5, 28px ×4, 44px ×2, 30px ×2, 16px ×2, 56px, 40px, 10px.
-21/22px and 18/19px are neighbours no system needs.
+value, and 21 distinct ones are in use: 15px ×153, 11px ×103, 13px ×84, 14px ×50,
+12px ×46, 17px ×42, 21px ×24, 22px ×19, 32px ×18, 34px ×14, 18px ×13, 19px ×10,
+26px ×7, 24px ×5, 28px ×4, 44/30/16px ×2, 56px, 40px, 10px. 21/22 and 18/19 are
+neighbours no system needs.
 
 **7. Stale colour names in comments, describing a swap that already happened.**
 `app.css:503` "The console sidebar, on the deep **comb red**" — the sidebar is
-`bg-brand-deep` `#243619`, a dark **green**; `app.css:508` "brand **red**".
-`layouts/guest.blade.php:17` "the only place **comb red** is allowed";
-`guest.blade.php:18` "every control on it stays **peacock**";
-`DesignSystemGuardTest.php:195` "**Peacock** stays the interactive colour", under
-a method named `test_brand_red_is_never_used_on_an_interactive_element:197`.
-Brand is green, primary is red, and no comment says so.
+`bg-brand-deep` `#243619`, a dark **green**; `:508` "brand **red**".
+`guest.blade.php:17` "the only place **comb red** is allowed"; `:18` "every
+control on it stays **peacock**"; `DesignSystemGuardTest.php:195` "**Peacock**
+stays the interactive colour", under a method named
+`test_brand_red_is_never_used_on_an_interactive_element:197`. Brand is green,
+primary is red, and no comment says so.
 
 **8. Two `width` animations, one of which the stylesheet explicitly forbids.**
 `livewire/photos/upload.blade.php:107` — `transition-all duration-150` on an
@@ -382,9 +375,8 @@ Both contradict the new block's own rule at `app.css:677-680`.
 **9. 38 inline `<svg>` blocks, 1 icon component.** Only `icon/user.blade.php`
 exists. The search glyph is duplicated verbatim three times
 (`app-topbar.blade.php:83-85`, `:96-98`, `command-palette.blade.php:116-117`).
-Six SVGs each in `performance/index.blade.php`,
-`performance/broodcock-timeline.blade.php`, `broodcocks/index.blade.php`; four
-each in `photos/upload.blade.php` and `app-sidebar.blade.php`. Nine more nav
+Six SVGs each in `performance/index`, `performance/broodcock-timeline`,
+`broodcocks/index`; four each in `photos/upload` and `app-sidebar`. Nine more nav
 icons are raw path strings in a PHP array at `app-sidebar.blade.php:15-46`.
 
 **10. Shipped comments describing code that is no longer there.**
