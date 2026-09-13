@@ -11,7 +11,7 @@
         </div>
 
         @can('create', App\Models\BreedingRecord::class)
-            <a href="{{ route('breeding.create') }}" class="btn-primary mt-4 w-full sm:mt-0 sm:w-auto">
+            <a href="{{ route('breeding.create') }}" wire:navigate class="btn-primary mt-4 w-full sm:mt-0 sm:w-auto">
                 Record a Mating
             </a>
         @endcan
@@ -82,7 +82,7 @@
                 <button type="button" wire:click="clearFilters" class="btn-secondary mt-6">Clear filters</button>
             @else
                 @can('create', App\Models\BreedingRecord::class)
-                    <a href="{{ route('breeding.create') }}" class="btn-primary mt-6">Record your first mating</a>
+                    <a href="{{ route('breeding.create') }}" wire:navigate class="btn-primary mt-6">Record your first mating</a>
                 @endcan
             @endif
         </div>
@@ -106,13 +106,13 @@
                                     {{ $record->mating_date->format('j M Y') }}
                                 </td>
                                 <td class="px-6 py-4 text-sm">
-                                    <a href="{{ route('broodcocks.show', $record->sire_id) }}" class="text-primary hover:underline">
+                                    <a href="{{ route('broodcocks.show', $record->sire_id) }}" wire:navigate class="text-primary hover:underline">
                                         {{ $record->sire->name }}
                                     </a>
                                     <span class="block text-xs text-muted-foreground">{{ $record->sire->band_number ?? 'No band' }}</span>
                                 </td>
                                 <td class="px-6 py-4 text-sm">
-                                    <a href="{{ route('broodcocks.show', $record->dam_id) }}" class="text-primary hover:underline">
+                                    <a href="{{ route('broodcocks.show', $record->dam_id) }}" wire:navigate class="text-primary hover:underline">
                                         {{ $record->dam->name }}
                                     </a>
                                     <span class="block text-xs text-muted-foreground">{{ $record->dam->band_number ?? 'No band' }}</span>
@@ -132,7 +132,7 @@
                                             {{ $record->unregisteredOffspring() }} to register
                                         </span>
                                     @endif
-                                    <a href="{{ route('breeding.show', $record) }}" class="ml-2 font-medium text-primary hover:underline">
+                                    <a href="{{ route('breeding.show', $record) }}" wire:navigate class="ml-2 font-medium text-primary hover:underline">
                                         View
                                     </a>
                                 </td>
