@@ -107,13 +107,17 @@ final class PedigreePerformanceTest extends TestCase
 
         $orphan = Broodcock::factory()->create(['sire_id' => null, 'dam_id' => null]);
 
+        // The ratio only, not the trailing word: "3 of 14" is one figure and is
+        // set in one .datum span, so the word "ancestors" that follows it sits
+        // outside that span and is no longer contiguous in the HTML. The number
+        // is what this test is about.
         Livewire::test(Pedigree::class, ['broodcock' => $orphan])
-            ->assertSee('0 of 14 ancestors');
+            ->assertSee('0 of 14');
 
         $full = $this->buildFullPedigree();
 
         Livewire::test(Pedigree::class, ['broodcock' => $full])
-            ->assertSee('14 of 14 ancestors');
+            ->assertSee('14 of 14');
     }
 
     /**

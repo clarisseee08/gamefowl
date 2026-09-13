@@ -68,9 +68,32 @@ final class Browse extends Component
     #[Url(except: false)]
     public bool $forSaleOnly = false;
 
-    public function mount(): void
+    /**
+     * The heading level this component's own title renders at.
+     *
+     * THE REASON THIS IS A PROP. Browse is routed at /catalog, where "Our
+     * Gamefowl" is genuinely the page's heading - and it is ALSO embedded in
+     * the front page below the farm's nameplate, where it is not. Hard-coding
+     * <h1> gave / two of them, which docs/redesign/gaps.md recorded during the
+     * migration and left standing.
+     *
+     * Two h1s is not a tidiness complaint. A screen-reader user listing a
+     * page's headings to find their way around gets two competing answers to
+     * "what is this page", and the second one is a section of the first.
+     *
+     * Only the tag changes. The size, weight and brand marker are set by the
+     * classes on the element, so both renderings look identical.
+     */
+    public string $headingLevel = 'h1';
+
+    public function mount(string $headingLevel = 'h1'): void
     {
         $this->authorize('viewAny', Broodcock::class);
+
+        // Allow-listed rather than echoed: this value reaches the template as a
+        // raw tag name, and the one thing a tag name must never be is whatever
+        // a caller happened to pass.
+        $this->headingLevel = in_array($headingLevel, ['h1', 'h2'], true) ? $headingLevel : 'h1';
     }
 
     public function updating(string $property): void

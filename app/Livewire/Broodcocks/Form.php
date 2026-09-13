@@ -399,7 +399,8 @@ final class Form extends Component
 
     public function render(): View
     {
-        return view('livewire.broodcocks.form');
+        return view('livewire.broodcocks.form')
+            ->title($this->isEditing() ? 'Edit Bird' : 'Register a Bird');
     }
 
     /**

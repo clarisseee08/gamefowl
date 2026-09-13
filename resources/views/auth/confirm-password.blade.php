@@ -6,7 +6,7 @@
 
     @if ($errors->any())
         <div class="mt-4 rounded-lg bg-destructive-bg p-3 ring-1 ring-destructive/20" role="alert">
-            <ul class="space-y-1 text-sm text-destructive">
+            <ul class="space-y-1 text-sm text-foreground">
                 @foreach ($errors->all() as $message)
                     <li>{{ $message }}</li>
                 @endforeach

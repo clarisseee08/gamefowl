@@ -309,7 +309,10 @@
          heading and its own photo grid, so nothing is wrapped around it here.
     --------------------------------------------------------------- --}}
     <section id="stock" class="scroll-mt-20 border-b border-border py-12 sm:py-16">
-        <livewire:catalog.browse />
+        {{-- h2, because the farm's nameplate above is this page's h1. Routed on
+             its own at /catalog it keeps the h1 - the same component, correctly
+             levelled for where it finds itself. --}}
+        <livewire:catalog.browse heading-level="h2" />
     </section>
 
     {{-- ---------------------------------------------------------------

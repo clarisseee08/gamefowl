@@ -39,24 +39,39 @@
         @php
             $followUp = $this->nextFollowUp;
             $followUpState = $followUp->scheduleState();
-            // A left rule and a desaturated wash - the state is also written out
-            // in words at the end of the sentence, so hue is never load-bearing.
-            $followUpClasses = match ($followUpState) {
-                'Overdue' => 'border-destructive bg-destructive-bg text-destructive',
-                'Due soon' => 'border-warning bg-warning-bg text-warning',
-                default => 'border-info bg-info-bg text-info',
+
+            /*
+             * x-alert, not a hand-rolled callout.
+             *
+             * This was a 2px coloured border-left on a tinted ground with the
+             * variant colour spent on the whole sentence. Three things were
+             * wrong with that and the component already solves all of them.
+             *
+             * The thick coloured left rule is a banned default - it is the
+             * decoration every framework reaches for and it means nothing here.
+             *
+             * The text was the variant ink on the variant ground. The alert
+             * component's own note records why that fails: muted ink measures
+             * 5.95:1 on the warning ground, under the console's 7:1 floor, so
+             * only the GLYPH carries the variant colour and the text stays
+             * foreground at 13.7:1.
+             *
+             * And the role was wrong. An overdue vaccination and a scheduled one
+             * were both plain <p> - now danger gets an assertive role="alert"
+             * and the rest are polite role="status", which the component decides.
+             */
+            [$followUpVariant, $followUpTitle] = match ($followUpState) {
+                'Overdue' => ['danger', 'Follow-up overdue'],
+                'Due soon' => ['warning', 'Follow-up due soon'],
+                default => ['info', 'Follow-up scheduled'],
             };
         @endphp
 
         <div class="border-b border-border px-4 py-3 sm:px-5">
-            <p class="rounded-[4px] border-l-2 px-3 py-2 text-[15px] leading-snug {{ $followUpClasses }}">
-                <span class="font-medium">Next follow-up:</span>
-                {{ $followUp->record_type->label() }}
-                @if ($followUp->product_name)
-                    ({{ $followUp->product_name }})
-                @endif
-                on <span class="datum">{{ $followUp->next_due_date->format('d M Y') }}</span> &mdash; {{ $followUpState }}.
-            </p>
+            <x-alert :variant="$followUpVariant" :title="$followUpTitle">
+                {{ $followUp->record_type->label() }}@if ($followUp->product_name) ({{ $followUp->product_name }})@endif
+                on <span class="datum">{{ $followUp->next_due_date->format('d M Y') }}</span>.
+            </x-alert>
         </div>
     @endif
 
@@ -113,7 +128,7 @@
 
                             <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
                                 <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Product / Condition</span>
-                                <p class="text-[15px] leading-snug text-foreground">{{ $record->product_name ?: '—' }}</p>
+                                <p class="text-[15px] leading-snug text-foreground">{{ $record->product_name ?: 'Not recorded' }}</p>
                                 @if ($record->dosage)
                                     <p class="mt-0.5 text-[12px] text-muted-foreground">Dosage: <span class="datum">{{ $record->dosage }}</span></p>
                                 @endif
@@ -124,7 +139,7 @@
                                      promised health status, not the farm's notes. --}}
                                 @can('viewRemarks', $record)
                                     @if ($record->remarks)
-                                        <p class="mt-1.5 max-w-[40ch] border-l-2 border-border pl-2 text-[12px] leading-snug text-muted-foreground"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
+                                        <p class="mt-1.5 max-w-[40ch] border-l border-border pl-2 text-[12px] leading-snug text-muted-foreground"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
                                     @endif
                                 @endcan
                             </td>

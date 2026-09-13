@@ -239,6 +239,7 @@ final class Form extends Component
 
     public function render(): View
     {
-        return view('livewire.performance.form');
+        return view('livewire.performance.form')
+            ->title($this->isEditing() ? 'Edit Performance Record' : 'Record an Event');
     }
 }

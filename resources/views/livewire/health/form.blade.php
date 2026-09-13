@@ -111,11 +111,20 @@
                      leaving this blank is usually a mistake - but a one-off
                      booster legitimately has no follow-up. --}}
                 @if ($this->expectsNextDueDate && ! $next_due_date)
-                    <p class="mt-2 rounded-[4px] border-l-2 border-warning bg-warning-bg px-3 py-2 text-[12px] leading-snug text-warning">
-                        A {{ $this->selectedTypeLabel }} usually needs a
-                        follow-up. Adding a next due date puts this bird on the vaccination schedule
-                        so nobody forgets. You can still save without one.
-                    </p>
+                    {{-- x-alert rather than a hand-rolled panel. It was warning ink
+                         on the warning ground behind a 2px coloured left rule, which
+                         is two problems: the thick coloured side border is a banned
+                         default, and the component's own note records that this
+                         exact pairing measures 5.95:1 - under the console's 7:1
+                         floor - which is why only the glyph carries the variant
+                         colour and the text stays foreground. --}}
+                    <div class="mt-2">
+                        <x-alert variant="warning" title="A follow-up is usually needed">
+                            A {{ $this->selectedTypeLabel }} normally recurs. Adding a next due
+                            date puts this bird on the vaccination schedule so nobody forgets.
+                            You can still save without one.
+                        </x-alert>
+                    </div>
                 @else
                     <p class="help">Leave blank if no follow-up is needed.</p>
                 @endif

@@ -21,11 +21,18 @@
     a circle, title, description. Everything decorative about it was dropped,
     and the reasons are rules rather than taste:
 
-      NO MOTION. EMS enters with `animate-in fade-in zoom-in-95 duration-500`
-      and grows the icon on hover. app.css states the counter-case in its own
-      comment: an empty state is the resting state of a screen, and a thing
-      that animates in every time a filter returns nothing punishes the user for
-      filtering. 500ms also exceeds the 300ms ceiling outright.
+      NO MOTION. EMS enters with a fade-and-zoom over half a second and grows
+      the icon on hover. app.css states the counter-case in its own comment: an
+      empty state is the resting state of a screen, and a thing that animates in
+      every time a filter returns nothing punishes the user for filtering. Half
+      a second also exceeds the 300ms ceiling outright.
+
+      THE DURATION IS DESCRIBED IN WORDS ON PURPOSE. This comment used to quote
+      the EMS utilities verbatim, and Tailwind scans this file as text with no
+      idea what a comment is - so naming the banned duration compiled it into
+      the production bundle. app.css's own header records the same trap: "a
+      design document whose anti-pattern list names forbidden utilities was
+      generating those exact utilities". The rule against it was generating it.
 
       NO SHADOW ON THE GLYPH CIRCLE, NO DASHED CARD, NO TONE VARIANTS. Elevation
       here is a hairline and a background step, and EMS's `warning` tone is an

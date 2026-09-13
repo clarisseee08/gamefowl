@@ -316,7 +316,7 @@
                                     @endif
                                 </td>
                                 <td x-show="cols.sex" class="whitespace-nowrap px-4 py-2.5 text-[14px] text-muted-foreground">{{ $bird->sex->label() }}</td>
-                                <td x-show="cols.bloodline" class="whitespace-nowrap px-4 py-2.5 text-[14px] text-muted-foreground">{{ $bird->bloodline ?? '—' }}</td>
+                                <td x-show="cols.bloodline" class="whitespace-nowrap px-4 py-2.5 text-[14px] text-muted-foreground">{{ $bird->bloodline ?? 'Not recorded' }}</td>
                                 <td x-show="cols.class" class="whitespace-nowrap px-4 py-2.5">
                                     <span class="badge {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
                                 </td>

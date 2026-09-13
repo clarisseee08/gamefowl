@@ -29,10 +29,16 @@
     </div>
 
     {{-- Two numbers, big enough to read across a room. This is the question
-         the screen exists to answer. The left rule is the whole of the
-         decoration: a ledger marks a column, it does not tint it. --}}
+         the screen exists to answer.
+
+         THE COLOURED LEFT RULE IS GONE from both cards. It was 3px of
+         destructive and warning down the edge, and it was saying a second time
+         what the 44px figure inside already says in the same colour - on a card
+         whose heading also spells it out in words. A status stripe down a card
+         edge is the decoration every framework reaches for; the figure is the
+         signal here, and it does not need an underline. --}}
     <div class="mb-10 grid gap-4 sm:grid-cols-2">
-        <div class="card border-l-[3px] border-l-destructive p-5">
+        <div class="card p-5">
             <p class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Overdue</p>
             <p class="datum mt-2 text-[44px] font-semibold leading-none tracking-[-0.02em] text-destructive">{{ number_format($this->overdueCount) }}</p>
             <p class="mt-3 text-[15px] leading-snug text-muted-foreground">
@@ -40,7 +46,7 @@
             </p>
         </div>
 
-        <div class="card border-l-[3px] border-l-warning p-5">
+        <div class="card p-5">
             <p class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Due in the next {{ $this->warningDays() }} days</p>
             <p class="datum mt-2 text-[44px] font-semibold leading-none tracking-[-0.02em] text-warning">{{ number_format($this->dueSoonCount) }}</p>
             <p class="mt-3 text-[15px] leading-snug text-muted-foreground">
@@ -107,7 +113,7 @@
 
                                     <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
                                         <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Product</span>
-                                        <span class="text-[15px] text-foreground">{{ $record->product_name ?: '—' }}</span>
+                                        <span class="text-[15px] text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
                                     </td>
 
                                     <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
@@ -206,7 +212,7 @@
 
                                     <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
                                         <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Product</span>
-                                        <span class="text-[15px] text-foreground">{{ $record->product_name ?: '—' }}</span>
+                                        <span class="text-[15px] text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
                                     </td>
 
                                     <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
