@@ -81,10 +81,10 @@
                         <dd class="text-[15px] text-foreground">{{ $person->role->label() }}</dd>
 
                         <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Position</dt>
-                        <dd class="text-[15px] text-muted-foreground">{{ $person->position ?? '—' }}</dd>
+                        <dd class="text-[15px] text-muted-foreground">{{ $person->position ?? 'Not recorded' }}</dd>
 
                         <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Contact</dt>
-                        <dd class="datum text-[15px] text-muted-foreground">{{ $person->contact_number ?? '—' }}</dd>
+                        <dd class="datum text-[15px] text-muted-foreground">{{ $person->contact_number ?? 'Not recorded' }}</dd>
                     </dl>
 
                     @canany(['update', 'deactivate'], $person)
@@ -138,8 +138,8 @@
                                 </td>
                                 <td class="datum whitespace-nowrap px-4 py-3 text-[15px] text-muted-foreground">{{ $person->email }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-[15px] text-foreground">{{ $person->role->label() }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 text-[15px] text-muted-foreground">{{ $person->position ?? '—' }}</td>
-                                <td class="datum whitespace-nowrap px-4 py-3 text-[15px] text-muted-foreground">{{ $person->contact_number ?? '—' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 text-[15px] text-muted-foreground">{{ $person->position ?? 'Not recorded' }}</td>
+                                <td class="datum whitespace-nowrap px-4 py-3 text-[15px] text-muted-foreground">{{ $person->contact_number ?? 'Not recorded' }}</td>
                                 <td class="whitespace-nowrap px-4 py-3">
                                     @if ($person->is_active)
                                         <span class="badge badge-ok">Active</span>

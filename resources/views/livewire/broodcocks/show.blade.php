@@ -344,9 +344,9 @@
                                 </td>
                                 <td class="px-6 py-4 text-sm text-foreground">{{ $child->name }}</td>
                                 <td class="px-6 py-4 text-sm text-muted-foreground">{{ $child->sex->label() }}</td>
-                                <td class="px-6 py-4 text-sm text-muted-foreground">{{ $child->bloodline ?? '—' }}</td>
+                                <td class="px-6 py-4 text-sm text-muted-foreground">{{ $child->bloodline ?? 'Not recorded' }}</td>
                                 <td class="px-6 py-4 text-sm text-muted-foreground">
-                                    {{ $child->date_hatched?->format('j M Y') ?? '—' }}
+                                    {{ $child->date_hatched?->format('j M Y') ?? 'Not recorded' }}
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="badge {{ $child->status->badgeClasses() }}">{{ $child->status->label() }}</span>

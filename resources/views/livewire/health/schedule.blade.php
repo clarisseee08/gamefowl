@@ -107,7 +107,7 @@
 
                                     <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
                                         <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Product</span>
-                                        <span class="text-[15px] text-foreground">{{ $record->product_name ?: '—' }}</span>
+                                        <span class="text-[15px] text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
                                     </td>
 
                                     <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
@@ -206,7 +206,7 @@
 
                                     <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
                                         <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Product</span>
-                                        <span class="text-[15px] text-foreground">{{ $record->product_name ?: '—' }}</span>
+                                        <span class="text-[15px] text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
                                     </td>
 
                                     <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
