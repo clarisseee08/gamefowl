@@ -7,7 +7,28 @@
     'summary' => null,
     /** The search control. Flexes to fill; everything else shrinks to fit. */
     'search' => null,
+    /** An in-flight indicator, e.g. a wire:loading "Searching…". Optional. */
+    'loading' => null,
 ])
+
+@php
+    /*
+     * EVERY NUMBER IN THIS APPLICATION IS MONOSPACED, and the summary count is
+     * a number. `:summary` takes a plain string, so "Showing 4 birds matching
+     * your filters." shipped with proportional digits - which on a filter bar
+     * is the one place a figure visibly jitters, because it changes as you
+     * type.
+     *
+     * Escaping first and wrapping digit runs afterwards is what makes the
+     * unescaped echo below safe: the only markup in the result is the span
+     * this line puts there. Doing it here rather than at six call sites also
+     * means no screen's copy changed by a single character - the assertions
+     * that target these strings still match.
+     */
+    $summaryHtml = $summary === null
+        ? null
+        : preg_replace('/\d[\d,.]*/', '<span class="datum">$0</span>', e($summary));
+@endphp
 
 {{--
     THE FILTER BAR.
@@ -51,12 +72,23 @@
         @endif
 
         {{ $slot }}
+
+        {{-- An in-flight indicator belongs beside the controls that caused it,
+             not in the footer: the footer only exists once a filter is active,
+             so a loading state living there is invisible on the first search. --}}
+        @if ($loading)
+            <div class="shrink-0 text-[14px] text-muted-foreground">{{ $loading }}</div>
+        @endif
     </div>
 
     @if ($active)
         <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
-            @if ($summary)
-                <p class="text-[14px] text-muted-foreground">{{ $summary }}</p>
+            @if ($summaryHtml)
+                {{-- Unescaped deliberately. The string was escaped in the @php
+                     block above and the only markup added afterwards is the
+                     .datum span, so there is no path from caller input to
+                     rendered HTML here. --}}
+                <p class="text-[14px] text-muted-foreground">{!! $summaryHtml !!}</p>
             @else
                 <span></span>
             @endif

@@ -106,7 +106,7 @@
                     @endif
                 </p>
                 <div class="mt-6 flex flex-wrap justify-center gap-3">
-                    <button type="button" wire:click="clearFilters" class="btn-secondary">Clear Filters</button>
+                    <button type="button" wire:click="clearFilters" class="btn-secondary">Clear filters</button>
                     @can('create', \App\Models\HealthRecord::class)
                         <a href="{{ route('health.create') }}" wire:navigate class="btn-primary">Add Health Record</a>
                     @endcan
