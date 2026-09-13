@@ -29,14 +29,23 @@ class StoreBroodcockRequest extends FormRequest
      * Shared rule set, so the Livewire form and this Form Request cannot drift
      * apart. Livewire components call this directly in $this->validate().
      *
+     * A parent is entered one of two ways, and which one decides the rules:
+     * chosen from the birds already on record (an id that must exist and be
+     * the right sex), or typed in by hand as a bird the farm does not own (a
+     * name, which becomes a real broodcock row before the record is written).
+     * The same two-way shape the breeding form already uses.
+     *
      * @param  Broodcock|null  $broodcock  The record being edited, if any -
      *                                     used to exempt itself from the
      *                                     unique band-number check and to
      *                                     prevent self-parenting.
      * @return array<string, mixed>
      */
-    public static function rulesFor(?Broodcock $broodcock = null): array
-    {
+    public static function rulesFor(
+        ?Broodcock $broodcock = null,
+        bool $sireIsExternal = false,
+        bool $damIsExternal = false,
+    ): array {
         $selfId = $broodcock?->id;
 
         return [
@@ -57,22 +66,38 @@ class StoreBroodcockRequest extends FormRequest
             'distinguishing_marks' => ['nullable', 'string', 'max:2000'],
             'status' => ['required', Rule::enum(BroodcockStatus::class)],
 
+            'sire_is_external' => ['boolean'],
+            'dam_is_external' => ['boolean'],
+
             // A sire must be male, a dam must be female, neither may be the
             // bird itself, and neither may be a bird descended from it. The DB
             // enforces the self-reference check too, but catching it here
             // produces a readable message instead of a constraint violation.
-            'sire_id' => [
+            //
+            // When the parent is being typed in by hand there is no id yet, so
+            // none of that applies - the name is what is validated, and the
+            // resolved bird is re-checked for an ancestor loop after it exists.
+            'sire_id' => $sireIsExternal ? ['nullable'] : [
                 'nullable', 'integer',
                 Rule::exists('broodcocks', 'id')->where('sex', Sex::Male->value)->whereNull('deleted_at'),
                 $selfId ? Rule::notIn([$selfId]) : '',
                 self::noAncestorLoop($selfId, 'sire'),
             ],
-            'dam_id' => [
+            'sire_external_name' => $sireIsExternal
+                ? ['required', 'string', 'max:255']
+                : ['nullable', 'string', 'max:255'],
+            'sire_external_bloodline' => ['nullable', 'string', 'max:120'],
+
+            'dam_id' => $damIsExternal ? ['nullable'] : [
                 'nullable', 'integer',
                 Rule::exists('broodcocks', 'id')->where('sex', Sex::Female->value)->whereNull('deleted_at'),
                 $selfId ? Rule::notIn([$selfId]) : '',
                 self::noAncestorLoop($selfId, 'dam'),
             ],
+            'dam_external_name' => $damIsExternal
+                ? ['required', 'string', 'max:255']
+                : ['nullable', 'string', 'max:255'],
+            'dam_external_bloodline' => ['nullable', 'string', 'max:120'],
 
             'notes' => ['nullable', 'string', 'max:5000'],
         ];
@@ -125,7 +150,7 @@ class StoreBroodcockRequest extends FormRequest
      * terminates, and the first thing a keeper would do on discovering a cycle
      * is open the form to correct it.
      */
-    private static function isSelfOrDescendedFrom(int $candidateId, int $selfId): bool
+    public static function isSelfOrDescendedFrom(int $candidateId, int $selfId): bool
     {
         $seen = [];
         $frontier = [$candidateId];
@@ -183,6 +208,10 @@ class StoreBroodcockRequest extends FormRequest
             'status' => 'status',
             'sire_id' => 'sire (father)',
             'dam_id' => 'dam (mother)',
+            'sire_external_name' => 'sire name',
+            'dam_external_name' => 'dam name',
+            'sire_external_bloodline' => 'sire bloodline',
+            'dam_external_bloodline' => 'dam bloodline',
             'notes' => 'notes',
         ];
     }
@@ -203,6 +232,8 @@ class StoreBroodcockRequest extends FormRequest
             'dam_id.exists' => 'Please choose a female bird as the dam.',
             'sire_id.not_in' => 'A bird cannot be its own sire.',
             'dam_id.not_in' => 'A bird cannot be its own dam.',
+            'sire_external_name.required' => 'Please enter the name of the sire.',
+            'dam_external_name.required' => 'Please enter the name of the dam.',
             'date_hatched.before_or_equal' => 'The hatch date cannot be in the future.',
             'date_acquired.after_or_equal' => 'The bird cannot have been acquired before it hatched.',
             'weight.min' => 'Weight cannot be a negative number.',

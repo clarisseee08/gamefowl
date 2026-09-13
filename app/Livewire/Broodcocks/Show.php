@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Broodcocks;
 
+use App\Livewire\Concerns\ChoosesShellByViewer;
 use App\Models\Broodcock;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
@@ -14,6 +15,8 @@ use Livewire\Component;
 
 final class Show extends Component
 {
+    use ChoosesShellByViewer;
+
     public Broodcock $broodcock;
 
     #[Url(except: 'overview')]
@@ -89,6 +92,7 @@ final class Show extends Component
 
     public function render(): View
     {
-        return view('livewire.broodcocks.show');
+        return view('livewire.broodcocks.show')
+            ->layout($this->viewerShell());
     }
 }

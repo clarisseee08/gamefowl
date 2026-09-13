@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Breeding;
 
-use App\Enums\BroodcockClass;
-use App\Enums\BroodcockStatus;
+use App\Actions\Broodcocks\ResolveExternalParent;
 use App\Enums\Sex;
 use App\Http\Requests\StoreBreedingRecordRequest;
 use App\Models\BreedingRecord;
@@ -196,32 +195,10 @@ final class Form extends Component
         $this->redirectRoute('breeding.show', $saved, navigate: true);
     }
 
-    /**
-     * Find or create the broodcock row standing in for a bird the farm does
-     * not own.
-     *
-     * Matched on name and sex, so entering the same borrowed hen on a second
-     * mating reuses her row instead of creating a duplicate - which is what
-     * keeps her one node in the pedigree rather than several.
-     */
+    /** Delegates to the shared action - see ResolveExternalParent for why. */
     private function resolveExternalParent(Sex $sex, string $name, ?string $bloodline): int
     {
-        $bloodline = $bloodline !== null && trim($bloodline) !== '' ? trim($bloodline) : null;
-
-        $bird = Broodcock::query()->firstOrCreate(
-            [
-                'name' => trim($name),
-                'sex' => $sex->value,
-                'is_external' => true,
-            ],
-            [
-                'bloodline' => $bloodline,
-                'class' => BroodcockClass::Ordinary->value,
-                'status' => BroodcockStatus::Active->value,
-            ],
-        );
-
-        return (int) $bird->id;
+        return (int) app(ResolveExternalParent::class)->handle($sex, $name, $bloodline)->id;
     }
 
     /** @return Collection<int, Broodcock> */

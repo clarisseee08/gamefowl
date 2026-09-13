@@ -54,12 +54,24 @@ final class BroodcockAuthorizationTest extends TestCase
         $this->actingAs($user)->get(route('broodcocks.show', $bird))->assertOk();
     }
 
-    public function test_a_guest_cannot_view_broodcocks(): void
+    /**
+     * A guest gets the shop window, not the record system.
+     *
+     * This test used to assert that a guest could reach neither screen. A
+     * bird's PAGE is now public - the catalogue is the farm's advertisement and
+     * the pages it links to have to be reachable without an account. The LIST
+     * is not: it is the data-entry screen, with every bird on the farm
+     * regardless of status, filters for internal vocabulary, and bulk delete.
+     *
+     * The line between them is the point of this test, which is why it keeps
+     * both halves rather than being split in two.
+     */
+    public function test_a_guest_can_open_a_birds_page_but_not_the_record_list(): void
     {
         $bird = Broodcock::factory()->create();
 
+        $this->get(route('broodcocks.show', $bird))->assertOk();
         $this->get(route('broodcocks.index'))->assertRedirect(route('login'));
-        $this->get(route('broodcocks.show', $bird))->assertRedirect(route('login'));
     }
 
     // ---------------------------------------------------------------
