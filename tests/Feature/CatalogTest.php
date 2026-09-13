@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enums\BroodcockStatus;
-use App\Livewire\Catalog\Index;
+use App\Livewire\Catalog\Browse;
 use App\Models\Broodcock;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -66,7 +66,7 @@ final class CatalogTest extends TestCase
         Broodcock::factory()->create(['name' => 'Deadbird', 'status' => BroodcockStatus::Deceased]);
 
         Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Index::class)
+            ->test(Browse::class)
             ->assertSee('Onfarmbird')
             ->assertDontSee('Soldbird')
             ->assertDontSee('Deadbird');
@@ -80,7 +80,7 @@ final class CatalogTest extends TestCase
         ]);
 
         Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Index::class)
+            ->test(Browse::class)
             ->assertSee('Talisman')
             ->assertDontSee('INTERNAL-COST-DATA-DO-NOT-SHOW');
     }
@@ -90,7 +90,7 @@ final class CatalogTest extends TestCase
         Broodcock::factory()->unbanded()->create(['name' => 'Youngster']);
 
         Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Index::class)
+            ->test(Browse::class)
             ->assertSee('Youngster')
             ->assertSee('Not yet banded');
     }
@@ -101,7 +101,7 @@ final class CatalogTest extends TestCase
         Broodcock::factory()->create(['name' => 'Kelsobird', 'bloodline' => 'Kelso']);
 
         Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Index::class)
+            ->test(Browse::class)
             ->set('bloodline', 'Sweater')
             ->assertSee('Sweaterbird')
             ->assertDontSee('Kelsobird');
@@ -110,7 +110,7 @@ final class CatalogTest extends TestCase
     public function test_an_empty_catalogue_says_something_useful(): void
     {
         Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Index::class)
+            ->test(Browse::class)
             ->assertSee('No birds are listed yet');
     }
 
@@ -121,14 +121,14 @@ final class CatalogTest extends TestCase
         Broodcock::factory()->count(3)->create();
         DB::flushQueryLog();
         DB::enableQueryLog();
-        Livewire::actingAs($customer)->test(Index::class)->html();
+        Livewire::actingAs($customer)->test(Browse::class)->html();
         $small = count(DB::getQueryLog());
         DB::disableQueryLog();
 
         Broodcock::factory()->count(8)->create();
         DB::flushQueryLog();
         DB::enableQueryLog();
-        Livewire::actingAs($customer)->test(Index::class)->html();
+        Livewire::actingAs($customer)->test(Browse::class)->html();
         $large = count(DB::getQueryLog());
         DB::disableQueryLog();
 
@@ -152,7 +152,7 @@ final class CatalogTest extends TestCase
         // The farm marks almost nothing for sale, so a catalogue that defaulted
         // to available-only would greet a customer with an empty page.
         Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Index::class)
+            ->test(Browse::class)
             ->assertSee('Bagwis')
             ->assertSee('Dalisay');
     }
@@ -163,7 +163,7 @@ final class CatalogTest extends TestCase
         Broodcock::factory()->create(['name' => 'Dalisay', 'for_sale' => true]);
 
         Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Index::class)
+            ->test(Browse::class)
             ->set('forSaleOnly', true)
             ->assertSee('Dalisay')
             ->assertDontSee('Bagwis');
@@ -174,7 +174,7 @@ final class CatalogTest extends TestCase
         Broodcock::factory()->create(['name' => 'Dalisay', 'for_sale' => true]);
 
         Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Index::class)
+            ->test(Browse::class)
             ->assertSee('For sale');
     }
 
@@ -183,7 +183,7 @@ final class CatalogTest extends TestCase
         Broodcock::factory()->create(['name' => 'Bagwis', 'for_sale' => false]);
 
         Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Index::class)
+            ->test(Browse::class)
             ->set('forSaleOnly', true)
             ->call('clearFilters')
             ->assertSet('forSaleOnly', false)

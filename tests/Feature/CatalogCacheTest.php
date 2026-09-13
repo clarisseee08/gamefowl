@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Livewire\Catalog\Index;
+use App\Livewire\Catalog\Browse;
 use App\Models\Broodcock;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -40,7 +40,7 @@ final class CatalogCacheTest extends TestCase
         DB::flushQueryLog();
         DB::enableQueryLog();
 
-        Livewire::actingAs($viewer)->test(Index::class)->html();
+        Livewire::actingAs($viewer)->test(Browse::class)->html();
 
         $queries = collect(DB::getQueryLog())
             ->filter(fn (array $query): bool => str_contains($query['query'], 'broodcock'))
@@ -77,11 +77,11 @@ final class CatalogCacheTest extends TestCase
         $customer = User::factory()->customer()->create();
         Broodcock::factory()->create(['name' => 'Old Timer']);
 
-        Livewire::actingAs($customer)->test(Index::class)->assertSee('Old Timer');
+        Livewire::actingAs($customer)->test(Browse::class)->assertSee('Old Timer');
 
         Broodcock::factory()->create(['name' => 'New Arrival']);
 
-        Livewire::actingAs($customer)->test(Index::class)
+        Livewire::actingAs($customer)->test(Browse::class)
             ->assertSee('New Arrival')
             ->assertSee('Old Timer');
     }
@@ -91,11 +91,11 @@ final class CatalogCacheTest extends TestCase
         $customer = User::factory()->customer()->create();
         $bird = Broodcock::factory()->create(['name' => 'Wrong Name']);
 
-        Livewire::actingAs($customer)->test(Index::class)->assertSee('Wrong Name');
+        Livewire::actingAs($customer)->test(Browse::class)->assertSee('Wrong Name');
 
         $bird->update(['name' => 'Corrected Name']);
 
-        Livewire::actingAs($customer)->test(Index::class)
+        Livewire::actingAs($customer)->test(Browse::class)
             ->assertSee('Corrected Name')
             ->assertDontSee('Wrong Name');
     }
@@ -106,11 +106,11 @@ final class CatalogCacheTest extends TestCase
         $bird = Broodcock::factory()->create(['name' => 'Departed Bird']);
         Broodcock::factory()->create(['name' => 'Remaining Bird']);
 
-        Livewire::actingAs($customer)->test(Index::class)->assertSee('Departed Bird');
+        Livewire::actingAs($customer)->test(Browse::class)->assertSee('Departed Bird');
 
         $bird->delete();
 
-        Livewire::actingAs($customer)->test(Index::class)
+        Livewire::actingAs($customer)->test(Browse::class)
             ->assertSee('Remaining Bird')
             ->assertDontSee('Departed Bird');
     }
@@ -120,11 +120,11 @@ final class CatalogCacheTest extends TestCase
         $customer = User::factory()->customer()->create();
         Broodcock::factory()->create(['bloodline' => 'Sweater']);
 
-        Livewire::actingAs($customer)->test(Index::class)->assertSee('Sweater');
+        Livewire::actingAs($customer)->test(Browse::class)->assertSee('Sweater');
 
         Broodcock::factory()->create(['bloodline' => 'Hatch']);
 
-        Livewire::actingAs($customer)->test(Index::class)->assertSee('Hatch');
+        Livewire::actingAs($customer)->test(Browse::class)->assertSee('Hatch');
     }
 
     /**
@@ -140,11 +140,11 @@ final class CatalogCacheTest extends TestCase
         Broodcock::factory()->create(['name' => 'Sweaterbird', 'bloodline' => 'Sweater']);
         Broodcock::factory()->create(['name' => 'Kelsobird', 'bloodline' => 'Kelso']);
 
-        Livewire::actingAs($customer)->test(Index::class)
+        Livewire::actingAs($customer)->test(Browse::class)
             ->assertSee('Sweaterbird')
             ->assertSee('Kelsobird');
 
-        Livewire::actingAs($customer)->test(Index::class)
+        Livewire::actingAs($customer)->test(Browse::class)
             ->set('bloodline', 'Sweater')
             ->assertSee('Sweaterbird')
             ->assertDontSee('Kelsobird');
