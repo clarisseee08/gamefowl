@@ -115,6 +115,29 @@ RUN chmod +x /usr/local/bin/entrypoint \
                storage/logs \
                bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
+    # NGINX'S OWN TEMP DIRECTORIES, and this is not housekeeping - without it
+    # every file upload fails with a 500 that never reaches PHP.
+    #
+    # nginx.conf runs the workers as www-data, but Alpine's nginx package
+    # creates /var/lib/nginx owned by the `nginx` user. A POST body larger than
+    # client_body_buffer_size is spooled to /var/lib/nginx/tmp/client_body
+    # before nginx hands the request on - and a photo is always larger than
+    # that buffer. The worker cannot write there, so nginx aborts with
+    #
+    #   [crit] open() ".../client_body/0000000001" failed (13: Permission denied)
+    #
+    # and returns 500. Small POSTs stay in memory and succeed, which is why
+    # every Livewire update worked and only uploads broke - and why the failure
+    # looked like an application bug for so long.
+    #
+    # The other four are listed because they fail the same way the moment
+    # anything uses them.
+    && mkdir -p /var/lib/nginx/tmp/client_body \
+               /var/lib/nginx/tmp/proxy \
+               /var/lib/nginx/tmp/fastcgi \
+               /var/lib/nginx/tmp/uwsgi \
+               /var/lib/nginx/tmp/scgi \
+    && chown -R www-data:www-data /var/lib/nginx \
     && rm -rf /var/www/html/.env /var/www/html/.git
 
 EXPOSE 10000
