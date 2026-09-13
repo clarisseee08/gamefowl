@@ -157,6 +157,45 @@ final class HealthRecordTest extends TestCase
         $this->assertSame('Scheduled', $record->scheduleState());
     }
 
+    /**
+     * Changing the farm's window must move the badge too, not just the counts.
+     *
+     * This is the bug the test pins. isDueSoon() hardcoded 30 days while the
+     * schedule screen and the compliance report both read
+     * config('gfms.vaccination_warning_days'), so widening the window made the
+     * schedule count a record as "Due soon" while the badge on that same
+     * record, one screen away, still read "Scheduled". The report carried a
+     * private duplicate of isDueSoon() purely to work around it.
+     *
+     * The default masks this: at 30 days the constant and the config agree, so
+     * only a non-default window shows the disagreement.
+     */
+    public function test_the_due_soon_window_follows_the_configured_value(): void
+    {
+        $record = HealthRecord::factory()->create([
+            'checkup_date' => today(),
+            'next_due_date' => today()->addDays(45),
+        ]);
+
+        // Inside the default 30-day window? No - so nothing is due soon yet.
+        config(['gfms.vaccination_warning_days' => 30]);
+        $this->assertFalse($record->isDueSoon());
+        $this->assertSame('Scheduled', $record->scheduleState());
+
+        // The farm widens its look-ahead. The same record is now due soon, and
+        // the badge has to say so.
+        config(['gfms.vaccination_warning_days' => 60]);
+        $this->assertTrue($record->isDueSoon());
+        $this->assertSame('Due soon', $record->scheduleState());
+
+        // And the scope must agree with the accessor, or the list and the row
+        // disagree about the same record.
+        $this->assertTrue(
+            HealthRecord::query()->dueSoon()->whereKey($record->id)->exists(),
+            'scopeDueSoon() ignored the configured window that isDueSoon() honoured.'
+        );
+    }
+
     public function test_the_schedule_screen_separates_overdue_from_due_soon(): void
     {
         $staff = User::factory()->staff()->create();

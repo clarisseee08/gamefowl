@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profile;
 
+use App\Actions\Photos\StorePhoto;
 use App\Livewire\Profile\Edit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -24,6 +25,18 @@ use Tests\TestCase;
 final class ProfileTest extends TestCase
 {
     use RefreshDatabase;
+
+    /**
+     * The disk profile photos are written to.
+     *
+     * Read rather than hardcoded, because which disk that IS is the thing under
+     * test - see test_a_profile_photo_is_written_to_the_configured_photo_disk().
+     * Hardcoding 'local' here is what let the two disks drift apart unnoticed.
+     */
+    private function photoDisk(): string
+    {
+        return StorePhoto::disk();
+    }
 
     public function test_a_user_can_update_their_own_details(): void
     {
@@ -67,7 +80,7 @@ final class ProfileTest extends TestCase
 
     public function test_a_user_can_upload_a_profile_photo(): void
     {
-        Storage::fake('local');
+        Storage::fake($this->photoDisk());
         $user = User::factory()->create();
 
         Livewire::actingAs($user)
@@ -80,13 +93,79 @@ final class ProfileTest extends TestCase
 
         $this->assertNotNull($user->profile_photo_path);
         $this->assertTrue($user->hasProfilePhoto());
-        Storage::disk('local')->assertExists($user->profile_photo_path);
+        Storage::disk($this->photoDisk())->assertExists($user->profile_photo_path);
+    }
+
+    /**
+     * Profile photos go where BIRD photos go, and the two must not drift.
+     *
+     * This is a production bug that shipped: the component read
+     * config('filesystems.default') while everything else read
+     * config('gfms.photo_disk'). Render sets GFMS_PHOTO_DISK=supabase and never
+     * sets FILESYSTEM_DISK, so profile photos were written to the container's
+     * own filesystem - which is wiped on every restart. Nothing failed; the
+     * photos simply disappeared, and only profile photos did.
+     *
+     * Asserting the disk NAME on the row is what catches it: the two configs
+     * are identical in the test environment unless you look at which one was
+     * actually consulted.
+     */
+    public function test_a_profile_photo_is_written_to_the_configured_photo_disk(): void
+    {
+        // Deliberately different from gfms.photo_disk, so reading the wrong key
+        // produces the wrong answer rather than accidentally the right one.
+        config(['gfms.photo_disk' => 'public', 'filesystems.default' => 'local']);
+
+        Storage::fake('public');
+        Storage::fake('local');
+
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test(Edit::class)
+            ->set('photo', UploadedFile::fake()->image('me.jpg'))
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $user->refresh();
+
+        $this->assertSame('public', $user->profile_photo_disk);
+        Storage::disk('public')->assertExists($user->profile_photo_path);
+        Storage::disk('local')->assertMissing($user->profile_photo_path);
+    }
+
+    /**
+     * An existing row keeps resolving against the disk it was WRITTEN to, not
+     * whatever the config says today. That is the whole reason the disk is a
+     * column rather than a lookup, and it is what stops this fix from orphaning
+     * every photo uploaded before it.
+     */
+    public function test_an_existing_photo_still_resolves_after_the_disk_changes(): void
+    {
+        config(['gfms.photo_disk' => 'local']);
+        Storage::fake('local');
+        Storage::fake('public');
+
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test(Edit::class)
+            ->set('photo', UploadedFile::fake()->image('old.jpg'))
+            ->call('save');
+
+        $user->refresh();
+        $this->assertSame('local', $user->profile_photo_disk);
+
+        // The farm switches to the bucket. The old photo must not vanish.
+        config(['gfms.photo_disk' => 'public']);
+
+        $this->assertNotNull($user->fresh()->profilePhotoUrl());
     }
 
     /** A phone photo is routinely far over the limit, so the message matters. */
     public function test_an_oversized_photo_is_rejected(): void
     {
-        Storage::fake('local');
+        Storage::fake($this->photoDisk());
         $user = User::factory()->create();
 
         Livewire::actingAs($user)
@@ -99,7 +178,7 @@ final class ProfileTest extends TestCase
 
     public function test_a_non_image_is_rejected(): void
     {
-        Storage::fake('local');
+        Storage::fake($this->photoDisk());
         $user = User::factory()->create();
 
         Livewire::actingAs($user)
@@ -115,7 +194,7 @@ final class ProfileTest extends TestCase
      */
     public function test_replacing_a_photo_deletes_the_previous_file(): void
     {
-        Storage::fake('local');
+        Storage::fake($this->photoDisk());
         $user = User::factory()->create();
 
         $component = Livewire::actingAs($user)
@@ -130,13 +209,13 @@ final class ProfileTest extends TestCase
         $second = $user->fresh()->profile_photo_path;
 
         $this->assertNotSame($first, $second);
-        Storage::disk('local')->assertMissing($first);
-        Storage::disk('local')->assertExists($second);
+        Storage::disk($this->photoDisk())->assertMissing($first);
+        Storage::disk($this->photoDisk())->assertExists($second);
     }
 
     public function test_a_user_can_remove_their_photo(): void
     {
-        Storage::fake('local');
+        Storage::fake($this->photoDisk());
         $user = User::factory()->create();
 
         $component = Livewire::actingAs($user)
@@ -149,7 +228,7 @@ final class ProfileTest extends TestCase
         $component->call('removePhoto');
 
         $this->assertFalse($user->fresh()->hasProfilePhoto());
-        Storage::disk('local')->assertMissing($path);
+        Storage::disk($this->photoDisk())->assertMissing($path);
     }
 
     public function test_a_user_can_change_their_password_with_the_current_one(): void
