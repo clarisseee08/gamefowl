@@ -17,3 +17,7 @@ One line per gap: route, what was needed, what was used instead.
 - `/health` — `x-filter-bar` has no slot for a loading state, so the existing
   "Searching&hellip;" indicator moved from the card's foot to the end of the control row,
   and the foot's "Clear Filters" is now the component's "Clear filters".
+- `x-progress` — the Motion whitelist has no row for a progress bar, and `.meter` in
+  app.css sets width once with no transition. The bar borrows the accordion/tab step
+  (`transform` only, `--dur-base`, `--ease-in-out`) rather than inventing a duration;
+  if a progress row is ever added to the whitelist this should be reconciled with it.
