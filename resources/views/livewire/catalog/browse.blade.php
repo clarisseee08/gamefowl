@@ -9,61 +9,44 @@
 
     {{-- Filters. Fewer and plainer than the staff screen - a customer does not
          need to filter by pen or by internal status. --}}
-    {{-- Two-up on phones. Stacked, this block filled the entire first screen and
-         a customer scrolled past four controls before seeing a single bird. --}}
-    <div class="card mb-8 p-4 sm:mb-10 sm:p-6">
-        <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
-            <div class="col-span-2">
-                <label for="search" class="label">Search</label>
-                <input id="search" type="search" wire:model.live.debounce.300ms="search"
-                       placeholder="Name, band number or bloodline" class="input mt-1">
-            </div>
+    {{-- One row. The search field takes what is left; the rest shrink to fit
+         and wrap when they run out of room. This used to be a five-column grid
+         of controls with a label stacked above each one, which on a phone
+         became a tall column a customer scrolled past before seeing a bird. --}}
+    <x-filter-bar :active="$this->hasActiveFilters()"
+                  clear="clearFilters"
+                  :summary="number_format($this->birds->total()).' '.Str::plural('bird', $this->birds->total()).' found.'">
+        <x-slot:search>
+            <label for="search" class="sr-only">Search</label>
+            <input id="search" type="search" wire:model.live.debounce.300ms="search"
+                   placeholder="Name, band number or bloodline" class="input">
+        </x-slot:search>
 
-            <div>
-                <label for="bloodline" class="label">Bloodline</label>
-                <select id="bloodline" wire:model.live="bloodline" class="input mt-1">
-                    <option value="">All bloodlines</option>
-                    @foreach ($this->bloodlineOptions as $option)
-                        <option value="{{ $option }}">{{ $option }}</option>
-                    @endforeach
-                </select>
-            </div>
+        <x-filter-select id="bloodline" label="Bloodline" wire:model.live="bloodline">
+            <option value="">All bloodlines</option>
+            @foreach ($this->bloodlineOptions as $option)
+                <option value="{{ $option }}">{{ $option }}</option>
+            @endforeach
+        </x-filter-select>
 
-            <div class="col-span-2 lg:col-span-1">
-                <label for="sex" class="label">Type</label>
-                <select id="sex" wire:model.live="sex" class="input mt-1">
-                    <option value="">Cocks and hens</option>
-                    @foreach ($this->sexOptions() as $option)
-                        <option value="{{ $option->value }}">{{ $option->farmTerm() }}</option>
-                    @endforeach
-                </select>
-            </div>
+        <x-filter-select id="sex" label="Type" wire:model.live="sex">
+            <option value="">Cocks and hens</option>
+            @foreach ($this->sexOptions() as $option)
+                <option value="{{ $option->value }}">{{ $option->farmTerm() }}</option>
+            @endforeach
+        </x-filter-select>
 
-            {{-- Availability.
+        {{-- Availability.
 
-                 A checkbox rather than a select, and off by default: the farm
-                 marks only a handful of birds for sale at a time, so defaulting
-                 this on would greet a customer with an empty catalogue. The
-                 default view is "what this farm keeps"; this narrows it to
-                 "what you can buy". --}}
-            <div class="col-span-2 flex items-end lg:col-span-1">
-                <label class="flex min-h-[44px] cursor-pointer items-center gap-2.5 text-[15px] text-foreground">
-                    <input type="checkbox" wire:model.live="forSaleOnly" class="h-5 w-5 accent-primary">
-                    Available birds only
-                </label>
-            </div>
-        </div>
-
-        @if ($this->hasActiveFilters())
-            <div class="mt-4 flex items-center justify-between border-t border-border pt-4">
-                <p class="text-sm text-muted-foreground">
-                    {{ number_format($this->birds->total()) }}
-                    {{ Str::plural('bird', $this->birds->total()) }} found.
-                </p>
-                <button type="button" wire:click="clearFilters" class="btn-secondary">Clear filters</button>
-            </div>
-        @endif
-    </div>
+             A checkbox rather than a select, and off by default: the farm marks
+             only a handful of birds for sale at a time, so defaulting this on
+             would greet a customer with an empty catalogue. The default view is
+             "what this farm keeps"; this narrows it to "what you can buy". --}}
+        <label class="flex min-h-11 shrink-0 cursor-pointer items-center gap-2.5 pl-1 text-[15px] text-foreground">
+            <input type="checkbox" wire:model.live="forSaleOnly" class="h-5 w-5 accent-primary">
+            Available birds only
+        </label>
+    </x-filter-bar>
 
     @if ($this->birds->isEmpty())
         <div class="card p-12 text-center">
