@@ -107,13 +107,12 @@
                         </div>
 
                         <div>
-                            <label for="generateSex" class="label">Sex</label>
-                            <select id="generateSex" wire:model="generateSex" class="input mt-1">
+                            <x-form-select id="generateSex" label="Sex" wire:model="generateSex"
+                                           help="Change individually later if the batch is mixed.">
                                 @foreach (App\Enums\Sex::cases() as $option)
                                     <option value="{{ $option->value }}">{{ $option->label() }}</option>
                                 @endforeach
-                            </select>
-                            <p class="help">Change individually later if the batch is mixed.</p>
+                            </x-form-select>
                         </div>
 
                         <div>
@@ -125,13 +124,12 @@
                         </div>
 
                         <div>
-                            <label for="generatePenId" class="label">Pen</label>
-                            <select id="generatePenId" wire:model="generatePenId" class="input mt-1">
+                            <x-form-select id="generatePenId" label="Pen" wire:model="generatePenId">
                                 <option value="">Not assigned</option>
                                 @foreach ($this->pens as $pen)
                                     <option value="{{ $pen->id }}">{{ $pen->code }} - {{ $pen->name }}</option>
                                 @endforeach
-                            </select>
+                            </x-form-select>
                         </div>
                     </div>
 

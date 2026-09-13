@@ -29,17 +29,14 @@
     <form wire:submit="save" class="card overflow-hidden">
         <div class="grid gap-6 p-5 sm:grid-cols-2 sm:p-8">
             <div class="sm:col-span-2">
-                <label for="broodcock_id" class="label">Bird <span class="text-destructive">*</span></label>
-                <select id="broodcock_id"
-                        wire:model="broodcock_id"
-                        @class(['input mt-1', 'input-error' => $errors->has('broodcock_id')])>
+                <x-form-select id="broodcock_id" label="Bird" required
+                               wire:model="broodcock_id"
+                               help="Birds are listed by name, with the band number in brackets.">
                     <option value="">Choose a bird&hellip;</option>
                     @foreach ($this->birds as $bird)
                         <option value="{{ $bird->id }}">{{ $bird->displayName() }}</option>
                     @endforeach
-                </select>
-                @error('broodcock_id') <p class="error">{{ $message }}</p> @enderror
-                <p class="help">Birds are listed by name, with the band number in brackets.</p>
+                </x-form-select>
             </div>
 
             {{-- A rule, not a gap: the record's identity is settled above, its
@@ -47,16 +44,13 @@
             <hr class="border-border sm:col-span-2">
 
             <div>
-                <label for="record_type" class="label">Record Type <span class="text-destructive">*</span></label>
-                <select id="record_type"
-                        wire:model.live="record_type"
-                        @class(['input mt-1', 'input-error' => $errors->has('record_type')])>
+                <x-form-select id="record_type" label="Record Type" required
+                               wire:model.live="record_type">
                     <option value="">Choose a type&hellip;</option>
                     @foreach ($this->recordTypes as $type)
                         <option value="{{ $type->value }}">{{ $type->label() }}</option>
                     @endforeach
-                </select>
-                @error('record_type') <p class="error">{{ $message }}</p> @enderror
+                </x-form-select>
             </div>
 
             <div>

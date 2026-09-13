@@ -39,35 +39,30 @@
         </div>
 
         <div>
-            <label for="broodcock_id" class="label">Which Bird Died? <span class="text-destructive">*</span></label>
+            {{-- The HTML `required` attribute is gone with the native control.
+                 On a select the browser can no longer show, it blocks the
+                 submit and anchors its bubble to a hidden element, so the form
+                 stops with nothing on screen to explain it. The server rule is
+                 unchanged and its message renders under the control. --}}
+            <x-form-select id="broodcock_id" label="Which Bird Died?" required
+                           wire:model.live="broodcock_id">
+                <x-slot:help>
+                    @if ($this->eligibleBirds->isEmpty())
+                        @if ($birdSearch !== '')
+                            No living bird matches "{{ $birdSearch }}". Clear the search box to see all birds.
+                        @else
+                            There are no birds available. Every bird on record already has a death recorded.
+                        @endif
+                    @else
+                        Birds already marked as deceased are not shown - a bird can only be recorded as dead once.
+                    @endif
+                </x-slot:help>
 
-            <select id="broodcock_id"
-                    wire:model.live="broodcock_id"
-                    @class(['input mt-1', 'input-error' => $errors->has('broodcock_id')])
-                    required>
                 <option value="">-- Choose a bird --</option>
                 @foreach ($this->eligibleBirds as $bird)
                     <option value="{{ $bird->id }}">{{ $bird->displayName() }}</option>
                 @endforeach
-            </select>
-
-            @error('broodcock_id')
-                <p class="error">{{ $message }}</p>
-            @enderror
-
-            @if ($this->eligibleBirds->isEmpty())
-                <p class="help">
-                    @if ($birdSearch !== '')
-                        No living bird matches "{{ $birdSearch }}". Clear the search box to see all birds.
-                    @else
-                        There are no birds available. Every bird on record already has a death recorded.
-                    @endif
-                </p>
-            @else
-                <p class="help">
-                    Birds already marked as deceased are not shown - a bird can only be recorded as dead once.
-                </p>
-            @endif
+            </x-form-select>
         </div>
 
         {{-- ---------------------------------------------------------------
