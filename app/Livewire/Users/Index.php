@@ -37,6 +37,38 @@ final class Index extends Component
      */
     public ?string $statusMessage = null;
 
+    #[Url(except: 'full_name')]
+    public string $sortBy = 'full_name';
+
+    #[Url(except: 'asc')]
+    public string $sortDirection = 'asc';
+
+    /** Columns a user is allowed to sort by - never interpolate raw input into SQL. */
+    private const SORTABLE = ['full_name', 'email', 'role', 'created_at'];
+
+    /**
+     * One press sets the column and the direction together.
+     *
+     * Pressing the column already sorted flips it; pressing another takes it
+     * ascending, because "show me this column" almost always means "from the
+     * top" on first press.
+     */
+    public function sort(string $column): void
+    {
+        if (! in_array($column, self::SORTABLE, true)) {
+            return;
+        }
+
+        if ($this->sortBy === $column) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortBy = $column;
+            $this->sortDirection = 'asc';
+        }
+
+        $this->resetPage();
+    }
+
     public function mount(): void
     {
         $this->authorize('viewAny', User::class);
@@ -69,7 +101,13 @@ final class Index extends Component
             ->when($this->role !== '', fn ($q) => $q->where('role', $this->role))
             ->when($this->status === 'active', fn ($q) => $q->where('is_active', true))
             ->when($this->status === 'inactive', fn ($q) => $q->where('is_active', false))
-            ->orderBy('full_name')
+            // Checked against the allow-list a second time: the URL can set
+            // $sortBy directly without ever passing through sort().
+            ->orderBy(
+                in_array($this->sortBy, self::SORTABLE, true) ? $this->sortBy : 'full_name',
+                $this->sortDirection === 'asc' ? 'asc' : 'desc'
+            )
+            ->orderByDesc('id')
             ->paginate(config('gfms.per_page'));
     }
 

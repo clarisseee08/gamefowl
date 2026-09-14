@@ -50,6 +50,10 @@ final class DatabaseSeeder extends Seeder
         HealthRecordSeeder::class,
         BreedingRecordSeeder::class,
         PerformanceRecordSeeder::class,
+        // Needs a bird to point one request at, and an owner to have decided
+        // the handled ones. Neither is required - it degrades to "the farm
+        // generally" and an unattributed decision - but both read better.
+        AppointmentSeeder::class,
         // Last: this one flips three birds to `deceased`, and running it after
         // the record seeders keeps their history intact.
         MortalitySeeder::class,

@@ -45,6 +45,14 @@
             <option value="active">Active only</option>
             <option value="inactive">Deactivated only</option>
         </x-filter-select>
+        {{-- The bar's own loading slot, which it has declared since it was
+             written and which no page had ever passed. The search is debounced
+             and the round trip is to Tokyo, so a keystroke and its result are
+             most of a second apart - without this the bar looks dead in
+             between, and a keeper types the query again. --}}
+        <x-slot:loading>
+            <span wire:loading wire:target="search,role,status">Searching&hellip;</span>
+        </x-slot:loading>
     </x-filter-bar>
 
     @if ($this->users->isEmpty())
@@ -111,13 +119,28 @@
         <div class="card hidden overflow-hidden sm:block">
             <div class="overflow-x-auto">
                 {{-- .table-hairline resolves to `.table-hairline tbody tr + tr`,
-                     so it belongs on the TABLE. It used to sit on the <tbody>
+                     so it belongs on the TABLE. It used to sit on the <tbody wire:loading.remove wire:target="search,role,status">
                      below, where the descendant selector matched nothing and
                      the rows shipped with no separators at all. --}}
                 <table class="table-hairline min-w-full">
                     <thead class="border-b border-border bg-muted">
                         <tr>
-                            @foreach (['Name', 'Email', 'Role', 'Position', 'Contact', 'Status'] as $heading)
+                            {{-- Name, Email and Role are real columns and sort.
+                                 Position and Contact are free text nobody orders a
+                                 staff list by, and Status is a derived flag - they
+                                 stay plain rather than offering a press that does
+                                 nothing. --}}
+                            <x-sort-control field="full_name" label="Name"
+                                            :current="$sortBy" :direction="$sortDirection"
+                                            cell="whitespace-nowrap" wire:click="sort('full_name')" />
+                            <x-sort-control field="email" label="Email"
+                                            :current="$sortBy" :direction="$sortDirection"
+                                            cell="whitespace-nowrap" wire:click="sort('email')" />
+                            <x-sort-control field="role" label="Role"
+                                            :current="$sortBy" :direction="$sortDirection"
+                                            cell="whitespace-nowrap" wire:click="sort('role')" />
+
+                            @foreach (['Position', 'Contact', 'Status'] as $heading)
                                 <th scope="col" class="whitespace-nowrap px-4 py-3 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
                                     {{ $heading }}
                                 </th>
@@ -164,6 +187,8 @@
                             </tr>
                         @endforeach
                     </tbody>
+
+                    <x-table-skeleton :cols="7" wire:loading wire:target="search,role,status" />
                 </table>
             </div>
         </div>

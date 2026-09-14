@@ -29,6 +29,38 @@ final class Index extends Component
     #[Url(except: '')]
     public string $bloodline = '';
 
+    #[Url(except: 'mating_date')]
+    public string $sortBy = 'mating_date';
+
+    #[Url(except: 'desc')]
+    public string $sortDirection = 'desc';
+
+    /** Columns a user is allowed to sort by - never interpolate raw input into SQL. */
+    private const SORTABLE = ['mating_date', 'eggs_set', 'eggs_fertile', 'eggs_hatched'];
+
+    /**
+     * One press sets the column and the direction together.
+     *
+     * Pressing the column already sorted flips it; pressing another takes it
+     * ascending, because "show me this column" almost always means "from the
+     * top" on first press.
+     */
+    public function sort(string $column): void
+    {
+        if (! in_array($column, self::SORTABLE, true)) {
+            return;
+        }
+
+        if ($this->sortBy === $column) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortBy = $column;
+            $this->sortDirection = 'asc';
+        }
+
+        $this->resetPage();
+    }
+
     public function mount(): void
     {
         $this->authorize('viewAny', BreedingRecord::class);
@@ -72,7 +104,13 @@ final class Index extends Component
             ->when($this->bloodline !== '', function ($query): void {
                 $query->whereHas('sire', fn ($q) => $q->where('bloodline', $this->bloodline));
             })
-            ->orderByDesc('mating_date')
+            // Checked against the allow-list a second time: the URL can set
+            // $sortBy directly without ever passing through sort().
+            ->orderBy(
+                in_array($this->sortBy, self::SORTABLE, true) ? $this->sortBy : 'mating_date',
+                $this->sortDirection === 'asc' ? 'asc' : 'desc'
+            )
+            ->orderByDesc('id')
             ->paginate(config('gfms.per_page'));
     }
 

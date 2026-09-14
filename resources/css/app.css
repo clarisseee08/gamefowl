@@ -22,18 +22,62 @@
    records carry diacritics that bare latin does not cover, and a missing
    glyph falls back mid-word to a different face. */
 @import '@fontsource/poppins/latin-600.css';
-@import '@fontsource/poppins/latin-700.css';
 @import '@fontsource/inter/latin-400.css';
 @import '@fontsource/inter/latin-500.css';
 @import '@fontsource/inter/latin-600.css';
-@import '@fontsource/inter/latin-ext-400.css';
-@import '@fontsource/inter/latin-ext-500.css';
 @import '@fontsource/jetbrains-mono/latin-400.css';
 @import '@fontsource/jetbrains-mono/latin-500.css';
 /* 600 is loaded because headline figures are .datum AND semibold. Without the
    real weight the browser synthesises bold by smearing the 500, which is
    visibly worse at the 32-44px sizes the dashboard uses. */
 @import '@fontsource/jetbrains-mono/latin-600.css';
+
+/* ---------------------------------------------------------------------------
+   LATIN-EXT, DECLARED BY HAND, AND THE REASON IS A MEASUREMENT.
+
+   @fontsource ships one CSS file per subset and NONE of them declare a
+   unicode-range. So `latin-ext-400.css` and `latin-400.css` are two identical
+   @font-face rules - same family, same weight, no range to tell them apart -
+   and the later one simply wins.
+
+   Measured on the dashboard before this change: the browser fetched
+   inter-latin-400 (23.1 KB) AND inter-latin-ext-400 (34.2 KB), and the same
+   again at 500. That is 69.4 KB of latin-ext on every page load, a third of all
+   font weight, to render ZERO characters in the latin-ext range - I checked the
+   rendered text and there were none.
+
+   WHY IT IS KEPT AT ALL. The original comment is right that a missing glyph
+   falls back mid-word to a different face, which looks broken. But the
+   characters that reason was written for - ñ, á, é, í, ó, ú, ü in Filipino and
+   Spanish place names - are all in Latin-1 Supplement, which the `latin` subset
+   already covers. Latin Extended-A begins at U+0100 and is a genuine rarity
+   here, so it should be a fallback the browser fetches ON DEMAND rather than a
+   file every visitor pays for.
+
+   Declaring the range restores exactly that: the file is now downloaded only if
+   a character in it is actually rendered.
+--------------------------------------------------------------------------- */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-display: swap;
+    font-weight: 400;
+    src: url('@fontsource/inter/files/inter-latin-ext-400-normal.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+                   U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
+                   U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-display: swap;
+    font-weight: 500;
+    src: url('@fontsource/inter/files/inter-latin-ext-500-normal.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+                   U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
+                   U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
 
 @source '../views/**/*.blade.php';
 @source '../js/**/*.js';
