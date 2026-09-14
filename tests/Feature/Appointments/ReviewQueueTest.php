@@ -100,6 +100,72 @@ final class ReviewQueueTest extends TestCase
             ->assertSee('Already Handled');
     }
 
+    /**
+     * "All requests" is the way out of a default that hides everything.
+     *
+     * Opening on Pending is right for working a queue, but on a farm whose
+     * queue is momentarily empty the screen read "No visit requests to show"
+     * while the farm was holding a confirmed visit for Tuesday. Nothing on the
+     * page admitted the other records existed.
+     */
+    public function test_every_request_can_be_seen_at_once(): void
+    {
+        Appointment::factory()->create(['name' => 'Still Waiting']);
+        Appointment::factory()->confirmed()->create(['name' => 'Already Handled']);
+        Appointment::factory()->declined()->create(['name' => 'Turned Away']);
+
+        Livewire::actingAs($this->owner())
+            ->test(Index::class)
+            ->set('status', '')
+            ->assertSee('Still Waiting')
+            ->assertSee('Already Handled')
+            ->assertSee('Turned Away');
+    }
+
+    /**
+     * A visit that already happened is history, and offers nothing to decide.
+     *
+     * The buttons were written as "not Confirmed", "is Confirmed" and "not
+     * Declined", which is correct for a pending row and wrong for a completed
+     * one: it matched both negatives, so the farm was offered Confirm and
+     * Decline on a visit the family had already made.
+     *
+     * It was unreachable until "All requests" existed, because the only way to
+     * put a completed row on screen was to pick that status deliberately.
+     */
+    public function test_a_completed_visit_offers_nothing_to_decide(): void
+    {
+        Appointment::factory()->create([
+            'name' => 'Came Already',
+            'status' => AppointmentStatus::Completed,
+        ]);
+
+        Livewire::actingAs($this->owner())
+            ->test(Index::class)
+            ->set('status', AppointmentStatus::Completed->value)
+            ->assertSee('Came Already')
+            ->assertSee('Nothing to do')
+            // The CONTROLS, not their labels. "Decline" is a substring of the
+            // "Declined" option in the Showing dropdown, which is on the page
+            // whatever the row offers - so asserting the word tests the filter
+            // rather than the buttons.
+            ->assertDontSee('wire:click="confirm(', false)
+            ->assertDontSee('wire:click="markVisited(', false)
+            ->assertDontSee('wire:click="decline(', false);
+    }
+
+    public function test_a_confirmed_visit_is_not_offered_confirming_again(): void
+    {
+        Appointment::factory()->confirmed()->create(['name' => 'Agreed Already']);
+
+        Livewire::actingAs($this->owner())
+            ->test(Index::class)
+            ->set('status', AppointmentStatus::Confirmed->value)
+            ->assertSee('Agreed Already')
+            ->assertSee('wire:click="markVisited(', false)
+            ->assertDontSee('wire:click="confirm(', false);
+    }
+
     public function test_the_bird_is_named_when_the_request_was_about_one(): void
     {
         $bird = Broodcock::factory()->create(['name' => 'Bagwis']);
