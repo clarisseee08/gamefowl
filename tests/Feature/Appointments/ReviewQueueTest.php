@@ -79,13 +79,37 @@ final class ReviewQueueTest extends TestCase
     }
 
     /** The screen opens on what needs action, not on everything ever asked. */
-    public function test_the_queue_opens_on_what_still_needs_a_decision(): void
+    /**
+     * The queue opens on everything, which reverses an earlier decision.
+     *
+     * It used to open on Pending, on the argument that a queue full of handled
+     * requests is a queue nobody works through. Sound for a farm with a steady
+     * stream of requests; wrong for this one. With a handful of visits a year
+     * the pending queue is empty most of the time, so the screen opened reading
+     * "No visit requests to show" while the farm held a confirmed visit for
+     * next Tuesday - and nothing on it admitted the other records existed.
+     */
+    public function test_the_queue_opens_on_every_request(): void
+    {
+        Appointment::factory()->create(['name' => 'Still Waiting']);
+        Appointment::factory()->confirmed()->create(['name' => 'Already Handled']);
+        Appointment::factory()->declined()->create(['name' => 'Turned Away']);
+
+        Livewire::actingAs($this->owner())
+            ->test(Index::class)
+            ->assertSee('Still Waiting')
+            ->assertSee('Already Handled')
+            ->assertSee('Turned Away');
+    }
+
+    public function test_the_queue_can_still_be_narrowed_to_what_needs_a_decision(): void
     {
         Appointment::factory()->create(['name' => 'Still Waiting']);
         Appointment::factory()->confirmed()->create(['name' => 'Already Handled']);
 
         Livewire::actingAs($this->owner())
             ->test(Index::class)
+            ->set('status', AppointmentStatus::Pending->value)
             ->assertSee('Still Waiting')
             ->assertDontSee('Already Handled');
     }
@@ -101,25 +125,47 @@ final class ReviewQueueTest extends TestCase
     }
 
     /**
-     * "All requests" is the way out of a default that hides everything.
+     * Deleting is permanent here, unlike every other delete in the application.
      *
-     * Opening on Pending is right for working a queue, but on a farm whose
-     * queue is momentarily empty the screen read "No visit requests to show"
-     * while the farm was holding a confirmed visit for Tuesday. Nothing on the
-     * page admitted the other records existed.
+     * Appointment has no SoftDeletes trait and appointments has no deleted_at,
+     * which the Policy confirms by returning false from restore() and
+     * forceDelete(). So this asserts the row is actually gone rather than
+     * soft-deleted, because a test that only checked it left the list would
+     * pass either way and hide the difference the dialog has to warn about.
      */
-    public function test_every_request_can_be_seen_at_once(): void
+    public function test_an_owner_can_delete_a_request_outright(): void
     {
-        Appointment::factory()->create(['name' => 'Still Waiting']);
-        Appointment::factory()->confirmed()->create(['name' => 'Already Handled']);
-        Appointment::factory()->declined()->create(['name' => 'Turned Away']);
+        $record = Appointment::factory()->declined()->create(['name' => 'Turned Away']);
 
         Livewire::actingAs($this->owner())
             ->test(Index::class)
-            ->set('status', '')
+            ->call('confirmDelete', $record->id)
+            ->assertSee('cannot be undone')
+            ->call('delete')
+            ->assertDontSee('Turned Away');
+
+        $this->assertDatabaseMissing('appointments', ['id' => $record->id]);
+    }
+
+    public function test_staff_are_not_offered_the_delete_and_cannot_call_it(): void
+    {
+        $record = Appointment::factory()->create(['name' => 'Still Waiting']);
+        $staff = User::factory()->staff()->create();
+
+        // Not offered: the button is absent from the row.
+        Livewire::actingAs($staff)
+            ->test(Index::class)
             ->assertSee('Still Waiting')
-            ->assertSee('Already Handled')
-            ->assertSee('Turned Away');
+            ->assertDontSee('wire:click="confirmDelete(', false);
+
+        // And not merely hidden - the Policy refuses the call itself.
+        Livewire::actingAs($staff)
+            ->test(Index::class)
+            ->call('confirmDelete', $record->id)
+            ->call('delete')
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('appointments', ['id' => $record->id]);
     }
 
     /**
@@ -140,7 +186,10 @@ final class ReviewQueueTest extends TestCase
             'status' => AppointmentStatus::Completed,
         ]);
 
-        Livewire::actingAs($this->owner())
+        // Staff, deliberately: an owner also sees Delete on this row, so
+        // "Nothing to do" is only the whole truth for somebody who cannot
+        // delete. The decision controls are absent for both.
+        Livewire::actingAs(User::factory()->staff()->create())
             ->test(Index::class)
             ->set('status', AppointmentStatus::Completed->value)
             ->assertSee('Came Already')
@@ -149,6 +198,23 @@ final class ReviewQueueTest extends TestCase
             // "Declined" option in the Showing dropdown, which is on the page
             // whatever the row offers - so asserting the word tests the filter
             // rather than the buttons.
+            ->assertDontSee('wire:click="confirm(', false)
+            ->assertDontSee('wire:click="markVisited(', false)
+            ->assertDontSee('wire:click="decline(', false);
+    }
+
+    /** An owner has nothing to decide on a finished visit, but can still erase it. */
+    public function test_a_completed_visit_can_still_be_deleted_by_an_owner(): void
+    {
+        Appointment::factory()->create([
+            'name' => 'Came Already',
+            'status' => AppointmentStatus::Completed,
+        ]);
+
+        Livewire::actingAs($this->owner())
+            ->test(Index::class)
+            ->set('status', AppointmentStatus::Completed->value)
+            ->assertSee('wire:click="confirmDelete(', false)
             ->assertDontSee('wire:click="confirm(', false)
             ->assertDontSee('wire:click="markVisited(', false)
             ->assertDontSee('wire:click="decline(', false);
