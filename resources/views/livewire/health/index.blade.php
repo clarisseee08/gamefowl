@@ -84,12 +84,14 @@
             <input id="filter-to" type="date" wire:model.live="dateTo" class="input datum w-full sm:w-auto">
         </div>
 
-        {{-- The search is debounced by 400ms, so a keystroke and its result are
-             most of a second apart. Without this the bar looks unresponsive in
+        {{-- The bar's own loading slot, which it has declared since it was
+             written and which no page had ever passed. The search is debounced
+             and the round trip is to Tokyo, so a keystroke and its result are
+             most of a second apart - without this the bar looks dead in
              between, and a keeper types the query again. --}}
-        <p class="text-[13px] text-muted-foreground" wire:loading wire:target="search,recordType,broodcockId,dateFrom,dateTo">
-            Searching&hellip;
-        </p>
+        <x-slot:loading>
+            <span wire:loading wire:target="search,recordType,broodcockId,dateFrom,dateTo">Searching&hellip;</span>
+        </x-slot:loading>
     </x-filter-bar>
 
     <div class="card overflow-hidden">
@@ -120,16 +122,29 @@
                     <thead class="hidden bg-muted sm:table-header-group">
                         <tr class="border-b border-border">
                             <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Bird</th>
-                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Record Type</th>
+                            {{-- Bird, Product and Status stay plain. Bird sorts by a
+                                 relationship rather than a column here, Product is
+                                 free text, and Status is derived at read time from
+                                 next_due_date rather than stored - so none of the
+                                 three can be handed to orderBy(). A header that
+                                 looks pressable and does nothing is worse than one
+                                 that plainly is not. --}}
+                            <x-sort-control field="record_type" label="Record Type"
+                                            :current="$sortBy" :direction="$sortDirection"
+                                            wire:click="sort('record_type')" />
                             <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Product</th>
-                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Check-up Date</th>
-                            <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Next Due Date</th>
+                            <x-sort-control field="checkup_date" label="Check-up Date"
+                                            :current="$sortBy" :direction="$sortDirection"
+                                            wire:click="sort('checkup_date')" />
+                            <x-sort-control field="next_due_date" label="Next Due Date"
+                                            :current="$sortBy" :direction="$sortDirection"
+                                            wire:click="sort('next_due_date')" />
                             <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Status</th>
                             <th scope="col" class="px-4 py-2.5 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Actions</th>
                         </tr>
                     </thead>
 
-                    <tbody class="block divide-y divide-border sm:table-row-group">
+                    <tbody class="block divide-y divide-border sm:table-row-group" wire:loading.remove wire:target="search,recordType,broodcockId,dateFrom,dateTo">
                         @foreach ($this->rows as $record)
                             @php
                                 $state = $record->scheduleState();
@@ -227,6 +242,8 @@
                             </tr>
                         @endforeach
                     </tbody>
+
+                    <x-table-skeleton :cols="7" wire:loading wire:target="search,recordType,broodcockId,dateFrom,dateTo" />
                 </table>
             </div>
 

@@ -43,6 +43,38 @@ final class Index extends Component
     #[Url(except: '')]
     public string $status = '';
 
+    #[Url(except: 'preferred_date')]
+    public string $sortBy = 'preferred_date';
+
+    #[Url(except: 'asc')]
+    public string $sortDirection = 'asc';
+
+    /** Columns a user is allowed to sort by - never interpolate raw input into SQL. */
+    private const SORTABLE = ['preferred_date', 'name', 'party_size', 'status'];
+
+    /**
+     * One press sets the column and the direction together.
+     *
+     * Pressing the column already sorted flips it; pressing another takes it
+     * ascending, because "show me this column" almost always means "from the
+     * top" on first press.
+     */
+    public function sort(string $column): void
+    {
+        if (! in_array($column, self::SORTABLE, true)) {
+            return;
+        }
+
+        if ($this->sortBy === $column) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortBy = $column;
+            $this->sortDirection = 'asc';
+        }
+
+        $this->resetPage();
+    }
+
     public function mount(): void
     {
         $this->authorize('viewAny', Appointment::class);
@@ -159,16 +191,19 @@ final class Index extends Component
             // The bird is shown per row, so it is eager-loaded or the table is
             // one extra query per request against a database in Tokyo.
             ->with('broodcock:id,name,band_number,bloodline')
-            // An empty status is "all requests". The default is still Pending,
-            // for the reason on the property - a queue that opens full of
-            // handled requests is a queue nobody works through - but without a
-            // way to see everything, a farm whose queue is momentarily empty
-            // gets a screen that says "No visit requests to show" while holding
-            // a confirmed visit for Tuesday.
+            // An empty status is "all requests", which is now the default - see
+            // the note on the property for why that reversed.
             ->when($this->status !== '', fn (Builder $query) => $query->where('status', $this->status))
-            // Soonest first: the request for next Tuesday matters more than the
-            // one for next month, whatever order they arrived in.
-            ->orderBy('preferred_date')
+            // Soonest first by default: the request for next Tuesday matters
+            // more than the one for next month, whatever order they arrived in.
+            // The keeper can now sort by any of the allow-listed columns, and
+            // the list is checked a second time here because the URL can set
+            // $sortBy directly without ever passing through sort().
+            ->orderBy(
+                in_array($this->sortBy, self::SORTABLE, true) ? $this->sortBy : 'preferred_date',
+                $this->sortDirection === 'asc' ? 'asc' : 'desc'
+            )
+            ->orderByDesc('id')
             ->paginate(config('gfms.per_page'));
     }
 

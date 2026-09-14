@@ -299,13 +299,24 @@ final class DesignSystemGuardTest extends TestCase
      * the reason this is worth stating: no view in this project does that
      * today, so the invariant holds, and the day one legitimately needs to, the
      * honest fix is to restructure the markup rather than to loosen this.
+     *
+     * BLADE COMMENTS ARE STRIPPED FIRST, and that is not a convenience. A
+     * comment explaining WHY a stray <div> inside a <table> gets dropped by the
+     * parser was itself counted as an opened div, and the build failed on the
+     * sentence rather than on any markup.
+     *
+     * This project has now been bitten by prose-scanned-as-markup three times:
+     * a design document's anti-pattern list compiled the very utilities it
+     * forbade, a comment naming a banned duration shipped that duration into
+     * production, and this. Every scanner over these files has to decide what
+     * a comment is, and the answer is always "not code".
      */
     public function test_every_view_balances_its_divs(): void
     {
         $offenders = [];
 
         foreach ($this->files('resources/views', '.blade.php') as $file) {
-            $body = file_get_contents($file);
+            $body = (string) preg_replace('/\{\{--.*?--\}\}/s', '', (string) file_get_contents($file));
 
             $opened = preg_match_all('/<div(?=[\s>\/])/i', $body);
             $closed = preg_match_all('/<\/div\s*>/i', $body);

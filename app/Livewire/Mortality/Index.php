@@ -44,6 +44,38 @@ final class Index extends Component
     /** In-component banner - a Livewire update does not re-render the layout. */
     public ?string $status = null;
 
+    #[Url(except: 'date_of_death')]
+    public string $sortBy = 'date_of_death';
+
+    #[Url(except: 'desc')]
+    public string $sortDirection = 'desc';
+
+    /** Columns a user is allowed to sort by - never interpolate raw input into SQL. */
+    private const SORTABLE = ['date_of_death', 'cause_of_death'];
+
+    /**
+     * One press sets the column and the direction together.
+     *
+     * Pressing the column already sorted flips it; pressing another takes it
+     * ascending, because "show me this column" almost always means "from the
+     * top" on first press.
+     */
+    public function sort(string $column): void
+    {
+        if (! in_array($column, self::SORTABLE, true)) {
+            return;
+        }
+
+        if ($this->sortBy === $column) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortBy = $column;
+            $this->sortDirection = 'asc';
+        }
+
+        $this->resetPage();
+    }
+
     public function mount(): void
     {
         $this->authorize('viewAny', MortalityRecord::class);
@@ -126,7 +158,12 @@ final class Index extends Component
             // Eager-loaded: the table shows the bird and the recorder on every
             // row, and strict mode turns a missed relation into an exception.
             ->with(['broodcock:id,name,band_number,bloodline,date_hatched', 'recordedBy:id,full_name'])
-            ->orderByDesc('date_of_death')
+            // Checked against the allow-list a second time: the URL can set
+            // $sortBy directly without ever passing through sort().
+            ->orderBy(
+                in_array($this->sortBy, self::SORTABLE, true) ? $this->sortBy : 'date_of_death',
+                $this->sortDirection === 'asc' ? 'asc' : 'desc'
+            )
             ->orderByDesc('id')
             ->paginate((int) config('gfms.per_page', 15));
     }

@@ -53,6 +53,38 @@ final class Index extends Component
      */
     public ?string $statusMessage = null;
 
+    #[Url(except: 'checkup_date')]
+    public string $sortBy = 'checkup_date';
+
+    #[Url(except: 'desc')]
+    public string $sortDirection = 'desc';
+
+    /** Columns a user is allowed to sort by - never interpolate raw input into SQL. */
+    private const SORTABLE = ['checkup_date', 'next_due_date', 'record_type'];
+
+    /**
+     * One press sets the column and the direction together.
+     *
+     * Pressing the column already sorted flips it; pressing another takes it
+     * ascending, because "show me this column" almost always means "from the
+     * top" on first press.
+     */
+    public function sort(string $column): void
+    {
+        if (! in_array($column, self::SORTABLE, true)) {
+            return;
+        }
+
+        if ($this->sortBy === $column) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortBy = $column;
+            $this->sortDirection = 'asc';
+        }
+
+        $this->resetPage();
+    }
+
     public function mount(): void
     {
         $this->authorize('viewAny', HealthRecord::class);
@@ -145,7 +177,12 @@ final class Index extends Component
             ->between($this->normalisedDate($this->dateFrom), $this->normalisedDate($this->dateTo))
             ->when($this->broodcockId !== '', fn (Builder $query) => $query->where('broodcock_id', (int) $this->broodcockId))
             ->when($this->search !== '', fn (Builder $query) => $this->applySearch($query))
-            ->orderByDesc('checkup_date')
+            // Checked against the allow-list a second time: the URL can set
+            // $sortBy directly without ever passing through sort().
+            ->orderBy(
+                in_array($this->sortBy, self::SORTABLE, true) ? $this->sortBy : 'checkup_date',
+                $this->sortDirection === 'asc' ? 'asc' : 'desc'
+            )
             ->orderByDesc('id')
             ->paginate(config('gfms.per_page'));
     }

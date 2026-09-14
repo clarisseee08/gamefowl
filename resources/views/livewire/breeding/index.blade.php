@@ -60,6 +60,14 @@
                 <option value="{{ $option }}">{{ $option }}</option>
             @endforeach
         </x-filter-select>
+        {{-- The bar's own loading slot, which it has declared since it was
+             written and which no page had ever passed. The search is debounced
+             and the round trip is to Tokyo, so a keystroke and its result are
+             most of a second apart - without this the bar looks dead in
+             between, and a keeper types the query again. --}}
+        <x-slot:loading>
+            <span wire:loading wire:target="search,from,to,bloodline">Searching&hellip;</span>
+        </x-slot:loading>
     </x-filter-bar>
 
     @if ($this->records->isEmpty())
@@ -88,14 +96,37 @@
                 <table class="min-w-full divide-y divide-border">
                     <thead class="bg-muted">
                         <tr>
-                            @foreach (['Mating Date', 'Sire', 'Dam', 'Eggs Set', 'Fertile', 'Hatched', 'Fertility', 'Hatch Rate', ''] as $heading)
+                            {{-- The date and the three egg counts sort. Sire and Dam
+                                 are relationships, and Fertility and Hatch Rate are
+                                 computed at read time from the counts rather than
+                                 stored - BreedingRecord has no rate column, which
+                                 its own test asserts. Sorting by a rate would mean
+                                 ordering by an expression, and the honest version of
+                                 that is to sort by the counts it is derived from. --}}
+                            <x-sort-control field="mating_date" label="Mating Date"
+                                            :current="$sortBy" :direction="$sortDirection"
+                                            cell="px-6 py-4" wire:click="sort('mating_date')" />
+
+                            @foreach (['Sire', 'Dam'] as $heading)
+                                <th scope="col" class="px-6 py-4 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                                    {{ $heading }}
+                                </th>
+                            @endforeach
+
+                            @foreach ([['eggs_set', 'Eggs Set'], ['eggs_fertile', 'Fertile'], ['eggs_hatched', 'Hatched']] as [$field, $heading])
+                                <x-sort-control :field="$field" :label="$heading"
+                                                :current="$sortBy" :direction="$sortDirection"
+                                                cell="px-6 py-4" wire:click="sort('{{ $field }}')" />
+                            @endforeach
+
+                            @foreach (['Fertility', 'Hatch Rate', ''] as $heading)
                                 <th scope="col" class="px-6 py-4 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
                                     {{ $heading }}
                                 </th>
                             @endforeach
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-border bg-card">
+                    <tbody class="divide-y divide-border bg-card" wire:loading.remove wire:target="search,from,to,bloodline">
                         @foreach ($this->records as $record)
                             <tr class="group row-hover">
                                 {{-- Every figure in this row is .datum: the date, the three
@@ -152,6 +183,8 @@
                             </tr>
                         @endforeach
                     </tbody>
+
+                    <x-table-skeleton :cols="9" wire:loading wire:target="search,from,to,bloodline" />
                 </table>
             </div>
         </div>
