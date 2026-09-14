@@ -146,10 +146,18 @@
                                                     class="btn-quiet">Decline</button>
                                         @endif
 
+                                        {{-- Owner only, by the Policy rather than by this
+                                             screen: staff can decide a request, only an
+                                             owner can erase one. --}}
+                                        @can('delete', $request)
+                                            <button type="button" wire:click="confirmDelete({{ $request->id }})"
+                                                    class="btn-quiet text-destructive">Delete</button>
+                                        @endcan
+
                                         {{-- A completed visit is history, not a queue
                                              item. Saying so beats an empty cell that
                                              reads as a rendering fault. --}}
-                                        @unless ($canConfirm || $canComplete || $canDecline)
+                                        @unless ($canConfirm || $canComplete || $canDecline || auth()->user()?->can('delete', $request))
                                             <span class="text-[14px] text-muted-foreground">Nothing to do</span>
                                         @endunless
                                     </div>
@@ -163,6 +171,53 @@
 
         <div class="mt-6">
             {{ $this->requests->links() }}
+        </div>
+    @endif
+
+    {{-- Destructive actions always confirm, and the dialog names the exact
+         request so nobody erases the wrong family's visit.
+
+         THE WARNING IS DIFFERENT FROM EVERY OTHER DELETE IN THIS APPLICATION,
+         and deliberately. A health record, a bird and a breeding record all
+         soft-delete and can be restored by the owner, so their dialogs say so.
+         Appointment has no SoftDeletes trait and appointments has no deleted_at
+         column - the Policy confirms it by returning false from restore() and
+         forceDelete(). There is nothing to restore from, so this says the one
+         true thing instead of borrowing reassuring copy from a screen where it
+         happens to be accurate. --}}
+    @if ($this->requestPendingDeletion)
+        @php $pending = $this->requestPendingDeletion; @endphp
+
+        <div class="fixed inset-0 z-50 flex items-end justify-center bg-foreground/50 p-4 sm:items-center"
+             x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()"
+             role="dialog" aria-modal="true" aria-labelledby="delete-visit-title">
+            <div class="w-full max-w-lg rounded-[4px] border border-border bg-card p-6">
+                <h2 id="delete-visit-title" class="text-[22px] font-semibold tracking-[-0.01em] text-foreground">
+                    Delete this visit request?
+                </h2>
+
+                <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                    You are about to delete the request from
+                    <strong class="font-medium text-foreground">{{ $pending->name }}</strong>
+                    (<span class="datum text-foreground">{{ $pending->contact_number }}</span>)
+                    for <strong class="datum font-medium text-foreground">{{ $pending->preferred_date->format('d M Y') }}</strong>.
+                </p>
+
+                <p class="mt-2 text-[15px] leading-relaxed text-muted-foreground">
+                    This one cannot be undone &mdash; a visit request is not kept in the
+                    farm's history the way a bird or a health record is. If you only want
+                    it out of the queue, Decline it instead.
+                </p>
+
+                <div class="mt-6 flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end">
+                    <button type="button" wire:click="cancelDelete" class="btn-secondary">
+                        No, keep it
+                    </button>
+                    <button type="button" wire:click="delete" class="btn-danger" wire:loading.attr="disabled">
+                        Yes, delete this request
+                    </button>
+                </div>
+            </div>
         </div>
     @endif
 </div>
