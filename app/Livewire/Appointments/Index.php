@@ -7,6 +7,7 @@ namespace App\Livewire\Appointments;
 use App\Enums\AppointmentStatus;
 use App\Models\Appointment;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
@@ -90,7 +91,13 @@ final class Index extends Component
             // The bird is shown per row, so it is eager-loaded or the table is
             // one extra query per request against a database in Tokyo.
             ->with('broodcock:id,name,band_number,bloodline')
-            ->where('status', $this->status)
+            // An empty status is "all requests". The default is still Pending,
+            // for the reason on the property - a queue that opens full of
+            // handled requests is a queue nobody works through - but without a
+            // way to see everything, a farm whose queue is momentarily empty
+            // gets a screen that says "No visit requests to show" while holding
+            // a confirmed visit for Tuesday.
+            ->when($this->status !== '', fn (Builder $query) => $query->where('status', $this->status))
             // Soonest first: the request for next Tuesday matters more than the
             // one for next month, whatever order they arrived in.
             ->orderBy('preferred_date')
