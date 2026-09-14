@@ -72,6 +72,14 @@
             <label for="to" class="label shrink-0">To Date</label>
             <input id="to" type="date" wire:model.live="to" class="input datum w-full sm:w-auto">
         </div>
+        {{-- The bar's own loading slot, which it has declared since it was
+             written and which no page had ever passed. The search is debounced
+             and the round trip is to Tokyo, so a keystroke and its result are
+             most of a second apart - without this the bar looks dead in
+             between, and a keeper types the query again. --}}
+        <x-slot:loading>
+            <span wire:loading wire:target="search,eventType,result,from,to">Searching&hellip;</span>
+        </x-slot:loading>
     </x-filter-bar>
 
     {{-- Results --}}
@@ -241,7 +249,7 @@
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-card">
+                    <tbody class="bg-card" wire:loading.remove wire:target="search,eventType,result,from,to">
                         @foreach ($this->records as $record)
                             <tr class="group hover:bg-muted">
                                 {{-- The band tag is possible here now: bloodline was added to
@@ -323,6 +331,8 @@
                             </tr>
                         @endforeach
                     </tbody>
+
+                    <x-table-skeleton :cols="9" wire:loading wire:target="search,eventType,result,from,to" />
                 </table>
             </div>
         </div>

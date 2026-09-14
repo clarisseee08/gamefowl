@@ -48,15 +48,28 @@
                 <table class="table-hairline w-full text-left">
                     <thead class="bg-muted">
                         <tr>
-                            <th class="px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Who</th>
-                            <th class="px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">When</th>
-                            <th class="px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Party</th>
-                            <th class="px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">About</th>
-                            <th class="px-4 py-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Status</th>
-                            <th class="px-4 py-3 text-right text-[13px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Actions</th>
+                            {{-- Four of the six sort; About and Actions do not.
+                                 About is a relationship rather than a column on
+                                 this table, and Actions is not data. A header
+                                 that looks pressable and does nothing is worse
+                                 than one that plainly is not. --}}
+                            <x-sort-control field="name" label="Who"
+                                            :current="$sortBy" :direction="$sortDirection"
+                                            wire:click="sort('name')" />
+                            <x-sort-control field="preferred_date" label="When"
+                                            :current="$sortBy" :direction="$sortDirection"
+                                            wire:click="sort('preferred_date')" />
+                            <x-sort-control field="party_size" label="Party"
+                                            :current="$sortBy" :direction="$sortDirection"
+                                            wire:click="sort('party_size')" />
+                            <th scope="col" class="px-4 py-2.5 text-left text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">About</th>
+                            <x-sort-control field="status" label="Status"
+                                            :current="$sortBy" :direction="$sortDirection"
+                                            wire:click="sort('status')" />
+                            <th scope="col" class="px-4 py-2.5 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody wire:loading.remove wire:target="status">
                         @foreach ($this->requests as $request)
                             <tr>
                                 <td class="px-4 py-4 align-top">
@@ -165,6 +178,8 @@
                             </tr>
                         @endforeach
                     </tbody>
+
+                    <x-table-skeleton :cols="6" wire:loading wire:target="status" />
                 </table>
             </div>
         </div>
