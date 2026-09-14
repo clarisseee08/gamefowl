@@ -48,6 +48,14 @@
             <input type="checkbox" wire:model.live="forSaleOnly" class="h-5 w-5 accent-primary">
             Available birds only
         </label>
+        {{-- The bar's own loading slot, which it has declared since it was
+             written and which no page had ever passed. The search is debounced
+             and the round trip is to Tokyo, so a keystroke and its result are
+             most of a second apart - without this the bar looks dead in
+             between, and a keeper types the query again. --}}
+        <x-slot:loading>
+            <span wire:loading wire:target="search,bloodline,sex,class,forSaleOnly">Searching&hellip;</span>
+        </x-slot:loading>
     </x-filter-bar>
 
     @if ($this->birds->isEmpty())

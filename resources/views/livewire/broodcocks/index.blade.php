@@ -183,6 +183,14 @@
             <option value="outside">Outside birds only</option>
             <option value="all">Both</option>
         </x-filter-select>
+        {{-- The bar's own loading slot, which it has declared since it was
+             written and which no page had ever passed. The search is debounced
+             and the round trip is to Tokyo, so a keystroke and its result are
+             most of a second apart - without this the bar looks dead in
+             between, and a keeper types the query again. --}}
+        <x-slot:loading>
+            <span wire:loading wire:target="search,status,class,sex,bloodline,ownership">Searching&hellip;</span>
+        </x-slot:loading>
     </x-filter-bar>
 
     {{-- Results --}}
@@ -289,7 +297,7 @@
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-border bg-card">
+                    <tbody class="divide-y divide-border bg-card" wire:loading.remove wire:target="search,status,class,sex,bloodline,ownership">
                         @foreach ($this->broodcocks as $bird)
                             {{-- `group` + .row-hover: the row tints and reveals its actions
                                  together. focus-within is included so the actions appear for
@@ -343,6 +351,8 @@
                             </tr>
                         @endforeach
                     </tbody>
+
+                    <x-table-skeleton :cols="9" wire:loading wire:target="search,status,class,sex,bloodline,ownership" />
                 </table>
             </div>
         </div>

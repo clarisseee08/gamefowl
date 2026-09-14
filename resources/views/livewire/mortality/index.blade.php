@@ -233,9 +233,17 @@
                 <table class="table-hairline min-w-full text-[15px]">
                     <thead class="border-b border-border bg-muted text-left text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
                         <tr>
+                            {{-- The thead carries the type styling for the whole row,
+                                 so these two pass `cell` rather than a class: the
+                                 component's own <th> classes would otherwise fight
+                                 the ones inherited from above. --}}
                             <th scope="col" class="px-4 py-2">Bird</th>
-                            <th scope="col" class="px-4 py-2">Date of Death</th>
-                            <th scope="col" class="px-4 py-2">Cause of Death</th>
+                            <x-sort-control field="date_of_death" label="Date of Death"
+                                            :current="$sortBy" :direction="$sortDirection"
+                                            cell="px-4 py-2" wire:click="sort('date_of_death')" />
+                            <x-sort-control field="cause_of_death" label="Cause of Death"
+                                            :current="$sortBy" :direction="$sortDirection"
+                                            cell="px-4 py-2" wire:click="sort('cause_of_death')" />
                             <th scope="col" class="px-4 py-2">Disposal Method</th>
                             <th scope="col" class="px-4 py-2">Age at Death</th>
                             <th scope="col" class="px-4 py-2">Recorded By</th>
@@ -244,7 +252,7 @@
                             @endif
                         </tr>
                     </thead>
-                    <tbody class="bg-card">
+                    <tbody class="bg-card" wire:loading.remove wire:target="from,to,cause">
                         @foreach ($this->rows as $record)
                             <tr wire:key="row-{{ $record->id }}" class="group row-hover">
                                 <td class="px-4 py-3">
@@ -283,6 +291,8 @@
                             </tr>
                         @endforeach
                     </tbody>
+
+                    <x-table-skeleton :cols="7" wire:loading wire:target="from,to,cause" />
                 </table>
             </div>
         </div>

@@ -102,10 +102,19 @@
                 equal to or smaller than the one before it.
             </p>
 
+            {{-- DEBOUNCED AT 400ms, and the reason is the distance to the database.
+                 These four are wire:model.live because the fertility and hatch rates
+                 below recompute as you type, which is the right behaviour. Undebounced
+                 it is also one server round trip PER KEYSTROKE - typing "241" fired
+                 three - and production runs Supabase in Tokyo against Render in
+                 Singapore, roughly 240ms each way. The rates still land while the
+                 keeper is looking at them; they just stop being recomputed for "2" and
+                 "24" on the way to 241. Same 400ms the search fields already use. --}}
+
             <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
                     <label for="eggs_set" class="label">Eggs Set</label>
-                    <input id="eggs_set" type="number" min="0" inputmode="numeric" wire:model.live="eggs_set"
+                    <input id="eggs_set" type="number" min="0" inputmode="numeric" wire:model.live.debounce.400ms="eggs_set"
                            class="input mt-1 @error('eggs_set') input-error @enderror">
                     <p class="help">Total eggs put in the incubator.</p>
                     @error('eggs_set') <p class="error">{{ $message }}</p> @enderror
@@ -113,7 +122,7 @@
 
                 <div>
                     <label for="eggs_fertile" class="label">Fertile Eggs</label>
-                    <input id="eggs_fertile" type="number" min="0" inputmode="numeric" wire:model.live="eggs_fertile"
+                    <input id="eggs_fertile" type="number" min="0" inputmode="numeric" wire:model.live.debounce.400ms="eggs_fertile"
                            class="input mt-1 @error('eggs_fertile') input-error @enderror">
                     <p class="help">Of those, how many were fertile.</p>
                     @error('eggs_fertile') <p class="error">{{ $message }}</p> @enderror
@@ -121,7 +130,7 @@
 
                 <div>
                     <label for="eggs_hatched" class="label">Eggs Hatched</label>
-                    <input id="eggs_hatched" type="number" min="0" inputmode="numeric" wire:model.live="eggs_hatched"
+                    <input id="eggs_hatched" type="number" min="0" inputmode="numeric" wire:model.live.debounce.400ms="eggs_hatched"
                            class="input mt-1 @error('eggs_hatched') input-error @enderror">
                     <p class="help">How many chicks actually hatched.</p>
                     @error('eggs_hatched') <p class="error">{{ $message }}</p> @enderror
@@ -129,7 +138,7 @@
 
                 <div>
                     <label for="offspring_count" class="label">Offspring Registered</label>
-                    <input id="offspring_count" type="number" min="0" inputmode="numeric" wire:model.live="offspring_count"
+                    <input id="offspring_count" type="number" min="0" inputmode="numeric" wire:model.live.debounce.400ms="offspring_count"
                            class="input mt-1 @error('offspring_count') input-error @enderror">
                     <p class="help">Leave at 0 — you can add the chicks as bird records afterwards.</p>
                     @error('offspring_count') <p class="error">{{ $message }}</p> @enderror
