@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Support\FarmProfile;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -48,6 +49,17 @@ class AppServiceProvider extends ServiceProvider
                 explicitlyAllowed: (bool) config('gfms.allow_destructive_db'),
             )
         );
+
+        /*
+         * Replace config('gfms.farm.*') with what the owner saved at /settings.
+         *
+         * Before every reader of it runs, and cheap: a file-cache hit, not a
+         * query, on all but the first request after a change. It cannot throw -
+         * see FarmProfile - because this same boot() runs ahead of `artisan
+         * migrate`, and a query against the table that migration has not
+         * created yet would take the migration down with it.
+         */
+        FarmProfile::apply();
 
         // Fail loudly in development instead of silently returning null:
         //  - accessing an un-eager-loaded relation throws (catches N+1 early,

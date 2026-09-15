@@ -21,7 +21,9 @@ use PHPUnit\Framework\TestCase;
  * border-rule-strong, text-action, bg-action, text-ok, bg-ok-wash and the band
  * names crimson/forest/slate - and two of them had already shipped into
  * livewire/appointments/index.blade.php, where a table head rendered with no
- * ground at all while the file's own comment promised 7:1 contrast.
+ * ground at all while the file's own comment promised 7:1 contrast. (That view
+ * has since been deleted with the rest of the visit-request feature; the audit
+ * is quoted here as the reason this guard exists, not as a live reference.)
  *
  * WHY THE EXISTING GUARDS MISSED IT. BadgeVocabularyTest checks the `badge-`,
  * `btn-` and `input-` prefixes, because those are the class vocabulary the PHP

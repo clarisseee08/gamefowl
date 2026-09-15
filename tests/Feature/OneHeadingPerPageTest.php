@@ -57,9 +57,9 @@ final class OneHeadingPerPageTest extends TestCase
             route('breeding.index'),
             route('performance.index'),
             route('mortality.index'),
-            route('appointments.index'),
             route('reports.index'),
             route('users.index'),
+            route('settings.edit'),
             route('profile.edit'),
         ]);
     }

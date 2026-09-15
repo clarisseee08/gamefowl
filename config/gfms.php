@@ -58,20 +58,40 @@ return [
     ),
 
     /*
-     * How many ancestor generations the pedigree view renders. Three is what
-     * the thesis specifies; raising it grows the eager-load set exponentially.
+     * How many ancestor generations the pedigree view renders.
+     *
+     * ONE - the sire and dam, and nothing above them. It was three, and the
+     * farm asked for it to be cut back: a bird's parents are what they
+     * actually record and can vouch for, and two further columns of "Not
+     * recorded" made a screen whose job is to prove traceability look like a
+     * screen that had failed to load.
+     *
+     * Raising it costs one extra query per generation and grows the column
+     * count exponentially - 2, then 4, then 8. The view labels each column
+     * from an array that currently names two; add to it before raising this.
      */
-    'pedigree_generations' => 3,
+    'pedigree_generations' => 1,
     /*
      * What the farm tells the public.
      *
-     * These feed the footer and the "Visit us" section, and every one of them
-     * defaults to an empty string on purpose: the footer omits a row it has no
-     * value for rather than rendering a label with nothing after it. A farm
-     * that has not supplied a phone number shows no phone number, not "Phone -".
+     * THESE ARE THE FALLBACK, NOT THE SOURCE. The live values are one row in
+     * `farm_settings`, edited by the owner at /settings, and
+     * App\Support\FarmProfile overwrites this whole array with them in
+     * AppServiceProvider::boot(). What is left here is what the application
+     * shows when there is no such row to read - a fresh clone before its first
+     * migration, or a database that cannot be reached at boot.
      *
-     * They live in the environment rather than as committed defaults because
-     * they are a real person's contact details.
+     * So the entries below stay environment-driven and stay empty. Every one
+     * of them defaults to an empty string on purpose: the footer omits a row it
+     * has no value for rather than rendering a label with nothing after it. A
+     * farm that has not supplied a phone number shows no phone number, not
+     * "Phone -". That behaviour is what makes an unmigrated database degrade
+     * into a quiet page rather than a broken one.
+     *
+     * Read them with config('gfms.farm.*') as before. Nothing that displays
+     * these values needs to know the database is involved, which is the point -
+     * it includes reports/pdf/_layout.blade.php, and dompdf can only be handed
+     * plain scalars.
      */
     'farm' => [
         'name' => env('GFMS_FARM_NAME', 'SSGuad Game Farm'),
@@ -79,6 +99,9 @@ return [
         'phone' => env('GFMS_FARM_PHONE', ''),
         'email' => env('GFMS_FARM_EMAIL', ''),
         'hours' => env('GFMS_FARM_HOURS', ''),
+        /* A free paragraph for the public Visit section. Owner-written; there
+         * is deliberately no environment default worth shipping. */
+        'note' => env('GFMS_FARM_NOTE', ''),
     ],
 
     /*
