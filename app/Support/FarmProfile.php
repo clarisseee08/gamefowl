@@ -75,7 +75,15 @@ final class FarmProfile
      */
     public static function refresh(): void
     {
-        Cache::forget(self::CACHE_KEY);
+        // Guarded for the same reason the read is: forget() goes to the cache
+        // STORE, which is the database unless something says otherwise, and
+        // this runs from a model event that a seeder can fire before the cache
+        // table exists.
+        try {
+            Cache::forget(self::CACHE_KEY);
+        } catch (Throwable) {
+            // Nothing cached to drop, or nowhere to drop it from.
+        }
 
         self::apply();
     }
@@ -92,10 +100,31 @@ final class FarmProfile
      */
     private static function stored(): ?array
     {
-        $cached = Cache::get(self::CACHE_KEY);
+        /*
+         * THE CACHE READ IS A DATABASE QUERY UNTIL PROVEN OTHERWISE, and that
+         * is why it has a guard of its own rather than sharing the one below.
+         *
+         * config/cache.php defaults CACHE_STORE to `database`. Production sets
+         * it to `file`, so this looks like a file read on the machine anyone
+         * writes it on - but CI has no .env at all, and neither does the image
+         * build. There, Cache::get() issues `select * from cache where key = ?`
+         * against a SQLite file that composer install has not reached the point
+         * of creating. It threw during `artisan package:discover`, which runs
+         * as a composer post-autoload-dump hook, so the failure was not in a
+         * test - it was `composer install` exiting 1 and taking the whole build
+         * with it.
+         *
+         * A cache miss and an unreachable cache are the same thing to this
+         * method: read the row directly and carry on.
+         */
+        try {
+            $cached = Cache::get(self::CACHE_KEY);
 
-        if (is_array($cached)) {
-            return $cached;
+            if (is_array($cached)) {
+                return $cached;
+            }
+        } catch (Throwable) {
+            // Fall through to the direct read.
         }
 
         try {
@@ -121,7 +150,17 @@ final class FarmProfile
             $values[$configKey] = (string) ($row->{$column} ?? '');
         }
 
-        Cache::forever(self::CACHE_KEY, $values);
+        /*
+         * Its own guard again, and the order matters: the values are already in
+         * hand, so a cache store that cannot be written must not discard a read
+         * that worked. The cost of failing here is one query on the next
+         * request, which is a cost and not a failure.
+         */
+        try {
+            Cache::forever(self::CACHE_KEY, $values);
+        } catch (Throwable) {
+            // Serve what was read.
+        }
 
         return $values;
     }
