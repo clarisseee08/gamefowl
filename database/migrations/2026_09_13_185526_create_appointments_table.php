@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\AppointmentStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -20,6 +19,18 @@ use Illuminate\Support\Facades\Schema;
  * production are the same Supabase project and RUN_MIGRATIONS is false on
  * Render for exactly that reason. Ship it, then set RUN_MIGRATIONS=true,
  * deploy, confirm, and set it back.
+ *
+ * SUPERSEDED. The farm asked for visit requests to be removed entirely - the
+ * public now rings the number on the front page - so the migration that
+ * follows this one drops the table again. This file is left in place because a
+ * database that has already run it needs the drop to have something to drop,
+ * and a fresh one must still walk the same path to arrive in the same state.
+ *
+ * The status column used to read `AppointmentStatus::values()`. That enum has
+ * been deleted with the rest of the feature, and a migration that references a
+ * class no longer in the tree is not a stale comment - it is a fatal error on
+ * any fresh `artisan migrate`, including the one CI runs. The four values are
+ * inlined below as the literals they always resolved to.
  */
 return new class extends Migration
 {
@@ -65,8 +76,8 @@ return new class extends Migration
              */
             $table->foreignId('broodcock_id')->nullable()->constrained()->nullOnDelete();
 
-            $table->enum('status', AppointmentStatus::values())
-                ->default(AppointmentStatus::Pending->value);
+            $table->enum('status', ['pending', 'confirmed', 'declined', 'completed'])
+                ->default('pending');
 
             /* Who acted on it and when - the audit shape used elsewhere here. */
             $table->foreignId('handled_by')->nullable()->constrained('users')->nullOnDelete();
