@@ -9,6 +9,8 @@ use App\Models\FarmSetting;
 use App\Models\User;
 use App\Support\FarmProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -291,6 +293,44 @@ final class FarmProfileTest extends TestCase
         FarmProfile::refresh();
 
         $this->assertSame('fallback number', config('gfms.farm.phone'));
+    }
+
+    /**
+     * An unreachable CACHE STORE must not take the application down either.
+     *
+     * THIS IS A REGRESSION TEST FOR A BUILD FAILURE, not a hypothetical.
+     * config/cache.php defaults CACHE_STORE to `database`; production sets it
+     * to `file`, so on any machine with a .env this reads a file. CI has no
+     * .env and neither does the image build, so there Cache::get() is a SQL
+     * query - and it ran during `artisan package:discover`, a composer
+     * post-autoload-dump hook, against a SQLite file composer install had not
+     * created yet. `composer install` exited 1 and took the whole build with
+     * it. The guard existed but sat around the model query only.
+     *
+     * A cache that cannot be reached must degrade to reading the row, not to
+     * the environment fallback - so this asserts the stored value still
+     * arrives, which is the half a bare "does not throw" would miss.
+     */
+    public function test_the_bridge_survives_a_cache_store_it_cannot_reach(): void
+    {
+        FarmSetting::current()->update(['phone' => '+639123456789']);
+
+        config([
+            'gfms.farm.phone' => 'fallback number',
+            'cache.default' => 'database',
+        ]);
+
+        // Drop the store out from under it, exactly as the build found it.
+        Cache::purge('database');
+        Schema::drop('cache');
+
+        FarmProfile::apply();
+
+        $this->assertSame(
+            '+639123456789',
+            config('gfms.farm.phone'),
+            'An unreachable cache should fall back to reading the row, not to the config default.'
+        );
     }
 
     /** A stored value wins over the config default - that is the whole job. */
