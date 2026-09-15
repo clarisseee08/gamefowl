@@ -11,25 +11,31 @@ use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 /**
- * Three-generation ancestor tree.
+ * Ancestor tree, as deep as config('gfms.pedigree_generations') says.
  *
  * This is the feature that turns `bloodline` from a text label into real
  * traceability, and it is the clearest differentiator from the prior systems
  * reviewed in the thesis.
  *
- * PERFORMANCE - read before changing anything here.
+ * IT IS CURRENTLY SET TO ONE GENERATION - the sire and dam only. The farm
+ * asked for grandparents and great-grandparents to go: they are not recorded
+ * in practice, so two thirds of the chart was the words "Not recorded" and a
+ * screen meant to prove traceability read as a screen that had failed.
+ *
+ * PERFORMANCE - read before raising that number back.
  *
  * The obvious implementation is nested eager loading:
  *     ->with(['sire.sire.sire', 'sire.sire.dam', 'dam.dam.dam', ...])
  * That looks right and is badly wrong. Laravel issues ONE QUERY PER RELATION
- * PATH, so a full binary ancestor tree costs 2 + 4 + 8 = 14 queries - no better
- * than walking the tree lazily. Measured: 45 queries for one page.
+ * PATH, so a full three-deep binary tree costs 2 + 4 + 8 = 14 queries - no
+ * better than walking the tree lazily. Measured: 45 queries for one page.
  *
  * Instead this loads the tree BREADTH-FIRST, one query per generation: collect
  * the parent ids of the current level, fetch that whole level in a single
- * `whereIn`, repeat. A 3-generation tree therefore costs 4 queries total
- * (root + 3 levels) and stays at 4 no matter how complete the pedigree is.
- * Every query here is a round trip to Supabase in Tokyo, so this matters.
+ * `whereIn`, repeat. The cost is therefore 1 + the configured depth, whatever
+ * the depth is, and it does not move as a pedigree gets more complete: two
+ * queries today, four if three generations ever come back. Every query here is
+ * a round trip to Supabase in Tokyo, so this matters.
  *
  * PedigreePerformanceTest asserts the query count, so a regression fails CI
  * rather than quietly making the page slow.
@@ -98,9 +104,10 @@ final class Pedigree extends Component
     /**
      * The tree flattened into chart columns.
      *
-     * A pedigree is conventionally drawn as a bracket: the subject, then 2
-     * parents, 4 grandparents, 8 great-grandparents. Each column is a
-     * fixed-length list in which a missing ancestor is null, so the template
+     * A pedigree is conventionally drawn as a bracket, each column twice the
+     * width of the one before it: the subject, then 2 parents, then 4
+     * grandparents if the configured depth ever asks for them. Each column is
+     * a fixed-length list in which a missing ancestor is null, so the template
      * renders an even grid without special-casing gaps.
      *
      * @return array<int, array<int, Broodcock|null>>

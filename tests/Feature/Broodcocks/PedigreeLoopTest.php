@@ -90,9 +90,14 @@ final class PedigreeLoopTest extends TestCase
     }
 
     /**
-     * Three generations deep, which is exactly the span the pedigree renders -
-     * so this is the loop that would actually be visible as a bird being its
-     * own great-grandfather.
+     * Three generations deep, which is DEEPER THAN THE CHART NOW DRAWS.
+     *
+     * That gap is the point. The pedigree renders one generation, but the loop
+     * guard walks the whole ancestry, and it has to: a cycle three links up is
+     * still a cycle, and the code that follows sire_id - the breeding records,
+     * the offspring generator, the guard itself - would recurse forever on it
+     * whether or not any screen draws that far. Cutting the check back to the
+     * render depth would make an infinite loop reachable again.
      */
     public function test_a_bird_cannot_take_its_own_grandson_as_its_sire(): void
     {

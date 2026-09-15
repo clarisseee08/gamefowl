@@ -4,7 +4,11 @@
     $root = $this->root;
     $generations = $this->generations;
     $completeness = $this->completeness;
-    $labels = ['This Bird', 'Parents', 'Grandparents', 'Great-Grandparents'];
+    // Two columns, because config('gfms.pedigree_generations') is 1. This array
+    // is the limit on how deep the chart can be LABELLED - the loop below falls
+    // back to "Generation 3" if the config outgrows it, which is legible but not
+    // what anyone wants on screen. Extend this in the same commit as the config.
+    $labels = ['This Bird', 'Parents'];
 @endphp
 
 <div>
@@ -14,7 +18,7 @@
                 Family Tree &mdash; {{ $root->name }}
             </h1>
             <p class="mt-1 max-w-[68ch] text-[14px] leading-relaxed text-muted-foreground">
-                Three generations of ancestors, built from the sire and dam recorded on each bird.
+                The sire and dam recorded on this bird.
             </p>
         </div>
         <a href="{{ route('broodcocks.show', $broodcock) }}" wire:navigate class="btn-secondary mt-4 sm:mt-0">
@@ -55,12 +59,30 @@
         @endif
     </div>
 
-    {{-- The chart. Scrolls horizontally on small screens rather than
-         squashing - a pedigree bracket is inherently wide. --}}
-    <div class="card overflow-x-auto p-4 sm:p-6">
-        <div class="flex min-w-max items-stretch gap-7">
+    {{-- The chart.
+
+         CAPPED AND LEFT-ALIGNED, NOT CENTRED. Four columns filled any monitor
+         and two do not, so the obvious move was an auto horizontal margin
+         against this same width cap, to sit the short bracket in the middle of
+         the card. DesignSystemGuardTest refuses that pairing, and it is right
+         to: a centred max-width column is the single thing that reads as a web
+         page pasted into an application, and the rule does not stop applying
+         because this particular column happens to be short. The cap stays - two
+         columns should not stretch across a 1900px monitor either - and the
+         alignment is the same left edge as every other console screen.
+
+         (Written the long way round on purpose. That guard greps the file as
+         text, comments included, so naming the two utilities side by side here
+         would trip it on the prose explaining why they are not used.)
+
+         The columns take min-widths rather than a fixed 13rem so the bracket
+         fits a 390px phone without scrolling; it no longer has four columns to
+         find room for. overflow-x-auto stays as the backstop, which is the one
+         sanctioned way for a diagram to be wider than its page. --}}
+    <div class="card overflow-x-auto p-3 sm:p-6">
+        <div class="flex max-w-2xl items-stretch gap-5 sm:gap-10">
             @foreach ($generations as $index => $column)
-                <div class="flex flex-col" style="min-width: 13rem;">
+                <div class="flex min-w-[9.5rem] flex-1 flex-col sm:min-w-[13rem]">
                     <p class="mb-3 text-center text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
                         {{ $labels[$index] ?? 'Generation '.$index }}
                     </p>
@@ -128,7 +150,7 @@
     </div>
 
     <p class="mt-4 text-[13px] text-muted-foreground">
-        In every pair the sire is above the dam, and each card says which.
+        The sire is above the dam, and each card says which.
         Card colour is the bloodline band, not the sex. Click any bird to open its own record.
     </p>
 </div>

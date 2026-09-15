@@ -1,5 +1,18 @@
 @php
+    /*
+     * config('gfms.farm.*') is the farm_settings row, which the owner edits at
+     * /settings - App\Support\FarmProfile pushes it into config in
+     * AppServiceProvider::boot(), so this page reads it exactly as it did when
+     * these were environment variables.
+     */
     $farm = config('gfms.farm');
+
+    /*
+     * The visitor note is NOT part of this test, deliberately. It is prose
+     * about a visit - "ring ahead on Sundays" - and on its own it is not a way
+     * to reach anybody. A page whose only contact content was a note would
+     * promise a conversation it gives no means to start.
+     */
     $hasContact = $farm['address'] || $farm['phone'] || $farm['email'] || $farm['hours'];
 
     /*
@@ -21,8 +34,8 @@
 
     Weight, space and a hairline do the work instead - which is why every
     structural move on this page is a rule: the masthead splits across one,
-    the three statements are divided by two more, and the contact details are
-    ruled off from the form beside them.
+    the three statements are divided by two more, and the contact details at
+    the foot are ruled off from the catalogue above them.
 --}}
 <div>
     {{-- ---------------------------------------------------------------
@@ -36,9 +49,9 @@
          offers and how to act on it to the right.
 
          Two anchors, and the second one matters structurally: the catalogue
-         sits between here and the form, so without a way to jump straight
-         down, arranging a visit would mean scrolling past every bird on the
-         farm.
+         sits between here and the farm's contact details, so without a way to
+         jump straight down, finding the phone number would mean scrolling past
+         every bird on the farm.
     --------------------------------------------------------------- --}}
     <section class="border-b border-border pb-12 pt-8 sm:pb-16 sm:pt-14">
         <div class="grid gap-8 lg:grid-cols-2 lg:gap-12">
@@ -318,69 +331,93 @@
     {{-- ---------------------------------------------------------------
          Visiting.
 
-         The form is the easy path, not the only one, so the farm's own
-         contact details sit beside it rather than after it. Below lg the two
-         stack and the rule between them turns from a left edge into a top
-         one - without that the details butt straight onto the end of the form
-         and read as another part of it.
+         THERE IS NO FORM HERE ANY MORE, and the farm asked for that. A visit
+         was arranged through a request form that wrote an appointments row and
+         queued it for somebody to ring back about - two steps and a wait, to
+         reach a farm that answers its phone. The contact details were a
+         narrow rail beside the form, framed as the alternative to it
+         ("Or get in touch directly"). They are now the whole section, and the
+         wording no longer apologises for them.
+
+         FOUR ACROSS ON A WIDE SCREEN rather than a column. As a stacked list
+         at the foot of a long page these read as small print; ruled off and
+         given a quarter of the width each, they read as the four things the
+         farm wants a visitor to leave with. Below lg they fall to two and then
+         to one, in that order, because phone and email belong together and
+         address and hours belong together.
     --------------------------------------------------------------- --}}
     <section id="visit" class="scroll-mt-20 py-12 sm:py-16">
         <h2 class="text-[28px] font-semibold leading-[1.15] tracking-[-0.01em] text-foreground sm:text-[32px]">
             Visit the farm
         </h2>
         <p class="mt-3 max-w-[58ch] text-[17px] leading-relaxed text-muted-foreground">
-            Visitors are welcome by arrangement. Leave your details and the farm will ring
-            you back to settle a time &mdash; nothing is booked until you have spoken to
-            someone.
+            Visitors are welcome by arrangement. Ring the farm or send an email and
+            someone will settle a time with you &mdash; nothing is arranged until you
+            have spoken to somebody.
         </p>
 
-        <div class="mt-8 grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-            <livewire:appointments.request-form />
+        @if ($hasContact)
+            {{-- Each row is conditional. A farm that has cleared its email
+                 address at /settings shows no email, not an "Email" heading
+                 with nothing under it. --}}
+            <dl class="mt-9 grid gap-x-10 gap-y-8 border-t border-border pt-8 sm:grid-cols-2 lg:grid-cols-4">
+                @if ($farm['phone'])
+                    <div>
+                        <dt class="text-[13px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">Phone</dt>
+                        {{-- The number leads because it is now the fastest way
+                             to reach the farm, and it leads on WEIGHT rather
+                             than size: the four headings sit on one baseline
+                             and setting this one larger would break the row
+                             for the sake of emphasis a medium does as well. --}}
+                        <dd class="mt-2 text-[17px] font-medium leading-snug">
+                            @if ($telHref)
+                                <a href="tel:{{ $telHref }}" class="datum text-primary hover:underline">{{ $farm['phone'] }}</a>
+                            @else
+                                <span class="datum text-foreground">{{ $farm['phone'] }}</span>
+                            @endif
+                        </dd>
+                    </div>
+                @endif
+                @if ($farm['email'])
+                    <div>
+                        <dt class="text-[13px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">Email</dt>
+                        {{-- break-words, because an address is one unbroken
+                             token and a quarter-width column is narrower than
+                             several real ones. --}}
+                        <dd class="mt-2 break-words text-[17px] leading-snug">
+                            <a href="mailto:{{ $farm['email'] }}" class="text-primary hover:underline">{{ $farm['email'] }}</a>
+                        </dd>
+                    </div>
+                @endif
+                @if ($farm['address'])
+                    <div>
+                        <dt class="text-[13px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">Where to find us</dt>
+                        <dd class="mt-2 max-w-[28ch] text-[17px] leading-relaxed text-foreground">{{ $farm['address'] }}</dd>
+                    </div>
+                @endif
+                @if ($farm['hours'])
+                    <div>
+                        <dt class="text-[13px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">Visiting hours</dt>
+                        <dd class="mt-2 max-w-[28ch] text-[17px] leading-relaxed text-foreground">{{ $farm['hours'] }}</dd>
+                    </div>
+                @endif
+            </dl>
 
-            @if ($hasContact)
-                {{-- A customer who would rather telephone should not have to fill
-                     in a form to find the number - and on the phone they are
-                     holding, the number itself is the control. --}}
-                <div class="border-t border-border pt-10 lg:border-l lg:border-t-0 lg:border-border lg:pl-10 lg:pt-0">
-                    <h3 class="text-[17px] font-semibold text-foreground">
-                        Or get in touch directly
-                    </h3>
-                    <dl class="mt-5 space-y-5">
-                        @if ($farm['phone'])
-                            <div>
-                                <dt class="text-[13px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">Phone</dt>
-                                <dd class="mt-1.5 text-[19px]">
-                                    @if ($telHref)
-                                        <a href="tel:{{ $telHref }}" class="datum text-primary hover:underline">{{ $farm['phone'] }}</a>
-                                    @else
-                                        <span class="datum text-foreground">{{ $farm['phone'] }}</span>
-                                    @endif
-                                </dd>
-                            </div>
-                        @endif
-                        @if ($farm['email'])
-                            <div>
-                                <dt class="text-[13px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">Email</dt>
-                                <dd class="mt-1.5 text-[17px]">
-                                    <a href="mailto:{{ $farm['email'] }}" class="text-primary hover:underline">{{ $farm['email'] }}</a>
-                                </dd>
-                            </div>
-                        @endif
-                        @if ($farm['address'])
-                            <div>
-                                <dt class="text-[13px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">Where to find us</dt>
-                                <dd class="mt-1.5 max-w-[34ch] text-[17px] leading-relaxed text-foreground">{{ $farm['address'] }}</dd>
-                            </div>
-                        @endif
-                        @if ($farm['hours'])
-                            <div>
-                                <dt class="text-[13px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">Visiting hours</dt>
-                                <dd class="mt-1.5 max-w-[34ch] text-[17px] leading-relaxed text-foreground">{{ $farm['hours'] }}</dd>
-                            </div>
-                        @endif
-                    </dl>
-                </div>
+            @if ($farm['note'])
+                {{-- The owner's own words, ruled off from the four fixed rows
+                     because it is the one thing here they wrote rather than
+                     filled in. --}}
+                <p class="mt-8 max-w-[58ch] border-t border-border pt-6 text-[17px] leading-relaxed text-foreground">
+                    {{ $farm['note'] }}
+                </p>
             @endif
-        </div>
+        @else
+            {{-- Reachable only on a database whose farm_settings row is missing
+                 or wholly blank. Better to say so plainly than to leave a
+                 heading promising a visit above nothing at all. --}}
+            <p class="mt-8 border-t border-border pt-8 text-[17px] leading-relaxed text-muted-foreground">
+                The farm has not published its contact details yet.
+            </p>
+        @endif
     </section>
 </div>

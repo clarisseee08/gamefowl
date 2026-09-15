@@ -45,15 +45,15 @@ final class DatabaseSeeder extends Seeder
     /** In dependency order: birds before anything that references a bird. */
     private const SEEDERS = [
         UserSeeder::class,
+        // The farm's own name and contact details, which the footer, the
+        // sidebar, every PDF and the public Visit section all read. First
+        // because it is what the shell around every other screen renders.
+        FarmProfileSeeder::class,
         PenSeeder::class,
         BroodcockSeeder::class,
         HealthRecordSeeder::class,
         BreedingRecordSeeder::class,
         PerformanceRecordSeeder::class,
-        // Needs a bird to point one request at, and an owner to have decided
-        // the handled ones. Neither is required - it degrades to "the farm
-        // generally" and an unattributed decision - but both read better.
-        AppointmentSeeder::class,
         // Last: this one flips three birds to `deceased`, and running it after
         // the record seeders keeps their history intact.
         MortalitySeeder::class,
