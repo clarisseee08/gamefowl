@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\Broodcock;
+use App\Models\FarmSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -82,6 +83,31 @@ final class LandingTest extends TestCase
         $this->get(route('home'))
             ->assertOk()
             ->assertSee('Visit the farm');
+    }
+
+    /**
+     * There is no booking form, and that is the arrangement the farm asked for.
+     *
+     * A visit used to be requested through a form that wrote an appointments
+     * row and queued it for somebody to ring back about. The farm would rather
+     * be rung, so the form and its whole feature are gone and the contact
+     * details are the section. This is the assertion that would fail if a
+     * future change reintroduced a form here without that conversation.
+     */
+    public function test_the_front_page_asks_visitors_to_ring_rather_than_to_fill_in_a_form(): void
+    {
+        FarmSetting::current()->update([
+            'phone' => '+639123456789',
+            'email' => 'gfms_inquiries@gmail.com',
+        ]);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('+639123456789')
+            ->assertSee('gfms_inquiries@gmail.com')
+            ->assertDontSee('Request a visit')
+            ->assertDontSee('Preferred date')
+            ->assertDontSee('How many coming');
     }
 
     /**

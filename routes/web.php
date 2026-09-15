@@ -7,7 +7,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DesignGalleryController;
 use App\Http\Controllers\DiagnosticsController;
 use App\Http\Controllers\ReportController;
-use App\Livewire\Appointments;
 use App\Livewire\Breeding;
 use App\Livewire\Broodcocks;
 use App\Livewire\Catalog;
@@ -17,6 +16,7 @@ use App\Livewire\Mortality;
 use App\Livewire\Performance;
 use App\Livewire\Profile;
 use App\Livewire\Reports;
+use App\Livewire\Settings;
 use App\Livewire\Users;
 use Illuminate\Support\Facades\Route;
 
@@ -149,14 +149,27 @@ Route::middleware(['auth', 'active'])->group(function (): void {
     });
 
     /*
-     * Visit requests - INTERNAL ONLY.
+     * VISIT REQUESTS HAVE NO SCREENS, AND NO TABLE EITHER.
      *
-     * The asking is public and lives on the front page; this is the queue of
-     * what everybody asked, which is farm business. AppointmentPolicy denies
-     * customers outright: names, phone numbers and who is interested in which
-     * bird are not theirs to read.
+     * There used to be two halves here: a public form on the front page that
+     * anyone could submit, and this console queue where the farm confirmed,
+     * declined or marked a request visited. The farm asked for the form to go -
+     * they would rather be rung - so the front page now carries the phone
+     * number, the email address, where to find the farm and its visiting
+     * hours, and nothing that submits.
+     *
+     * The queue went with it, and that is the part worth explaining. Nothing
+     * else in this system could create an appointment: the console screen only
+     * ever read, decided and deleted. Keeping it would have left an inbox with
+     * the form that fed it removed - reachable from the sidebar, permanently
+     * empty after the last request was cleared, and impossible to explain to
+     * anyone who asked what it was for.
+     *
+     * Removed with it: the model, policy, status enum, factory, seeder and the
+     * three test files, plus the table (2026_09_15_090000). This is deliberately
+     * the whole feature and not the half-removal the pens note below describes,
+     * because that was the lesson. It is one `git revert` from coming back.
      */
-    Route::livewire('/appointments', Appointments\Index::class)->name('appointments.index');
 
     /*
      * User management - OWNER ONLY.
@@ -187,6 +200,20 @@ Route::middleware(['auth', 'active'])->group(function (): void {
      * Restoring the screens means restoring this group and the four components
      * with it; they are in the history at 0f8c244.
      */
+
+    /*
+     * The farm's public identity - OWNER ONLY.
+     *
+     * Its name, phone number, email, address and visiting hours, which used to
+     * be GFMS_FARM_* environment variables. That put the farm's own telephone
+     * number behind a code change and a deploy, and therefore behind a
+     * developer: the owner, whose number it is and who knows when it changes,
+     * was the one person who could not change it.
+     *
+     * FarmSettingPolicy is what enforces owner-only; this group only gets a
+     * signed-in user as far as the component, which authorizes in mount().
+     */
+    Route::livewire('/settings', Settings\Farm::class)->name('settings.edit');
 
     /*
      * A user's own profile. Not inside the users.* group on purpose: that group
