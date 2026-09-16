@@ -454,8 +454,8 @@ The console is a full-bleed application shell — sidebar floor-to-ceiling, top 
 inside the content column, and the main region as the **only** scroll container
 in the document. Tokens follow shadcn-style semantic naming
 (`background`/`foreground`, `card`/`card-foreground`, `muted`/`muted-foreground`),
-which is why a dark theme would be a second `:root` block rather than a second
-set of components.
+which is why the dark theme is a second `:root` block rather than a second set
+of components.
 
 Two rules carry most of the character. **Colour means bloodline and nothing
 else** — everything else is ink, rule and paper, so a page of birds can be read
@@ -465,12 +465,14 @@ number, date, weight, count and percentage, so digits align down a column.
 `config/gfms-brand.php` is the single source of colour, consumed by both the
 Tailwind theme and the PDF templates, with guard tests holding the two in step.
 
-### Dark mode is not shipped
+### Dark mode
 
-Deliberately. The token layer is ready for it — every surface already declares
-the foreground that belongs on it — but a half-working theme toggle is worse
-than none, so it is left out rather than shipped unfinished.
+Shipped, and it costs no component any knowledge of it: `:root[data-theme="dark"]`
+redefines the same token names, so a surface that declared its own foreground
+already gets the right one. The toggle writes `gfms-theme` to `localStorage`;
+with nothing stored, the operating system's preference decides.
 
-Turning it on later means adding a `:root[data-theme="dark"]` block that
-redefines the same token names, plus a toggle that sets the attribute. No
-component should need to change.
+Two details that are easy to get wrong and are already handled — the choice is
+applied by an inline script in `<head>`, before first paint, so a dark-mode user
+never gets a white flash; and it is reapplied after a soft navigation, which
+otherwise wipes the attribute and snaps the page back to light.
