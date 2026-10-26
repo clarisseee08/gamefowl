@@ -37,7 +37,11 @@ final class FontPayloadTest extends TestCase
 
     public function test_no_subset_stylesheet_is_imported_without_a_unicode_range(): void
     {
-        preg_match_all("/@import\s+'@fontsource\/([^']+)';/", $this->stylesheet(), $matches);
+        // Both spellings. @fontsource-variable ships the ranges correctly, so a
+        // latin-ext import from it is harmless - but matching only the plain
+        // package would mean this guard silently stopped reading the file the
+        // day the stack moved to variable faces, which is how a guard rots.
+        preg_match_all("/@import\s+'@fontsource(?:-variable)?\/([^']+)';/", $this->stylesheet(), $matches);
 
         $offenders = array_values(array_filter(
             $matches[1],

@@ -38,6 +38,7 @@ Thumbs.db
 # environment, not thesis source. Remove these lines to commit them.
 /.agents/
 /.claude/skills/
+/.claude/web-redesign-brief.md
 /skills-lock.json
 /apple/
 
@@ -45,3 +46,4 @@ Thumbs.db
 /.cursor/
 /.codex/
 /opencode.json
+/audit/

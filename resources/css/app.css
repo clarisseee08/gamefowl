@@ -14,70 +14,33 @@
    render-blocking <link> anywhere in this application.
 
    THREE ROLES, THREE FACES, and the roles are enforced by review:
-     Poppins        headings only, never body
-     Inter          body, UI, forms, tables
-     JetBrains Mono every number, via .datum and tabular-nums
+     Fraunces     headings and display figures only, never body
+     Geist        body, UI, forms, tables
+     Geist Mono   every number, via .datum and tabular-nums
 
-   latin-ext is loaded alongside latin: Filipino place names in the farm's own
-   records carry diacritics that bare latin does not cover, and a missing
-   glyph falls back mid-word to a different face. */
-@import '@fontsource/poppins/latin-600.css';
-@import '@fontsource/inter/latin-400.css';
-@import '@fontsource/inter/latin-500.css';
-@import '@fontsource/inter/latin-600.css';
-@import '@fontsource/jetbrains-mono/latin-400.css';
-@import '@fontsource/jetbrains-mono/latin-500.css';
-/* 600 is loaded because headline figures are .datum AND semibold. Without the
-   real weight the browser synthesises bold by smearing the 500, which is
-   visibly worse at the 32-44px sizes the dashboard uses. */
-@import '@fontsource/jetbrains-mono/latin-600.css';
+   WHY A SERIF LEADS. This is a stud book. The farm's claim is provenance -
+   that a bird's sire and dam are written down and can be followed - and a
+   geometric sans says software, not register. Fraunces is a high-contrast
+   display serif with enough weight range to carry both a masthead and a
+   headline figure, which is the one place this system needs type to be loud.
 
-/* ---------------------------------------------------------------------------
-   LATIN-EXT, DECLARED BY HAND, AND THE REASON IS A MEASUREMENT.
+   ALL THREE ARE VARIABLE, and that is what makes the ladder affordable. A
+   static face costs one file per weight; these cost one file for 100-900. The
+   latin payload is 89 KB against roughly 129 KB for the three static families
+   they replace, and it buys every weight in between instead of three fixed
+   steps.
 
-   @fontsource ships one CSS file per subset and NONE of them declare a
-   unicode-range. So `latin-ext-400.css` and `latin-400.css` are two identical
-   @font-face rules - same family, same weight, no range to tell them apart -
-   and the later one simply wins.
-
-   Measured on the dashboard before this change: the browser fetched
-   inter-latin-400 (23.1 KB) AND inter-latin-ext-400 (34.2 KB), and the same
-   again at 500. That is 69.4 KB of latin-ext on every page load, a third of all
-   font weight, to render ZERO characters in the latin-ext range - I checked the
-   rendered text and there were none.
-
-   WHY IT IS KEPT AT ALL. The original comment is right that a missing glyph
-   falls back mid-word to a different face, which looks broken. But the
-   characters that reason was written for - ñ, á, é, í, ó, ú, ü in Filipino and
-   Spanish place names - are all in Latin-1 Supplement, which the `latin` subset
-   already covers. Latin Extended-A begins at U+0100 and is a genuine rarity
-   here, so it should be a fallback the browser fetches ON DEMAND rather than a
-   file every visitor pays for.
-
-   Declaring the range restores exactly that: the file is now downloaded only if
-   a character in it is actually rendered.
---------------------------------------------------------------------------- */
-@font-face {
-    font-family: 'Inter';
-    font-style: normal;
-    font-display: swap;
-    font-weight: 400;
-    src: url('@fontsource/inter/files/inter-latin-ext-400-normal.woff2') format('woff2');
-    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
-                   U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
-                   U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-
-@font-face {
-    font-family: 'Inter';
-    font-style: normal;
-    font-display: swap;
-    font-weight: 500;
-    src: url('@fontsource/inter/files/inter-latin-ext-500-normal.woff2') format('woff2');
-    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
-                   U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
-                   U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
+   THE latin-ext PROBLEM LEFT WITH THEM. @fontsource's STATIC subset files
+   declare no unicode-range, so latin-ext-400 and latin-400 were two identical
+   @font-face rules and the later import simply won - 69 KB fetched on every
+   page load to render zero characters. That is why this file used to declare
+   those faces by hand. @fontsource-variable DOES ship the ranges, so latin-ext
+   and vietnamese are fetched only if such a glyph is actually rendered, which
+   is what the hand-written block was for. FontPayloadTest holds the line on
+   both spellings. */
+@import '@fontsource-variable/fraunces/wght.css';
+@import '@fontsource-variable/geist/wght.css';
+@import '@fontsource-variable/geist-mono/wght.css';
 
 @source '../views/**/*.blade.php';
 @source '../js/**/*.js';
@@ -110,16 +73,21 @@
 @theme {
     /* THE THREE ROLES. Each face does one job and no other.
 
-       --font-display is headings only. Using it for body text is the single
-       most common way a type system degrades, because Poppins is a geometric
-       face: even, circular, and tiring to read in long runs at 15-17px.
+       --font-display is headings and headline figures only. Using it for body
+       text is the single most common way a type system degrades, and it is
+       especially true here: Fraunces is a high-contrast display serif, drawn
+       to be set large. At 15-17px its thin strokes go fragile.
 
        --font-mono carries every number through .datum, not just code. Band
        numbers, dates, weights, counts, rates and percentages all have to align
-       in a column, which proportional figures cannot do. */
-    --font-display: 'Poppins', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
-    --font-sans: 'Inter', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Menlo, monospace;
+       in a column, which proportional figures cannot do.
+
+       The serif fallbacks are named rather than left to `serif`, which resolves
+       to Times New Roman on Windows - a far narrower face that would reflow a
+       masthead rather than merely restyle it. */
+    --font-display: 'Fraunces Variable', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+    --font-sans: 'Geist Variable', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+    --font-mono: 'Geist Mono Variable', ui-monospace, 'Cascadia Mono', Menlo, monospace;
 
     /* Surfaces — tinted neutrals. Never pure white for the page, never pure
        black for text: a #FFF page under a #FFF card leaves no elevation to
@@ -233,9 +201,17 @@
     --color-print-rule-strong: #c7cbc5;
     --color-print-zebra: #f7f8f6;
 
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 14px;
+    /* RADIUS. Deliberately tight, and tighter on the inner element than the
+       container it sits in - 2px inside a 4px panel, never the same value at
+       both levels, because matching radii make a nested box look pasted on.
+
+       The scale used to run 6/10/14, which is the soft-SaaS default and reads
+       as an app chrome rather than a document. A register is ruled and
+       squared; the corners are relieved just enough not to look like a
+       screenshot of a table. */
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 6px;
 
     /* Elevation. Three steps, and they mean something: elevation indicates
        interactivity or layering, never decoration. Nothing lifts on its own. */
@@ -263,9 +239,26 @@
     --dur-base: 200ms;      /* dropdowns, popovers, tabs, accordions */
     --dur-slow: 300ms;      /* modals, drawers */
 
-    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);      /* entrances */
+    /* THE ENTRANCE CURVE IS A SETTLE, NOT A SNAP, and the difference is the
+       whole motion signature.
+
+       It used to be cubic-bezier(0.16, 1, 0.3, 1) - an expo-out, which fires
+       almost all of its distance in the first few frames and then crawls. That
+       curve is everywhere, and it reads as "web app". This one keeps a little
+       speed through the middle and arrives, which suits a register: the page
+       is settling into place, not springing at you.
+
+       Entrances pair it with a 2px rise - deliberately small. The showy
+       20-30px rise is the other half of the generic look, and at this density
+       it makes a list of rows look like it is falling into the page. */
+    --ease-out: cubic-bezier(0.2, 0.6, 0.2, 1);     /* entrances - a settle */
     --ease-in: cubic-bezier(0.4, 0, 1, 1);          /* exits */
     --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);    /* moves, resizes */
+
+    /* The rule wipe. Hairlines draw open from the leading edge rather than
+       fading, which is this project's one signature move: a register is drawn
+       with ruled lines, so the lines are what arrive first. */
+    --ease-rule: cubic-bezier(0.3, 0.8, 0.25, 1);
 
     /* Retained so the existing rules below keep compiling while call sites
        migrate. Aliases, not a second system - they resolve to the tokens
@@ -304,14 +297,20 @@
     }
 
     /* Headings, and the ONLY place --font-display appears.
-       Tightened tracking: untracked headings are a large part of why the
-       previous build read as a document rather than a product. Poppins is
-       geometric and runs wide, so it needs more negative tracking than the
-       body face did. */
+
+       TRACKING IS NOW NEARLY NEUTRAL, where it used to be -0.02em. That was
+       the right correction for Poppins, which is geometric and sets wide;
+       Fraunces is a text-derived serif whose default fit is already close,
+       and pulling it in squeezes the serifs into their neighbours. The one
+       place it still earns tightening is the masthead, which takes -0.02em
+       locally because optical tracking falls off with size.
+
+       600 across the board is a variable-font weight now, not a shipped file,
+       so .masthead can reach for 700 without costing another download. */
     h1, h2, h3, h4 {
         font-family: var(--font-display);
         font-weight: 600;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.003em;
         text-wrap: balance;
     }
 
@@ -765,12 +764,37 @@
        leaves a plain, complete, usable page rather than an empty one.
     ------------------------------------------------------------------ */
     .rise-in {
-        animation: gfms-rise 460ms var(--ease-out) var(--rise-delay, 0ms) both;
+        animation: gfms-rise 320ms var(--ease-out) var(--rise-delay, 0ms) both;
     }
 
+    /* 2px, not 12. The distance is what separates a settle from a slide, and
+       at this density a 12px rise made a stack of fields look like it was
+       dropping into the page. Opacity does the work; the offset only keeps it
+       from reading as a plain crossfade. */
     @keyframes gfms-rise {
-        from { opacity: 0; transform: translateY(12px); }
+        from { opacity: 0; transform: translateY(2px); }
         to   { opacity: 1; transform: none; }
+    }
+
+    /* ------------------------------------------------------------------
+       THE RULE WIPE - this project's signature entrance.
+
+       A hairline draws open from its leading edge instead of fading in. It is
+       used on the rules that separate sections and on the underline beneath an
+       active tab, which is why the page reads as being ruled rather than
+       assembled. scaleX is composited, so this costs nothing to animate.
+
+       transform-origin is left in LTR; the rule is declared on the element so
+       a right-aligned use can flip it without a second keyframe.
+    ------------------------------------------------------------------ */
+    .rule-in {
+        transform-origin: left center;
+        animation: gfms-rule 420ms var(--ease-rule) var(--rise-delay, 0ms) both;
+    }
+
+    @keyframes gfms-rule {
+        from { transform: scaleX(0); }
+        to   { transform: scaleX(1); }
     }
 
     /* Page titles carry a short brand marker, so the colour reaches the content
