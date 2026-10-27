@@ -154,6 +154,8 @@ final class Index extends Component
             ? "{$user->full_name} can sign in again."
             : "{$user->full_name} has been deactivated and can no longer sign in. Their records are kept.";
 
+        $this->dispatch('toast', message: $this->statusMessage, tone: 'ok');
+
         $this->confirmingId = null;
         unset($this->users, $this->pendingUser);
     }

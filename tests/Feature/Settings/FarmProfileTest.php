@@ -135,7 +135,9 @@ final class FarmProfileTest extends TestCase
             ->set('address', 'Guimbal, Iloilo')
             ->set('hours', 'Monday to Saturday, 8AM to 5PM')
             ->call('save')
-            ->assertHasNoErrors();
+            ->assertHasNoErrors()
+            // The page does not redirect, so the confirmation is a toast.
+            ->assertDispatched('toast', message: 'Saved. The public pages show the new details now.', tone: 'ok');
 
         $stored = FarmSetting::current();
 

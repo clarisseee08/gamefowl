@@ -207,12 +207,15 @@ final class UserManagementTest extends TestCase
 
     public function test_an_owner_can_deactivate_another_account(): void
     {
-        $target = User::factory()->staff()->create();
+        $target = User::factory()->staff()->create(['full_name' => 'Maria Santos']);
 
         Livewire::actingAs(User::factory()->owner()->create())
             ->test(Index::class)
             ->call('confirmToggle', $target->id)
-            ->call('toggleActive');
+            // The dialog names the person before anything changes.
+            ->assertSee('Deactivate Maria Santos?')
+            ->call('toggleActive')
+            ->assertDispatched('toast', message: 'Maria Santos has been deactivated and can no longer sign in. Their records are kept.', tone: 'ok');
 
         $this->assertFalse($target->fresh()->is_active);
     }

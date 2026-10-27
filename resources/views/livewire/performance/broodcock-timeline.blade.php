@@ -1,37 +1,42 @@
-<div>
-    {{-- ------------------------------------------------------------------
-         Summary. Every figure is derived, never stored, and the win rate is
-         computed over CONTEST events only - conditioning sessions and
-         weigh-ins are excluded so they cannot dilute the statistic.
-         ------------------------------------------------------------------ --}}
-    @php($summary = $this->summary)
+@php
+    // Every figure is derived, never stored, and the win rate is computed over
+    // CONTEST events only - conditioning sessions and weigh-ins are excluded so
+    // they cannot dilute the statistic.
+    $summary = $this->summary;
 
+    $typeSegments = [['key' => '', 'label' => 'All events']];
+    foreach ($this->eventTypeOptions() as $option) {
+        $typeSegments[] = ['key' => $option->value, 'label' => $option->label()];
+    }
+
+    // Six figures, each one registry data. Ink, not status colour: colour in
+    // this system means bloodline, and the badges on each entry already say
+    // which bouts were won.
+    $figures = [
+        ['Contests', number_format($summary->totalContests), 'of '.number_format($summary->totalEvents).' '.Str::plural('event', $summary->totalEvents)],
+        ['Wins', number_format($summary->wins), null],
+        ['Losses', number_format($summary->losses), null],
+        ['Draws', number_format($summary->draws), null],
+    ];
+@endphp
+
+<div>
     @if ($statusMessage !== '')
-        <div class="mb-6 flex items-start justify-between gap-4 rounded-[4px] bg-success-bg px-4 py-3 text-[15px] text-foreground"
-             role="status">
-            <p>{{ $statusMessage }}</p>
-            <button type="button" wire:click="dismissStatus" class="-my-3 shrink-0 font-medium underline">
+        <div class="mb-6 flex items-start justify-between gap-4 rounded-[8px] bg-success-bg px-4 py-3" role="status">
+            <p class="text-[15px] leading-snug text-foreground">{{ $statusMessage }}</p>
+            <button type="button" wire:click="dismissStatus"
+                    class="-my-2 inline-flex min-h-11 shrink-0 items-center px-1 text-[14px] font-medium text-foreground underline-offset-4 hover:underline">
                 Dismiss
             </button>
         </div>
     @endif
 
-    <div class="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
-        <div>
-            <h2 class="text-[22px] font-semibold leading-[1.2] tracking-[-0.01em] text-foreground">Performance History</h2>
-            <p class="mt-1 max-w-[65ch] text-[15px] leading-relaxed text-muted-foreground">
+    <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-5">
+        <div class="min-w-0">
+            <h2 class="sb-h2">Performance History</h2>
+            <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-muted-foreground">
                 Everything recorded for {{ $broodcock->displayName() }}, newest first.
             </p>
-
-            {{-- The one place colour is spent. The bird is already fully loaded
-                 by the page this timeline is embedded in, so the tag and its
-                 bloodline name cost no extra query. --}}
-            <div class="mt-3 flex flex-wrap items-center gap-2">
-                <x-band-tag :bloodline="$broodcock->bloodline" :band="$broodcock->band_number" size="xs" />
-                @if (filled($broodcock->bloodline))
-                    <span class="text-[13px] text-muted-foreground">{{ $broodcock->bloodline }}</span>
-                @endif
-            </div>
         </div>
 
         @can('create', App\Models\PerformanceRecord::class)
@@ -44,186 +49,121 @@
         @endcan
     </div>
 
-    {{-- Six derived figures. Every one is registry data, so every one is mono
-         and tabular - read down the row and the digits line up.
-         Win / loss / draw carry the ok / alert / warn washes because the brief
-         maps those three words to those three tokens; nothing else here is
-         coloured. --}}
-    <dl class="mb-8 grid grid-cols-2 gap-px overflow-hidden rounded-[4px] border border-border bg-border sm:grid-cols-3 lg:grid-cols-6">
-        <div class="bg-card p-4">
-            <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Contests</dt>
-            <dd class="datum mt-1.5 text-[32px] font-semibold leading-[1.1] tracking-[-0.02em] text-foreground">{{ number_format($summary->totalContests) }}</dd>
-            <p class="help">of {{ number_format($summary->totalEvents) }} {{ Str::plural('event', $summary->totalEvents) }}</p>
-        </div>
+    {{-- The summary: type on paper between two hairlines, no boxes. --}}
+    <dl class="mt-8 grid grid-cols-2 gap-x-8 gap-y-6 border-y border-border py-6 sm:grid-cols-3 lg:grid-cols-6">
+        @foreach ($figures as [$label, $value, $note])
+            <div>
+                <dt class="text-[13px] font-semibold text-muted-foreground">{{ $label }}</dt>
+                <dd class="datum mt-1 font-display text-[2rem] font-semibold leading-none tracking-[-0.02em] text-foreground">{{ $value }}</dd>
+                @if ($note)
+                    <p class="datum mt-1.5 text-[13px] text-muted-foreground">{{ $note }}</p>
+                @endif
+            </div>
+        @endforeach
 
-        <div class="bg-card p-4">
-            <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Wins</dt>
-            <dd class="datum mt-1.5 text-[32px] font-semibold leading-[1.1] tracking-[-0.02em] text-success">{{ number_format($summary->wins) }}</dd>
-        </div>
-
-        <div class="bg-card p-4">
-            <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Losses</dt>
-            <dd class="datum mt-1.5 text-[32px] font-semibold leading-[1.1] tracking-[-0.02em] text-destructive">{{ number_format($summary->losses) }}</dd>
-        </div>
-
-        <div class="bg-card p-4">
-            <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Draws</dt>
-            <dd class="datum mt-1.5 text-[32px] font-semibold leading-[1.1] tracking-[-0.02em] text-warning">{{ number_format($summary->draws) }}</dd>
-        </div>
-
-        <div class="bg-card p-4">
+        <div>
             {{-- "No contests yet" is prose, not a figure: it drops to the body
                  size and out of mono rather than pretending to be a number. --}}
-            <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Win Rate</dt>
+            <dt class="text-[13px] font-semibold text-muted-foreground">Win Rate</dt>
             <dd @class([
-                'mt-1.5 font-semibold leading-[1.1] text-foreground',
-                'datum text-[32px] tracking-[-0.02em]' => $summary->winRate !== null,
-                'text-[15px]' => $summary->winRate === null,
+                'mt-1 text-foreground',
+                'datum font-display text-[2rem] font-semibold leading-none tracking-[-0.02em]' => $summary->winRate !== null,
+                'pt-2 text-[15px] text-muted-foreground' => $summary->winRate === null,
             ])>{{ $summary->winRateLabel() }}</dd>
-            <p class="help">Contests only (<span class="datum">{{ $summary->recordLabel() }}</span>)</p>
+            <p class="mt-1.5 text-[13px] text-muted-foreground">Contests only (<span class="datum">{{ $summary->recordLabel() }}</span>)</p>
         </div>
 
-        <div class="bg-card p-4">
-            <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Average Rating</dt>
+        <div>
+            <dt class="text-[13px] font-semibold text-muted-foreground">Average Rating</dt>
             <dd @class([
-                'mt-1.5 font-semibold leading-[1.1] text-foreground',
-                'datum text-[32px] tracking-[-0.02em]' => $summary->averageRating !== null,
-                'text-[15px]' => $summary->averageRating === null,
+                'mt-1 text-foreground',
+                'datum font-display text-[2rem] font-semibold leading-none tracking-[-0.02em]' => $summary->averageRating !== null,
+                'pt-2 text-[15px] text-muted-foreground' => $summary->averageRating === null,
             ])>{{ $summary->averageRatingLabel() }}</dd>
         </div>
     </dl>
 
-    {{-- Filter --}}
+    {{-- Filter, as a segmented strip: four kinds of event, all in view. --}}
     @if ($this->totalEvents > 0)
-        <div class="card mb-6 p-4 sm:flex sm:items-end sm:gap-4">
-            <div class="sm:w-72">
-                <x-form-select id="timeline-type" label="Show" wire:model.live="eventType">
-                    <option value="">All types of event</option>
-                    @foreach ($this->eventTypeOptions() as $option)
-                        <option value="{{ $option->value }}">{{ $option->label() }}</option>
-                    @endforeach
-                </x-form-select>
+        <div class="mt-8 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+            <div class="max-w-full overflow-x-auto" data-scroll-x>
+                <x-segmented :segments="$typeSegments" :active="$eventType" model="eventType" label="Show events of type" />
             </div>
 
-            <p class="mt-3 text-[15px] text-muted-foreground sm:mt-0 sm:pb-3">
+            <p class="text-[14px] text-muted-foreground">
                 <span class="datum">{{ number_format($this->events->total()) }}</span>
                 {{ Str::plural('event', $this->events->total()) }} shown.
             </p>
         </div>
     @endif
 
-    {{-- ------------------------------------------------------------------
-         The timeline itself.
-         ------------------------------------------------------------------ --}}
+    {{-- The timeline itself. --}}
     @if ($this->events->isEmpty())
-        <div class="card px-6 py-12 text-center">
-            <svg class="mx-auto h-8 w-8 text-muted-foreground" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-
-            @if ($eventType !== '')
-                <h3 class="mt-4 text-[18px] font-medium text-foreground">Nothing of that kind recorded yet</h3>
-                <p class="mx-auto mt-2 max-w-[52ch] text-[15px] leading-relaxed text-muted-foreground">
-                    {{ $broodcock->displayName() }} has other events on file. Choose
-                    "All types of event" to see them.
-                </p>
-            @else
-                <h3 class="mt-4 text-[18px] font-medium text-foreground">No performance recorded yet</h3>
-                <p class="mx-auto mt-2 max-w-[52ch] text-[15px] leading-relaxed text-muted-foreground">
-                    Nothing has been recorded for {{ $broodcock->displayName() }} so far.
-                    Add a sparring session, derby, conditioning session or weigh-in and it
-                    will appear here.
-                </p>
+        @if ($eventType !== '')
+            <x-empty-state class="mt-6" title="Nothing of that kind recorded yet"
+                           description="{{ $broodcock->displayName() }} has other events on file. Choose “All events” to see them."
+                           icon="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z">
+                <button type="button" wire:click="$set('eventType', '')" class="btn-secondary">Show all events</button>
+            </x-empty-state>
+        @else
+            <x-empty-state class="mt-6" title="No performance recorded yet"
+                           description="Nothing has been recorded for {{ $broodcock->displayName() }} so far. Add a sparring session, derby, conditioning session or weigh-in and it will appear here."
+                           icon="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z">
                 @can('create', App\Models\PerformanceRecord::class)
-                    <a href="{{ route('performance.create', ['broodcock' => $broodcock->id]) }}" wire:navigate class="btn-primary mt-6">
+                    <a href="{{ route('performance.create', ['broodcock' => $broodcock->id]) }}" wire:navigate class="btn-primary">
                         Add the first record
                     </a>
                 @endcan
-            @endif
-        </div>
+            </x-empty-state>
+        @endif
     @else
-        <ol class="relative space-y-3 sm:space-y-0">
-            {{-- The vertical spine. It was drawn in bg-background, which is the
-                 page's own colour, so it had been invisible; a rule in this
-                 system is a hairline. Hidden on small screens, where the cards
-                 already stack and a rail only steals width. --}}
-            <span class="absolute left-4 top-3 hidden h-[calc(100%-1.5rem)] w-px bg-border sm:block" aria-hidden="true"></span>
-
+        <ol class="mt-6 divide-y divide-border border-y border-border"
+            wire:loading.class="opacity-60" wire:target="eventType,gotoPage,nextPage,previousPage">
             @foreach ($this->events as $event)
-                <li class="relative sm:flex sm:gap-4 sm:pb-3">
-                    {{-- Marker. A square node, not a second capsule - the only
-                         capsule in this system is the band tag. The parchment
-                         gutter behind it is what breaks the spine cleanly. --}}
-                    <span class="absolute left-0 top-3.5 hidden h-8 w-8 shrink-0 items-center justify-center bg-background sm:flex"
-                          aria-hidden="true">
-                        <span @class([
-                            'flex h-7 w-7 items-center justify-center rounded-[2px] border border-border',
-                            $event->event_type->badgeClasses(),
-                        ])>
-                            @if ($event->result === App\Enums\PerformanceResult::Win)
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
-                                </svg>
-                            @elseif ($event->result === App\Enums\PerformanceResult::Loss)
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                            @else
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14"/>
-                                </svg>
-                            @endif
-                        </span>
-                    </span>
+                <li wire:key="timeline-{{ $event->id }}" class="py-5 sm:grid sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-6">
+                    {{-- When. The date leads, because a timeline is read down
+                         its dates. --}}
+                    <div>
+                        <p class="datum text-[16px] font-medium leading-snug text-foreground">
+                            {{ $event->event_date->format('d M Y') }}
+                        </p>
+                        <p class="mt-0.5 text-[13px] text-muted-foreground">
+                            {{ $event->event_date->diffForHumans() }}
+                        </p>
+                    </div>
 
-                    <div class="card w-full p-4 sm:ml-12">
-                        <div class="flex flex-wrap items-start justify-between gap-3">
-                            <div>
-                                <p class="datum text-[18px] font-medium leading-[1.25] text-foreground">
-                                    {{ $event->event_date->format('d M Y') }}
-                                </p>
-                                <p class="mt-0.5 text-[12px] text-muted-foreground">
-                                    {{ $event->event_date->diffForHumans() }}
-                                </p>
-                            </div>
-
-                            <div class="flex flex-wrap items-center gap-1.5">
-                                <span class="badge {{ $event->event_type->badgeClasses() }}">
-                                    {{ $event->event_type->label() }}
-                                </span>
-                                <span class="badge {{ $event->result->badgeClasses() }}">
-                                    {{ $event->result->label() }}
-                                </span>
-                            </div>
+                    {{-- What happened. --}}
+                    <div class="mt-3 min-w-0 sm:mt-0">
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <span class="badge {{ $event->event_type->badgeClasses() }}">{{ $event->event_type->label() }}</span>
+                            <span class="badge {{ $event->result->badgeClasses() }}">{{ $event->result->label() }}</span>
                         </div>
 
-                        <dl class="mt-3.5 grid grid-cols-2 gap-4 border-t border-border pt-3 sm:grid-cols-3">
-                            <div>
-                                <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Weight</dt>
+                        <dl class="mt-3 flex flex-wrap gap-x-8 gap-y-2 text-[15px]">
+                            <div class="flex items-baseline gap-2">
+                                <dt class="text-[13px] text-muted-foreground">Weight</dt>
                                 <dd @class([
-                                    'mt-1 text-[15px] text-foreground',
-                                    'datum' => $event->weight !== null,
-                                ])>
-                                    {{ $event->weight !== null ? $event->weight.' kg' : 'Not weighed' }}
-                                </dd>
+                                    'datum text-foreground' => $event->weight !== null,
+                                    'text-muted-foreground' => $event->weight === null,
+                                ])>{{ $event->weight !== null ? $event->weight.' kg' : 'Not weighed' }}</dd>
                             </div>
 
-                            <div>
-                                <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Duration</dt>
+                            <div class="flex items-baseline gap-2">
+                                <dt class="text-[13px] text-muted-foreground">Duration</dt>
                                 <dd @class([
-                                    'mt-1 text-[15px] text-foreground',
-                                    'datum' => $event->durationLabel() !== null,
-                                ])>
-                                    {{ $event->durationLabel() ?? 'Not recorded' }}
-                                </dd>
+                                    'datum text-foreground' => $event->durationLabel() !== null,
+                                    'text-muted-foreground' => $event->durationLabel() === null,
+                                ])>{{ $event->durationLabel() ?? 'Not recorded' }}</dd>
                             </div>
 
-                            <div>
-                                <dt class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Rating</dt>
-                                <dd class="mt-1">
+                            <div class="flex items-center gap-2">
+                                <dt class="text-[13px] text-muted-foreground">Rating</dt>
+                                <dd>
                                     @if ($event->rating === null)
-                                        <span class="text-[15px] text-muted-foreground">Not rated</span>
+                                        <span class="text-muted-foreground">Not rated</span>
                                     @else
+                                        {{-- Ink stars, not amber: fill against outline,
+                                             which also survives a monochrome print. --}}
                                         <span class="inline-flex items-center gap-0.5" role="img"
                                               aria-label="{{ $event->rating }} out of 5 stars">
                                             @for ($star = 1; $star <= 5; $star++)
@@ -241,73 +181,74 @@
                             </div>
                         </dl>
 
-                        {{-- Internal remarks. Gated on the policy, not on a
-                             CSS class: a customer's page never renders them. --}}
+                        {{-- Internal remarks. Gated on the policy, not on a CSS
+                             class: a customer's page never renders them. --}}
                         @if ($event->remarks !== null && $event->remarks !== '' && auth()->user()?->can('viewRemarks', $event))
-                            <div class="mt-3.5 rounded-[4px] border border-border bg-muted px-3 py-2.5">
-                                <p class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Remarks (staff only)</p>
-                                <p class="mt-1 whitespace-pre-line text-[15px] leading-relaxed text-foreground">{{ $event->remarks }}</p>
+                            <div class="mt-3 border-l-2 border-border pl-3">
+                                <p class="text-[13px] font-semibold text-muted-foreground">Remarks (staff only)</p>
+                                <p class="mt-1 max-w-[65ch] whitespace-pre-line text-[15px] leading-relaxed text-foreground">{{ $event->remarks }}</p>
                             </div>
                         @endif
 
-                        <div class="mt-3.5 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-2">
-                            <p class="text-[12px] text-muted-foreground">
+                        <div class="mt-2 flex flex-wrap items-center justify-between gap-x-6">
+                            <p class="py-2 text-[13px] text-muted-foreground">
                                 Recorded by {{ $event->recordedBy?->full_name ?? 'a former staff member' }}
                             </p>
 
-                            <div class="flex items-center gap-4">
-                                @can('update', $event)
-                                    <a href="{{ route('performance.edit', $event) }}" wire:navigate
-                                       class="inline-flex min-h-11 items-center text-[15px] font-medium text-primary hover:underline">
-                                        Edit<span class="sr-only">, {{ $event->event_type->label() }} on {{ $event->event_date->format('d M Y') }}</span>
-                                    </a>
-                                @endcan
-                                @can('delete', $event)
-                                    <button type="button" wire:click="confirmDelete({{ $event->id }})"
-                                            class="text-[15px] font-medium text-destructive hover:underline">
-                                        Delete<span class="sr-only">, {{ $event->event_type->label() }} on {{ $event->event_date->format('d M Y') }}</span>
-                                    </button>
-                                @endcan
-                            </div>
+                            @canany(['update', 'delete'], $event)
+                                <div class="flex items-center gap-5">
+                                    @can('update', $event)
+                                        <a href="{{ route('performance.edit', $event) }}" wire:navigate
+                                           class="inline-flex min-h-11 items-center text-[15px] font-medium text-primary hover:underline">
+                                            Edit<span class="sr-only">, {{ $event->event_type->label() }} on {{ $event->event_date->format('d M Y') }}</span>
+                                        </a>
+                                    @endcan
+                                    @can('delete', $event)
+                                        <button type="button" wire:click="confirmDelete({{ $event->id }})"
+                                                class="inline-flex min-h-11 items-center text-[15px] font-medium text-destructive hover:underline">
+                                            Delete<span class="sr-only">, {{ $event->event_type->label() }} on {{ $event->event_date->format('d M Y') }}</span>
+                                        </button>
+                                    @endcan
+                                </div>
+                            @endcanany
                         </div>
                     </div>
                 </li>
             @endforeach
         </ol>
 
-        <div class="mt-5 border-t border-border pt-4">
-            {{ $this->events->links() }}
-        </div>
+        @if ($this->events->hasPages())
+            <div class="mt-5">
+                {{ $this->events->links() }}
+            </div>
+        @endif
     @endif
 
     {{-- Delete confirmation, naming the exact record. --}}
     @if ($this->recordPendingDeletion !== null)
         @php($pending = $this->recordPendingDeletion)
-        <div class="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-4 sm:items-center" x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()"
-             role="dialog" aria-modal="true" aria-labelledby="timeline-delete-title"
-             wire:keydown.escape="cancelDelete">
-            <div class="card w-full max-w-lg p-6">
-                <h2 id="timeline-delete-title" class="text-[22px] font-semibold leading-[1.2] tracking-[-0.01em] text-foreground">
-                    Delete this performance record?
+        <div class="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 p-4"
+             x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()"
+             role="dialog" aria-modal="true" aria-labelledby="timeline-delete-title" aria-describedby="timeline-delete-body">
+            <div class="dialog-panel elev-3 w-full max-w-md rounded-[12px] bg-card p-6">
+                <h2 id="timeline-delete-title" class="font-display text-[22px] font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
+                    Delete the {{ $pending->event_type->label() }} record for {{ $broodcock->displayName() }}?
                 </h2>
 
-                <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-                    You are about to delete the
-                    <strong class="font-medium text-foreground">{{ $pending->event_type->label() }}</strong> record for
-                    <strong class="font-medium text-foreground">{{ $broodcock->displayName() }}</strong>
-                    dated <strong class="datum font-medium text-foreground">{{ $pending->event_date->format('d M Y') }}</strong>.
-                </p>
+                <div id="timeline-delete-body">
+                    <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                        The record dated <strong class="datum font-medium text-foreground">{{ $pending->event_date->format('d M Y') }}</strong>
+                        will disappear from this timeline and stop counting towards the win rate.
+                    </p>
+                    <p class="mt-2 text-[15px] leading-relaxed text-muted-foreground">
+                        The farm owner can restore it later if this was a mistake.
+                    </p>
+                </div>
 
-                <p class="mt-2 text-[15px] leading-relaxed text-muted-foreground">
-                    It will disappear from this timeline and stop counting towards the win rate.
-                    The farm owner can restore it later if this was a mistake.
-                </p>
-
-                <div class="mt-6 flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end">
-                    <button type="button" wire:click="cancelDelete" class="btn-secondary sm:w-auto">
-                        No, keep it
-                    </button>
-                    <button type="button" wire:click="delete" class="btn-danger sm:w-auto">
+                <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                    <button type="button" wire:click="cancelDelete" class="btn-secondary">Cancel</button>
+                    <button type="button" wire:click="delete" class="btn-danger" wire:loading.attr="disabled" wire:target="delete">
+                        <span class="btn-spinner" wire:loading wire:target="delete"></span>
                         Yes, delete this record
                     </button>
                 </div>

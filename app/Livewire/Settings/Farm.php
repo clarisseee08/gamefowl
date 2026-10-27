@@ -119,6 +119,8 @@ final class Farm extends Component
         // the new farm name.
 
         $this->saved = true;
+
+        $this->dispatch('toast', message: 'Saved. The public pages show the new details now.', tone: 'ok');
     }
 
     public function render(): View
