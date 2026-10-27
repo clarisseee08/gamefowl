@@ -67,17 +67,17 @@
     /* Surfaces — tinted neutrals. Never pure white for the page, never pure
        black for text: a #FFF page under a #FFF card leaves no elevation to
        work with, which is what made the previous direction read as paper. */
-    --color-background: #fbfbfa;
+    --color-background: #f7f6f3;
     --color-card: #ffffff;
-    --color-muted: #f4f5f3;
+    --color-muted: #efece7;
     --color-popover: #ffffff;
-    --color-border: #e4e6e2;
-    --color-input: #dfe2dd;
+    --color-border: #e2ded7;
+    --color-input: #d6d1c9;
 
-    --color-foreground: #161c19;
-    --color-muted-foreground: #4e5550;   /* 7.40:1 on background - Console floor */
-    --color-card-foreground: #161c19;
-    --color-popover-foreground: #161c19;
+    --color-foreground: #1c1a17;
+    --color-muted-foreground: #4f4b46;   /* 7.9:1 on background, 7.4:1 on muted - the Console 7:1 floor */
+    --color-card-foreground: #1c1a17;
+    --color-popover-foreground: #1c1a17;
 
     /* ------------------------------------------------------------------
        THE INK RAMP. Neutrals only - no hue is introduced here.
@@ -94,17 +94,17 @@
 
        500 and 600 are mid-greys: legal on a caption over paper, never on the
        console's 7:1 floor. ------------------------------------------------ */
-    --color-ink-50: #f7f8f6;
-    --color-ink-100: #f4f5f3;
-    --color-ink-200: #e4e6e2;
-    --color-ink-300: #dfe2dd;
-    --color-ink-400: #c7cbc5;
-    --color-ink-500: #9aa199;
-    --color-ink-600: #6e756f;
-    --color-ink-700: #4e5550;
-    --color-ink-800: #2e3531;
-    --color-ink-900: #161c19;
-    --color-ink-950: #0d110f;
+    --color-ink-50: #faf9f7;
+    --color-ink-100: #efece7;
+    --color-ink-200: #e2ded7;
+    --color-ink-300: #d6d1c9;
+    --color-ink-400: #c2bcb3;
+    --color-ink-500: #9a948c;
+    --color-ink-600: #6e6963;
+    --color-ink-700: #4f4b46;
+    --color-ink-800: #312e2a;
+    --color-ink-900: #1c1a17;
+    --color-ink-950: #100f0d;
 
     /* Primary — the farm's deep red, as a full scale rather than a single
        accent. THE INTERACTIVE COLOUR: buttons, links, active nav, focus rings.
@@ -354,9 +354,9 @@
 }
 
 @utility btn {
-    @apply inline-flex min-h-11 items-center justify-center gap-2
-           rounded-[var(--radius-sm)] px-4 py-2.5 text-[15px] font-medium leading-none
-           focus:outline-none disabled:cursor-not-allowed disabled:opacity-40;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap
+           rounded-[8px] px-5 py-2.5 text-[15px] font-semibold leading-none
+           focus:outline-none disabled:cursor-not-allowed disabled:opacity-50;
 
     /* Whitelist rows: "Button hover - bg colour, --dur-instant" and
        "Button press - scale(0.98), --dur-instant".
@@ -375,18 +375,39 @@
    own centre instead of sliding - and 0.98 rather than anything deeper,
    because a button that visibly moves reads as a bug at this size. */
 .btn:active:not(:disabled) {
-    transform: scale(0.98);
+    transform: scale(0.97);
 }
 
 @layer components {
     /* Press feedback. 2% is enough to register as a physical control and small
        enough not to read as a bounce. */
-    .btn:active:not(:disabled) { transform: scale(0.98); }
+    .btn:active:not(:disabled) { transform: scale(0.97); }
 
-    .btn-primary   { @apply btn bg-primary text-primary-foreground hover:bg-primary-600; box-shadow: var(--shadow-e1); }
-    .btn-secondary { @apply btn border border-border bg-card text-foreground hover:bg-muted; }
-    .btn-danger    { @apply btn bg-destructive text-destructive-foreground hover:opacity-90; box-shadow: var(--shadow-e1); }
+    /* THE BUTTON SET - one family for the public site and the console.
+
+       Flat fills, 8px corners, semibold labels, and a press to 0.97. No
+       shadows at rest: elevation is for things that float, and a button
+       sitting on a page does not. The secondary is an OUTLINE drawn with an
+       inset shadow rather than a border, so primary and secondary are the
+       same height to the pixel when they sit side by side. */
+    .btn-primary   { @apply btn bg-primary text-primary-foreground hover:bg-primary-600; }
+    .btn-secondary { @apply btn bg-transparent text-foreground; box-shadow: inset 0 0 0 1px var(--color-input); }
+    .btn-secondary:hover { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+    .btn-danger    { @apply btn bg-destructive text-destructive-foreground hover:opacity-90; }
     .btn-quiet     { @apply btn bg-transparent text-primary hover:bg-primary-50; }
+
+    /* The spinner a button shows while its action runs. Livewire adds
+       data-loading to the element while the request is in flight. */
+    .btn[data-loading] { pointer-events: none; opacity: 0.75; }
+    .btn-spinner {
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        animation: btn-spin 700ms linear infinite;
+    }
+    @keyframes btn-spin { to { transform: rotate(360deg); } }
 
     /* 16px floor - below that iOS zooms the page on focus and one-handed entry
        falls apart. */
@@ -394,8 +415,8 @@
        viewport on focus, which throws the user out of the form they were
        filling in. */
     .input {
-        @apply block w-full rounded-[var(--radius-sm)] border border-input bg-card
-               px-3 py-2.5 text-[16px] text-foreground
+        @apply block w-full rounded-[8px] border border-input bg-card
+               px-3.5 py-2.5 text-[16px] text-foreground
                placeholder:text-muted-foreground focus:border-primary focus:outline-none;
 
         /* Whitelist row: "Input focus - border colour, --dur-fast". Border
@@ -451,9 +472,15 @@
     :root[data-theme='dark'] [data-theme-icon='light'] { display: none; }
     :root[data-theme='dark'] [data-theme-icon='dark'] { display: block; }
 
-    .label { @apply block text-[13px] font-medium tracking-[0.01em] text-foreground; }
-    .help  { @apply mt-1 text-[12px] leading-snug text-muted-foreground; }
-    .error { @apply mt-1 text-[13px] text-destructive; }
+    /* Labels sit ABOVE their field; help and errors sit under it. The error
+       rises in so it reads as a response to what was just done. */
+    .label { @apply mb-1.5 block text-[14px] font-semibold text-foreground; }
+    .help  { @apply mt-1.5 text-[13px] leading-snug text-muted-foreground; }
+    .error { @apply mt-1.5 text-[13px] font-medium text-destructive; animation: field-error 260ms var(--ease-out) both; }
+    @keyframes field-error {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: none; }
+    }
 
     /*
      * Cards now have elevation. This is the single biggest lever in the
@@ -1006,18 +1033,9 @@
    Muted text is #5c5853 on #f7f6f3: 6.6:1, past AA for body text and for
    the 13px captions that use it.
    ===================================================================== */
-.studbook {
-    --color-background: #f7f6f3;
-    --color-card: #ffffff;
-    --color-muted: #efece7;
-    --color-popover: #ffffff;
-    --color-border: #e2ded7;
-    --color-input: #d6d1c9;
-    --color-foreground: #1c1a17;
-    --color-card-foreground: #1c1a17;
-    --color-popover-foreground: #1c1a17;
-    --color-muted-foreground: #5c5853;
-
+/* The one dark block a page may have - the public pedigree, the console's
+   anchor block. Paper-coloured type on near-black ink. */
+:root {
     --sb-dark: #1c1a17;
     --sb-dark-ink: #f7f6f3;
     --sb-dark-muted: #b9b3aa;   /* 8.1:1 on the dark block */
@@ -1074,34 +1092,6 @@
     max-width: 52ch;
 }
 
-/* Buttons: flat, 8px corners, a press that scales to .97. */
-.sb-cta,
-.sb-ghost {
-    display: inline-flex;
-    min-height: 48px;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding-inline: 22px;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 600;
-    white-space: nowrap;
-    transition: background-color 200ms var(--ease-out),
-                box-shadow 200ms var(--ease-out),
-                color 200ms var(--ease-out),
-                transform 120ms var(--ease-out);
-}
-.sb-cta:active,
-.sb-ghost:active { transform: scale(0.97); }
-.sb-cta { background-color: var(--color-primary); color: var(--color-primary-foreground); }
-.sb-cta:hover { background-color: var(--color-primary-600); }
-.sb-ghost {
-    color: var(--color-foreground);
-    box-shadow: inset 0 0 0 1px var(--color-input);
-}
-.sb-ghost:hover { box-shadow: inset 0 0 0 1px var(--color-foreground); }
-
 /* A strong text link, for "See all" and the like. */
 .sb-link {
     display: inline-flex;
@@ -1146,7 +1136,7 @@
 
 /* The bloodline filter: a row of quiet pills. On a phone the row scrolls
    sideways INSIDE ITSELF; the page never does. */
-.sb-pills {
+.pill-row {
     display: flex;
     gap: 8px;
     overflow-x: auto;
@@ -1155,11 +1145,11 @@
     margin-inline: -16px;
     padding-inline: 16px;
 }
-.sb-pills::-webkit-scrollbar { display: none; }
+.pill-row::-webkit-scrollbar { display: none; }
 @media (min-width: 640px) {
-    .sb-pills { flex-wrap: wrap; overflow: visible; margin-inline: 0; padding-inline: 0; }
+    .pill-row { flex-wrap: wrap; overflow: visible; margin-inline: 0; padding-inline: 0; }
 }
-.sb-pill {
+.pill {
     display: inline-flex;
     flex-shrink: 0;
     min-height: 44px;
@@ -1177,9 +1167,9 @@
                 box-shadow 200ms var(--ease-out),
                 transform 120ms var(--ease-out);
 }
-.sb-pill:hover { box-shadow: inset 0 0 0 1px var(--color-foreground); }
-.sb-pill:active { transform: scale(0.97); }
-.sb-pill[aria-pressed="true"] {
+.pill:hover { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+.pill:active { transform: scale(0.97); }
+.pill[aria-pressed="true"] {
     background-color: var(--color-foreground);
     color: var(--color-background);
     box-shadow: none;
@@ -1187,7 +1177,7 @@
 
 /* The bloodline mark: a small dot. The only form band colour takes on the
    public site. */
-.sb-dot {
+.band-dot {
     display: inline-block;
     width: 9px;
     height: 9px;

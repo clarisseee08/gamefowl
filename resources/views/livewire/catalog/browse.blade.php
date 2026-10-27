@@ -1,12 +1,4 @@
 @php
-    $photoUrl = fn ($photo): ?string => $photo
-        ? route('photos.show', ['photo' => $photo, 'size' => 'thumb'])
-        : null;
-
-    /* A bird's name is shown beside its band only when it is a real name -
-       "Spark" - rather than the band digits again, which most of them are. */
-    $realName = fn ($bird): ?string => preg_match('/\p{L}/u', (string) $bird->name) ? $bird->name : null;
-
     $total = $this->birds->total();
 @endphp
 
@@ -125,7 +117,7 @@
                 @endif
             </p>
             @if ($this->hasActiveFilters())
-                <button type="button" wire:click="clearFilters" class="sb-ghost mt-7">
+                <button type="button" wire:click="clearFilters" class="btn-secondary mt-7">
                     {{ $onlyForSale ? 'Show every bird on the farm' : 'Clear filters' }}
                 </button>
             @endif
@@ -134,47 +126,7 @@
         <ul class="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-12">
             @foreach ($this->birds as $bird)
                 <li>
-                    <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate class="group block">
-                        <div class="sb-photo aspect-[4/5]">
-                            @if ($bird->primaryPhoto)
-                                <img src="{{ $photoUrl($bird->primaryPhoto) }}"
-                                     alt="{{ $realName($bird) ?? 'Broodcock '.($bird->band_number ?: $bird->name) }}, {{ $bird->bloodline ?: 'bloodline not recorded' }}"
-                                     width="400" height="500" loading="lazy" decoding="async">
-                            @else
-                                <span class="flex h-full items-center justify-center text-[14px] text-muted-foreground">No photo yet</span>
-                            @endif
-                        </div>
-
-                        <div class="mt-3.5 flex items-baseline justify-between gap-3">
-                            <h2 class="min-w-0 truncate text-[17px] font-semibold tracking-[-0.015em] text-foreground group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4">
-                                {{ $bird->band_number ?: $bird->name }}@if ($realName($bird) && $bird->band_number)<span class="font-sans text-[15px] font-medium text-muted-foreground"> &nbsp;{{ $realName($bird) }}</span>@endif
-                            </h2>
-                            @if ($bird->ageLabel())
-                                <span class="datum shrink-0 text-[14px] text-muted-foreground">{{ $bird->ageLabel() }}</span>
-                            @endif
-                        </div>
-
-                        {{-- Bloodline, class and sex on one quiet line - the
-                             same facts three pills used to shout. --}}
-                        <p class="mt-1 flex flex-wrap items-center gap-x-2 text-[14px] text-muted-foreground">
-                            <span class="inline-flex items-center gap-2">
-                                <span class="sb-dot" style="background-color: {{ \App\Support\BandTag::hex($bird->bloodline) }}" aria-hidden="true"></span>
-                                {{ $bird->bloodline ?: 'Bloodline not recorded' }}
-                            </span>
-                            <span><span aria-hidden="true">&middot;</span> {{ $bird->class->label() }}</span>
-                            <span><span aria-hidden="true">&middot;</span> {{ $bird->sex->farmTerm() }}</span>
-                        </p>
-
-                        {{-- Only the positive case is marked. "Not for sale" is
-                             the normal state of almost every bird here. --}}
-                        @if ($bird->for_sale)
-                            <p class="mt-1.5 text-[14px] font-semibold text-primary">For sale</p>
-                        @endif
-
-                        @if (! $bird->band_number)
-                            <p class="mt-1.5 text-[13px] text-muted-foreground">Not yet banded</p>
-                        @endif
-                    </a>
+                    <x-bird-card :bird="$bird" heading="h2" :details="true" :delay="($loop->index % 4) * 60" />
                 </li>
             @endforeach
         </ul>

@@ -19,7 +19,7 @@
     app.css), which is what lets the catalogue, a bird's page and its family
     tree share one markup between this shell and the console.
 --}}
-<body class="studbook flex min-h-full flex-col bg-background text-foreground">
+<body class="flex min-h-full flex-col bg-background text-foreground">
     @php
         $user = auth()->user();
         $farm = config('gfms.farm');
@@ -61,10 +61,10 @@
             @auth
                 <form method="POST" action="{{ route('logout') }}" class="shrink-0">
                     @csrf
-                    <button type="submit" class="sb-ghost min-h-11 px-4 text-[14px]">Sign out</button>
+                    <button type="submit" class="btn-secondary min-h-11 px-4 text-[14px]">Sign out</button>
                 </form>
             @else
-                <a href="{{ route('login') }}" wire:navigate class="sb-ghost min-h-11 shrink-0 px-4 text-[14px]">Sign in</a>
+                <a href="{{ route('login') }}" wire:navigate class="btn-secondary min-h-11 shrink-0 px-4 text-[14px]">Sign in</a>
             @endauth
         </div>
 

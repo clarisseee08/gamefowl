@@ -75,8 +75,8 @@
                      two buttons sat touching. --}}
                 <div class="sb-line mt-8" style="--line: 340ms">
                     <div class="flex flex-wrap gap-3">
-                        <a href="{{ route('catalog.index') }}" wire:navigate class="sb-cta">See the birds</a>
-                        <a href="{{ route('public.visit') }}" wire:navigate class="sb-ghost">Arrange a visit</a>
+                        <a href="{{ route('catalog.index') }}" wire:navigate class="btn-primary">See the birds</a>
+                        <a href="{{ route('public.visit') }}" wire:navigate class="btn-secondary">Arrange a visit</a>
                     </div>
                 </div>
 
@@ -105,7 +105,7 @@
                              alt="{{ $realName($hero) ?? 'Broodcock '.($hero->band_number ?: $hero->name) }}, {{ $hero->bloodline ?: 'gamefowl' }}"
                              width="800" height="1000" fetchpriority="high" decoding="async">
                         <figcaption class="sb-chip">
-                            <span class="sb-dot" style="background-color: {{ \App\Support\BandTag::hex($hero->bloodline) }}" aria-hidden="true"></span>
+                            <span class="band-dot" style="background-color: {{ \App\Support\BandTag::hex($hero->bloodline) }}" aria-hidden="true"></span>
                             <span class="datum">{{ $hero->band_number ?: $hero->name }}</span>
                             @if ($hero->bloodline)
                                 <span class="font-medium text-muted-foreground">{{ $hero->bloodline }}</span>
@@ -152,18 +152,18 @@
 
                 {{-- One row under the heading, not beside it: beside it the
                      eight pills wrapped and left one stranded on a second line. --}}
-                <ul class="sb-pills mt-7" aria-label="Filter by bloodline" data-reveal style="--reveal-delay: 80ms">
+                <ul class="pill-row mt-7" aria-label="Filter by bloodline" data-reveal style="--reveal-delay: 80ms">
                     <li>
-                        <a href="{{ route('catalog.index') }}" class="sb-pill"
+                        <a href="{{ route('catalog.index') }}" class="pill"
                            x-on:click.prevent="pick(null)"
                            :aria-pressed="(line === null).toString()" aria-pressed="true">All</a>
                     </li>
                     @foreach ($this->gridBloodlines as $bloodline)
                         <li>
-                            <a href="{{ route('catalog.index', ['bloodline' => $bloodline]) }}" class="sb-pill"
+                            <a href="{{ route('catalog.index', ['bloodline' => $bloodline]) }}" class="pill"
                                x-on:click.prevent="pick(line === @js($bloodline) ? null : @js($bloodline))"
                                :aria-pressed="(line === @js($bloodline)).toString()" aria-pressed="false">
-                                <span class="sb-dot" style="background-color: {{ \App\Support\BandTag::hex($bloodline) }}" aria-hidden="true"></span>
+                                <span class="band-dot" style="background-color: {{ \App\Support\BandTag::hex($bloodline) }}" aria-hidden="true"></span>
                                 {{ $bloodline }}
                             </a>
                         </li>
@@ -175,31 +175,7 @@
                 @foreach ($birds as $bird)
                     <li x-show="line === null || line === @js($bird->bloodline)"
                         style="view-transition-name: bird-{{ $bird->id }}">
-                        <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate class="group block"
-                           data-reveal style="--reveal-delay: {{ ($loop->index % 4) * 70 }}ms">
-                            <div class="sb-photo aspect-[4/5]">
-                                @if ($bird->primaryPhoto)
-                                    <img src="{{ $photoUrl($bird->primaryPhoto) }}"
-                                         alt="{{ $realName($bird) ?? 'Broodcock '.($bird->band_number ?: $bird->name) }}, {{ $bird->bloodline ?: 'bloodline not recorded' }}"
-                                         width="400" height="500" loading="lazy" decoding="async">
-                                @else
-                                    <span class="flex h-full items-center justify-center text-[14px] text-muted-foreground">No photo yet</span>
-                                @endif
-                            </div>
-
-                            <div class="mt-3.5 flex items-baseline justify-between gap-3">
-                                <h3 class="min-w-0 truncate text-[17px] font-semibold tracking-[-0.015em] text-foreground group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4">
-                                    {{ $bird->band_number ?: $bird->name }}@if ($realName($bird) && $bird->band_number)<span class="font-sans text-[15px] font-medium text-muted-foreground"> &nbsp;{{ $realName($bird) }}</span>@endif
-                                </h3>
-                                @if ($bird->ageLabel())
-                                    <span class="datum shrink-0 text-[14px] text-muted-foreground">{{ $bird->ageLabel() }}</span>
-                                @endif
-                            </div>
-                            <p class="mt-1 flex items-center gap-2 text-[14px] text-muted-foreground">
-                                <span class="sb-dot" style="background-color: {{ \App\Support\BandTag::hex($bird->bloodline) }}" aria-hidden="true"></span>
-                                {{ $bird->bloodline ?: 'Bloodline not recorded' }}
-                            </p>
-                        </a>
+                        <x-bird-card :bird="$bird" :delay="($loop->index % 4) * 70" />
                     </li>
                 @endforeach
             </ul>
@@ -299,7 +275,7 @@
                         @foreach ($this->bloodlineCounts as $bloodline => $count)
                             <div class="flex items-center justify-between gap-6 border-b border-[color:var(--sb-dark-line)] py-3">
                                 <dt class="flex items-center gap-3 text-[16px] text-[color:var(--sb-dark-ink)]">
-                                    <span class="sb-dot" style="background-color: {{ \App\Support\BandTag::hex($bloodline) }}" aria-hidden="true"></span>
+                                    <span class="band-dot" style="background-color: {{ \App\Support\BandTag::hex($bloodline) }}" aria-hidden="true"></span>
                                     {{ $bloodline }}
                                 </dt>
                                 <dd class="datum text-[16px] text-[color:var(--sb-dark-muted)]">{{ $count }}</dd>
@@ -363,7 +339,7 @@
                     @endif
                 </dl>
 
-                <a href="{{ route('public.visit') }}" wire:navigate class="sb-cta mt-8">Plan a visit</a>
+                <a href="{{ route('public.visit') }}" wire:navigate class="btn-primary mt-8">Plan a visit</a>
             </div>
         </div>
     </section>
