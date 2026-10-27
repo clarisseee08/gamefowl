@@ -57,7 +57,7 @@
     row is chrome that never earns its space, and a Clear button that is
     usually disabled teaches people to ignore it.
 --}}
-<div {{ $attributes->merge(['class' => 'card mb-8 p-4 sm:mb-10 sm:p-5']) }}>
+<div {{ $attributes->merge(['class' => 'mb-6 border-b border-border pb-5 pt-6 sm:mb-8']) }}>
     {{-- flex-wrap, not a grid: the controls have genuinely different natural
          widths, and a grid forces them into columns the widest one dictates.
          Wrapping lets the row break where it actually runs out of room. --}}
