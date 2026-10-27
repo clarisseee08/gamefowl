@@ -130,6 +130,25 @@ final class DashboardTest extends TestCase
             ->assertSee('days overdue');
     }
 
+    /**
+     * The dashboard opens on its anchor block: the headline figure is the
+     * on-farm count the component already computes, and the main action is
+     * the one staff take most - recording a bird.
+     */
+    public function test_the_dashboard_opens_on_the_on_farm_count_and_the_add_action(): void
+    {
+        Broodcock::factory()->count(3)->create(['status' => 'active']);
+        Broodcock::factory()->create(['status' => 'sold']);
+
+        $this->actingAs(User::factory()->staff()->create())
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Today on the farm')
+            ->assertSeeInOrder(['3', 'birds on the farm'])
+            ->assertSee('Add broodcock')
+            ->assertSee(route('broodcocks.create'), escape: false);
+    }
+
     public function test_an_up_to_date_flock_says_so_rather_than_showing_an_empty_list(): void
     {
         Livewire::actingAs(User::factory()->staff()->create())
