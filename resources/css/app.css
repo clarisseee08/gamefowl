@@ -1007,6 +1007,85 @@
 .auth-photo { animation: sb-settle 600ms var(--ease-out) both; }
 @media (prefers-reduced-motion: reduce) { .auth-photo { animation: none; } }
 
+/* ---------------------------------------------------------------------------
+   THE SEGMENTED CONTROL - in-page sections instead of a long scroll.
+
+   A muted pill track with 4px of inset; the selected segment is a white
+   raised pill with a dark semibold label and a dark count badge, and it
+   SLIDES between segments rather than blinking. Unselected segments have no
+   fill, a grey label and a light badge. The thumb is a sibling element that
+   Alpine positions (see x-segmented); transform and width are the only
+   animated properties, and reduced motion stops the slide.
+
+   The track scrolls sideways inside itself on a phone when the labels do not
+   fit; the page never does.
+--------------------------------------------------------------------------- */
+.segmented {
+    position: relative;
+    display: flex;
+    width: 100%;
+    gap: 0;
+    padding: 4px;
+    border-radius: 999px;
+    background-color: var(--color-muted);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.segmented::-webkit-scrollbar { display: none; }
+.segmented-thumb {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 0;
+    width: var(--seg-w, 0px);
+    transform: translateX(var(--seg-x, 0px));
+    border-radius: 999px;
+    background-color: var(--color-card);
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12);
+    transition: transform 280ms var(--ease-out), width 280ms var(--ease-out);
+    pointer-events: none;
+}
+.segmented-item {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    flex: 1 0 auto;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding-inline: 16px;
+    border-radius: 999px;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-muted-foreground);
+    transition: color 200ms var(--ease-out);
+}
+.segmented-item:hover { color: var(--color-foreground); }
+.segmented-item-active { color: var(--color-foreground); font-weight: 600; }
+.segmented-count {
+    display: inline-flex;
+    min-width: 22px;
+    justify-content: center;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background-color: var(--color-ink-200);
+    color: var(--color-muted-foreground);
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+.segmented-item-active .segmented-count { background-color: var(--color-foreground); color: var(--color-card); }
+@media (prefers-reduced-motion: reduce) { .segmented-thumb { transition: none; } }
+
+/* Dialogs: the backdrop fades; the panel rises and fades in. */
+.dialog-backdrop { animation: dialog-fade 220ms var(--ease-out) both; }
+.dialog-panel { animation: dialog-rise 280ms var(--ease-out) both; }
+@keyframes dialog-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dialog-rise { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .dialog-backdrop, .dialog-panel { animation: none; } }
+
 /* The one dark block a page may have - the public pedigree, the console's
    anchor block. Paper-coloured type on near-black ink. */
 :root {

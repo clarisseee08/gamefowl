@@ -40,27 +40,25 @@
     <x-partials.head-meta :title="$title ?? $heading" />
     @vite(['resources/css/app.css'])
 </head>
-<body class="h-full bg-background">
-<div class="brand-rail" aria-hidden="true"></div>
-
-<main class="flex min-h-[calc(100%-3px)] items-center justify-center px-6 py-16">
+<body class="h-full bg-background text-foreground">
+<main class="flex min-h-full items-center px-5 py-16 sm:px-10 lg:px-24">
     <div class="w-full max-w-[34rem]">
-        <a href="{{ $home }}" class="inline-flex items-center gap-2.5">
+        <a href="{{ $home }}" class="inline-flex min-h-11 items-center gap-2.5 font-display text-[16px] font-semibold tracking-[-0.015em] text-foreground">
             <x-brand-mark :size="32" class="rounded-full" />
-            <span class="text-[15px] font-semibold text-foreground">{{ $farm }}</span>
+            <span>{{ $farm }}</span>
         </a>
 
         {{-- The status code is registry data like every other number here, so it
              is monospaced. It is shown rather than hidden behind friendlier
              wording because it is the one detail worth quoting to whoever
              maintains this. --}}
-        <p class="datum mt-10 text-[15px] font-medium tracking-[0.08em] text-muted-foreground">{{ $code }}</p>
+        <p class="datum mt-14 text-[15px] font-semibold text-primary">Error {{ $code }}</p>
 
-        <h1 class="mt-2 text-[34px] font-semibold leading-[1.12] tracking-[-0.022em] text-foreground">
+        <h1 class="mt-3 font-display text-[2.2rem] font-semibold leading-[1.08] tracking-[-0.03em] text-foreground sm:text-[2.8rem]">
             {{ $heading }}
         </h1>
 
-        <div class="mt-4 max-w-[52ch] space-y-3 text-[17px] leading-relaxed text-muted-foreground">
+        <div class="mt-5 max-w-[52ch] space-y-3 text-[17px] leading-relaxed text-muted-foreground">
             {{ $slot }}
         </div>
 

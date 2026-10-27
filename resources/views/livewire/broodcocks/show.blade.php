@@ -3,263 +3,216 @@
     // property access, and this view references the model many times.
     $bird = $this->bird;
     $canSeeInternal = auth()->user()?->can('viewInternalNotes', $bird) ?? false;
+    $internal = auth()->user()?->isInternal() ?? false;
+    $farm = config('gfms.farm');
 
-    // Tabs are filtered by role: a customer sees only what the spec promises
-    // them - profile, photos, health status and performance history.
+    $countOf = fn (string $relation): ?int => $bird->relationLoaded($relation) ? $bird->getRelation($relation)->count() : null;
+
+    // Sections are filtered by role: a visitor sees what the catalogue
+    // promises - the pedigree, the particulars, photographs, health and
+    // performance. Offspring is the farm's breeding record and stays internal.
     $tabs = collect([
-        ['key' => 'overview',    'label' => 'Overview',    'internal' => false],
-        ['key' => 'photos',      'label' => 'Photos',      'internal' => false],
-        ['key' => 'health',      'label' => 'Health',      'internal' => false],
-        ['key' => 'performance', 'label' => 'Performance', 'internal' => false],
-        ['key' => 'offspring',   'label' => 'Offspring',   'internal' => true],
+        ['key' => 'overview',    'label' => 'Pedigree',    'internal' => false, 'count' => null],
+        ['key' => 'details',     'label' => 'Details',     'internal' => false, 'count' => null],
+        ['key' => 'photos',      'label' => 'Photos',      'internal' => false, 'count' => $countOf('photos')],
+        ['key' => 'health',      'label' => 'Health',      'internal' => false, 'count' => null],
+        ['key' => 'performance', 'label' => 'Performance', 'internal' => false, 'count' => null],
+        ['key' => 'offspring',   'label' => 'Offspring',   'internal' => true,  'count' => null],
     ])->reject(fn ($t) => $t['internal'] && ! $canSeeInternal);
+
+    // Built in PHP: an arrow function inside a Blade component attribute does
+    // not survive compilation (see .ai/rules/views.md).
+    $tabSegments = $tabs->map(fn (array $t): array => ['key' => $t['key'], 'label' => $t['label'], 'count' => $t['count']])->values()->all();
+
+    $title = $bird->band_number ?: $bird->name;
+    $realName = ($bird->band_number && preg_match('/\p{L}/u', (string) $bird->name)) ? $bird->name : null;
+    $photos = $bird->relationLoaded('photos') ? $bird->photos : collect();
+
+    $ask = $farm['email']
+        ? 'mailto:'.$farm['email'].'?subject='.rawurlencode('About '.$title.($bird->bloodline ? ' ('.$bird->bloodline.')' : ''))
+        : ($farm['phone'] ? 'tel:'.preg_replace('/[^0-9+]/', '', $farm['phone']) : null);
 @endphp
 
-<div>
-    {{-- Header --}}
-    <div class="mb-10">
-        {{-- WHERE BACK GOES DEPENDS ON WHO IS LOOKING, because this page is
-             public and the broodcock index is not.
+{{--
+    A BIRD'S PAGE - the most important page after the front page.
 
-             It pointed at broodcocks.index for everyone. A customer reaching a
-             bird from the catalogue or the front page therefore met a link
-             that bounced them to a login form - the exact thing the sidebar
-             comment warns about, that a visitor should never see a door they
-             cannot open. Staff keep the console index; everyone else goes back
-             to the catalogue, which is where they actually came from. --}}
-        @php $backToConsole = auth()->user()?->isInternal() ?? false; @endphp
+    The photograph large, with the rest of its photographs beneath it; the
+    band number in the display face; the particulars as label/value rows; and
+    one clear action. Everything else - the pedigree, the full details,
+    photographs, health and performance - sits in sections behind a
+    segmented control, so the page never becomes one long scroll.
 
-        <a href="{{ $backToConsole ? route('broodcocks.index') : route('catalog.index') }}" wire:navigate
-           class="text-sm font-medium text-primary hover:underline">
-            &larr; {{ $backToConsole ? 'Back to broodcocks' : 'Back to the catalogue' }}
-        </a>
+    The same markup serves a visitor (in the public shell) and staff (in the
+    console). Staff additionally see Edit, Delete, internal notes and the
+    offspring record; a Policy decides each, not a CSS hide.
+--}}
+<div @class(['sb-wrap pb-16 pt-8 lg:pb-24 lg:pt-10' => ! $internal])>
+    <a href="{{ $internal ? route('broodcocks.index') : route('catalog.index') }}" wire:navigate
+       class="inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-primary hover:underline hover:underline-offset-4">
+        <span aria-hidden="true">&larr;</span> {{ $internal ? 'Back to broodcocks' : 'Back to the catalogue' }}
+    </a>
 
-        <div class="mt-3 sm:flex sm:items-start sm:justify-between">
-            <div class="flex items-start gap-4">
-                @if ($bird->primaryPhoto)
-                    <x-photo-thumb :photo="$bird->primaryPhoto" :alt="'Photo of '.$bird->name"
-                                   class="h-20 w-20 shrink-0 rounded-[6px] ring-1 ring-border" />
-                @else
-                    {{-- Same treatment as the catalogue grid: an empty bordered box says
-                         nothing, so the tile carries the bloodline instead. --}}
-                    <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-[6px] ring-1 ring-border"
-                         style="background-color: {{ \App\Support\BandTag::hex($bird->bloodline) }}14"
-                         aria-hidden="true">
-                        <span class="text-[24px] font-medium leading-none opacity-80"
-                              style="color: {{ \App\Support\BandTag::hex($bird->bloodline) }}">{{ \App\Support\BandTag::code($bird->bloodline) }}</span>
-                    </div>
-                @endif
-
-                <div>
-                    {{-- The band leads. This is the bird's identity page, and the band
-                         is the identifier both a keeper and a buyer actually use. --}}
-                    <x-band-tag :bloodline="$bird->bloodline" :band="$bird->band_number" />
-
-                    <h1 class="mt-2 text-[34px] font-semibold tracking-[-0.022em] leading-[1.12] text-foreground">{{ $bird->name }}</h1>
-
-                    <div class="mt-2 flex flex-wrap gap-1.5">
-                        <span class="badge {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
-                        <span class="badge {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
-                        <span class="badge badge-neutral">{{ $bird->sex->farmTerm() }}</span>
-
-                        {{-- Availability was the thirteenth row of a thirteen-row
-                             list, reading "For Sale: No" on almost every bird. It
-                             is the one fact a customer opens this page to find, so
-                             it sits with the other identity badges in the exact
-                             vocabulary the catalogue grid already uses: positive
-                             case only, because labelling the rule rather than the
-                             exception puts a tag on every bird on the farm. --}}
-                        @if ($bird->for_sale)
-                            <span class="badge badge-ok">For sale</span>
+    <div class="mt-4 grid gap-10 lg:grid-cols-[7fr_5fr] lg:gap-16">
+        {{-- THE PHOTOGRAPHS. The main one large; the rest as a strip beneath
+             that swaps it in place. With a single photograph there is no
+             strip. --}}
+        <div x-data="{ shown: 0 }">
+            @if ($photos->isNotEmpty())
+                @foreach ($photos as $p)
+                    <figure class="sb-photo sb-photo-in aspect-[4/5]" x-show="shown === {{ $loop->index }}" @if (! $loop->first) x-cloak @endif>
+                        <img src="{{ route('photos.show', $p) }}" alt="{{ $p->caption ?: ($realName ?? 'Broodcock '.$title) }}"
+                             width="800" height="1000" decoding="async" @if ($loop->first) fetchpriority="high" @else loading="lazy" @endif>
+                        @if ($p->caption)
+                            <figcaption class="sb-chip">{{ $p->caption }}</figcaption>
                         @endif
-                    </div>
+                    </figure>
+                @endforeach
+
+                @if ($photos->count() > 1)
+                    <ul class="mt-3 grid grid-cols-5 gap-2 sm:grid-cols-6" aria-label="More photographs">
+                        @foreach ($photos as $p)
+                            <li>
+                                <button type="button" x-on:click="shown = {{ $loop->index }}"
+                                        x-bind:aria-pressed="(shown === {{ $loop->index }}).toString()"
+                                        aria-label="Show photograph {{ $loop->iteration }} of {{ $photos->count() }}"
+                                        class="block w-full overflow-hidden rounded-[8px] ring-offset-2 ring-offset-background transition-shadow"
+                                        x-bind:class="shown === {{ $loop->index }} ? 'ring-2 ring-foreground' : 'opacity-80 hover:opacity-100'">
+                                    <img src="{{ route('photos.show', ['photo' => $p, 'size' => 'thumb']) }}" alt=""
+                                         class="aspect-square w-full object-cover" loading="lazy" decoding="async">
+                                </button>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            @else
+                <div class="sb-photo flex aspect-[4/5] flex-col items-center justify-center gap-3 text-[15px] text-muted-foreground">
+                    <x-band-dot :bloodline="$bird->bloodline" class="h-3 w-3" />
+                    No photograph yet
                 </div>
-            </div>
+            @endif
+        </div>
 
-            <div class="mt-4 flex flex-wrap gap-2 sm:mt-0">
-                <a href="{{ route('broodcocks.pedigree', $bird) }}" wire:navigate class="btn-secondary">Family Tree</a>
+        {{-- THE IDENTITY. --}}
+        <div class="lg:pt-2">
+            <p class="sb-line flex items-center gap-2 text-[15px] font-semibold text-foreground" style="--line: 0ms">
+                <x-band-dot :bloodline="$bird->bloodline" />{{ $bird->bloodline ?: 'Bloodline not recorded' }}
+            </p>
+            <h1 class="sb-line mt-3 font-display text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.03em] text-foreground sm:text-[3.4rem]" style="--line: 60ms">
+                {{ $title }}
+            </h1>
+            @if ($realName)
+                <p class="sb-line mt-1 font-display text-[1.4rem] font-medium tracking-[-0.015em] text-muted-foreground" style="--line: 100ms">{{ $realName }}</p>
+            @endif
 
-                @can('update', $bird)
-                    <a href="{{ route('broodcocks.edit', $bird) }}" wire:navigate class="btn-secondary">Edit</a>
-                @endcan
+            <p class="sb-line mt-4 flex flex-wrap items-center gap-2" style="--line: 140ms">
+                <span class="badge {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
+                @if ($bird->for_sale)
+                    <span class="text-[14px] font-semibold text-primary">For sale</span>
+                @endif
+                @unless ($bird->band_number)
+                    <span class="text-[14px] text-muted-foreground">Not yet banded</span>
+                @endunless
+            </p>
 
-                @can('delete', $bird)
-                    {{-- Deliberately NOT the filled .btn-danger here. A solid crimson
-                         button is within a shade of the crimson band colour, and in this
-                         system colour means bloodline - a filled crimson control on a
-                         bird's own page reads as identity. The filled variant is kept for
-                         the confirmation modal, where destroying the record IS the
-                         primary action and nothing else competes with it. --}}
-                    <button type="button" wire:click="confirmDeletion"
-                            class="btn-secondary text-destructive hover:border-destructive">Delete</button>
-                @endcan
+            <dl class="sb-line mt-7 border-t border-border" style="--line: 200ms">
+                <x-field-row label="Age"><span class="datum">{{ $bird->ageLabel() ?? 'Unknown' }}</span></x-field-row>
+                <x-field-row label="Sex">{{ $bird->sex->farmTerm() }}</x-field-row>
+                <x-field-row label="Hatched">
+                    @if ($bird->date_hatched)<span class="datum">{{ $bird->date_hatched->format('j F Y') }}</span>@else<span class="text-muted-foreground">Not recorded</span>@endif
+                </x-field-row>
+                <x-field-row label="Class">{{ $bird->class->label() }}</x-field-row>
+            </dl>
+
+            {{-- Internal notes sit with the particulars, on first load, for
+                 staff only - never rendered for a visitor or a customer. A
+                 Policy check, not a CSS hide. --}}
+            @if ($canSeeInternal && $bird->notes)
+                <div class="sb-line mt-6" style="--line: 230ms">
+                    <h2 class="text-[14px] font-semibold text-muted-foreground">Internal notes</h2>
+                    <p class="mt-1 max-w-[60ch] whitespace-pre-line text-[16px] leading-relaxed text-foreground">{{ $bird->notes }}</p>
+                </div>
+            @endif
+
+            <div class="sb-line mt-8 flex flex-wrap gap-3" style="--line: 260ms">
+                @if ($internal)
+                    @can('update', $bird)
+                        <a href="{{ route('broodcocks.edit', $bird) }}" wire:navigate class="btn-primary">Edit bird</a>
+                    @endcan
+                    <a href="{{ route('broodcocks.pedigree', $bird) }}" wire:navigate class="btn-secondary">Family Tree</a>
+                    @can('delete', $bird)
+                        <button type="button" wire:click="confirmDeletion" class="btn-secondary text-destructive">Delete</button>
+                    @endcan
+                @else
+                    @if ($ask)
+                        <a href="{{ $ask }}" class="btn-primary">Ask about this bird</a>
+                    @endif
+                    <a href="{{ route('public.visit') }}" wire:navigate class="btn-secondary">Arrange a visit</a>
+                    <a href="{{ route('broodcocks.pedigree', $bird) }}" wire:navigate class="btn-quiet">Family Tree</a>
+                @endif
             </div>
         </div>
     </div>
 
-    {{-- Deceased banner --}}
+    {{-- Deceased: stated once, plainly. The cause is internal. --}}
     @if ($bird->isDeceased() && $bird->mortalityRecord)
-        <div class="mb-6 rounded-lg bg-destructive-bg p-4 ring-1 ring-destructive/20">
-            <p class="text-sm font-medium text-foreground">
-                This bird died on {{ $bird->mortalityRecord->date_of_death->format('j F Y') }}.
+        <div class="mt-10 rounded-[8px] bg-destructive-bg px-5 py-4" role="note">
+            <p class="text-[15px] font-semibold text-foreground">
+                This bird died on <span class="datum">{{ $bird->mortalityRecord->date_of_death->format('j F Y') }}</span>.
             </p>
             @if ($canSeeInternal)
-                <p class="mt-1 text-sm text-foreground">Cause: {{ $bird->mortalityRecord->cause_of_death }}</p>
+                <p class="mt-1 text-[15px] text-foreground">Cause: {{ $bird->mortalityRecord->cause_of_death }}</p>
             @endif
         </div>
     @endif
 
-    {{-- Tabs --}}
-    <div class="mb-6 border-b border-border">
-        <nav class="-mb-px flex flex-wrap gap-x-6" aria-label="Sections">
-            @foreach ($tabs as $t)
-                <button type="button" wire:click="$set('tab', '{{ $t['key'] }}')"
-                        @class([
-                            'whitespace-nowrap border-b-2 px-1 py-3 text-sm font-medium transition',
-                            'border-primary text-primary' => $tab === $t['key'],
-                            'border-transparent text-muted-foreground hover:border-border hover:text-muted-foreground' => $tab !== $t['key'],
-                        ])
-                        @if ($tab === $t['key']) aria-current="page" @endif>
-                    {{ $t['label'] }}
-                </button>
-            @endforeach
-        </nav>
+    {{-- THE SECTIONS - a segmented control instead of a long scroll. --}}
+    <div class="mt-14 lg:mt-20">
+        <x-segmented :segments="$tabSegments" :active="$tab" model="tab" label="Bird record sections" />
     </div>
 
-    {{-- Overview --}}
+    <div class="mt-10">
     @if ($tab === 'overview')
-        {{-- THE RECORD.
+        <section aria-labelledby="pedigree-heading" data-reveal>
+            <div class="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <h2 id="pedigree-heading" class="sb-h2">Parents</h2>
+                    <p class="mt-2 text-[15px] text-muted-foreground">As written in the farm's records. Every bird in the tree opens its own page.</p>
+                </div>
+                <a href="{{ route('broodcocks.pedigree', $bird) }}" wire:navigate class="sb-link">View full family tree <span aria-hidden="true">&rarr;</span></a>
+            </div>
+            <x-pedigree-tree :bird="$bird" class="mt-8" />
+        </section>
+    @endif
 
-             What this replaced is most of the redesign. The old Details list ran
-             thirteen rows of equal weight and five of them repeated the header
-             word for word: "Name: Tanikala" directly under a 34px <h1> reading
-             Tanikala, "Band Number: KL-4003" under a band tag reading KL-4003,
-             "Bloodline: Kelso" under the Kelso plate, and Class and Sex under
-             the badges that already state them.
+    @if ($tab === 'details')
+        @php
+            $rows = [
+                ['Weight', $bird->weight ? $bird->weight.' kg' : null, true],
+                ['Colour', $bird->color ?: null, false],
+                ['Comb type', $bird->comb_type ?: null, false],
+                ['Leg colour', $bird->leg_color ?: null, false],
+                ['Acquired', $bird->date_acquired?->format('j F Y'), true],
+            ];
+        @endphp
+        <section class="grid gap-12 lg:grid-cols-2 lg:gap-20" aria-label="Details" data-reveal>
+            <dl class="border-t border-border">
+                @foreach ($rows as [$label, $value, $tabular])
+                    <x-field-row :label="$label">
+                        @if ($value !== null)<span @class(['datum' => $tabular])>{{ $value }}</span>@else<span class="text-muted-foreground">Not recorded</span>@endif
+                    </x-field-row>
+                @endforeach
+            </dl>
 
-             Thirty-eight per cent of the list was restating the header, and the
-             cost was not untidiness - it pushed the facts a keeper opens this
-             page for (weight, colour, comb, legs, the two dates) below the fold
-             on a phone. What remains is grouped by the question it answers and
-             set in two narrow columns rather than one wide one, because a label
-             and its value have to be trackable across the gap between them. --}}
-        <div class="grid gap-6 lg:grid-cols-5">
-            <div class="card p-6 sm:p-7 lg:col-span-3">
-                @php
-                    /*
-                     * Nothing here is in the header. Band number, name, bloodline,
-                     * class and sex live in the identity block above and are
-                     * deliberately absent.
-                     *
-                     * A row is [label, value, monospaced, what to print when absent].
-                     * The value is null when the farm has not recorded it, which is
-                     * what lets an absent row set itself in muted ink - the eye
-                     * running down the column separates "2.00 kg" from "Not
-                     * recorded" without reading either.
-                     */
-                    $groups = [
-                        'Description' => [
-                            ['Weight', $bird->weight ? $bird->weight.' kg' : null, true, 'Not recorded'],
-                            ['Colour', $bird->color ?: null, false, 'Not recorded'],
-                            ['Comb type', $bird->comb_type ?: null, false, 'Not recorded'],
-                            ['Leg colour', $bird->leg_color ?: null, false, 'Not recorded'],
-                        ],
-                        'In the records' => [
-                            ['Hatched', $bird->date_hatched?->format('j F Y'), true, 'Not recorded'],
-                            ['Acquired', $bird->date_acquired?->format('j F Y'), true, 'Not recorded'],
-                            // The catalogue card prints "Unknown" for an age it
-                            // cannot derive. The same fact reads the same way on
-                            // both surfaces.
-                            ['Age', $bird->ageLabel(), true, 'Unknown'],
-                        ],
-                    ];
-                @endphp
-
-                <div class="grid gap-x-10 gap-y-8 sm:grid-cols-2">
-                    @foreach ($groups as $heading => $rows)
-                        <section>
-                            <h2 class="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{{ $heading }}</h2>
-
-                            {{-- Label left, value right, hairline between: the rhythm of
-                                 the printed record book this system replaces. --}}
-                            <dl class="mt-3 divide-y divide-border border-t border-border">
-                                @foreach ($rows as [$label, $value, $isDatum, $absent])
-                                    <div class="flex items-baseline justify-between gap-4 py-2.5">
-                                        <dt class="shrink-0 text-[13px] text-muted-foreground">{{ $label }}</dt>
-                                        <dd @class([
-                                            'text-right text-[15px]',
-                                            'datum' => $isDatum && $value !== null,
-                                            'text-foreground' => $value !== null,
-                                            'text-muted-foreground' => $value === null,
-                                        ])>{{ $value ?? $absent }}</dd>
-                                    </div>
-                                @endforeach
-                            </dl>
-                        </section>
-                    @endforeach
+            <div class="space-y-10">
+                <div>
+                    <h2 class="text-[15px] font-semibold text-foreground">Distinguishing marks</h2>
+                    <p class="mt-2 max-w-[60ch] text-[16px] leading-relaxed {{ $bird->distinguishing_marks ? 'text-foreground' : 'text-muted-foreground' }}">
+                        {{ $bird->distinguishing_marks ?: 'Not recorded' }}
+                    </p>
                 </div>
 
-                {{-- Prose runs the full width of the card and is capped at a
-                     readable measure rather than at the column. --}}
-                @if ($bird->distinguishing_marks)
-                    <section class="mt-8">
-                        <h2 class="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Distinguishing marks</h2>
-                        <p class="mt-3 max-w-[60ch] border-t border-border pt-3 text-[15px] leading-relaxed text-foreground">
-                            {{ $bird->distinguishing_marks }}
-                        </p>
-                    </section>
-                @endif
-
-                {{-- Internal notes are never rendered for a customer. A Policy
-                     check, not a CSS hide. --}}
-                @if ($canSeeInternal && $bird->notes)
-                    <section class="mt-8">
-                        <h2 class="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Internal notes</h2>
-                        <p class="mt-3 max-w-[60ch] whitespace-pre-line border-t border-border pt-3 text-[15px] leading-relaxed text-foreground">
-                            {{ $bird->notes }}
-                        </p>
-                    </section>
-                @endif
             </div>
-
-            {{-- LINEAGE.
-
-                 Each parent is a row carrying its own band, in the grammar the
-                 catalogue and the front page already use, so a keeper recognises
-                 a sire by the same object everywhere in the application. It was
-                 two "Name (BAND)" links under uppercase SIRE (FATHER) and DAM
-                 (MOTHER) labels - an arrangement that buries the band, which IS
-                 this system's identity channel, and stacks a kicker above a name
-                 for no gain. --}}
-            <div class="card p-6 sm:p-7 lg:col-span-2">
-                <h2 class="text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Parents</h2>
-
-                <dl class="mt-3 divide-y divide-border border-t border-border">
-                    @foreach ([['Sire', $bird->sire], ['Dam', $bird->dam]] as [$role, $parent])
-                        <div class="flex items-start gap-3 py-3">
-                            <dt class="w-10 shrink-0 pt-px text-[13px] text-muted-foreground">{{ $role }}</dt>
-                            <dd class="min-w-0 flex-1">
-                                @if ($parent)
-                                    <a href="{{ route('broodcocks.show', $parent) }}" wire:navigate
-                                       class="group block min-h-11">
-                                        <span class="block text-[15px] font-medium text-foreground group-hover:underline">{{ $parent->name }}</span>
-                                        <span class="mt-1.5 block">
-                                            <x-band-tag :bloodline="$parent->bloodline" :band="$parent->band_number" size="xs" />
-                                        </span>
-                                    </a>
-                                @else
-                                    <span class="text-[15px] text-muted-foreground">Not recorded</span>
-                                @endif
-                            </dd>
-                        </div>
-                    @endforeach
-                </dl>
-
-                <a href="{{ route('broodcocks.pedigree', $bird) }}" wire:navigate class="btn-secondary mt-5 w-full">
-                    View full family tree
-                </a>
-            </div>
-        </div>
+        </section>
     @endif
 
     {{-- Photos --}}
@@ -288,7 +241,7 @@
         @if (class_exists(App\Livewire\Health\BroodcockHealthHistory::class))
             <livewire:health.broodcock-health-history :broodcock="$bird" :key="'health-'.$bird->id" />
         @else
-            <div class="card p-8 text-center text-sm text-muted-foreground">The health history view is not available yet.</div>
+            <div class="py-10 text-[15px] text-muted-foreground">The health history view is not available yet.</div>
         @endif
 
         {{-- Performance sits on this tab as well as on its own. A keeper doing a
@@ -308,16 +261,16 @@
         @if (class_exists(App\Livewire\Performance\BroodcockTimeline::class))
             <livewire:performance.broodcock-timeline :broodcock="$bird" :key="'perf-'.$bird->id" />
         @else
-            <div class="card p-8 text-center text-sm text-muted-foreground">The performance timeline is not available yet.</div>
+            <div class="py-10 text-[15px] text-muted-foreground">The performance timeline is not available yet.</div>
         @endif
     @endif
 
     {{-- Offspring --}}
     @if ($tab === 'offspring' && $canSeeInternal)
-        <div class="card overflow-hidden">
+        <div class="overflow-x-auto" data-scroll-x>
             @if ($this->offspring->isEmpty())
-                <div class="p-12 text-center">
-                    <h3 class="text-[21px] font-semibold tracking-[-0.01em] leading-[1.25] text-foreground">No offspring recorded</h3>
+                <div class="py-12">
+                    <h3 class="sb-h2">No offspring recorded</h3>
                     <p class="mt-3 text-[17px] leading-relaxed text-muted-foreground">
                         Offspring appear here once birds are recorded with {{ $bird->name }}
                         as their {{ $bird->sex->parentTerm() }}.
@@ -325,30 +278,30 @@
                 </div>
             @else
                 <table class="min-w-full divide-y divide-border">
-                    <thead class="bg-muted">
+                    <thead class="border-b border-border">
                         <tr>
                             @foreach (['Band Number', 'Name', 'Sex', 'Bloodline', 'Hatched', 'Status'] as $heading)
-                                <th scope="col" class="px-6 py-4 text-left text-[12px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                                <th scope="col" class="px-4 py-3 text-left text-[13px] font-semibold text-muted-foreground">
                                     {{ $heading }}
                                 </th>
                             @endforeach
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-border bg-card">
+                    <tbody class="divide-y divide-border">
                         @foreach ($this->offspring as $child)
                             <tr class="group row-hover">
-                                <td class="px-6 py-4 text-sm font-medium">
+                                <td class="px-4 py-3 text-sm font-medium">
                                     <a href="{{ route('broodcocks.show', $child) }}" wire:navigate class="text-primary hover:underline">
                                         {{ $child->displayBand() }}
                                     </a>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-foreground">{{ $child->name }}</td>
-                                <td class="px-6 py-4 text-sm text-muted-foreground">{{ $child->sex->label() }}</td>
-                                <td class="px-6 py-4 text-sm text-muted-foreground">{{ $child->bloodline ?? 'Not recorded' }}</td>
-                                <td class="px-6 py-4 text-sm text-muted-foreground">
+                                <td class="px-4 py-3 text-sm text-foreground">{{ $child->name }}</td>
+                                <td class="px-4 py-3 text-sm text-muted-foreground">{{ $child->sex->label() }}</td>
+                                <td class="px-4 py-3 text-sm text-muted-foreground">{{ $child->bloodline ?? 'Not recorded' }}</td>
+                                <td class="px-4 py-3 text-sm text-muted-foreground">
                                     {{ $child->date_hatched?->format('j M Y') ?? 'Not recorded' }}
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-4 py-3">
                                     <span class="badge {{ $child->status->badgeClasses() }}">{{ $child->status->label() }}</span>
                                 </td>
                             </tr>
@@ -359,6 +312,8 @@
         </div>
     @endif
 
+    </div>
+
     {{-- Delete confirmation. Names the bird explicitly and says what is kept,
          because "Are you sure?" tells a worried user nothing. --}}
     @if ($confirmingDeletion)
@@ -366,10 +321,10 @@
              is invalid JS, so Escape silently did nothing on this dialog. It needs
              $el. Nothing caught it because a broken key handler throws in the browser,
              not in the test suite. --}}
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-foreground/70 p-4" x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()" role="dialog" aria-modal="true" aria-labelledby="delete-bird-title">
-            <div class="w-full max-w-md rounded-[4px] border border-border bg-card p-6">
-                <h2 id="delete-bird-title" class="text-[22px] font-semibold tracking-[-0.01em] leading-[1.2] text-foreground">Delete {{ $bird->name }}?</h2>
-                <p class="mt-2 text-sm text-muted-foreground">
+        <div class="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 p-4" x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()" role="dialog" aria-modal="true" aria-labelledby="delete-bird-title">
+            <div class="dialog-panel elev-3 w-full max-w-md rounded-[12px] bg-card p-6">
+                <h2 id="delete-bird-title" class="font-display text-[22px] font-semibold tracking-[-0.015em] text-foreground">Delete {{ $bird->name }}?</h2>
+                <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
                     This will remove <strong>{{ $bird->name }} ({{ $bird->displayBand() }})</strong>
                     from the active records. Its health, breeding and performance history is kept
                     and the deletion is recorded in the activity log, so this can be undone by
