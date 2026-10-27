@@ -93,7 +93,9 @@
         </div>
 
         {{-- THE IDENTITY. --}}
-        <div class="lg:pt-2">
+        {{-- Sticky on desktop, so the particulars and the action stay beside the
+             photograph while it scrolls past. --}}
+        <div @class(['lg:sticky lg:self-start lg:pt-2', 'lg:top-6' => $internal, 'lg:top-24' => ! $internal])>
             <p class="sb-line flex items-center gap-2 text-[15px] font-semibold text-foreground" style="--line: 0ms">
                 <x-band-dot :bloodline="$bird->bloodline" />{{ $bird->bloodline ?: 'Bloodline not recorded' }}
             </p>

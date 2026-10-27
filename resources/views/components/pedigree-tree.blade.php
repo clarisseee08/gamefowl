@@ -37,11 +37,11 @@
     Missing data is never invented. A parent the farm has not recorded reads
     "Not recorded", in the muted ink, in the slot it would have filled.
 --}}
-<div {{ $attributes->merge(['class' => 'overflow-x-auto']) }} data-scroll-x>
+<div {{ $attributes->merge(['class' => 'sm:overflow-x-auto']) }} data-scroll-x>
     <div @class([
-        'grid min-w-[540px] items-center gap-x-4 sm:gap-x-6',
-        'grid-cols-[minmax(0,1fr)_32px_minmax(0,1fr)]' => ! $hasGrandparents,
-        'grid-cols-[minmax(0,1fr)_32px_minmax(0,1fr)_32px_minmax(0,1fr)]' => $hasGrandparents,
+        'grid items-center gap-y-6 sm:min-w-[540px] sm:gap-x-6 sm:gap-y-0',
+        'sm:grid-cols-[minmax(0,1fr)_32px_minmax(0,1fr)]' => ! $hasGrandparents,
+        'sm:grid-cols-[minmax(0,1fr)_32px_minmax(0,1fr)_32px_minmax(0,1fr)]' => $hasGrandparents,
     ])>
         {{-- The bird. --}}
         <div class="border-l-2 py-1 pl-4" style="border-color: {{ \App\Support\BandTag::hex($bird->bloodline) }}">
@@ -52,10 +52,12 @@
             </p>
         </div>
 
-        <x-pedigree-bracket />
+        {{-- On a phone the generations stack: the bird, then its parents
+             indented beneath it, then their parents. No sideways scroll. --}}
+        <div class="hidden sm:contents"><x-pedigree-bracket /></div>
 
         {{-- The parents. --}}
-        <ul class="flex h-full min-h-[200px] flex-col justify-around gap-6">
+        <ul class="flex h-full flex-col justify-around gap-4 pl-5 sm:min-h-[200px] sm:gap-6 sm:pl-0">
             @foreach ($parents as $parent)
                 <li class="border-l-2 py-1 pl-4"
                     style="border-color: {{ $parent['bird'] ? \App\Support\BandTag::hex($parent['bird']->bloodline) : 'var(--color-border)' }}">
@@ -78,9 +80,9 @@
         </ul>
 
         @if ($hasGrandparents)
-            <x-pedigree-bracket />
+            <div class="hidden sm:contents"><x-pedigree-bracket /></div>
 
-            <ul class="flex h-full min-h-[200px] flex-col justify-around gap-4">
+            <ul class="flex h-full flex-col justify-around gap-3 pl-10 sm:min-h-[200px] sm:gap-4 sm:pl-0">
                 @foreach ($parents as $parent)
                     @foreach ($grand($parent['bird']) as $g)
                         <li class="border-l-2 py-0.5 pl-3" style="border-color: {{ \App\Support\BandTag::hex($g['bird']->bloodline) }}">

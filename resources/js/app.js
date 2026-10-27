@@ -256,3 +256,18 @@ document.addEventListener('livewire:navigated', armReveals);
 // so livewire:navigated never fires there. Arm on load as well; arming twice
 // is harmless, because armed elements are skipped by the :not(.is-in) query.
 document.addEventListener('DOMContentLoaded', armReveals);
+
+// A Livewire update (a tab switch, a filter) morphs new [data-reveal] elements
+// into the page without a navigation. Without this they would sit at opacity 0
+// until the next page load. One frame's debounce folds a morph's many
+// mutations into a single arming pass.
+let revealFrame = null;
+new MutationObserver((mutations) => {
+    if (revealFrame || ! mutations.some((m) => m.addedNodes.length)) {
+        return;
+    }
+    revealFrame = requestAnimationFrame(() => {
+        revealFrame = null;
+        armReveals();
+    });
+}).observe(document.documentElement, { childList: true, subtree: true });
