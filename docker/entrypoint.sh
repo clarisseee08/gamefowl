@@ -62,8 +62,22 @@ echo "[entrypoint] caches warmed"
 #    schema.
 # ---------------------------------------------------------------
 if [ "${RUN_MIGRATIONS}" = "true" ]; then
-    echo "[entrypoint] running migrations"
-    php artisan migrate --force --no-interaction
+    # Retried, not run once. Supabase's pooler answers a burst of failed
+    # logins with ECIRCUITBREAKER and refuses every connection for a while -
+    # which is exactly what happens on the deploy that fixes a wrong
+    # DB_PASSWORD, because the old instance is still failing to log in while
+    # this one boots. Six tries 30 seconds apart rides that out instead of
+    # failing the deploy and leaving the broken instance live.
+    attempt=1
+    until php artisan migrate --force --no-interaction; do
+        if [ "$attempt" -ge 6 ]; then
+            echo "[entrypoint] migrations failed after ${attempt} attempts"
+            exit 1
+        fi
+        echo "[entrypoint] migrations failed (attempt ${attempt}); retrying in 30s"
+        attempt=$((attempt + 1))
+        sleep 30
+    done
 fi
 
 # Seeding is deliberately absent. db:seed regenerates demo birds over
