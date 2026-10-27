@@ -57,16 +57,21 @@ final class AuthenticationTest extends TestCase
     }
 
     /**
-     * A failed sign-in drains the leg band, and it is rendered drained by PHP.
+     * A failed sign-in is reported under the field it belongs to, rendered by
+     * PHP.
      *
-     * The first attempt at this bound the class with Alpine and did nothing at
-     * all. Asserting the server-rendered class is what makes the difference
-     * visible to the suite: without JS the band stays drained, which is still
-     * a true statement about what just happened.
+     * THIS TEST USED TO ASSERT A DIFFERENT MECHANISM: a strip of the six band
+     * colours down the sign-in screen, rendered desaturated after a failure.
+     * The strip is gone - six saturated hues on the first screen anyone sees
+     * read as decoration - but what the assertion protected is worth keeping.
+     * The first attempt at the drained strip bound its class with Alpine and
+     * did nothing at all, silently, because the guest layout loads no Livewire
+     * and therefore no Alpine. Asserting server-rendered markup is what makes
+     * that class of mistake visible.
      */
-    public function test_a_failed_sign_in_drains_the_leg_band(): void
+    public function test_a_failed_sign_in_is_reported_under_its_field_without_javascript(): void
     {
-        $this->get('/login')->assertOk()->assertDontSee('leg-band-drained', false);
+        $this->get('/login')->assertOk()->assertDontSee('id="email-error"', false);
 
         $this->followingRedirects()
             ->from('/login')
@@ -74,7 +79,11 @@ final class AuthenticationTest extends TestCase
                 'email' => 'nobody@example.invalid',
                 'password' => 'not-the-password',
             ])
-            ->assertSee('leg-band-drained', false);
+            ->assertSee('id="email-error"', false)
+            ->assertSee('aria-describedby="email-error"', false)
+            // role="alert" is the half a screen-reader user depends on, and it
+            // is the half most likely to be dropped in a restyle.
+            ->assertSee('role="alert"', false);
     }
 
     public function test_a_user_can_sign_in_with_correct_credentials(): void

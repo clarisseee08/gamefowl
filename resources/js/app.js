@@ -74,30 +74,6 @@ document.addEventListener('alpine:init', () => {
     }));
 });
 
-/**
- * The auth screen's leg band fills back in when the keeper starts typing.
- *
- * A failed sign-in renders the band drained of colour - a bird that fails its
- * check loses its band - and this takes the drain off again on the first
- * keystroke, so the page stops disagreeing with someone who is already fixing
- * it. The colour returns over --dur-slow via the transition on .leg-band.
- *
- * DELIBERATELY NOT ALPINE. Alpine ships inside Livewire's bundle and the guest
- * layout has no Livewire component on it, so window.Alpine is undefined on
- * every auth page. An x-data here binds nothing and reports no error.
- *
- * The drained class is server-rendered, so with no JS at all the band stays
- * drained - still a true statement about what just happened.
- */
-const drainedBand = document.querySelector('.leg-band-drained');
-
-if (drainedBand) {
-    document.addEventListener(
-        'input',
-        () => drainedBand.classList.remove('leg-band-drained'),
-        { once: true },
-    );
-}
 
 /**
  * Show / hide on a password field.
