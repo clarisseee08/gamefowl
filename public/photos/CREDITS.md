@@ -14,5 +14,5 @@ where any image on its site came from.
 
 | File | Photograph | Treatment | Source |
 |---|---|---|---|
-| `hero-farm.webp` | Chicken Walking on Grass in Countryside | 2000x1240 from the full-size original, lanczos3 resize and a light unsharp mask (sharp, sigma 0.6), WebP q74. Used on the sign-in panel | https://www.pexels.com/photo/chicken-walking-on-grass-in-countryside-5557743/ |
+| `hero-farm.webp` | Chicken Walking on Grass in Countryside | 2000x1240 from the full-size original, lanczos3 resize and a light unsharp mask (sharp, sigma 0.6), WebP q74. Used on the visiting page and the sign-in panel | https://www.pexels.com/photo/chicken-walking-on-grass-in-countryside-5557743/ |
 | `visit-field.webp` | Green Grass Field during Sun Rise | 4:5 crop at 1240x1550 from the full-size original, lanczos3 resize and a light unsharp mask (sharp, sigma 0.6), WebP q74. The home page's visit section | https://www.pexels.com/photo/green-grass-field-during-sun-rise-997121/ |

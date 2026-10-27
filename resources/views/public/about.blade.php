@@ -3,108 +3,129 @@
         $farm = config('gfms.farm');
         $bloodlines = \App\Support\PublicFarm::bloodlines();
         $stockCount = \App\Support\PublicFarm::stockCount();
+
+        /*
+         * Three of the farm's own photographs, for the editorial spreads.
+         *
+         * Different birds from the front page's hero by design - each page
+         * uses its photographs once - and drawn in a stable order so the page
+         * does not reshuffle between visits. Real birds, real photographs:
+         * nothing on this page is stock.
+         */
+        $pictured = \App\Support\PublicFarm::photographedBirds(3);
+
+        /* How many birds carry each bloodline, from the farm's own records. */
+        $counts = \App\Support\PublicFarm::bloodlineCounts();
+
+        $photo = fn ($bird) => route('photos.show', $bird->primaryPhoto);
     @endphp
 
     {{--
-        WHAT THE FARM IS — its own page now.
+        ABOUT - the farm's story, told editorially.
 
-        These three statements used to be a band halfway down the front page,
-        between the masthead and the catalogue, where nobody arriving to look
-        at birds would stop to read them. Given a page they can be what they
-        actually are: the farm's answer to "are these your birds, and can you
-        prove it".
-
-        The bloodline list comes with them, because it belongs to the same
-        question. On the front page it was a column beside a register; here it
-        is the evidence under the claim it supports.
+        Text and photographs in an asymmetric arrangement, every statement one
+        the farm already makes. There are no founding years, awards or quotes
+        here, because the records hold none - a stud book is worth exactly as
+        much as its claims can be checked, and the page holds itself to that.
     --}}
-    <article class="py-6">
-        <header class="max-w-[52ch]">
-            <p class="text-[13px] font-medium text-muted-foreground">
-                About {{ $farm['name'] }}
-            </p>
-            <h1 class="mt-3 text-[38px] font-semibold leading-[1.08] text-foreground sm:text-[48px]">
-                Bred here, and written down
-            </h1>
-            <p class="mt-5 text-[19px] leading-relaxed text-muted-foreground">
-                Broodcocks bred and raised on the farm, with the pedigree of every
-                bird kept from the day it hatched.
-            </p>
-        </header>
+    <div class="sb-wrap pb-16 pt-10 lg:pb-28 lg:pt-14">
+        <x-page-header eyebrow="About {{ $farm['name'] }}" title="Bred here, and written down"
+                       lead="Broodcocks bred and raised on the farm, with the pedigree of every bird kept from the day it hatched." />
 
-        {{-- ASYMMETRIC, not three equal columns. The first statement answers
-             the question a visitor actually arrives with, so it runs wider and
-             larger; the other two sit beside it, stacked and ruled. There are
-             no ordinals - three statements do not need an index, and numbering
-             them implied an order they do not have. --}}
-        <div class="mt-14 grid gap-x-12 gap-y-10 border-t border-border pt-10 lg:grid-cols-12">
-            <div class="lg:col-span-5">
-                <h2 class="text-[26px] font-semibold leading-[1.2] text-foreground sm:text-[30px]">
-                    Bred on the farm
-                </h2>
-                <p class="mt-4 max-w-[42ch] text-[18px] leading-relaxed text-muted-foreground">
-                    Every bird listed was hatched and raised here, or brought in and
-                    recorded on arrival. Nothing is listed that the farm does not hold.
+        {{-- SPREAD ONE: the claim that answers "are these your birds", beside
+             the farm's largest photograph. Text left, picture right. --}}
+        <section class="mt-16 grid items-center gap-10 lg:mt-24 lg:grid-cols-[5fr_6fr] lg:gap-20" aria-labelledby="bred-heading">
+            <div data-reveal>
+                <h2 id="bred-heading" class="sb-h2">Bred on the farm</h2>
+                <p class="mt-4 max-w-[44ch] text-[17px] leading-[1.7] text-foreground">
+                    Every bird listed was hatched and raised here, or brought in and recorded on
+                    arrival. Nothing is listed that the farm does not hold.
                 </p>
+                @if ($stockCount > 0)
+                    <p class="mt-6 text-[15px] text-muted-foreground">
+                        <span class="datum font-semibold text-foreground">{{ $stockCount }}</span>
+                        {{ \Illuminate\Support\Str::plural('bird', $stockCount) }} on the farm today.
+                    </p>
+                @endif
             </div>
 
-            <div class="lg:col-span-6 lg:col-start-7">
-                <div class="border-t border-border pt-6">
-                    <h2 class="text-[19px] font-semibold text-foreground">Pedigree kept</h2>
-                    <p class="mt-2 max-w-[48ch] text-[17px] leading-relaxed text-muted-foreground">
-                        Sire and dam are recorded for each bird, so a family tree can be
-                        followed back through the farm's own records rather than taken on trust.
-                    </p>
-                </div>
-                <div class="mt-7 border-t border-border pt-6">
-                    <h2 class="text-[19px] font-semibold text-foreground">Seen in person</h2>
-                    <p class="mt-2 max-w-[48ch] text-[17px] leading-relaxed text-muted-foreground">
-                        A photograph only shows so much. Arrange a visit and look at the birds
-                        on the farm before deciding anything.
-                    </p>
-                </div>
+            @if ($pictured->get(0))
+                <figure class="sb-photo aspect-[4/5]" data-reveal style="--reveal-delay: 100ms">
+                    <img src="{{ $photo($pictured[0]) }}" alt="{{ $pictured[0]->band_number ?: $pictured[0]->name }}, {{ $pictured[0]->bloodline ?: 'gamefowl' }}"
+                         width="800" height="1000" loading="lazy" decoding="async">
+                    <figcaption class="sb-chip">
+                        <x-band-dot :bloodline="$pictured[0]->bloodline" />
+                        <span class="datum">{{ $pictured[0]->band_number ?: $pictured[0]->name }}</span>
+                    </figcaption>
+                </figure>
+            @endif
+        </section>
+
+        {{-- SPREAD TWO, mirrored: two smaller photographs on the left, offset,
+             and the pedigree claim on the right. The offset is the asymmetry
+             - the second picture starts lower than the first. --}}
+        <section class="mt-20 grid items-center gap-10 lg:mt-32 lg:grid-cols-[6fr_5fr] lg:gap-20" aria-labelledby="pedigree-heading">
+            <div class="order-2 grid grid-cols-2 gap-4 lg:order-1 lg:gap-6">
+                @foreach ($pictured->slice(1, 2) as $bird)
+                    <figure @class(['sb-photo aspect-[4/5]', 'mt-12 lg:mt-20' => $loop->index === 1])
+                            data-reveal style="--reveal-delay: {{ $loop->index * 90 }}ms">
+                        <img src="{{ $photo($bird) }}" alt="{{ $bird->band_number ?: $bird->name }}, {{ $bird->bloodline ?: 'gamefowl' }}"
+                             width="600" height="750" loading="lazy" decoding="async">
+                    </figure>
+                @endforeach
             </div>
-        </div>
 
-        @if (count($bloodlines) > 0)
-            {{-- THE BLOODLINES, AS A RULED LIST WITH A COLOUR EDGE.
-
-                 They used to be filled chips under the front-page headline -
-                 seven saturated pills in unrelated hues, which read as a tag
-                 cloud and was the single most template-looking thing on the
-                 site. Colour still means bloodline, which is the rule this
-                 whole system rests on; it is carried by a 3px edge and the
-                 two-letter code rather than by a filled capsule. Same
-                 resolver, same colours, a fraction of the volume - and colour
-                 is never the only channel, because the code and the name are
-                 both text. --}}
-            <section class="mt-16 border-t border-border pt-10">
-                <h2 class="text-[21px] font-semibold text-foreground">Bloodlines kept here</h2>
-                <p class="mt-2 max-w-[56ch] text-[17px] leading-relaxed text-muted-foreground">
-                    Each carries its own colour through the whole site, so a bird's band
-                    tells you its bloodline at a glance.
+            <div class="order-1 lg:order-2" data-reveal>
+                <h2 id="pedigree-heading" class="sb-h2">Pedigree kept</h2>
+                <p class="mt-4 max-w-[44ch] text-[17px] leading-[1.7] text-foreground">
+                    A bird's sire and dam are written down wherever they are known, so its family
+                    tree can be followed back through the farm's own records rather than taken on trust.
                 </p>
 
-                <ul class="mt-7 grid gap-x-10 sm:grid-cols-2 lg:grid-cols-3">
-                    @foreach ($bloodlines as $bloodline)
-                        @php $hex = \App\Support\BandTag::hex($bloodline); @endphp
-                        <li class="flex items-center gap-3 border-b border-border py-3 pl-3"
-                            style="box-shadow: inset 3px 0 0 0 {{ $hex }}">
-                            <span class="datum w-7 shrink-0 text-[13px] font-semibold" style="color: {{ $hex }}">
-                                {{ \App\Support\BandTag::code($bloodline) }}
-                            </span>
-                            <span class="min-w-0 flex-1 truncate text-[16px] text-foreground">{{ $bloodline }}</span>
-                        </li>
-                    @endforeach
-                </ul>
+                <h2 class="sb-h2 mt-12">Seen in person</h2>
+                <p class="mt-4 max-w-[44ch] text-[17px] leading-[1.7] text-foreground">
+                    A photograph only shows so much. Arrange a visit and look at the birds on the
+                    farm before deciding anything.
+                </p>
+                <a href="{{ route('public.visit') }}" wire:navigate class="sb-link mt-4">Arrange a visit <span aria-hidden="true">&rarr;</span></a>
+            </div>
+        </section>
+
+        {{-- THE BLOODLINES - the evidence under the claim. A label/value list
+             with each bloodline's band dot and how many birds carry it, read
+             from the records. --}}
+        @if (count($counts) > 0)
+            <section class="mt-20 border-t border-border pt-12 lg:mt-32 lg:pt-16" aria-labelledby="lines-heading">
+                <div class="grid gap-10 lg:grid-cols-[5fr_6fr] lg:gap-20">
+                    <div data-reveal>
+                        <h2 id="lines-heading" class="sb-h2">Bloodlines kept here</h2>
+                        <p class="mt-4 max-w-[40ch] text-[16px] leading-relaxed text-muted-foreground">
+                            Each carries its own band colour through the whole site, so a bird's band
+                            tells you its bloodline at a glance.
+                        </p>
+                    </div>
+
+                    <dl class="border-t border-border" data-reveal style="--reveal-delay: 100ms">
+                        @foreach ($counts as $bloodline => $count)
+                            <div class="flex items-center justify-between gap-6 border-b border-border py-3.5">
+                                <dt class="flex items-center gap-3 text-[16px] text-foreground">
+                                    <x-band-dot :bloodline="$bloodline" />
+                                    <a href="{{ route('catalog.index', ['bloodline' => $bloodline]) }}" wire:navigate
+                                       class="hover:underline hover:underline-offset-4">{{ $bloodline }}</a>
+                                </dt>
+                                <dd class="datum text-[15px] text-muted-foreground">
+                                    {{ $count }} {{ \Illuminate\Support\Str::plural('bird', $count) }}
+                                </dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                </div>
             </section>
         @endif
 
-        <div class="mt-14 flex flex-wrap items-center gap-3 border-t border-border pt-8">
-            <a href="{{ route('catalog.index') }}" wire:navigate class="btn-primary">
-                See the {{ $stockCount > 0 ? $stockCount.' birds' : 'stock' }}
-            </a>
+        <div class="mt-16 flex flex-wrap gap-3 lg:mt-20">
+            <a href="{{ route('catalog.index') }}" wire:navigate class="btn-primary">See the {{ $stockCount > 0 ? $stockCount.' birds' : 'birds' }}</a>
             <a href="{{ route('public.visit') }}" wire:navigate class="btn-secondary">Arrange a visit</a>
         </div>
-    </article>
+    </div>
 </x-layouts::catalog>

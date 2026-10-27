@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Models\Broodcock;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * The two figures the public pages share.
@@ -52,5 +53,46 @@ final class PublicFarm
             ->farmStock()
             ->onFarm()
             ->count());
+    }
+
+    /**
+     * How many birds on the farm carry each bloodline, most first.
+     *
+     * @return array<string, int>
+     */
+    public static function bloodlineCounts(): array
+    {
+        return RecordCache::remember('landing:bloodline-counts', fn (): array => Broodcock::query()
+            ->farmStock()
+            ->onFarm()
+            ->whereNotNull('bloodline')
+            ->where('bloodline', '!=', '')
+            ->selectRaw('bloodline, count(*) as birds')
+            ->groupBy('bloodline')
+            ->orderByDesc('birds')
+            ->orderBy('bloodline')
+            ->pluck('birds', 'bloodline')
+            ->map(fn ($n) => (int) $n)
+            ->all());
+    }
+
+    /**
+     * Birds on the farm that have a photograph, in a stable order.
+     *
+     * For pages that show the farm's own pictures editorially. Oldest record
+     * first, so the selection does not reshuffle from one visit to the next.
+     *
+     * @return Collection<int, Broodcock>
+     */
+    public static function photographedBirds(int $limit): Collection
+    {
+        return RecordCache::remember('public:photographed:'.$limit, fn () => Broodcock::query()
+            ->with('primaryPhoto')
+            ->farmStock()
+            ->onFarm()
+            ->whereHas('primaryPhoto')
+            ->orderBy('id')
+            ->limit($limit)
+            ->get());
     }
 }

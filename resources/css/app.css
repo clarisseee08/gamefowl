@@ -1033,6 +1033,23 @@
    Muted text is #5c5853 on #f7f6f3: 6.6:1, past AA for body text and for
    the 13px captions that use it.
    ===================================================================== */
+/* Long-form prose: headings spaced off the text above them, paragraphs at
+   17px and 1.7, and every heading clears the sticky header when a contents
+   link jumps to it. */
+.long-form h2 {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+    margin-top: 3rem;
+    scroll-margin-top: 6rem;
+}
+.long-form h2:first-child { margin-top: 0; }
+.long-form p { margin-top: 1rem; font-size: 17px; line-height: 1.7; color: var(--color-foreground); }
+.long-form a { color: var(--color-primary); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 30%, transparent); }
+.long-form a:hover { text-decoration-color: currentColor; }
+
 /* The one dark block a page may have - the public pedigree, the console's
    anchor block. Paper-coloured type on near-black ink. */
 :root {
