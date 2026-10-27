@@ -603,22 +603,20 @@
      */
     .nav-item {
         @apply relative flex min-h-11 items-center gap-3 rounded-[var(--radius-sm)]
-               px-3 text-[14px] font-medium text-brand-muted-fg;
+               px-3 text-[15px] font-medium text-muted-foreground;
         transition: background-color var(--t-fast) var(--ease-out-quart),
                     color var(--t-fast) var(--ease-out-quart);
     }
-    .nav-item:hover {
-        color: var(--color-brand-foreground);
-        background-color: color-mix(in srgb, var(--color-brand-deeper) 60%, transparent);
-    }
-    .nav-item-active { @apply bg-brand-deeper text-brand-foreground; }
+    .nav-item:hover { color: var(--color-foreground); background-color: var(--color-background); }
+    .nav-item:active { transform: scale(0.98); }
+    .nav-item-active { @apply bg-card text-foreground; box-shadow: var(--shadow-e1); }
     .nav-item-active::before {
         content: '';
-        @apply absolute left-0 top-1/2 h-5 -translate-y-1/2 rounded-full bg-brand-foreground;
-        width: 2px;
+        @apply absolute left-0 top-1/2 h-5 -translate-y-1/2 rounded-full bg-primary;
+        width: 3px;
     }
     .nav-section {
-        @apply px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-[0.07em] text-brand-muted-fg;
+        @apply px-3 pb-1 pt-5 text-[13px] font-semibold text-muted-foreground;
     }
 
     /*
@@ -844,6 +842,19 @@
     transition: opacity var(--dur-fast) var(--ease-out) 400ms,
                 transform var(--dur-fast) var(--ease-out) 400ms;
 }
+
+/* The toast stack the console layout renders. */
+.toast-stack {
+    position: fixed; z-index: 60; inset-inline: 16px; bottom: 16px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none;
+}
+@media (min-width: 640px) { .toast-stack { inset-inline: auto; right: 24px; bottom: 24px; align-items: flex-end; } }
+.toast-stack > * { pointer-events: auto; }
+.toast-ok::before, .toast-bad::before {
+    content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 999px;
+    margin-right: 10px; vertical-align: 1px; background: var(--color-success);
+}
+.toast-bad::before { background: var(--color-destructive); }
 
 /* Toast. translateY + opacity, --dur-base. */
 .toast {
