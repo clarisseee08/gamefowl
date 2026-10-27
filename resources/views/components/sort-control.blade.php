@@ -27,10 +27,8 @@
     grammar carried across is the one that matters: field and direction are ONE
     control, a single press, never two things to reconcile.
 
-    `uppercase` IS REPEATED ON THE BUTTON ON PURPOSE. Tailwind's preflight sets
-    `button { text-transform: none }`, which beats an inherited `uppercase` on
-    the <th>. This exact slip once left the one unsortable column as the only
-    header rendering in caps.
+    HEADERS ARE SENTENCE CASE at 13px semibold, like every other table
+    header in the system. The all-caps 11px label is gone.
 
     THE 44px TOUCH TARGET IS ALREADY THERE: app.css puts min-height 44px on
     every button unconditionally, so the header cell inherits the console floor
@@ -59,11 +57,11 @@
 
 <th scope="col"
     aria-sort="{{ $ariaSort }}"
-    class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground {{ $align === 'right' ? 'text-right' : 'text-left' }} {{ $cell }}">
+    class="px-4 py-3 text-[13px] font-semibold text-muted-foreground {{ $align === 'right' ? 'text-right' : 'text-left' }} {{ $cell }}">
 
     <button type="button"
             {{ $attributes->merge([
-                'class' => 'inline-flex items-center gap-1 uppercase tracking-[0.06em] hover:text-foreground'
+                'class' => 'inline-flex min-h-11 items-center gap-1 hover:text-foreground'
                     .($align === 'right' ? ' flex-row-reverse' : ''),
             ]) }}>
         {{ $label }}
