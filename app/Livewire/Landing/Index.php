@@ -97,63 +97,152 @@ final class Index extends Component
     }
 
     /**
-     * A few birds, for the masthead's register.
+     * The bird whose photograph leads the page.
      *
-     * WHY THE HERO SHOWS STOCK AT ALL. The design brief calls the Catalog
-     * surface photo-led, and a masthead of type and a rule says nothing a
-     * template could not say about any farm. These are this farm's birds,
-     * named, banded and dated.
+     * Chosen by band number from config('gfms.home_hero_band') - an editorial
+     * choice, explained there - and falling back to the first bird with a
+     * photograph, so a stale setting can never leave the hero empty. Null when
+     * no bird on the farm has a photograph at all.
+     */
+    #[Computed]
+    public function heroBird(): ?Broodcock
+    {
+        $band = (string) config('gfms.home_hero_band');
+
+        return RecordCache::remember('landing:hero:'.$band, function () use ($band): ?Broodcock {
+            $withPhoto = Broodcock::query()
+                ->with('primaryPhoto')
+                ->farmStock()
+                ->onFarm()
+                ->whereHas('primaryPhoto');
+
+            return ($band !== '' ? (clone $withPhoto)->where('band_number', $band)->first() : null)
+                ?? $withPhoto->orderByDesc('date_hatched')->first();
+        });
+    }
+
+    /**
+     * The birds in the grid - eight, never including the hero.
      *
-     * BANDED BIRDS FIRST, then for sale, then the youngest.
+     * EACH PHOTOGRAPH IS USED ONCE on this page, so the bird in the hero is
+     * left out here; it is still one click away under "See all". Banded birds
+     * lead, then any offered for sale, then the youngest - the same order the
+     * register has always used, because an unbanded bird reads "Not yet
+     * banded" and is the least informative card to open on.
      *
-     * Banding leads the sort because the band tag is the motif this whole
-     * design is built on, and an unbanded bird renders "Not yet banded" -
-     * which is the correct thing to say about that bird and reads as an error
-     * state three times over in a masthead. Birds are banded at an age rather
-     * than at hatch, so the unbanded ones here are simply the youngest.
-     *
-     * For sale comes next: a visitor who can buy something should meet what is
-     * available before what is merely kept. The farm marks only a handful at a
-     * time, so the sort falls through to recent stock rather than leaving rows
-     * empty.
-     *
-     * primaryPhoto is eager-loaded because this renders one row per bird and
-     * an uncached query against production costs ~240ms of round trip.
+     * primaryPhoto is eager-loaded: one row per bird, and an uncached query
+     * against production costs ~240ms.
      *
      * @return Collection<int, Broodcock>
      */
     #[Computed]
-    public function featuredBirds()
+    public function gridBirds(): Collection
     {
-        return RecordCache::remember('landing:featured:8', fn () => Broodcock::query()
+        $heroId = $this->heroBird?->id;
+
+        return RecordCache::remember('landing:grid:'.($heroId ?? 'none'), fn () => Broodcock::query()
             ->with('primaryPhoto')
             ->farmStock()
             ->onFarm()
+            ->when($heroId, fn ($q) => $q->whereKeyNot($heroId))
             ->orderByRaw('CASE WHEN band_number IS NULL OR band_number = ? THEN 1 ELSE 0 END', [''])
             ->orderByDesc('for_sale')
             ->orderByDesc('date_hatched')
-            // EIGHT, for the board. The front page is a board of tiles and the
-            // birds are most of what fills it: two rows of four on a desktop,
-            // four rows of two on a phone. The farm keeps ten, so this is
-            // nearly all of them, and the "see all" tile carries the rest.
-            // Limited and cached either way, so the count costs nothing.
             ->limit(8)
             ->get());
     }
 
     /**
-     * The bird whose photograph stands in the masthead's left rail.
+     * The bloodlines to offer as filters: the ones among the birds in the grid.
      *
-     * Reuses featuredBirds() rather than issuing a query, so the bird in the
-     * masthead is always one the board below also shows. Null when none of
-     * them has a photograph, and the rail falls back to a plain tile.
+     * Not every bloodline on the farm - a pill for a bloodline whose only bird
+     * is the hero would empty the grid when pressed, which is the same trap
+     * the catalogue's "Available birds only" box used to set.
+     *
+     * @return list<string>
      */
     #[Computed]
-    public function heroBird(): ?Broodcock
+    public function gridBloodlines(): array
     {
-        return $this->featuredBirds->first(
-            static fn (Broodcock $bird): bool => $bird->primaryPhoto !== null,
-        );
+        return $this->gridBirds
+            ->pluck('bloodline')
+            ->filter(fn ($line) => filled($line))
+            ->unique()
+            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+            ->values()
+            ->all();
+    }
+
+    /**
+     * One real bird, with its sire and dam, for the pedigree block.
+     *
+     * THE RULE: a bird on the farm whose sire AND dam are both recorded, and
+     * whose parents' bloodlines are lines the farm itself keeps - compared
+     * without case, because the records hold "5k Sweater" and "5K Sweater".
+     * That last condition is what keeps a slip of data entry (a dam whose
+     * bloodline reads "Broodcock") off the front page. Lowest id wins, so the
+     * choice is stable from one visit to the next.
+     *
+     * Null when no bird qualifies, and the block shows the farm's bloodline
+     * counts instead. Nothing is invented to fill it.
+     */
+    #[Computed]
+    public function pedigreeBird(): ?Broodcock
+    {
+        $kept = array_map('mb_strtolower', $this->bloodlines);
+
+        return RecordCache::remember('landing:pedigree', fn () => Broodcock::query()
+            ->with(['sire', 'dam'])
+            ->farmStock()
+            ->onFarm()
+            ->whereNotNull('sire_id')
+            ->whereNotNull('dam_id')
+            ->orderBy('id')
+            ->get()
+            ->first(fn (Broodcock $bird): bool => $bird->sire && $bird->dam
+                && in_array(mb_strtolower((string) $bird->sire->bloodline), $kept, true)
+                && in_array(mb_strtolower((string) $bird->dam->bloodline), $kept, true)));
+    }
+
+    /**
+     * How many birds on the farm have at least one parent on record.
+     *
+     * For the proof line under the hero. It is the honest version of a claim
+     * the design brief suggested - "sire and dam recorded for each" - which
+     * the data does not support: most birds have one parent or both recorded,
+     * not all. The page says how many, and the number moves as the farm
+     * records more.
+     */
+    #[Computed]
+    public function parentageCount(): int
+    {
+        return RecordCache::remember('landing:parentage-count', fn (): int => Broodcock::query()
+            ->farmStock()
+            ->onFarm()
+            ->where(fn ($q) => $q->whereNotNull('sire_id')->orWhereNotNull('dam_id'))
+            ->count());
+    }
+
+    /**
+     * How many birds carry each bloodline - the pedigree block's fallback.
+     *
+     * @return array<string, int>
+     */
+    #[Computed]
+    public function bloodlineCounts(): array
+    {
+        return RecordCache::remember('landing:bloodline-counts', fn (): array => Broodcock::query()
+            ->farmStock()
+            ->onFarm()
+            ->whereNotNull('bloodline')
+            ->where('bloodline', '!=', '')
+            ->selectRaw('bloodline, count(*) as birds')
+            ->groupBy('bloodline')
+            ->orderByDesc('birds')
+            ->orderBy('bloodline')
+            ->pluck('birds', 'bloodline')
+            ->map(fn ($n) => (int) $n)
+            ->all());
     }
 
     public function render(): View

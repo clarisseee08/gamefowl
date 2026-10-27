@@ -176,43 +176,6 @@
     --color-print-rule-strong: #c7cbc5;
     --color-print-zebra: #f7f8f6;
 
-    /* ------------------------------------------------------------------
-       THE BOARD - the public site's palette.
-
-       Proportions from the dealt direction (one warm-black ground, tiles one
-       tone step lighter, white ink, one accent); the COLOURS from the subject.
-       A gamefowl is black plumage, a gold or copper hackle and a red comb, and
-       those are the three this page is made of:
-
-         board / tile / tile-2   the plumage - three steps of warm black
-         comb                    the one action colour; a red fill with white
-                                 text measures 5.1:1
-         comb-light              comb red lightened for TEXT on the board,
-                                 where the fill red would fall to 3.4:1
-         hackle                  gold, as a FIELD on selected tiles only, never
-                                 the action - and never next to an amber,
-                                 because one of this client's other sites
-                                 owns amber
-
-       board-muted is measured against tile, the lighter of the two grounds it
-       sits on: 6.6:1, comfortably past the catalogue's 4.5:1 floor.
-
-       Scoped by use, not by theme. These do not change under data-theme: the
-       public board is one dark design, and the console keeps its own light
-       and dark palettes below. */
-    --color-board: #0c0a08;
-    --color-tile: #181512;
-    --color-tile-2: #231e19;
-    --color-board-ink: #ffffff;
-    --color-board-muted: #a29c95;
-    --color-comb: #d43a2f;
-    --color-comb-light: #ff7a6b;
-    --color-hackle: #c9a45a;
-    --color-hackle-ink: #0c0a08;
-
-    /* One radius on the board, tiles and buttons alike. */
-    --radius-tile: 6px;
-
     --radius-sm: 6px;
     --radius-md: 10px;
     --radius-lg: 14px;
@@ -264,6 +227,7 @@
     --t-base: var(--dur-base);
     --t-enter: var(--dur-base);
 }
+
 
 @layer base {
     html {
@@ -1019,257 +983,294 @@
 .page-link-current { @apply bg-muted text-foreground; }
 
 /* =====================================================================
-   THE BOARD - the public site's components.
+   THE STUD BOOK - the public site.
 
-   One grid, one gap, one radius. Every tile is a FILLED rectangle: a tone
-   step from the ground, a palette field, or a photograph covering it. No
-   tile is outlined and none carries a shadow - surfaces are told apart by
-   tone, which is the rule that stops a board from turning into a page of
-   cards.
+   Warm paper, near-black ink, one red. The way a respected breeder presents
+   its animals: photographs large and clean, the pedigree as the proof, and
+   space doing the separating that boxes used to do. Hairlines are allowed,
+   sparingly; tiles and cards are not.
+
+   ONE ACCENT, from the logo: the comb red #8b2626 the console already uses as
+   its interactive colour. White on it is 8.7:1; as text on this paper it is
+   about 8:1. Every other colour on the public site is a neutral, and the
+   bloodline band colours appear only as a small dot or a thin line - they
+   mean something, so they stay, but never as a fill.
+
+   SCOPED, because three screens (the catalogue, a bird's page, its family
+   tree) render in the console for staff as well as here for visitors. The
+   console's semantic tokens are re-pointed at paper and ink inside
+   .studbook, so every shared component - inputs, selects, badges, band tags,
+   pagination - takes this look on the public site and its own in the
+   console, with one markup.
+
+   Muted text is #5c5853 on #f7f6f3: 6.6:1, past AA for body text and for
+   the 13px captions that use it.
    ===================================================================== */
+.studbook {
+    --color-background: #f7f6f3;
+    --color-card: #ffffff;
+    --color-muted: #efece7;
+    --color-popover: #ffffff;
+    --color-border: #e2ded7;
+    --color-input: #d6d1c9;
+    --color-foreground: #1c1a17;
+    --color-card-foreground: #1c1a17;
+    --color-popover-foreground: #1c1a17;
+    --color-muted-foreground: #5c5853;
 
-/* 12 columns, 8px gaps. Rows size to their content unless a tile asks for
-   a height; the board never relies on a fixed row height, because a tile
-   holding a sentence at 390px needs more height than at 1440. */
-.board-grid {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: 8px;
+    --sb-dark: #1c1a17;
+    --sb-dark-ink: #f7f6f3;
+    --sb-dark-muted: #b9b3aa;   /* 8.1:1 on the dark block */
+    --sb-dark-line: #3a3631;
 }
 
-.board-tile {
-    position: relative;
-    border-radius: var(--radius-tile);
-    min-width: 0;
-}
-
-/* A photograph that fills its tile. The tile clips, the image covers; on
-   hover the picture moves a little inside its own frame, never the frame. */
-.board-photo {
-    position: absolute;
-    inset: 0;
+/* The page measure. Wide enough for a four-across grid of birds, narrow
+   enough that a 1920 screen still reads as a page rather than a strip. */
+.sb-wrap {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: inherit;
-    transition: transform 600ms var(--ease-out);
+    max-width: 1400px;
+    margin-inline: auto;
+    padding-inline: 16px;
 }
-.board-tile:hover > .board-photo,
-.board-tile:focus-within > .board-photo { transform: scale(1.04); }
-.board-tile:has(> .board-photo) { overflow: hidden; }
+@media (min-width: 640px)  { .sb-wrap { padding-inline: 24px; } }
+@media (min-width: 1024px) { .sb-wrap { padding-inline: 40px; } }
 
-/* Navigation: plain words. The current page takes the comb colour as a
-   short bar under the word rather than a pill around it. */
-.board-nav-link {
-    position: relative;
-    display: inline-flex;
-    min-height: 44px;
-    align-items: center;
-    padding-inline: 12px;
-    border-radius: var(--radius-tile);
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--color-board-muted);
-    transition: color var(--dur-fast) var(--ease-in-out),
-                background-color var(--dur-fast) var(--ease-in-out);
-}
-.board-nav-link:hover { color: var(--color-board-ink); background-color: var(--color-tile); }
-.board-nav-link-on { color: var(--color-board-ink); }
-.board-nav-link-on::after {
-    content: '';
-    position: absolute;
-    left: 12px;
-    right: 12px;
-    bottom: 6px;
-    height: 2px;
-    border-radius: 1px;
-    background-color: var(--color-comb);
+/* Sections: 64px apart on a phone, 112px on a desktop. */
+.sb-section { padding-block: 64px; }
+@media (min-width: 1024px) { .sb-section { padding-block: 112px; } }
+
+/* The kicker: sentence case, 13px, 600, in the accent. Never caps. */
+.sb-eyebrow {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--color-primary);
 }
 
-/* Buttons. Flat fills, one radius, a press that scales to .97. */
-.board-btn,
-.board-btn-quiet,
-.board-btn-tile {
+.sb-hero-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 2.4rem;
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+    color: var(--color-foreground);
+}
+@media (min-width: 640px)  { .sb-hero-title { font-size: 3.25rem; } }
+@media (min-width: 1024px) { .sb-hero-title { font-size: 3.6rem; } }
+
+.sb-h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.6rem;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+}
+@media (min-width: 1024px) { .sb-h2 { font-size: 2rem; } }
+
+.sb-lead {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--color-muted-foreground);
+    max-width: 52ch;
+}
+
+/* Buttons: flat, 8px corners, a press that scales to .97. */
+.sb-cta,
+.sb-ghost {
     display: inline-flex;
-    min-height: 44px;
+    min-height: 48px;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding-inline: 18px;
-    border-radius: var(--radius-tile);
+    padding-inline: 22px;
+    border-radius: 8px;
     font-size: 15px;
     font-weight: 600;
     white-space: nowrap;
-    transition: background-color var(--dur-fast) var(--ease-in-out),
-                color var(--dur-fast) var(--ease-in-out),
-                transform var(--dur-instant) var(--ease-in-out);
+    transition: background-color 200ms var(--ease-out),
+                box-shadow 200ms var(--ease-out),
+                color 200ms var(--ease-out),
+                transform 120ms var(--ease-out);
 }
-.board-btn:active,
-.board-btn-quiet:active,
-.board-btn-tile:active { transform: scale(0.97); }
-
-.board-btn { background-color: var(--color-comb); color: #ffffff; }
-.board-btn:hover { background-color: #e04437; }
-
-.board-btn-quiet { color: var(--color-board-ink); background-color: var(--color-tile); }
-.board-btn-quiet:hover { background-color: var(--color-tile-2); }
-
-/* A secondary action that sits ON a tile already the tile colour. */
-.board-btn-tile { color: var(--color-board-ink); background-color: var(--color-tile-2); }
-.board-btn-tile:hover { background-color: #2e2721; }
-
-.board-link {
-    color: var(--color-board-ink);
-    text-decoration: underline;
-    text-decoration-color: rgb(255 255 255 / 0.3);
-    text-underline-offset: 4px;
-    transition: text-decoration-color var(--dur-fast) var(--ease-in-out),
-                color var(--dur-fast) var(--ease-in-out);
+.sb-cta:active,
+.sb-ghost:active { transform: scale(0.97); }
+.sb-cta { background-color: var(--color-primary); color: var(--color-primary-foreground); }
+.sb-cta:hover { background-color: var(--color-primary-600); }
+.sb-ghost {
+    color: var(--color-foreground);
+    box-shadow: inset 0 0 0 1px var(--color-input);
 }
-.board-link:hover { color: var(--color-comb-light); text-decoration-color: currentColor; }
+.sb-ghost:hover { box-shadow: inset 0 0 0 1px var(--color-foreground); }
 
-/* Focus on the board: the comb-light ring, offset off the dark ground so it
-   reads against a photograph as well as against a tile. */
-.bg-board :focus-visible { outline-color: var(--color-comb-light); }
-
-/* The name that closes every page. One line at any width, clipped by its
-   tile rather than shrunk until it fits. */
-.board-footer-name {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: clamp(34px, 8.6vw, 150px);
-    line-height: 0.9;
-    letter-spacing: -0.045em;
-    white-space: nowrap;
-    color: var(--color-board-ink);
-}
-
-/* A short fact set large in a tile: the number, then what it counts. */
-.board-figure {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: clamp(44px, 5.2vw, 84px);
-    line-height: 0.95;
-    letter-spacing: -0.04em;
-    font-variant-numeric: tabular-nums;
-}
-
-/* The bloodline picker. Each chip is a real link (it works with scripting
-   off); Alpine marks the chosen one. */
-.board-chip {
+/* A strong text link, for "See all" and the like. */
+.sb-link {
     display: inline-flex;
     min-height: 44px;
     align-items: center;
-    gap: 8px;
-    padding-inline: 14px;
-    border-radius: var(--radius-tile);
-    background-color: var(--color-tile-2);
-    color: var(--color-board-muted);
+    gap: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, currentColor 30%, transparent);
+    text-underline-offset: 5px;
+    transition: text-decoration-color 200ms var(--ease-out);
+}
+.sb-link:hover { text-decoration-color: currentColor; }
+
+/* Header links. The current page is marked by ink colour and a short accent
+   line under the word - not a pill. */
+.sb-nav-link {
+    position: relative;
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    padding-inline: 10px;
     font-size: 15px;
     font-weight: 500;
-    transition: background-color var(--dur-fast) var(--ease-in-out),
-                color var(--dur-fast) var(--ease-in-out),
-                transform var(--dur-instant) var(--ease-in-out);
+    color: var(--color-muted-foreground);
+    transition: color 200ms var(--ease-out);
 }
-.board-chip:hover { color: var(--color-board-ink); background-color: #2e2721; }
-.board-chip:active { transform: scale(0.97); }
-.board-chip-on { background-color: var(--color-board-ink); color: var(--color-board); }
-.board-chip-on:hover { background-color: var(--color-board-ink); color: var(--color-board); }
-
-/* The live thing's effect: a bird outside the chosen bloodline steps back. */
-.board-bird {
-    transition: opacity 320ms var(--ease-out), filter 320ms var(--ease-out),
-                transform var(--dur-instant) var(--ease-in-out);
+.sb-nav-link:hover { color: var(--color-foreground); }
+.sb-nav-link[aria-current="page"] { color: var(--color-foreground); }
+.sb-nav-link[aria-current="page"]::after {
+    content: "";
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 8px;
+    height: 2px;
+    border-radius: 1px;
+    background-color: var(--color-primary);
 }
-.board-bird:active { transform: scale(0.985); }
-.board-bird-dim { opacity: 0.28; filter: grayscale(1); }
 
-/* A contact cell: a filled block that IS the action. */
-.board-cell {
+/* The bloodline filter: a row of quiet pills. On a phone the row scrolls
+   sideways INSIDE ITSELF; the page never does. */
+.sb-pills {
     display: flex;
-    min-height: 92px;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 16px;
-    border-radius: var(--radius-tile);
-    background-color: var(--color-tile-2);
-    transition: background-color var(--dur-fast) var(--ease-in-out),
-                transform var(--dur-instant) var(--ease-in-out);
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-block: 2px;
+    margin-inline: -16px;
+    padding-inline: 16px;
 }
-.board-cell:hover { background-color: #2e2721; }
-.board-cell:active { transform: scale(0.97); }
-.board-cell-accent { background-color: var(--color-comb); color: #ffffff; }
-.board-cell-accent:hover { background-color: #e04437; }
-
-/* THE MARQUEE - the page's signature move - DRIVEN BY THE SCROLL, NOT A CLOCK.
-
-   The direction dealt a marquee that loops forever. The client's brief is
-   explicit that nothing loops forever, and the brief wins: the line slides
-   sideways only while the reader scrolls past it, by exactly as much as they
-   scroll, and stops when they stop. It is still the one loud moment on the
-   page; it just answers to the reader instead of running on its own.
-
-   CSS scroll-driven animation, so it costs no script and no scroll listener.
-   Where animation-timeline is not supported the line simply sits still,
-   which is a complete and correct fallback - nothing about the page depends
-   on it moving. */
-.board-marquee {
-    display: flex;
-    width: max-content;
+.sb-pills::-webkit-scrollbar { display: none; }
+@media (min-width: 640px) {
+    .sb-pills { flex-wrap: wrap; overflow: visible; margin-inline: 0; padding-inline: 0; }
 }
-.board-marquee-run {
+.sb-pill {
+    display: inline-flex;
     flex-shrink: 0;
-    padding-right: 0.5em;
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: clamp(36px, 6vw, 96px);
-    line-height: 1;
-    letter-spacing: -0.035em;
+    min-height: 44px;
+    align-items: center;
+    gap: 8px;
+    padding-inline: 16px;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--color-input);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-foreground);
     white-space: nowrap;
-    color: var(--color-board-ink);
+    transition: background-color 200ms var(--ease-out),
+                color 200ms var(--ease-out),
+                box-shadow 200ms var(--ease-out),
+                transform 120ms var(--ease-out);
 }
-@keyframes board-marquee {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-30%); }
-}
-
-/* The hero photograph drifts a little closer as the page scrolls away from
-   it - the one moving picture. Also scroll-linked, so it never runs on its
-   own and never loops. */
-@keyframes board-drift {
-    from { transform: scale(1); }
-    to   { transform: scale(1.08); }
+.sb-pill:hover { box-shadow: inset 0 0 0 1px var(--color-foreground); }
+.sb-pill:active { transform: scale(0.97); }
+.sb-pill[aria-pressed="true"] {
+    background-color: var(--color-foreground);
+    color: var(--color-background);
+    box-shadow: none;
 }
 
-@supports (animation-timeline: view()) {
-    .board-marquee {
-        animation: board-marquee linear both;
-        animation-timeline: view();
-        animation-range: entry 0% exit 100%;
-    }
-    .board-drift {
-        animation: board-drift linear both;
-        animation-timeline: view();
-        animation-range: exit 0% exit 100%;
-    }
+/* The bloodline mark: a small dot. The only form band colour takes on the
+   public site. */
+.sb-dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    flex-shrink: 0;
+    border-radius: 999px;
 }
 
-/* THE ENTRANCE. Only armed once the script has run and tagged <html>, so a
-   page whose script fails shows everything rather than nothing. Each
-   element rises 20px and fades in once as it enters; --reveal-delay
-   staggers the parts of a section. */
-.js-reveal .board-reveal {
+/* A photograph: 12px corners, cover, and a gentle zoom on hover. */
+.sb-photo {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    background-color: var(--color-muted);
+}
+.sb-photo > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 450ms var(--ease-out);
+}
+.group:hover .sb-photo > img,
+.group:focus-visible .sb-photo > img { transform: scale(1.03); }
+
+/* The caption chip on a photograph: the only overlay allowed. */
+.sb-chip {
+    position: absolute;
+    left: 14px;
+    bottom: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background-color: rgb(255 255 255 / 0.94);
+    color: #1c1a17;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* The one dark block. */
+.sb-dark {
+    background-color: var(--sb-dark);
+    color: var(--sb-dark-ink);
+}
+
+/* ---------------------------------------------------------------------
+   MOTION. 250-450ms, ease-out, nothing bounces and nothing loops.
+--------------------------------------------------------------------- */
+
+/* The hero text rises in line by line: each line is its own block with a
+   --line delay. On load, not on scroll - it is the first thing seen. */
+.sb-line {
+    display: block;
+    animation: sb-rise 450ms var(--ease-out) both;
+    animation-delay: var(--line, 0ms);
+}
+@keyframes sb-rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* The hero photograph settles from 1.04 to 1 as it fades in. */
+.sb-photo-in > img { animation: sb-settle 450ms var(--ease-out) 120ms both; }
+@keyframes sb-settle {
+    from { opacity: 0; transform: scale(1.04); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* Sections and cards reveal on scroll. Armed only once the script has run
+   and tagged <html>, so a page whose script fails shows everything. */
+.js-reveal [data-reveal] {
     opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 560ms var(--ease-out), transform 560ms var(--ease-out);
+    transform: translateY(16px);
+    transition: opacity 400ms var(--ease-out), transform 400ms var(--ease-out);
     transition-delay: var(--reveal-delay, 0ms);
 }
-.js-reveal .board-reveal.is-in { opacity: 1; transform: none; }
+.js-reveal [data-reveal].is-in { opacity: 1; transform: none; }
 
 @media (prefers-reduced-motion: reduce) {
-    .js-reveal .board-reveal { opacity: 1; transform: none; }
-    .board-marquee, .board-drift { animation: none; }
+    .sb-line, .sb-photo-in > img { animation: none; }
+    .js-reveal [data-reveal] { opacity: 1; transform: none; transition: none; }
+    .sb-photo > img { transition: none; }
 }
 
 /* =====================================================================

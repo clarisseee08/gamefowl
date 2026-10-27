@@ -6,289 +6,364 @@
     $farm = config('gfms.farm');
     $telHref = $farm['phone'] ? preg_replace('/[^0-9+]/', '', $farm['phone']) : '';
 
-    $birdCount = $this->stockCount;
-    $lineCount = count($this->bloodlines);
+    /*
+     * The kicker is the farm's town and province - the last two parts of its
+     * address ("Brgy. Igcadlum, San Joaquin, Iloilo" -> "San Joaquin, Iloilo").
+     * The barangay is for someone driving there; the town is for someone
+     * deciding whether to.
+     */
+    $place = $farm['address']
+        ? implode(', ', array_slice(array_map('trim', explode(',', $farm['address'])), -2))
+        : null;
+
+    $hero = $this->heroBird;
+    $birds = $this->gridBirds;
+    $total = $this->stockCount;
+    $lines = count($this->bloodlines);
 
     $photoUrl = fn ($photo, bool $full = false): ?string => $photo
         ? route('photos.show', $full ? $photo : ['photo' => $photo, 'size' => 'thumb'])
         : null;
+
+    /* A bird's name is shown beside its band only when it is a real name -
+       "Spark" - rather than the band digits again, which most of them are. */
+    $realName = fn ($bird): ?string => preg_match('/\p{L}/u', (string) $bird->name) ? $bird->name : null;
+
+    $pedigree = $this->pedigreeBird;
 @endphp
 
 {{--
-    THE FRONT PAGE — a board.
+    THE FRONT PAGE — a stud book, not a template.
 
-    The page is tiles fitted edge to edge with 8px gaps: the farm's name, its
-    birds, its figures, one action. The previous front page was a sequence of
-    sections divided by hairlines with a great deal of empty ground between
-    them, and it read as thin. A board cannot be thin - every cell holds one
-    true thing - and it is the honest shape for a farm whose story is ten
-    birds, eight bloodlines and a phone number.
+    Calm, photo-led, with the pedigree as the proof. Warm paper and near-black
+    ink, one red from the logo, and whitespace between sections rather than a
+    box around each one. The one dark block on the page is the pedigree,
+    because recording parentage is the farm's real difference.
 
-    THE IDEA: the farm's own banded birds are the tiles of the board, each one
-    carrying its bloodline's band colour. Pick a bloodline and the board lights
-    that bloodline's birds and dims the rest.
-
-    It is a front page, not the whole site. The catalogue, the farm's story and
-    the visiting details are pages of their own, and every tile here that
-    points at one is a real link to it.
+    Each photograph is used once: the hero bird is left out of the grid.
 --}}
-<div class="board-grid">
-
+<div>
     {{-- ---------------------------------------------------------------
-         THE NAME. The largest type on the site, and the page's one h1.
-         One line wherever it fits; at phone widths it may take two, which is
-         still inside the two-line rule - it is never cropped, because the
-         farm's name is the thing a visitor must be able to read.
+         1. THE HERO — asymmetric, 45 / 55.
+
+         The headline says what the farm does, in its own voice; the farm's
+         name is already in the header and does not need to be shouted again.
+         The text rises in line by line, which is why each line is its own
+         block - the breaks are written, not left to the browser, and every
+         line is short enough to hold at 390px.
     --------------------------------------------------------------- --}}
-    <div class="board-tile col-span-12 bg-tile px-5 pb-5 pt-7 sm:px-7 sm:pb-6 sm:pt-9">
-        <h1 class="board-reveal font-display text-[13vw] font-semibold leading-[0.92] tracking-[-0.045em] text-board-ink sm:text-[9.6vw] xl:text-[min(8.9vw,150px)]">
-            {{ $farm['name'] }}
-        </h1>
-    </div>
+    <section class="sb-wrap pb-16 pt-10 lg:pb-28 lg:pt-16">
+        <div class="grid items-center gap-10 lg:grid-cols-[45fr_55fr] lg:gap-16">
+            <div>
+                @if ($place)
+                    <p class="sb-eyebrow sb-line" style="--line: 0ms">{{ $place }}</p>
+                @endif
 
-    {{-- ---------------------------------------------------------------
-         THE FIRST SCREEN'S THREE COLUMNS.
+                <h1 class="sb-hero-title mt-4">
+                    <span class="sb-line" style="--line: 60ms">Broodcocks with</span>
+                    <span class="sb-line" style="--line: 130ms">their pedigree</span>
+                    <span class="sb-line" style="--line: 200ms">on record.</span>
+                </h1>
 
-         Left: one of the farm's own birds, tall. Centre: the farm at the hour
-         the birds are let out, with the one sentence that says what this is
-         laid along its foot. Right: the two figures that describe the farm
-         and the action.
+                <p class="sb-lead sb-line mt-6" style="--line: 280ms">
+                    Every bird here was hatched on the farm or recorded when it arrived,
+                    banded, and written down with its sire and dam wherever they are known.
+                </p>
 
-         The centre is a licensed stock photograph, used as atmosphere and
-         credited in public/photos/CREDITS.md; the bird on the left is the
-         farm's own, and links to that bird.
-    --------------------------------------------------------------- --}}
-    {{-- Its own grid, so the ORDER utilities below rearrange these three
-         columns only. Order on the page's grid would also have pulled every
-         later section ahead of them. On a phone the farm photograph and its
-         sentence come first; on a desktop the bird stands on the left. --}}
-    <div class="col-span-12 board-grid">
-        <div class="board-tile order-1 col-span-12 flex flex-col overflow-hidden bg-tile lg:order-2 lg:col-span-6 lg:min-h-[540px]">
-            <div class="relative aspect-[4/3] lg:aspect-auto lg:flex-1">
-                <img src="{{ asset('photos/hero-farm.webp') }}"
-                     alt="Gamefowl on grass beside a shed in evening light"
-                     width="1800" height="1000" fetchpriority="high" decoding="async"
-                     class="board-photo board-drift">
-            </div>
+                {{-- .sb-line is display:block, so the flex row is the inner
+                     element - on one element the block display won and the
+                     two buttons sat touching. --}}
+                <div class="sb-line mt-8" style="--line: 340ms">
+                    <div class="flex flex-wrap gap-3">
+                        <a href="{{ route('catalog.index') }}" wire:navigate class="sb-cta">See the birds</a>
+                        <a href="{{ route('public.visit') }}" wire:navigate class="sb-ghost">Arrange a visit</a>
+                    </div>
+                </div>
 
-            {{-- A statement, not a headline: a paragraph, three lines at most,
-                 so it never competes with the name above. On a desktop it is a
-                 tile laid along the foot of the photograph; on a phone it sits
-                 under it, because an overlay at 390px covers the picture. --}}
-            <div class="bg-tile p-5 sm:p-7 lg:absolute lg:bottom-4 lg:left-4 lg:right-4 lg:rounded-[var(--radius-tile)] lg:p-6">
-                <p class="board-reveal max-w-[34ch] text-[22px] leading-[1.3] text-board-ink sm:text-[26px] lg:text-[24px] xl:text-[27px]" style="--reveal-delay: 120ms">
-                    Broodcocks bred and raised in San Joaquin, Iloilo, with the sire and dam of every bird written down.
+                {{-- The proof line. Every figure is counted, not claimed: the
+                     brief's draft said "sire and dam recorded for each", and
+                     the records do not support that, so it says how many. --}}
+                <p class="sb-line mt-7 text-[14px] text-muted-foreground" style="--line: 400ms">
+                    <span class="datum font-semibold text-foreground">{{ $total }}</span> {{ \Illuminate\Support\Str::plural('bird', $total) }}
+                    <span aria-hidden="true">&middot;</span>
+                    <span class="datum font-semibold text-foreground">{{ $lines }}</span> {{ \Illuminate\Support\Str::plural('bloodline', $lines) }}
+                    @if ($this->parentageCount > 0)
+                        <span aria-hidden="true">&middot;</span>
+                        parentage on record for <span class="datum font-semibold text-foreground">{{ $this->parentageCount }}</span>
+                    @endif
                 </p>
             </div>
-        </div>
 
-        <a href="{{ $this->heroBird ? route('broodcocks.show', $this->heroBird) : route('catalog.index') }}" wire:navigate
-           class="board-tile group order-2 col-span-6 aspect-[4/5] overflow-hidden bg-tile lg:order-1 lg:col-span-3 lg:aspect-auto">
-            @if ($this->heroBird)
-                <img src="{{ $photoUrl($this->heroBird->primaryPhoto, true) }}"
-                     alt="{{ $this->heroBird->name }}, a {{ $this->heroBird->bloodline ?: 'gamefowl' }} on the farm"
-                     width="800" height="1000" decoding="async"
-                     class="board-photo">
-                {{-- The bird's own band, on a filled tile across the TOP of the
-                     photograph - the same object a visitor meets on every plate
-                     below. At the foot it sat directly over the next section's
-                     heading at tablet width and read as a label for it. --}}
-                <span class="absolute left-3 right-3 top-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 rounded-[var(--radius-tile)] bg-board/85 px-3 py-2.5">
-                    <span class="whitespace-nowrap text-[15px] font-semibold text-board-ink">{{ $this->heroBird->name }}</span>
-                    <x-band-tag :bloodline="$this->heroBird->bloodline" :band="$this->heroBird->band_number" size="xs" class="shrink-0" />
-                </span>
-            @else
-                <span class="flex h-full items-end p-5 text-[17px] font-semibold text-board-ink">See the birds</span>
+            @if ($hero)
+                {{-- One bird, large. 4:5 on a phone and tablet; on a wide
+                     screen the height is capped so the photograph never pushes
+                     the rest of the page entirely below the fold, and the crop
+                     gives a little at the sides rather than the bird's feet. --}}
+                <a href="{{ route('broodcocks.show', $hero) }}" wire:navigate class="group block">
+                    <figure class="sb-photo sb-photo-in aspect-[4/5] lg:aspect-auto lg:h-[min(82svh,860px)]">
+                        <img src="{{ $photoUrl($hero->primaryPhoto, true) }}"
+                             alt="{{ $realName($hero) ?? 'Broodcock '.($hero->band_number ?: $hero->name) }}, {{ $hero->bloodline ?: 'gamefowl' }}"
+                             width="800" height="1000" fetchpriority="high" decoding="async">
+                        <figcaption class="sb-chip">
+                            <span class="sb-dot" style="background-color: {{ \App\Support\BandTag::hex($hero->bloodline) }}" aria-hidden="true"></span>
+                            <span class="datum">{{ $hero->band_number ?: $hero->name }}</span>
+                            @if ($hero->bloodline)
+                                <span class="font-medium text-muted-foreground">{{ $hero->bloodline }}</span>
+                            @endif
+                        </figcaption>
+                    </figure>
+                </a>
             @endif
-        </a>
-
-        <div class="order-3 col-span-6 grid gap-2 lg:col-span-3">
-            <a href="{{ route('catalog.index') }}" wire:navigate
-               class="board-tile flex flex-col justify-between gap-5 bg-hackle p-5 text-hackle-ink sm:p-6">
-                <span class="board-figure board-reveal" style="--reveal-delay: 160ms">{{ $birdCount }}</span>
-                <span class="text-[15px] font-semibold">{{ \Illuminate\Support\Str::plural('bird', $birdCount) }} on the farm today</span>
-            </a>
-
-            <a href="#bloodlines"
-               class="board-tile flex flex-col justify-between gap-5 bg-brand-deep p-5 text-board-ink sm:p-6">
-                <span class="board-figure board-reveal" style="--reveal-delay: 220ms">{{ $lineCount }}</span>
-                <span class="text-[15px] font-semibold">{{ \Illuminate\Support\Str::plural('bloodline', $lineCount) }}, each with its own band colour</span>
-            </a>
-
-            <div class="board-tile flex flex-col gap-2 bg-tile p-4 sm:p-5">
-                <a href="{{ route('catalog.index') }}" wire:navigate class="board-btn w-full">See the birds</a>
-                <a href="{{ route('public.visit') }}" wire:navigate class="board-btn-tile w-full">Arrange a visit</a>
-            </div>
         </div>
-    </div>
+    </section>
 
     {{-- ---------------------------------------------------------------
-         THE BIRDS — and the one live thing on the page.
+         2. ON THE FARM NOW — the main section, and the one live thing.
 
-         Pick a bloodline and the board keeps that bloodline's birds lit and
-         dims the rest, on the page, with no reload. Each chip is a REAL LINK to
-         the catalogue filtered to that bloodline, so with scripting off it
-         still goes somewhere useful; Alpine only intercepts the click.
+         Pick a bloodline and the grid keeps only those birds. Each pill is a
+         REAL LINK to the catalogue filtered to that bloodline, so it still
+         works with scripting off; Alpine intercepts the click. Where the
+         browser supports view transitions the cards fade and slide into their
+         new places; elsewhere they simply change.
 
-         Every bird tile carries its bloodline's band colour as a filled strip
-         along its foot - the colour a visitor learns from the chip above is the
-         one they then find on the bird.
+         Pills come from the birds in THIS grid, not every bloodline on the
+         farm: a pill whose only bird is the hero would empty the grid.
     --------------------------------------------------------------- --}}
-    @if ($this->featuredBirds->isNotEmpty())
-        <section id="bloodlines" class="col-span-12 mt-2 scroll-mt-24"
-                 x-data="{ line: null }"
-                 aria-labelledby="birds-heading">
-            <div class="board-grid">
-                <div class="board-tile col-span-12 bg-tile p-5 sm:p-7 lg:col-span-4">
-                    <h2 id="birds-heading" class="board-reveal font-display text-[28px] font-semibold leading-[1.1] tracking-[-0.02em] text-board-ink sm:text-[34px]">
-                        Currently on the farm
-                    </h2>
-                    <p class="board-reveal mt-3 max-w-[36ch] text-[16px] leading-relaxed text-board-muted" style="--reveal-delay: 60ms">
-                        Pick a bloodline to see which birds carry it.
+    @if ($birds->isNotEmpty())
+        <section class="sb-wrap sb-section border-t border-border" aria-labelledby="farm-now"
+                 x-data="{
+                     line: null,
+                     pick(value) {
+                         const swap = () => { this.line = value };
+                         if (document.startViewTransition && ! matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                             document.startViewTransition(swap);
+                         } else {
+                             swap();
+                         }
+                     },
+                 }">
+            <div>
+                <div data-reveal>
+                    <h2 id="farm-now" class="sb-h2">On the farm now</h2>
+                    <p class="mt-2 text-[16px] text-muted-foreground">
+                        Banded, photographed and recorded. Choose a bloodline to narrow the list.
                     </p>
                 </div>
 
-                <div class="board-tile col-span-12 bg-tile p-3 sm:p-4 lg:col-span-8">
-                    <ul class="board-reveal flex flex-wrap gap-2" style="--reveal-delay: 80ms" aria-label="Bloodlines">
+                {{-- One row under the heading, not beside it: beside it the
+                     eight pills wrapped and left one stranded on a second line. --}}
+                <ul class="sb-pills mt-7" aria-label="Filter by bloodline" data-reveal style="--reveal-delay: 80ms">
+                    <li>
+                        <a href="{{ route('catalog.index') }}" class="sb-pill"
+                           x-on:click.prevent="pick(null)"
+                           :aria-pressed="(line === null).toString()" aria-pressed="true">All</a>
+                    </li>
+                    @foreach ($this->gridBloodlines as $bloodline)
                         <li>
-                            <a href="{{ route('catalog.index') }}"
-                               x-on:click.prevent="line = null"
-                               :class="line === null ? 'board-chip-on' : ''"
-                               class="board-chip board-chip-on">All birds</a>
+                            <a href="{{ route('catalog.index', ['bloodline' => $bloodline]) }}" class="sb-pill"
+                               x-on:click.prevent="pick(line === @js($bloodline) ? null : @js($bloodline))"
+                               :aria-pressed="(line === @js($bloodline)).toString()" aria-pressed="false">
+                                <span class="sb-dot" style="background-color: {{ \App\Support\BandTag::hex($bloodline) }}" aria-hidden="true"></span>
+                                {{ $bloodline }}
+                            </a>
                         </li>
-                        @foreach ($this->bloodlines as $bloodline)
-                            <li>
-                                <a href="{{ route('catalog.index', ['bloodline' => $bloodline]) }}"
-                                   x-on:click.prevent="line = (line === @js($bloodline) ? null : @js($bloodline))"
-                                   :class="line === @js($bloodline) ? 'board-chip-on' : ''"
-                                   :aria-pressed="(line === @js($bloodline)).toString()"
-                                   class="board-chip">
-                                    <span class="h-3 w-3 shrink-0 rounded-[2px]" style="background-color: {{ \App\Support\BandTag::hex($bloodline) }}" aria-hidden="true"></span>
-                                    {{ $bloodline }}
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
+                    @endforeach
+                </ul>
+            </div>
 
-                @foreach ($this->featuredBirds as $bird)
-                    @php $hex = \App\Support\BandTag::hex($bird->bloodline); @endphp
-                    <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate
-                       class="board-tile board-bird group col-span-6 overflow-hidden bg-tile md:col-span-4 lg:col-span-3"
-                       :class="line !== null && line !== @js($bird->bloodline) ? 'board-bird-dim' : ''">
-                        {{-- The entrance runs on this inner wrapper and the
-                             dimming on the link outside it. Both animate opacity,
-                             and on one element the entrance's stagger delay would
-                             also delay the dimming - a chip press that answered
-                             a third of a second late. --}}
-                        <span class="board-reveal flex h-full flex-col" style="--reveal-delay: {{ ($loop->index % 4) * 70 }}ms">
-                            <span class="relative block aspect-[4/5] overflow-hidden">
+            <ul class="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:mt-12 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-12">
+                @foreach ($birds as $bird)
+                    <li x-show="line === null || line === @js($bird->bloodline)"
+                        style="view-transition-name: bird-{{ $bird->id }}">
+                        <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate class="group block"
+                           data-reveal style="--reveal-delay: {{ ($loop->index % 4) * 70 }}ms">
+                            <div class="sb-photo aspect-[4/5]">
                                 @if ($bird->primaryPhoto)
-                                    <img src="{{ $photoUrl($bird->primaryPhoto) }}" alt="{{ $bird->name }}"
-                                         width="400" height="500" loading="lazy" decoding="async"
-                                         class="board-photo">
+                                    <img src="{{ $photoUrl($bird->primaryPhoto) }}"
+                                         alt="{{ $realName($bird) ?? 'Broodcock '.($bird->band_number ?: $bird->name) }}, {{ $bird->bloodline ?: 'bloodline not recorded' }}"
+                                         width="400" height="500" loading="lazy" decoding="async">
                                 @else
-                                    <span class="absolute inset-0 flex items-center justify-center text-[40px] font-semibold"
-                                          style="color: {{ $hex }}" aria-hidden="true">{{ \App\Support\BandTag::code($bird->bloodline) }}</span>
+                                    <span class="flex h-full items-center justify-center text-[14px] text-muted-foreground">No photo yet</span>
                                 @endif
-                            </span>
+                            </div>
 
-                            {{-- The band strip: the bloodline's own colour, FILLED,
-                                 along the foot of the photograph. A field, not a rule. --}}
-                            <span class="h-1.5 w-full shrink-0" style="background-color: {{ $hex }}" aria-hidden="true"></span>
-
-                            <span class="flex flex-1 flex-col gap-1 p-4">
-                                <span class="truncate font-display text-[18px] font-semibold tracking-[-0.015em] text-board-ink">{{ $bird->name }}</span>
-                                <span class="truncate text-[15px] text-board-muted">
-                                    {{ $bird->bloodline ?: 'Bloodline not recorded' }}@if ($bird->ageLabel())<span aria-hidden="true"> &middot; </span><span class="datum">{{ $bird->ageLabel() }}</span>@endif
-                                </span>
-                            </span>
-                        </span>
-                    </a>
+                            <div class="mt-3.5 flex items-baseline justify-between gap-3">
+                                <h3 class="min-w-0 truncate text-[17px] font-semibold tracking-[-0.015em] text-foreground group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4">
+                                    {{ $bird->band_number ?: $bird->name }}@if ($realName($bird) && $bird->band_number)<span class="font-sans text-[15px] font-medium text-muted-foreground"> &nbsp;{{ $realName($bird) }}</span>@endif
+                                </h3>
+                                @if ($bird->ageLabel())
+                                    <span class="datum shrink-0 text-[14px] text-muted-foreground">{{ $bird->ageLabel() }}</span>
+                                @endif
+                            </div>
+                            <p class="mt-1 flex items-center gap-2 text-[14px] text-muted-foreground">
+                                <span class="sb-dot" style="background-color: {{ \App\Support\BandTag::hex($bird->bloodline) }}" aria-hidden="true"></span>
+                                {{ $bird->bloodline ?: 'Bloodline not recorded' }}
+                            </p>
+                        </a>
+                    </li>
                 @endforeach
+            </ul>
 
-                <a href="{{ route('catalog.index') }}" wire:navigate
-                   class="board-tile col-span-12 flex items-center justify-between gap-4 bg-comb p-5 text-white sm:p-6">
-                    <span class="font-display text-[22px] font-semibold tracking-[-0.02em] sm:text-[26px]">
-                        See all {{ $birdCount }} {{ \Illuminate\Support\Str::plural('bird', $birdCount) }}
-                    </span>
-                    <span class="font-display text-[22px] font-semibold sm:text-[26px]" aria-hidden="true">&rarr;</span>
+            <div class="mt-12 lg:mt-14">
+                <a href="{{ route('catalog.index') }}" wire:navigate class="sb-link text-[16px]">
+                    See all {{ $total }} {{ \Illuminate\Support\Str::plural('bird', $total) }} <span aria-hidden="true">&rarr;</span>
                 </a>
             </div>
         </section>
     @endif
 
     {{-- ---------------------------------------------------------------
-         THE MARQUEE — the page's one loud moment.
+         3. WHY THE PEDIGREE MATTERS — the one dark block on the page.
 
-         The bloodlines the farm keeps, sliding across the full width as the
-         page is scrolled past them (see .board-marquee - it never moves on its
-         own), each followed by a mark in its own band colour. It used to
-         carry the farm's name, which put that name on the page three times
-         at display size - heading, marquee, footer - and three times is a
-         stammer, not emphasis. The bloodlines are real words only this farm
-         would run, and they rehearse the colours a visitor has just used to
-         filter the board.
+         Allowed because it is the farm's real difference. On one side a
+         short paragraph; on the other, the real pedigree of one real bird,
+         drawn as a small tree: the bird, then its sire and its dam. The bird
+         is chosen by a rule from the records (see pedigreeBird()), and when
+         no bird qualifies the block shows the bloodline counts instead.
+         Nothing here is invented.
+
+         Bloodline colour appears only as a thin line beside each name.
     --------------------------------------------------------------- --}}
-    @if ($lineCount > 0)
-        <div class="board-tile col-span-12 mt-2 overflow-hidden bg-brand-deep py-6" aria-hidden="true">
-            <div class="board-marquee">
-                @for ($i = 0; $i < 2; $i++)
-                    <span class="board-marquee-run">
-                        @foreach ($this->bloodlines as $bloodline)
-                            {{ $bloodline }}<span class="mx-[0.35em] inline-block h-[0.42em] w-[0.42em] rounded-[3px] align-middle"
-                                                   style="background-color: {{ \App\Support\BandTag::hex($bloodline) }}"></span>
+    <section class="sb-dark" aria-labelledby="pedigree-heading">
+        <div class="sb-wrap sb-section grid gap-12 lg:grid-cols-[5fr_7fr] lg:gap-20">
+            <div data-reveal>
+                <h2 id="pedigree-heading" class="sb-h2 text-[color:var(--sb-dark-ink)]">Why the pedigree matters</h2>
+                <p class="mt-5 max-w-[46ch] text-[17px] leading-[1.65] text-[color:var(--sb-dark-muted)]">
+                    A bloodline written on a card is a claim. A sire and a dam written down
+                    the day a bird hatches is a record you can follow. Every bird the farm
+                    raises goes into the book with its parents, so what you are told about
+                    a bird can be traced back rather than taken on trust.
+                </p>
+                <a href="{{ route('public.about') }}" wire:navigate
+                   class="mt-7 inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-[color:var(--sb-dark-ink)] underline decoration-[color:var(--sb-dark-line)] underline-offset-[5px] hover:decoration-[color:var(--sb-dark-ink)]">
+                    How the farm keeps its records <span aria-hidden="true">&rarr;</span>
+                </a>
+            </div>
+
+            <div data-reveal style="--reveal-delay: 120ms">
+                @if ($pedigree)
+                    @php
+                        $parents = [
+                            ['role' => 'Sire', 'bird' => $pedigree->sire],
+                            ['role' => 'Dam', 'bird' => $pedigree->dam],
+                        ];
+                    @endphp
+                    <figure>
+                        <figcaption class="text-[14px] text-[color:var(--sb-dark-muted)]">
+                            From the records: <span class="text-[color:var(--sb-dark-ink)]">{{ $pedigree->band_number ?: $pedigree->name }}</span> and its parents
+                        </figcaption>
+
+                        {{-- The tree: the bird on the left, a bracket, and its two
+                             parents on the right - drawn with hairlines, which is
+                             what a pedigree chart has always been. --}}
+                        <div class="mt-8 grid grid-cols-[auto_auto_1fr] items-center gap-x-3 sm:gap-x-5">
+                            <a href="{{ route('broodcocks.pedigree', $pedigree) }}" wire:navigate class="group block min-w-0 border-l-2 py-1 pl-4 pr-1"
+                               style="border-color: {{ \App\Support\BandTag::hex($pedigree->bloodline) }}">
+                                <span class="block truncate font-display text-[22px] font-semibold tracking-[-0.015em] text-[color:var(--sb-dark-ink)] group-hover:underline group-hover:underline-offset-4 sm:text-[26px]">
+                                    {{ $pedigree->band_number ?: $pedigree->name }}
+                                </span>
+                                <span class="mt-1 block text-[14px] text-[color:var(--sb-dark-muted)]">{{ $pedigree->bloodline ?: 'Bloodline not recorded' }}</span>
+                            </a>
+
+                            {{-- The bracket: a vertical stroke joining the two
+                                 parents, and a short arm reaching back to the bird. --}}
+                            <div class="flex h-28 w-10 items-center sm:w-16" aria-hidden="true">
+                                <span class="h-px w-1/2 bg-[color:var(--sb-dark-line)]"></span>
+                                <span class="h-full w-px bg-[color:var(--sb-dark-line)]"></span>
+                                <span class="flex h-full w-1/2 flex-col justify-between">
+                                    <span class="h-px w-full bg-[color:var(--sb-dark-line)]"></span>
+                                    <span class="h-px w-full bg-[color:var(--sb-dark-line)]"></span>
+                                </span>
+                            </div>
+
+                            <ul class="flex h-44 min-w-0 flex-col justify-between">
+                                @foreach ($parents as $parent)
+                                    <li class="min-w-0 border-l-2 py-1 pl-4" style="border-color: {{ \App\Support\BandTag::hex($parent['bird']->bloodline) }}">
+                                        <span class="block text-[13px] font-semibold text-[color:var(--sb-dark-muted)]">{{ $parent['role'] }}</span>
+                                        <span class="block truncate font-display text-[18px] font-semibold tracking-[-0.015em] text-[color:var(--sb-dark-ink)] sm:text-[20px]">
+                                            {{ $parent['bird']->band_number ?: $parent['bird']->name }}
+                                        </span>
+                                        <span class="block text-[14px] text-[color:var(--sb-dark-muted)]">
+                                            {{ $parent['bird']->bloodline ?: 'Bloodline not recorded' }}@if ($parent['bird']->is_external) &middot; outside bird @endif
+                                        </span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </figure>
+                @elseif (count($this->bloodlineCounts) > 0)
+                    {{-- No bird qualifies yet, so the block shows what IS on
+                         record: how many birds carry each bloodline. --}}
+                    <p class="text-[14px] text-[color:var(--sb-dark-muted)]">The bloodlines on the farm today</p>
+                    <dl class="mt-5">
+                        @foreach ($this->bloodlineCounts as $bloodline => $count)
+                            <div class="flex items-center justify-between gap-6 border-b border-[color:var(--sb-dark-line)] py-3">
+                                <dt class="flex items-center gap-3 text-[16px] text-[color:var(--sb-dark-ink)]">
+                                    <span class="sb-dot" style="background-color: {{ \App\Support\BandTag::hex($bloodline) }}" aria-hidden="true"></span>
+                                    {{ $bloodline }}
+                                </dt>
+                                <dd class="datum text-[16px] text-[color:var(--sb-dark-muted)]">{{ $count }}</dd>
+                            </div>
                         @endforeach
-                    </span>
-                @endfor
+                    </dl>
+                @endif
             </div>
         </div>
-    @endif
+    </section>
 
     {{-- ---------------------------------------------------------------
-         HOW TO SEE THEM.
+         4. VISIT THE FARM.
 
-         Three filled cells: ring, write, or come. Each is the action itself -
-         a tel: link, a mailto: link, the visiting page - rather than a label
-         with the detail somewhere else. Conditional, because the farm can
-         clear any of these at /settings.
+         The field photograph on one side; on the other, the four things a
+         visitor needs as plain label/value rows divided by hairlines. The
+         phone and email are real tel: and mailto: links. Every row is
+         conditional - the farm can clear any of them at /settings.
     --------------------------------------------------------------- --}}
-    <section class="col-span-12 mt-2" aria-labelledby="visit-heading">
-        <div class="board-grid">
-            <div class="board-tile col-span-12 overflow-hidden bg-tile lg:col-span-5">
-                <div class="relative aspect-[16/9] lg:absolute lg:inset-0 lg:aspect-auto">
-                    <img src="{{ asset('photos/visit-band.webp') }}" alt="Pasture at first light"
-                         width="1600" height="560" loading="lazy" decoding="async"
-                         class="board-photo">
-                </div>
+    <section class="sb-wrap sb-section" aria-labelledby="visit-heading">
+        <div class="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
+            <div class="sb-photo aspect-[4/5] lg:order-2" data-reveal>
+                <img src="{{ asset('photos/visit-field.webp') }}" alt="Pasture at first light"
+                     width="880" height="1100" loading="lazy" decoding="async">
             </div>
 
-            <div class="board-tile col-span-12 bg-tile p-5 sm:p-7 lg:col-span-7">
-                <h2 id="visit-heading" class="board-reveal font-display text-[28px] font-semibold leading-[1.1] tracking-[-0.02em] text-board-ink sm:text-[34px]">
-                    Come and see them
-                </h2>
-                <p class="board-reveal mt-3 max-w-[46ch] text-[16px] leading-relaxed text-board-ink" style="--reveal-delay: 60ms">
-                    Visitors are welcome by arrangement. Ring or write first and the farm will settle a time with you.
+            <div class="lg:order-1" data-reveal style="--reveal-delay: 100ms">
+                <h2 id="visit-heading" class="sb-h2">Visit the farm</h2>
+                <p class="mt-3 max-w-[46ch] text-[16px] text-muted-foreground">
+                    Visitors are welcome by arrangement. Ring or write first, and the farm will settle a time with you.
                 </p>
 
-                <div class="board-reveal mt-6 grid gap-2 sm:grid-cols-3" style="--reveal-delay: 120ms">
+                <dl class="mt-8 border-t border-border">
+                    @if ($farm['address'])
+                        <div class="grid gap-1 border-b border-border py-4 sm:grid-cols-[140px_1fr] sm:gap-6">
+                            <dt class="text-[14px] font-medium text-muted-foreground">Address</dt>
+                            <dd class="text-[16px] text-foreground">{{ $farm['address'] }}</dd>
+                        </div>
+                    @endif
+                    @if ($farm['hours'])
+                        <div class="grid gap-1 border-b border-border py-4 sm:grid-cols-[140px_1fr] sm:gap-6">
+                            <dt class="text-[14px] font-medium text-muted-foreground">Visiting hours</dt>
+                            <dd class="text-[16px] text-foreground">{{ $farm['hours'] }}</dd>
+                        </div>
+                    @endif
                     @if ($farm['phone'])
-                        <a href="tel:{{ $telHref }}" class="board-cell">
-                            <span class="text-[13px] font-semibold text-board-muted">Ring the farm</span>
-                            <span class="datum text-[17px] font-semibold text-board-ink">{{ $farm['phone'] }}</span>
-                        </a>
+                        <div class="grid gap-1 border-b border-border py-4 sm:grid-cols-[140px_1fr] sm:gap-6">
+                            <dt class="text-[14px] font-medium text-muted-foreground">Phone</dt>
+                            <dd class="text-[16px]">
+                                <a href="tel:{{ $telHref }}" class="datum font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary">{{ $farm['phone'] }}</a>
+                            </dd>
+                        </div>
                     @endif
                     @if ($farm['email'])
-                        <a href="mailto:{{ $farm['email'] }}" class="board-cell">
-                            <span class="text-[13px] font-semibold text-board-muted">Write to us</span>
-                            <span class="break-all text-[15px] font-semibold text-board-ink">{{ $farm['email'] }}</span>
-                        </a>
+                        <div class="grid gap-1 border-b border-border py-4 sm:grid-cols-[140px_1fr] sm:gap-6">
+                            <dt class="text-[14px] font-medium text-muted-foreground">Email</dt>
+                            <dd class="break-words text-[16px]">
+                                <a href="mailto:{{ $farm['email'] }}" class="font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary">{{ $farm['email'] }}</a>
+                            </dd>
+                        </div>
                     @endif
-                    <a href="{{ route('public.visit') }}" wire:navigate class="board-cell board-cell-accent">
-                        <span class="text-[13px] font-semibold">{{ $farm['hours'] ?: 'By arrangement' }}</span>
-                        <span class="text-[17px] font-semibold">Plan a visit</span>
-                    </a>
-                </div>
+                </dl>
+
+                <a href="{{ route('public.visit') }}" wire:navigate class="sb-cta mt-8">Plan a visit</a>
             </div>
         </div>
     </section>

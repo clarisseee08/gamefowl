@@ -241,7 +241,7 @@ const applyStoredTheme = () => {
 document.addEventListener('livewire:navigated', applyStoredTheme);
 
 /**
- * The board's entrance: each .board-reveal rises and fades in once, as it
+ * The public site's entrance: each [data-reveal] rises and fades in once, as it
  * enters the viewport.
  *
  * ARMED BY TAGGING <html>, never by hiding things in CSS up front. The hidden
@@ -253,7 +253,7 @@ document.addEventListener('livewire:navigated', applyStoredTheme);
  * sit at opacity 0 forever.
  */
 const armReveals = () => {
-    const targets = document.querySelectorAll('.board-reveal:not(.is-in)');
+    const targets = document.querySelectorAll('[data-reveal]:not(.is-in)');
 
     if (! ('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) {
         targets.forEach((el) => el.classList.add('is-in'));
