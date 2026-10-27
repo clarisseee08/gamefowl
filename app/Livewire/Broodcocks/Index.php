@@ -10,6 +10,7 @@ use App\Enums\Sex;
 use App\Models\Broodcock;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
@@ -147,6 +148,44 @@ final class Index extends Component
     public function clearSelection(): void
     {
         $this->selected = [];
+        $this->confirmingBulkDelete = false;
+    }
+
+    /**
+     * Whether the bulk-delete confirmation dialog is open.
+     *
+     * A designed dialog rather than the browser's confirm(), which cannot name
+     * the birds it is about to remove and cannot be styled or tested.
+     */
+    public bool $confirmingBulkDelete = false;
+
+    public function confirmDeleteSelected(): void
+    {
+        $this->confirmingBulkDelete = $this->selected !== [];
+    }
+
+    public function cancelDeleteSelected(): void
+    {
+        $this->confirmingBulkDelete = false;
+    }
+
+    /**
+     * The selected birds, so the confirmation can name them. Read only while
+     * the dialog is open; one bounded query.
+     *
+     * @return EloquentCollection<int, Broodcock>
+     */
+    #[Computed]
+    public function selectedBirds(): EloquentCollection
+    {
+        if ($this->selected === []) {
+            return new EloquentCollection;
+        }
+
+        return Broodcock::query()
+            ->whereIn('id', $this->selected)
+            ->orderBy('band_number')
+            ->get(['id', 'name', 'band_number']);
     }
 
     /**
@@ -194,11 +233,17 @@ final class Index extends Component
 
         $skipped = count($this->selected) - $deleted;
         $this->selected = [];
+        $this->confirmingBulkDelete = false;
         $this->resetPage();
 
-        session()->flash('success', $skipped > 0
-            ? "{$deleted} ".str('bird')->plural($deleted)." removed. {$skipped} could not be removed with your role."
-            : "{$deleted} ".str('bird')->plural($deleted).' removed from the active records.');
+        // A toast, not a session flash: this action does not redirect, so a
+        // flash would surface on the NEXT page load, out of context.
+        $this->dispatch('toast',
+            message: $skipped > 0
+                ? "{$deleted} ".str('bird')->plural($deleted)." removed. {$skipped} could not be removed with your role."
+                : "{$deleted} ".str('bird')->plural($deleted).' removed from the active records.',
+            tone: $skipped > 0 && $deleted === 0 ? 'bad' : 'ok',
+        );
     }
 
     /** @return LengthAwarePaginator<int, Broodcock> */

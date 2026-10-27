@@ -65,6 +65,44 @@ final class BroodcockFormPhotosTest extends TestCase
     }
 
     /** Photos are optional; the bird must save perfectly well without any. */
+    public function test_a_picked_photo_can_be_taken_out_before_saving(): void
+    {
+        Storage::fake('local');
+
+        $component = Livewire::actingAs($this->staff())->test(Form::class);
+
+        foreach ($this->validBird() as $field => $value) {
+            $component->set($field, $value);
+        }
+
+        $component
+            ->set('photos', [
+                UploadedFile::fake()->image('keep.jpg'),
+                UploadedFile::fake()->image('wrong.jpg'),
+            ])
+            ->call('removePhoto', 1)
+            ->assertCount('photos', 1)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $bird = Broodcock::where('name', 'Bagwis')->firstOrFail();
+
+        $this->assertSame(1, BroodcockPhoto::where('broodcock_id', $bird->id)->count());
+    }
+
+    public function test_taking_out_a_photo_keeps_the_other_field_errors(): void
+    {
+        Storage::fake('local');
+
+        $component = Livewire::actingAs($this->staff())->test(Form::class)
+            ->set('photos', [UploadedFile::fake()->image('one.jpg')])
+            ->call('save')
+            ->assertHasErrors('name')
+            ->call('removePhoto', 0);
+
+        $component->assertHasErrors('name')->assertCount('photos', 0);
+    }
+
     public function test_a_bird_can_be_added_with_no_photos(): void
     {
         $component = Livewire::actingAs($this->staff())->test(Form::class);

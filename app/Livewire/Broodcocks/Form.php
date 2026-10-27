@@ -205,6 +205,28 @@ final class Form extends Component
         return $this->broodcock?->exists ?? false;
     }
 
+    /**
+     * Drops one picked file before anything is saved, so a wrong photo does
+     * not mean starting the whole selection again.
+     */
+    public function removePhoto(int $index): void
+    {
+        unset($this->photos[$index]);
+
+        $this->photos = array_values($this->photos);
+        // Per-file errors are keyed by position (photos.0, photos.1), which
+        // the removal has just shifted, so every photo error goes. Guarded:
+        // an EMPTY list would make resetErrorBag() clear the whole form.
+        $photoErrors = array_values(array_filter(
+            array_keys($this->getErrorBag()->messages()),
+            fn (string $key): bool => $key === 'photos' || str_starts_with($key, 'photos.'),
+        ));
+
+        if ($photoErrors !== []) {
+            $this->resetErrorBag($photoErrors);
+        }
+    }
+
     /** @return array<string, mixed> */
     protected function rules(): array
     {
