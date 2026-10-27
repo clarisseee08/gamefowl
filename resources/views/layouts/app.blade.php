@@ -25,17 +25,12 @@
     as an intranet.
 --}}
 <body class="h-full overflow-hidden bg-background">
-    {{-- 3px of brand across the very top of the viewport. Enough to read as
-         branded on every console screen; small enough that it never competes
-         with content the way a saturated colour bar would. --}}
-    <div class="brand-rail" aria-hidden="true"></div>
-
     <div
         x-data="{
             collapsed: localStorage.getItem('gfms-sidebar') === '1',
             mobileNav: false,
         }"
-        class="flex h-[calc(100vh-3px)] w-full overflow-hidden"
+        class="flex h-full w-full overflow-hidden"
     >
         {{-- Desktop sidebar. Hidden below 1024px, where it becomes the sheet. --}}
         <div class="hidden lg:flex">
@@ -87,26 +82,52 @@
             {{-- THE ONLY SCROLL CONTAINER. --}}
             <main class="scroll-slim min-h-0 flex-1 overflow-y-auto">
                 <div class="px-4 py-6 sm:px-6 lg:px-8">
-                    {{-- Flash messages. Both say what actually happened, never
-                         "Operation completed". --}}
-                    @if (session('success'))
-                        <div class="mb-5 rounded-[var(--radius-md)] bg-success-bg px-4 py-3 text-[15px] text-foreground" role="status">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-
-                    @if (session('error'))
-                        <div class="mb-5 rounded-[var(--radius-md)] bg-destructive-bg px-4 py-3 text-[15px] text-foreground" role="alert">
-                            {{ session('error') }}
-                        </div>
-                    @endif
-
                     {{ $slot }}
                 </div>
             </main>
         </div>
 
         <x-command-palette />
+    </div>
+
+    {{--
+        TOASTS. Every save, delete and upload says what happened, bottom right
+        (bottom centre on a phone), and leaves on its own after five seconds.
+
+        Two sources feed one stack: the session flash a redirect carries
+        (rendered into the page, so it is in the HTML a test reads), and a
+        Livewire `toast` event for saves that do not redirect:
+        $this->dispatch('toast', message: 'Saved.', tone: 'ok').
+    --}}
+    <div class="toast-stack" aria-live="polite"
+         x-data="{
+             toasts: [],
+             push(message, tone = 'ok') {
+                 if (! message) return;
+                 const id = Date.now() + Math.random();
+                 this.toasts.push({ id, message, tone });
+                 setTimeout(() => this.drop(id), 5000);
+             },
+             drop(id) { this.toasts = this.toasts.filter(t => t.id !== id); },
+         }"
+         x-on:toast.window="push($event.detail.message ?? $event.detail[0]?.message, $event.detail.tone ?? $event.detail[0]?.tone ?? 'ok')">
+        @if (session('success'))
+            <div class="toast toast-ok" role="status" x-data="{ open: true }" x-show="open"
+                 x-init="setTimeout(() => open = false, 5000)"
+                 x-transition:enter="toast-enter-active" x-transition:enter-start="toast-enter"
+                 x-transition:leave="toast-leave-active">{{ session('success') }}</div>
+        @endif
+        @if (session('error'))
+            <div class="toast toast-bad" role="alert" x-data="{ open: true }" x-show="open"
+                 x-init="setTimeout(() => open = false, 8000)"
+                 x-transition:enter="toast-enter-active" x-transition:enter-start="toast-enter"
+                 x-transition:leave="toast-leave-active">{{ session('error') }}</div>
+        @endif
+        <template x-for="t in toasts" :key="t.id">
+            <div class="toast" :class="t.tone === 'bad' ? 'toast-bad' : 'toast-ok'" role="status"
+                 x-transition:enter="toast-enter-active" x-transition:enter-start="toast-enter"
+                 x-transition:leave="toast-leave-active" x-text="t.message"></div>
+        </template>
     </div>
 
     {{-- Livewire auto-injects its scripts (and Alpine, which it bundles), so

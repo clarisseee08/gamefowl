@@ -34,6 +34,24 @@ final class PerformanceRecordTest extends TestCase
     // Listing, searching and filtering
     // -----------------------------------------------------------------
 
+    public function test_the_list_opens_with_the_record_count_and_filters_by_kind_of_event(): void
+    {
+        $bird = Broodcock::factory()->create(['name' => 'Kanlaon']);
+        PerformanceRecord::factory()->count(3)->for($bird)->create(['event_type' => PerformanceEventType::Derby]);
+        PerformanceRecord::factory()->count(2)->for($bird)->create(['event_type' => PerformanceEventType::WeighIn, 'result' => PerformanceResult::NotApplicable]);
+
+        $component = Livewire::actingAs(User::factory()->staff()->create())
+            ->test(Index::class)
+            ->assertSee('records on file')
+            ->assertSeeInOrder(['All events', 'Sparring', 'Conditioning', 'Weigh-in', 'Derby'])
+            // The segmented strip writes the same property the select did.
+            ->set('eventType', PerformanceEventType::WeighIn->value)
+            ->assertSee('records matching your filters')
+            ->assertSet('eventType', PerformanceEventType::WeighIn->value);
+
+        $this->assertSame(2, $component->instance()->records->total());
+    }
+
     public function test_the_performance_list_shows_records_and_paginates(): void
     {
         $bird = Broodcock::factory()->create(['name' => 'Kanlaon']);

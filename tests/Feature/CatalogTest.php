@@ -169,6 +169,53 @@ final class CatalogTest extends TestCase
             ->assertDontSee('Bagwis');
     }
 
+    /**
+     * The reported bug: ticking "Available birds only" emptied the catalogue.
+     *
+     * THE FILTER WAS NEVER BROKEN. It returned nothing because not one bird on
+     * the farm was marked for sale - eighteen in production, every one false.
+     * What was broken is that the page offered a control that could only ever
+     * empty itself, and then said "No birds match your search", which blames
+     * the visitor for a state they could not have avoided.
+     *
+     * These three tests pin the fix: the control is disabled when it cannot
+     * succeed, it stays live the moment one bird is offered, and the empty
+     * state tells the truth rather than suggesting a different bloodline.
+     */
+    public function test_the_for_sale_filter_is_disabled_when_no_bird_is_offered(): void
+    {
+        Broodcock::factory()->count(3)->create(['for_sale' => false]);
+
+        Livewire::test(Browse::class)
+            ->assertSee('No birds are marked for sale just now.')
+            ->assertSee('disabled', escape: false);
+    }
+
+    public function test_the_for_sale_filter_is_live_as_soon_as_one_bird_is_offered(): void
+    {
+        Broodcock::factory()->create(['for_sale' => false]);
+        Broodcock::factory()->create(['name' => 'Dalisay', 'for_sale' => true]);
+
+        Livewire::test(Browse::class)
+            ->assertDontSee('No birds are marked for sale just now.')
+            ->set('forSaleOnly', true)
+            ->assertSee('Dalisay');
+    }
+
+    public function test_the_empty_state_says_nothing_is_for_sale_rather_than_blaming_the_search(): void
+    {
+        Broodcock::factory()->count(2)->create(['for_sale' => false]);
+
+        Livewire::test(Browse::class)
+            ->set('forSaleOnly', true)
+            ->assertSee('No birds are marked for sale just now')
+            ->assertSee('Show every bird on the farm')
+            // The old copy sent the reader after a bloodline, which could not
+            // have helped: no bloodline on this farm is for sale either.
+            ->assertDontSee('No birds match your search')
+            ->assertDontSee('Try a different bloodline');
+    }
+
     public function test_a_bird_offered_for_sale_says_so_on_its_card(): void
     {
         Broodcock::factory()->create(['name' => 'Dalisay', 'for_sale' => true]);
@@ -236,5 +283,40 @@ final class CatalogTest extends TestCase
             ->assertDontSee('Mortality')
             ->assertDontSee('Breeding')
             ->assertDontSee('Users');
+    }
+
+    public function test_the_catalogue_sorts_youngest_first_with_undated_birds_last(): void
+    {
+        Broodcock::factory()->create(['name' => 'Old', 'date_hatched' => '2022-01-01']);
+        Broodcock::factory()->create(['name' => 'Young', 'date_hatched' => '2025-06-01']);
+        Broodcock::factory()->create(['name' => 'Aardvark', 'date_hatched' => null]);
+
+        Livewire::test(Browse::class)
+            ->set('sort', 'youngest')
+            ->assertSeeInOrder(['Young', 'Old', 'Aardvark']);
+
+        Livewire::test(Browse::class)
+            ->set('sort', 'oldest')
+            ->assertSeeInOrder(['Old', 'Young', 'Aardvark']);
+    }
+
+    public function test_the_catalogue_sorts_by_bloodline(): void
+    {
+        Broodcock::factory()->create(['name' => 'First', 'bloodline' => 'Sweater']);
+        Broodcock::factory()->create(['name' => 'Second', 'bloodline' => 'Kelso']);
+
+        Livewire::test(Browse::class)
+            ->set('sort', 'bloodline')
+            ->assertSeeInOrder(['Second', 'First']);
+    }
+
+    public function test_clearing_the_filters_keeps_the_chosen_order(): void
+    {
+        Livewire::test(Browse::class)
+            ->set('sort', 'oldest')
+            ->set('bloodline', 'Kelso')
+            ->call('clearFilters')
+            ->assertSet('sort', 'oldest')
+            ->assertSet('bloodline', '');
     }
 }

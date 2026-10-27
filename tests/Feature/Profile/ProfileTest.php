@@ -50,7 +50,8 @@ final class ProfileTest extends TestCase
             ->set('full_name', 'New Name')
             ->set('position', 'Head Keeper')
             ->call('save')
-            ->assertHasNoErrors();
+            ->assertHasNoErrors()
+            ->assertDispatched('toast', message: 'Your profile has been updated.', tone: 'ok');
 
         $user->refresh();
 
@@ -225,7 +226,8 @@ final class ProfileTest extends TestCase
 
         $path = $user->fresh()->profile_photo_path;
 
-        $component->call('removePhoto');
+        $component->call('removePhoto')
+            ->assertDispatched('toast', message: 'Your photo has been removed.', tone: 'ok');
 
         $this->assertFalse($user->fresh()->hasProfilePhoto());
         Storage::disk($this->photoDisk())->assertMissing($path);
@@ -241,7 +243,8 @@ final class ProfileTest extends TestCase
             ->set('password', 'a-new-password')
             ->set('password_confirmation', 'a-new-password')
             ->call('updatePassword')
-            ->assertHasNoErrors();
+            ->assertHasNoErrors()
+            ->assertDispatched('toast', message: 'Your password has been changed.', tone: 'ok');
 
         $this->assertTrue(Hash::check('a-new-password', $user->fresh()->password));
     }

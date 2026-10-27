@@ -78,11 +78,62 @@ final class LandingTest extends TestCase
             ->assertDontSee('Borrowed Hen');
     }
 
-    public function test_the_front_page_says_how_to_arrange_a_visit(): void
+    /**
+     * THE SITE IS SEVERAL PAGES NOW, not one long scroll.
+     *
+     * This used to assert that "Visit the farm" appeared on the front page,
+     * because the front page WAS the visiting section - along with the three
+     * statements, the whole catalogue and its filters. Somebody who wanted the
+     * phone number scrolled past every bird on the farm to reach it.
+     *
+     * Visiting is its own page. The front page's job is now to point at it,
+     * so that is what is asserted here, and the page itself is covered below.
+     */
+    public function test_the_front_page_points_at_the_visit_page(): void
     {
         $this->get(route('home'))
             ->assertOk()
-            ->assertSee('Visit the farm');
+            ->assertSee(route('public.visit'), false)
+            ->assertSee('Arrange a visit');
+    }
+
+    public function test_the_visit_page_says_how_to_arrange_a_visit(): void
+    {
+        $this->get(route('public.visit'))
+            ->assertOk()
+            ->assertSee('Visit the farm')
+            ->assertSee('Visitors are welcome by arrangement.');
+    }
+
+    /** The front page points at the about page rather than carrying it. */
+    public function test_the_front_page_points_at_the_about_page(): void
+    {
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee(route('public.about'), false);
+
+        $this->get(route('public.about'))
+            ->assertOk()
+            ->assertSee('Bred on the farm')
+            ->assertSee('Pedigree kept');
+    }
+
+    /**
+     * The catalogue is no longer embedded in the front page.
+     *
+     * This is the assertion that keeps the split from quietly reverting: the
+     * front page shows a few birds and links on, and does NOT carry the
+     * filter bar, which is the thing that made it a single-page site.
+     */
+    public function test_the_front_page_does_not_embed_the_whole_catalogue(): void
+    {
+        Broodcock::factory()->count(3)->create();
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('See all')
+            ->assertDontSee('Name, band number or bloodline')
+            ->assertDontSee('Available birds only');
     }
 
     /**

@@ -19,6 +19,10 @@ final class Show extends Component
 
     public Broodcock $broodcock;
 
+    /**
+     * The section on show. 'overview' is the pedigree - the reason anyone opens
+     * a bird's page - and stays the default key so old links keep working.
+     */
     #[Url(except: 'overview')]
     public string $tab = 'overview';
 
@@ -41,10 +45,19 @@ final class Show extends Component
     {
         return Broodcock::query()
             ->with([
-                'sire:id,name,band_number,bloodline,sex',
-                'dam:id,name,band_number,bloodline,sex',
+                // Parents carry their own sire_id and dam_id so the
+                // grandparents below can load in the same pass - one query per
+                // generation, never one per ancestor.
+                'sire:id,name,band_number,bloodline,sex,is_external,sire_id,dam_id',
+                'dam:id,name,band_number,bloodline,sex,is_external,sire_id,dam_id',
+                'sire.sire:id,name,band_number,bloodline,sex,is_external',
+                'sire.dam:id,name,band_number,bloodline,sex,is_external',
+                'dam.sire:id,name,band_number,bloodline,sex,is_external',
+                'dam.dam:id,name,band_number,bloodline,sex,is_external',
                 'pen:id,code,name',
                 'primaryPhoto',
+                // The gallery at the top of the page: the main photograph first.
+                'photos' => fn ($query) => $query->orderByDesc('is_primary')->orderBy('id'),
                 'mortalityRecord',
             ])
             ->findOrFail($this->broodcock->id);

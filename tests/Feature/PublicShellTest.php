@@ -32,6 +32,16 @@ final class PublicShellTest extends TestCase
             ->assertSee(config('gfms.farm.name'));
     }
 
+    /**
+     * The shell carries the farm's address on every public page; the full
+     * contact details live on the visiting page.
+     *
+     * The footer used to list the phone, email, address and hours on every
+     * page. The redesign's footer is one simple row - the farm, its address,
+     * the links and the copyright - at the client's request, and the phone,
+     * email and hours moved to where a visitor goes to arrange a visit. Both
+     * halves are asserted, so neither can quietly disappear.
+     */
     public function test_contact_details_appear_when_the_farm_has_supplied_them(): void
     {
         config([
@@ -42,6 +52,11 @@ final class PublicShellTest extends TestCase
         ]);
 
         $this->get(route('catalog.index'))
+            ->assertOk()
+            ->assertSee('Purok 3, San Isidro, Nueva Ecija')
+            ->assertSee(route('public.visit'), false);
+
+        $this->get(route('public.visit'))
             ->assertOk()
             ->assertSee('0917 123 4567')
             ->assertSee('visit@ssguad.test')

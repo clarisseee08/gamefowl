@@ -3,10 +3,10 @@
          It is one sequence, about a second end to end, and it runs once on
          load. The delays live in a custom property so the order is readable
          down the file instead of hidden in six animation shorthands. --}}
-    <h2 class="rise-in text-center text-[24px] font-semibold tracking-[-0.015em] text-foreground"
-        style="--rise-delay: 300ms">Sign in to your account</h2>
-    <p class="rise-in mt-3 text-center text-[17px] leading-relaxed text-muted-foreground"
-       style="--rise-delay: 360ms">
+    <h1 class="rise-in font-display text-[2rem] font-semibold leading-[1.1] tracking-[-0.03em] text-foreground sm:text-[2.4rem]"
+        style="--rise-delay: 180ms">Sign in to your account</h1>
+    <p class="rise-in mt-3 text-[16px] leading-relaxed text-muted-foreground"
+       style="--rise-delay: 240ms">
         Enter the email address and password given to you by the farm owner.
     </p>
 
@@ -25,18 +25,14 @@
          this page once and come back to fix something; making them wait out an
          entrance to find out what went wrong would be the animation working
          against the person using it. --}}
-    @if ($errors->any())
-        <div id="login-error" class="rise-in mt-4 rounded-lg bg-destructive-bg p-3 ring-1 ring-destructive/20"
-             style="--rise-delay: 120ms" role="alert">
-            <ul class="space-y-1 text-sm text-foreground">
-                @foreach ($errors->all() as $message)
-                    <li>{{ $message }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    {{-- ERRORS SIT UNDER THE FIELD THEY BELONG TO, and rise in as they arrive.
+         Fortify files a failed sign-in, a deactivated account and the rate
+         limit all under `email`, so that is where they appear; the password
+         field carries its own. Server-rendered, so they show with scripting
+         off - which matters here, because the guest layout loads no Livewire
+         and therefore no Alpine. --}}
 
-    <form method="POST" action="{{ route('login') }}" class="mt-8 space-y-5">
+    <form method="POST" action="{{ route('login') }}" class="mt-9 space-y-6">
         @csrf
 
         {{-- ---------------------------------------------------------------
@@ -55,7 +51,7 @@
              now where you are; a red label is what is wrong.
         --------------------------------------------------------------- --}}
         <div class="rise-in" style="--rise-delay: 420ms">
-            <label for="email" @class(['label', 'text-destructive' => $errors->has('email')])>Email Address</label>
+            <label for="email" class="label">Email address</label>
             <input
                 id="email"
                 type="email"
@@ -65,9 +61,12 @@
                 autofocus
                 autocomplete="username"
                 inputmode="email"
-                @if ($errors->has('email')) aria-invalid="true" aria-describedby="login-error" @endif
-                class="input mt-1 @error('email') input-error @enderror"
+                @if ($errors->has('email')) aria-invalid="true" aria-describedby="email-error" @endif
+                class="input @error('email') input-error @enderror"
             >
+            @error('email')
+                <p id="email-error" class="error" role="alert">{{ $message }}</p>
+            @enderror
         </div>
 
         {{-- ---------------------------------------------------------------
@@ -86,16 +85,16 @@
              someone else can see the screen.
         --------------------------------------------------------------- --}}
         <div class="rise-in" style="--rise-delay: 480ms">
-            <label for="password" @class(['label', 'text-destructive' => $errors->has('password')])>Password</label>
+            <label for="password" class="label">Password</label>
 
-            <div class="relative mt-1">
+            <div class="relative">
                 <input
                     id="password"
                     type="password"
                     name="password"
                     required
                     autocomplete="current-password"
-                    @if ($errors->has('password')) aria-invalid="true" aria-describedby="login-error" @endif
+                    @if ($errors->has('password')) aria-invalid="true" aria-describedby="password-error" @endif
                     class="input pr-12 @error('password') input-error @enderror"
                 >
 
@@ -119,6 +118,9 @@
                     </svg>
                 </button>
             </div>
+            @error('password')
+                <p id="password-error" class="error" role="alert">{{ $message }}</p>
+            @enderror
 
             {{-- Caps Lock. A masked field is the one place a stuck Caps Lock
                  costs a real attempt, and on this installation a wrong attempt
@@ -139,18 +141,18 @@
         </div>
 
         <div class="rise-in flex items-center justify-between" style="--rise-delay: 540ms">
-            <label for="remember" class="flex items-center gap-2 text-sm text-muted-foreground">
+            <label for="remember" class="flex min-h-11 items-center gap-2.5 text-[15px] text-foreground">
                 <input
                     id="remember"
                     type="checkbox"
                     name="remember"
-                    class="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                    class="h-5 w-5 rounded accent-primary"
                 >
                 Keep me signed in
             </label>
 
             @if (Route::has('password.request'))
-                <a href="{{ route('password.request') }}" wire:navigate class="text-sm font-medium text-primary hover:underline">
+                <a href="{{ route('password.request') }}" wire:navigate class="inline-flex min-h-11 items-center text-[15px] font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary">
                     Forgot password?
                 </a>
             @endif

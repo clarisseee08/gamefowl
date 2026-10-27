@@ -137,6 +137,8 @@ final class Edit extends Component
 
         $this->photo = null;
         $this->status = 'Your profile has been updated.';
+
+        $this->dispatch('toast', message: $this->status, tone: 'ok');
     }
 
     public function removePhoto(): void
@@ -152,6 +154,8 @@ final class Edit extends Component
         $user->save();
 
         $this->status = 'Your photo has been removed.';
+
+        $this->dispatch('toast', message: $this->status, tone: 'ok');
     }
 
     public function updatePassword(): void
@@ -169,6 +173,8 @@ final class Edit extends Component
 
         $this->reset(['current_password', 'password', 'password_confirmation']);
         $this->status = 'Your password has been changed.';
+
+        $this->dispatch('toast', message: $this->status, tone: 'ok');
     }
 
     private function deleteStoredPhoto(?string $disk, ?string $path): void

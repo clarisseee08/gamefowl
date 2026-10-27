@@ -71,6 +71,23 @@ return [
      * from an array that currently names two; add to it before raising this.
      */
     'pedigree_generations' => 1,
+
+    /*
+     * The band number of the bird whose photograph leads the front page.
+     *
+     * AN EDITORIAL CHOICE, so it is a setting rather than a rule. The hero is
+     * meant to be the best single photograph the farm has, and "best" is not
+     * something the data can say - photographs carry no dimensions or rating,
+     * and two birds currently share one image. 0113 (McLean Grey) was chosen
+     * because it is a clean, sharp, single-bird frame that no other bird uses.
+     *
+     * If no bird on the farm carries this band - sold, died, re-banded - the
+     * front page falls back to the first bird with a photograph, so a stale
+     * value can never leave the hero empty. Set GFMS_HOME_HERO_BAND to change
+     * it without a deploy.
+     */
+    'home_hero_band' => env('GFMS_HOME_HERO_BAND', '0113'),
+
     /*
      * What the farm tells the public.
      *

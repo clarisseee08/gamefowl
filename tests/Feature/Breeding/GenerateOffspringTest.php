@@ -140,7 +140,8 @@ final class GenerateOffspringTest extends TestCase
             ->call('startGenerating')
             ->set('generateCount', 2)
             ->call('generate')
-            ->assertHasNoErrors();
+            ->assertHasNoErrors()
+            ->assertDispatched('toast', message: '2 chicks have been registered with their sire and dam already filled in.', tone: 'ok');
 
         $this->assertSame(2, $record->fresh()->offspring_count);
     }

@@ -41,19 +41,46 @@ final class Thumbnail
     /**
      * Longest edge, in pixels.
      *
-     * 400 covers the largest place a thumbnail is used - a catalogue card at
-     * roughly 300px CSS - with enough left over to stay sharp on a 2x phone
-     * screen, which is what the farm actually browses on.
+     * 800, raised from 400 because 400 was visibly soft. The arithmetic the
+     * old value rested on was a catalogue card at "roughly 300px CSS"; the
+     * redesigned card is 4:5 and up to 330px wide, so on a 2x screen - every
+     * phone the farm browses on, and most laptops - it is drawn from 660
+     * device pixels wide by 825 tall. A 400px source was being stretched to
+     * twice its size in both directions, and that stretch is the blur people
+     * noticed. 800 on the long edge covers the 825 within a few percent.
      */
-    public const MAX_EDGE = 400;
+    public const MAX_EDGE = 800;
 
     /**
      * JPEG quality.
      *
-     * 75 is the usual point where artefacts stop being visible at this size;
-     * higher buys bytes rather than appearance on a 400px image.
+     * 82 rather than 75: at 800px the image is large enough on screen for
+     * block artefacts in feathers - fine, high-contrast detail - to show.
+     * The thumbnail is still a fraction of the original's size.
      */
-    private const QUALITY = 75;
+    private const QUALITY = 82;
+
+    /**
+     * Unsharp mask applied after downscaling.
+     *
+     * Resampling averages neighbouring pixels, which is what makes a
+     * reduced photograph look slightly out of focus - the edges of a hackle
+     * feather lose their contrast. A light sharpen after the resize restores
+     * it. This is GD's equivalent of what an image tool's "sharpen after
+     * resize" does: a 3x3 kernel weighted toward the centre pixel. The
+     * centre weight sets the strength - higher is gentler. 20 was tried
+     * first and changed an edge by a single grey level, too little to see;
+     * 12 overshoots an edge by four or five levels, which reads as crisp
+     * without putting visible halos round a bird against a bright sky.
+     *
+     * Not applied when the image was already small enough to pass through
+     * unresized; there is no softening to undo.
+     */
+    private const SHARPEN = [
+        [-1, -1, -1],
+        [-1, 12, -1],
+        [-1, -1, -1],
+    ];
 
     /**
      * A hard ceiling on pixels we will attempt to decode.
@@ -178,6 +205,10 @@ final class Thumbnail
             imagesx($target), imagesy($target),
             $width, $height
         );
+
+        // Divisor is the kernel's sum (12 - 8 = 4), so overall brightness is
+        // unchanged and only edge contrast moves.
+        imageconvolution($target, self::SHARPEN, 4, 0);
 
         return $target;
     }

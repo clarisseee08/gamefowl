@@ -96,8 +96,64 @@ final class ThumbnailTest extends TestCase
         [$width, $height] = getimagesizefromstring((string) $bytes);
 
         $this->assertSame(Thumbnail::MAX_EDGE, max($width, $height));
-        // Aspect ratio preserved: 900x3000 scaled to a 400 long edge is 120x400.
-        $this->assertSame(120, $width);
+        // Aspect ratio preserved: 900x3000 scaled to the long edge keeps 3:10.
+        $this->assertSame((int) round(900 * Thumbnail::MAX_EDGE / 3000), $width);
+    }
+
+    /**
+     * The downscale is sharpened, which is what keeps a thumbnail from looking
+     * out of focus.
+     *
+     * Resampling averages neighbouring pixels and softens every edge. The
+     * test draws a soft edge, makes a thumbnail, and compares it against the
+     * same downscale done WITHOUT the sharpen. A thumbnail no crisper than a
+     * plain resample means the kernel has stopped being applied.
+     */
+    public function test_the_thumbnail_is_sharper_than_a_plain_resample(): void
+    {
+        $source = imagecreatetruecolor(1600, 400);
+        for ($x = 0; $x < 1600; $x++) {
+            // Dark to light across a 40px ramp in the middle - a soft edge.
+            $level = (int) max(40, min(215, 40 + ($x - 780) * (175 / 40)));
+            $colour = imagecolorallocate($source, $level, $level, $level);
+            imageline($source, $x, 0, $x, 399, $colour);
+        }
+        ob_start();
+        imagepng($source);
+        $bytes = (string) ob_get_clean();
+
+        // The comparison goes through JPEG at the same quality the thumbnail
+        // uses. A first version compared against an unencoded resample and
+        // passed with the sharpen REMOVED: JPEG's own ringing steepens an edge,
+        // so the test was measuring compression, not sharpening.
+        $resampled = imagecreatetruecolor(800, 200);
+        imagecopyresampled($resampled, $source, 0, 0, 0, 0, 800, 200, 1600, 400);
+        ob_start();
+        imagejpeg($resampled, null, 82);
+        $plain = imagecreatefromstring((string) ob_get_clean());
+
+        $thumb = imagecreatefromstring((string) Thumbnail::fromBytes($bytes));
+
+        // What sharpening does to an edge is overshoot it: a little darker
+        // just before, a little lighter just after. A plain resample never
+        // leaves the range of the pixels it averaged, so the sharpened
+        // thumbnail's range across the edge is wider. (Measuring the steepest
+        // single step was tried first and cannot see it - on a straight ramp
+        // the middle is unchanged and only the shoulders move.)
+        $range = function ($image): int {
+            $lo = 255;
+            $hi = 0;
+            for ($x = 300; $x < 500; $x++) {
+                $v = imagecolorat($image, $x, 100) & 0xFF;
+                $lo = min($lo, $v);
+                $hi = max($hi, $v);
+            }
+
+            return $hi - $lo;
+        };
+
+        $this->assertGreaterThanOrEqual($range($plain) + 4, $range($thumb),
+            'The thumbnail does not overshoot the edge - the sharpen is not being applied.');
     }
 
     /** Re-encoding an already-small image would cost quality for nothing. */

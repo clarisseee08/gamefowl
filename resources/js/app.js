@@ -74,30 +74,6 @@ document.addEventListener('alpine:init', () => {
     }));
 });
 
-/**
- * The auth screen's leg band fills back in when the keeper starts typing.
- *
- * A failed sign-in renders the band drained of colour - a bird that fails its
- * check loses its band - and this takes the drain off again on the first
- * keystroke, so the page stops disagreeing with someone who is already fixing
- * it. The colour returns over --dur-slow via the transition on .leg-band.
- *
- * DELIBERATELY NOT ALPINE. Alpine ships inside Livewire's bundle and the guest
- * layout has no Livewire component on it, so window.Alpine is undefined on
- * every auth page. An x-data here binds nothing and reports no error.
- *
- * The drained class is server-rendered, so with no JS at all the band stays
- * drained - still a true statement about what just happened.
- */
-const drainedBand = document.querySelector('.leg-band-drained');
-
-if (drainedBand) {
-    document.addEventListener(
-        'input',
-        () => drainedBand.classList.remove('leg-band-drained'),
-        { once: true },
-    );
-}
 
 /**
  * Show / hide on a password field.
@@ -239,3 +215,75 @@ const applyStoredTheme = () => {
 };
 
 document.addEventListener('livewire:navigated', applyStoredTheme);
+
+/**
+ * The public site's entrance: each [data-reveal] rises and fades in once, as it
+ * enters the viewport.
+ *
+ * ARMED BY TAGGING <html>, never by hiding things in CSS up front. The hidden
+ * starting state only exists under .js-reveal, which this script adds - so if
+ * the script never runs, nothing is hidden and the page is simply still.
+ *
+ * Re-armed on every soft navigation, because wire:navigate swaps the page body
+ * without reloading this script, and the new page's elements would otherwise
+ * sit at opacity 0 forever.
+ */
+const armReveals = () => {
+    const targets = document.querySelectorAll('[data-reveal]:not(.is-in)');
+
+    if (! ('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        targets.forEach((el) => el.classList.add('is-in'));
+        return;
+    }
+
+    document.documentElement.classList.add('js-reveal');
+
+    const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-in');
+                io.unobserve(entry.target);
+            }
+        });
+    }, { rootMargin: '0px 0px -8% 0px' });
+
+    targets.forEach((el) => io.observe(el));
+};
+
+document.addEventListener('livewire:navigated', armReveals);
+
+// The plain pages (About, Visit, the legal pages) carry no Livewire component,
+// so livewire:navigated never fires there. Arm on load as well; arming twice
+// is harmless, because armed elements are skipped by the :not(.is-in) query.
+document.addEventListener('DOMContentLoaded', armReveals);
+
+// A Livewire update (a tab switch, a filter) morphs new [data-reveal] elements
+// into the page without a navigation. Without this they would sit at opacity 0
+// until the next page load. One frame's debounce folds a morph's many
+// mutations into a single arming pass.
+let revealFrame = null;
+new MutationObserver((mutations) => {
+    if (revealFrame || ! mutations.some((m) => m.addedNodes.length)) {
+        return;
+    }
+    revealFrame = requestAnimationFrame(() => {
+        revealFrame = null;
+        armReveals();
+    });
+}).observe(document.documentElement, { childList: true, subtree: true });
+
+/**
+ * PAGE TRANSITIONS. On a soft navigation the header and the sidebar are
+ * re-rendered identically and so appear to stay; only <main> fades up into
+ * place. The class is removed when the animation ends so it can run again.
+ */
+document.addEventListener('livewire:navigated', () => {
+    const main = document.querySelector('main');
+    if (! main || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+    }
+    main.classList.remove('page-enter');
+    void main.offsetWidth;
+    main.classList.add('page-enter');
+    main.addEventListener('animationend', () => main.classList.remove('page-enter'), { once: true });
+});

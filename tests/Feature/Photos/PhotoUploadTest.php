@@ -322,6 +322,76 @@ final class PhotoUploadTest extends TestCase
         $this->assertSame(1, $bird->photos()->where('is_primary', true)->count());
     }
 
+    /**
+     * Delete asks first, in a designed dialog that names the bird - not the
+     * browser's confirm(). Opening and cancelling it must delete nothing.
+     */
+    public function test_deleting_a_photo_asks_first_and_cancelling_keeps_it(): void
+    {
+        $staff = User::factory()->staff()->create();
+        $bird = Broodcock::factory()->create(['name' => 'Bagwis', 'band_number' => '0113']);
+        $photo = BroodcockPhoto::factory()->forBroodcock($bird)->create();
+
+        Livewire::actingAs($staff)
+            ->test(Gallery::class, ['broodcock' => $bird])
+            ->assertDontSee('Delete this photo of')
+            ->call('confirmDelete', $photo->id)
+            ->assertSet('confirmingDeletionOf', $photo->id)
+            ->assertSee('Delete this photo of Bagwis (0113)?')
+            ->call('cancelDelete')
+            ->assertSet('confirmingDeletionOf', null)
+            ->assertDontSee('Delete this photo of');
+
+        $this->assertDatabaseHas('broodcock_photos', ['id' => $photo->id]);
+    }
+
+    public function test_confirming_the_dialog_deletes_the_photo_and_says_so(): void
+    {
+        $staff = User::factory()->staff()->create();
+        $bird = Broodcock::factory()->create();
+        $photo = BroodcockPhoto::factory()->forBroodcock($bird)->create();
+
+        Livewire::actingAs($staff)
+            ->test(Gallery::class, ['broodcock' => $bird])
+            ->call('confirmDelete', $photo->id)
+            ->call('delete', $photo->id)
+            ->assertSet('confirmingDeletionOf', null)
+            ->assertDispatched('toast', message: 'Photo deleted.', tone: 'ok');
+
+        $this->assertDatabaseMissing('broodcock_photos', ['id' => $photo->id]);
+    }
+
+    public function test_a_customer_cannot_open_the_delete_dialog(): void
+    {
+        $customer = User::factory()->customer()->create();
+        $bird = Broodcock::factory()->create();
+        $photo = BroodcockPhoto::factory()->forBroodcock($bird)->create();
+
+        Livewire::actingAs($customer)
+            ->test(Gallery::class, ['broodcock' => $bird])
+            ->call('confirmDelete', $photo->id)
+            ->assertForbidden();
+    }
+
+    public function test_saving_and_making_main_announce_themselves_with_a_toast(): void
+    {
+        $staff = User::factory()->staff()->create();
+        $bird = Broodcock::factory()->create();
+
+        Livewire::actingAs($staff)
+            ->test(Upload::class, ['broodcock' => $bird])
+            ->set('photos', [UploadedFile::fake()->image('a.jpg')])
+            ->call('save')
+            ->assertDispatched('toast', message: 'Photo saved.', tone: 'ok');
+
+        $other = BroodcockPhoto::factory()->forBroodcock($bird)->create();
+
+        Livewire::actingAs($staff)
+            ->test(Gallery::class, ['broodcock' => $bird])
+            ->call('setPrimary', $other->id)
+            ->assertDispatched('toast', message: 'Main photo updated.', tone: 'ok');
+    }
+
     // -----------------------------------------------------------------
     // Captions
     // -----------------------------------------------------------------

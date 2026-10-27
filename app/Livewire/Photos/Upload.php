@@ -111,6 +111,8 @@ final class Upload extends Component
         $this->status = $saved === 1
             ? 'Photo saved.'
             : "{$saved} photos saved.";
+
+        $this->dispatch('toast', message: $this->status, tone: 'ok');
     }
 
     /**

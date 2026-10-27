@@ -54,28 +54,28 @@ return [
      * painting the page cream would drop secondary text to 6.01:1 — below the
      * Console floor the farm's own outdoor use requires.
      */
-    'background' => '#FBFBFA',   // the page
+    'background' => '#F7F6F3',   // the page
     'card' => '#FFFFFF',         // raised surfaces
-    'muted' => '#F4F5F3',        // wells, table headers, inactive
+    'muted' => '#EFECE7',        // wells, table headers, inactive
     'popover' => '#FFFFFF',
-    'border' => '#E4E6E2',
-    'input' => '#DFE2DD',
+    'border' => '#E2DED7',
+    'input' => '#D6D1C9',
 
     /*
      * TEXT. Each surface names the foreground that belongs on it, so a
      * component never has to guess and a theme swap never orphans a colour.
      */
-    'foreground' => '#161C19',
+    'foreground' => '#1C1A17',
 
     /*
      * The Console 7:1 floor. The staff screens are used outdoors in Philippine
      * daylight, where 5:1 secondary text greys out. #4E5550 measures 7.40 on
      * background, 7.67 on card, 7.01 on muted.
      */
-    'muted_foreground' => '#4E5550',
+    'muted_foreground' => '#4F4B46',
 
-    'card_foreground' => '#161C19',
-    'popover_foreground' => '#161C19',
+    'card_foreground' => '#1C1A17',
+    'popover_foreground' => '#1C1A17',
 
     /*
      * PRIMARY — the farm's deep red. THE INTERACTIVE COLOUR: buttons, links,

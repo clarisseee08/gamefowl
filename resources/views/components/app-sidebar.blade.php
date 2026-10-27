@@ -77,7 +77,7 @@
     another panel.
 --}}
 <aside
-    class="flex h-full shrink-0 flex-col bg-brand-deep transition-[width] duration-200"
+    class="flex h-full shrink-0 flex-col border-r border-border bg-muted transition-[width] duration-200"
     :class="collapsed ? 'w-14' : 'w-60'"
     aria-label="Main navigation"
 >
@@ -97,22 +97,22 @@
         discoverable: a toggle hidden inside the logo is a toggle nobody finds.
     --}}
     <div class="flex h-14 shrink-0 items-center gap-2 px-3"
-         style="border-bottom: 1px solid var(--color-brand-deeper)"
+         style="border-bottom: 1px solid var(--color-border)"
          :class="collapsed ? 'justify-center px-2' : ''">
         <a href="{{ route('dashboard') }}" wire:navigate
-           class="flex min-w-0 flex-1 items-center gap-2.5 rounded-[var(--radius-sm)] p-1 hover:bg-brand-deeper"
+           class="flex min-w-0 flex-1 items-center gap-2.5 rounded-[var(--radius-sm)] p-1 hover:bg-background"
            :class="collapsed ? 'flex-none justify-center' : ''"
            title="{{ config('gfms.system.name') }}">
             {{-- The badge is dark green and gold; the rail is dark red. Placed
                  straight onto it, a 30px logo reads as a dark blob. It gets its
                  own light ground, which is what a coloured badge normally needs
                  on a dark surface - and it keeps the artwork untouched. --}}
-            <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-foreground ring-1 ring-brand-deeper">
+            <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-card ring-1 ring-border">
                 <x-brand-mark :size="30" class="rounded-full" />
             </span>
 
             <span x-show="! collapsed" x-cloak class="min-w-0">
-                <span class="block truncate text-[14px] font-semibold leading-tight text-brand-foreground">
+                <span class="block truncate font-display text-[15px] font-semibold leading-tight tracking-[-0.015em] text-foreground">
                     {{ config('gfms.farm.name') }}
                 </span>
             </span>
@@ -122,7 +122,7 @@
         <button type="button"
                 x-show="! collapsed" x-cloak
                 @click="collapsed = true; localStorage.setItem('gfms-sidebar', '1')"
-                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-sm)] text-brand-muted-fg hover:bg-brand-deeper hover:text-brand-foreground"
+                class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-sm)] text-muted-foreground hover:bg-background hover:text-foreground"
                 aria-label="Collapse sidebar" title="Collapse sidebar">
             <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="1.7"
                  viewBox="0 0 24 24" aria-hidden="true">
@@ -138,7 +138,7 @@
     <div x-show="collapsed" x-cloak class="shrink-0 px-2 pt-2">
         <button type="button"
                 @click="collapsed = false; localStorage.setItem('gfms-sidebar', '0')"
-                class="inline-flex h-9 w-full items-center justify-center rounded-[var(--radius-sm)] text-brand-muted-fg hover:bg-brand-deeper hover:text-brand-foreground"
+                class="inline-flex h-11 w-full items-center justify-center rounded-[var(--radius-sm)] text-muted-foreground hover:bg-background hover:text-foreground"
                 aria-label="Expand sidebar" title="Expand sidebar">
             <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="1.7"
                  viewBox="0 0 24 24" aria-hidden="true">
@@ -151,11 +151,11 @@
 
     {{-- The nav scrolls between the two pinned blocks, so a long list never
          pushes the account menu off the bottom of the viewport. --}}
-    <nav class="scroll-slim-dark min-h-0 flex-1 overflow-y-auto px-2 py-2">
+    <nav class="scroll-slim min-h-0 flex-1 overflow-y-auto px-2 py-2">
         @foreach ($visible as $groupName => $items)
             <p class="nav-section" x-show="! collapsed" x-cloak>{{ $groupName }}</p>
             @if (! $loop->first)
-                <div class="my-2" style="border-top: 1px solid var(--color-brand-deeper)" x-show="collapsed" x-cloak></div>
+                <div class="my-2" style="border-top: 1px solid var(--color-border)" x-show="collapsed" x-cloak></div>
             @endif
 
             @foreach ($items as $item)
@@ -175,22 +175,22 @@
     </nav>
 
     {{-- Pinned bottom: who you are and how to leave. --}}
-    <div class="shrink-0 p-2" style="border-top: 1px solid var(--color-brand-deeper)">
+    <div class="shrink-0 p-2" style="border-top: 1px solid var(--color-border)">
         {{-- The whole block is the link to your own profile: a name you can
              click is a more obvious affordance than a separate icon beside it. --}}
         <a href="{{ route('profile.edit') }}" wire:navigate
-           @class(['flex items-center gap-2.5 rounded-[var(--radius-sm)] px-2 py-1.5 transition-colors hover:bg-brand-deeper',
-                   'bg-brand-deeper' => request()->routeIs('profile.*')])>
+           @class(['flex items-center gap-2.5 rounded-[var(--radius-sm)] px-2 py-1.5 transition-colors hover:bg-background',
+                   'bg-card elev-1' => request()->routeIs('profile.*')])>
             @if ($user?->hasProfilePhoto() && $user->profilePhotoUrl())
                 <img src="{{ $user->profilePhotoUrl() }}" alt=""
                      class="h-8 w-8 shrink-0 rounded-full object-cover"
-                     style="box-shadow: inset 0 0 0 1px var(--color-brand-deeper)">
+                     style="box-shadow: inset 0 0 0 1px var(--color-border)">
             @else
-                <x-icon.user class="h-8 w-8 shrink-0" tone="onDark" />
+                <x-icon.user class="h-8 w-8 shrink-0" />
             @endif
             <div x-show="! collapsed" x-cloak class="min-w-0 flex-1">
-                <p class="truncate text-[13px] font-medium leading-tight text-brand-foreground">{{ $user?->full_name }}</p>
-                <p class="truncate text-[11px] leading-tight text-brand-muted-fg">{{ $user?->role->label() }}</p>
+                <p class="truncate text-[13px] font-medium leading-tight text-foreground">{{ $user?->full_name }}</p>
+                <p class="truncate text-[11px] leading-tight text-muted-foreground">{{ $user?->role->label() }}</p>
             </div>
         </a>
 
@@ -206,7 +206,7 @@
         <form method="POST" action="{{ route('logout') }}" class="mt-1">
             @csrf
             <button type="submit"
-                    class="inline-flex h-9 items-center gap-2.5 rounded-[var(--radius-sm)] px-2 text-[13px] text-brand-muted-fg hover:bg-brand-deeper hover:text-brand-foreground"
+                    class="inline-flex min-h-11 items-center gap-2.5 rounded-[var(--radius-sm)] px-2 text-[14px] text-muted-foreground hover:bg-background hover:text-foreground"
                     :class="collapsed ? 'w-full justify-center px-0' : ''"
                     aria-label="Sign out" title="Sign out">
                 <svg class="h-[18px] w-[18px] shrink-0" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">

@@ -1,39 +1,36 @@
 <x-layouts::guest title="Reset your password">
-    <h2 class="text-[24px] font-semibold tracking-[-0.015em] leading-[1.2] text-foreground">Forgot your password?</h2>
-    <p class="mt-3 text-[17px] leading-relaxed text-muted-foreground">
+    <h1 class="rise-in font-display text-[2rem] font-semibold leading-[1.1] tracking-[-0.03em] text-foreground sm:text-[2.4rem]"
+        style="--rise-delay: 180ms">Forgot your password?</h1>
+    <p class="rise-in mt-3 text-[16px] leading-relaxed text-muted-foreground" style="--rise-delay: 240ms">
         Enter your email address and we will send you a link to choose a new password.
     </p>
 
     @if (session('status'))
-        <div class="mt-4 rounded-lg bg-success-bg p-3 text-sm text-foreground ring-1 ring-success/20">
+        <p class="rise-in mt-6 rounded-lg bg-success-bg px-4 py-3 text-[15px] text-foreground" role="status">
             {{ session('status') }}
-        </div>
+        </p>
     @endif
 
-    @if ($errors->any())
-        <div class="mt-4 rounded-lg bg-destructive-bg p-3 ring-1 ring-destructive/20" role="alert">
-            <ul class="space-y-1 text-sm text-foreground">
-                @foreach ($errors->all() as $message)
-                    <li>{{ $message }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    <form method="POST" action="{{ route('password.email') }}" class="mt-8 space-y-5">
+    <form method="POST" action="{{ route('password.email') }}" class="mt-9 space-y-6">
         @csrf
 
-        <div>
-            <label for="email" class="label">Email Address</label>
+        <div class="rise-in" style="--rise-delay: 300ms">
+            <label for="email" class="label">Email address</label>
             <input id="email" type="email" name="email" value="{{ old('email') }}"
                    required autofocus autocomplete="username" inputmode="email"
-                   class="input mt-1 @error('email') input-error @enderror">
+                   @error('email') aria-invalid="true" aria-describedby="email-error" @enderror
+                   class="input @error('email') input-error @enderror">
+            @error('email')
+                <p id="email-error" class="error" role="alert">{{ $message }}</p>
+            @enderror
         </div>
 
-        <button type="submit" class="btn-primary w-full">Email password reset link</button>
-
-        <a href="{{ route('login') }}" wire:navigate class="block text-center text-sm font-medium text-primary hover:underline">
-            Back to sign in
-        </a>
+        <button type="submit" class="btn-primary rise-in w-full" style="--rise-delay: 360ms">Email password reset link</button>
     </form>
+
+    <a href="{{ route('login') }}" wire:navigate
+       class="rise-in mt-6 inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary"
+       style="--rise-delay: 420ms">
+        <span aria-hidden="true">&larr;</span> Back to sign in
+    </a>
 </x-layouts::guest>

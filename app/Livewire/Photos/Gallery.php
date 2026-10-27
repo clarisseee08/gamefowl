@@ -31,6 +31,14 @@ final class Gallery extends Component
      */
     public string $status = '';
 
+    /**
+     * The photo whose deletion is waiting on the confirmation dialog.
+     *
+     * A designed dialog rather than the browser's confirm(): it can show the
+     * photo and name the bird, and it can be tested.
+     */
+    public ?int $confirmingDeletionOf = null;
+
     public function mount(Broodcock $broodcock): void
     {
         $this->authorize('viewAny', BroodcockPhoto::class);
@@ -72,6 +80,8 @@ final class Gallery extends Component
         unset($this->photos);
 
         $this->status = 'Main photo updated.';
+
+        $this->dispatch('toast', message: $this->status, tone: 'ok');
     }
 
     public function delete(int $photoId, DeletePhoto $deletePhoto): void
@@ -87,7 +97,26 @@ final class Gallery extends Component
         // Frees a slot on the upload component sharing this page.
         $this->dispatch('photos-updated');
 
+        $this->confirmingDeletionOf = null;
+
         $this->status = 'Photo deleted.';
+
+        $this->dispatch('toast', message: $this->status, tone: 'ok');
+    }
+
+    /** Opens the confirmation for one photo. Deletes nothing. */
+    public function confirmDelete(int $photoId): void
+    {
+        $photo = $this->findPhoto($photoId);
+
+        $this->authorize('delete', $photo);
+
+        $this->confirmingDeletionOf = $photo->id;
+    }
+
+    public function cancelDelete(): void
+    {
+        $this->confirmingDeletionOf = null;
     }
 
     public function startEditingCaption(int $photoId): void
@@ -133,6 +162,8 @@ final class Gallery extends Component
         unset($this->photos);
 
         $this->status = 'Description saved.';
+
+        $this->dispatch('toast', message: $this->status, tone: 'ok');
     }
 
     /**

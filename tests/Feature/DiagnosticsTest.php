@@ -37,6 +37,24 @@ final class DiagnosticsTest extends TestCase
             ->assertSee('Diagnostics');
     }
 
+    /**
+     * The headline counts the failing rows the page already renders, so a
+     * missing credential moves it.
+     */
+    public function test_the_headline_counts_what_needs_attention(): void
+    {
+        config(['mail.mailers.smtp.host' => null]);
+
+        $html = $this->actingAs(User::factory()->owner()->create())
+            ->get(route('diagnostics'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertMatchesRegularExpression('/>(\d+)<\/span>\s*<span[^>]*>checks? needs? attention/', $html);
+        preg_match('/>(\d+)<\/span>\s*<span[^>]*>checks? needs? attention/', $html, $m);
+        $this->assertGreaterThanOrEqual(1, (int) $m[1], 'A missing mail host must count as a failing check.');
+    }
+
     /** Not staff. This reports infrastructure, which is the owner's business. */
     public function test_a_record_keeper_cannot_open_it(): void
     {

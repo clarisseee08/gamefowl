@@ -69,6 +69,21 @@ final class Browse extends Component
     public bool $forSaleOnly = false;
 
     /**
+     * The order of the grid. Not a filter - clearing the filters keeps it -
+     * and an unknown value from a hand-edited URL falls back to name order.
+     */
+    #[Url(except: 'name')]
+    public string $sort = 'name';
+
+    /** @var array<string, string> */
+    public const SORTS = [
+        'name' => 'Name',
+        'youngest' => 'Youngest first',
+        'oldest' => 'Oldest first',
+        'bloodline' => 'Bloodline',
+    ];
+
+    /**
      * The heading level this component's own title renders at.
      *
      * THE REASON THIS IS A PROP. Browse is routed at /catalog, where "Our
@@ -141,6 +156,12 @@ final class Browse extends Component
             ->bloodline($this->bloodline)
             ->sex($this->sex)
             ->classGrade($this->class)
+            ->when(in_array($this->sort, ['youngest', 'oldest'], true), fn ($query) => $query
+                // A bird with no hatch date sorts last either way, rather than
+                // claiming to be the youngest or the oldest on the farm.
+                ->orderByRaw('date_hatched is null')
+                ->orderBy('date_hatched', $this->sort === 'youngest' ? 'desc' : 'asc'))
+            ->when($this->sort === 'bloodline', fn ($query) => $query->orderByRaw('bloodline is null')->orderBy('bloodline'))
             ->orderBy('name')
             ->paginate(12));
     }
@@ -160,6 +181,7 @@ final class Browse extends Component
             $this->sex,
             $this->class,
             $this->forSaleOnly,
+            $this->sort,
             $this->getPage(),
         ]));
     }
@@ -179,6 +201,35 @@ final class Browse extends Component
             ->orderBy('bloodline')
             ->pluck('bloodline')
             ->all());
+    }
+
+    /**
+     * Is there a single bird the farm is actually offering?
+     *
+     * THE BUG THIS FIXES was not in the filter. "Available birds only" worked
+     * perfectly: it returned nothing because nothing on this farm is marked
+     * for sale - eighteen birds, every one of them false. What was broken is
+     * that the catalogue offered a control which could only ever empty the
+     * page, and then told the visitor "No birds match your search", which
+     * blames them for a state they could not have avoided.
+     *
+     * So the checkbox is disabled when this is false, and the empty state says
+     * what is actually true. Both need to know, which is why this is a
+     * computed rather than a flag worked out in the view.
+     *
+     * Cached with the rest of the catalogue. It is one EXISTS against an
+     * indexed column, but in production every uncached query is a ~240ms round
+     * trip to Tokyo, and this one would run on every page view of the busiest
+     * screen in the application.
+     */
+    #[Computed]
+    public function anyForSale(): bool
+    {
+        return RecordCache::remember('catalog:any-for-sale', fn (): bool => Broodcock::query()
+            ->farmStock()
+            ->onFarm()
+            ->where('for_sale', true)
+            ->exists());
     }
 
     /** @return array<int, Sex> */

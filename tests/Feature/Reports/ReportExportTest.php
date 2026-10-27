@@ -257,6 +257,25 @@ final class ReportExportTest extends TestCase
             ->assertSee('CSV');
     }
 
+    /**
+     * The screen opens on how many reports the audit trail holds - the
+     * paginator's own total, not a second query.
+     */
+    public function test_the_reports_screen_opens_on_the_number_of_reports_generated(): void
+    {
+        $this->seedSomething();
+        $owner = User::factory()->owner()->create();
+
+        $this->actingAs($owner)->get(route('reports.csv', 'broodcock_inventory'))->streamedContent();
+        $this->actingAs($owner)->get(route('reports.csv', 'mortality'))->streamedContent();
+
+        $this->actingAs($owner)
+            ->get(route('reports.index'))
+            ->assertOk()
+            ->assertSeeInOrder(['2', 'reports generated'])
+            ->assertSee('Covering all records');
+    }
+
     // -----------------------------------------------------------------
     // CSV formula injection
     //
