@@ -5,253 +5,173 @@
     what is coming up. Both are derived from next_due_date at read time, so
     this screen can never disagree with the records behind it.
 
-    This is the most date-dense screen in the system, so every date, interval
-    and count is `.datum` - mono + tabular-nums. A "Was Due" column whose digits
-    do not line up is unreadable at a glance, which is the only way this screen
-    is ever read.
+    Inside each list the rows are GROUPED BY DUE DATE. The keeper's question
+    is "what has to be done on which day", so the date is stated once, on the
+    left, with how late or how soon it is, and the birds for that day sit
+    beside it. Both paginators already return rows ordered by next_due_date,
+    so the grouping is a pass over the current page and costs no query.
 
-    State is never carried by colour alone: overdue rows say "late", upcoming
-    rows say how many days, and both sections are titled in words.
+    State is never carried by colour alone: overdue groups say "days late",
+    upcoming groups say "in N days", and both sections are titled in words.
 --}}
+@php
+    $overdueGroups = $this->overdue->getCollection()->groupBy(fn ($record) => $record->next_due_date->toDateString());
+    $upcomingGroups = $this->dueSoon->getCollection()->groupBy(fn ($record) => $record->next_due_date->toDateString());
+    $calendarIcon = 'M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5';
+@endphp
 <div>
-    <div class="mb-8 border-b border-border pb-6 sm:flex sm:items-end sm:justify-between sm:gap-8">
-        <div>
-            <h1 class="page-title-marked text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground">Vaccination Schedule</h1>
-            <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-muted-foreground">
-                Follow-ups that are late, and follow-ups falling due in the next
-                <span class="datum">{{ $this->warningDays() }}</span> days.
-            </p>
-        </div>
+    <x-anchor-block eyebrow="Manage" title="Vaccination Schedule"
+                    :figure="number_format($this->overdueCount)"
+                    :figure-label="Str::plural('follow-up', $this->overdueCount).' overdue'">
+        <span class="datum text-foreground">{{ number_format($this->dueSoonCount) }}</span>
+        {{ $this->dueSoonCount === 1 ? 'follow-up is' : 'follow-ups are' }} due in the next
+        <span class="datum">{{ $this->warningDays() }}</span> days.
 
-        <div class="mt-5 sm:mt-0 sm:shrink-0">
+        <x-slot:actions>
             <a href="{{ route('health.index') }}" wire:navigate class="btn-secondary">All Health Records</a>
-        </div>
-    </div>
-
-    {{-- Two numbers, big enough to read across a room. This is the question
-         the screen exists to answer.
-
-         THE COLOURED LEFT RULE IS GONE from both cards. It was 3px of
-         destructive and warning down the edge, and it was saying a second time
-         what the 44px figure inside already says in the same colour - on a card
-         whose heading also spells it out in words. A status stripe down a card
-         edge is the decoration every framework reaches for; the figure is the
-         signal here, and it does not need an underline. --}}
-    <div class="mb-10 grid gap-4 sm:grid-cols-2">
-        <div class="card p-5">
-            <p class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Overdue</p>
-            <p class="datum mt-2 text-[44px] font-semibold leading-none tracking-[-0.02em] text-destructive">{{ number_format($this->overdueCount) }}</p>
-            <p class="mt-3 text-[15px] leading-snug text-muted-foreground">
-                {{ $this->overdueCount === 1 ? 'bird is' : 'birds are' }} past a follow-up date.
-            </p>
-        </div>
-
-        <div class="card p-5">
-            <p class="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Due in the next {{ $this->warningDays() }} days</p>
-            <p class="datum mt-2 text-[44px] font-semibold leading-none tracking-[-0.02em] text-warning">{{ number_format($this->dueSoonCount) }}</p>
-            <p class="mt-3 text-[15px] leading-snug text-muted-foreground">
-                {{ $this->dueSoonCount === 1 ? 'follow-up is' : 'follow-ups are' }} coming up.
-            </p>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-anchor-block>
 
     {{-- ---------------------------------------------------------------- --}}
     {{-- Overdue - most overdue first                                     --}}
     {{-- ---------------------------------------------------------------- --}}
-    <section class="mb-10" aria-labelledby="overdue-heading">
-        <h2 id="overdue-heading" class="mb-3 flex flex-wrap items-center gap-2.5 text-[22px] font-semibold tracking-[-0.01em] text-foreground">
-            Overdue
+    <section class="mt-10" aria-labelledby="overdue-heading" data-reveal>
+        <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h2 id="overdue-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Overdue</h2>
             <span class="badge badge-alert datum">{{ number_format($this->overdueCount) }}</span>
-        </h2>
-
-        <div class="card overflow-hidden">
-            @if ($this->overdue->isEmpty())
-                <div class="px-6 py-14 text-center">
-                    <p class="text-[18px] font-medium text-foreground">Nothing is overdue.</p>
-                    <p class="mx-auto mt-2 max-w-[52ch] text-[15px] leading-relaxed text-muted-foreground">
-                        Every follow-up date on file is still in the future. Nothing to do here today.
-                    </p>
-                </div>
-            @else
-                {{-- The card clips, so a table wider than the page scrolls inside
-                     its own container rather than losing its last column. --}}
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="hidden bg-muted sm:table-header-group">
-                            <tr class="border-b border-border">
-                                <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Bird</th>
-                                <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Record Type</th>
-                                <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Product</th>
-                                <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Was Due</th>
-                                <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">How Late</th>
-                                <th scope="col" class="px-4 py-2.5 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Actions</th>
-                            </tr>
-                        </thead>
-
-                        <tbody class="block divide-y divide-border sm:table-row-group">
-                            @foreach ($this->overdue as $record)
-                                @php $daysLate = abs((int) $record->daysUntilDue()); @endphp
-
-                                <tr wire:key="overdue-{{ $record->id }}" class="block p-4 sm:table-row sm:p-0 sm:align-top sm:hover:bg-muted">
-                                    <td class="block sm:table-cell sm:px-4 sm:py-3">
-                                        <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Bird</span>
-                                        <p class="text-[15px] font-medium leading-snug text-foreground">{{ $record->broodcock->name }}</p>
-                                        <div class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap">
-                                            <x-band-tag :bloodline="$record->broodcock->bloodline"
-                                                        :band="$record->broodcock->band_number"
-                                                        size="xs" />
-                                            @if ($record->broodcock->bloodline)
-                                                <span class="text-[12px] text-muted-foreground sm:whitespace-nowrap">{{ $record->broodcock->bloodline }}</span>
-                                            @endif
-                                        </div>
-                                    </td>
-
-                                    <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
-                                        <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Record Type</span>
-                                        <span class="badge {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
-                                    </td>
-
-                                    <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
-                                        <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Product</span>
-                                        <span class="text-[15px] text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
-                                    </td>
-
-                                    <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
-                                        <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Was Due</span>
-                                        <span class="datum text-[15px] text-foreground">{{ $record->next_due_date->format('d M Y') }}</span>
-                                    </td>
-
-                                    <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
-                                        <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">How Late</span>
-                                        {{-- One flex child, not two: `.badge` carries a gap,
-                                             and a bare text node beside the datum span would
-                                             pick it up on top of the word space. --}}
-                                        <span class="badge badge-alert">
-                                            <span class="whitespace-nowrap"><span class="datum">{{ $daysLate }}</span> {{ Str::plural('day', $daysLate) }} late</span>
-                                        </span>
-                                    </td>
-
-                                    <td class="mt-4 block border-t border-border pt-3 sm:mt-0 sm:table-cell sm:border-0 sm:px-4 sm:py-3 sm:text-right sm:whitespace-nowrap">
-                                        @can('create', \App\Models\HealthRecord::class)
-                                            <a href="{{ route('health.create', ['broodcock' => $record->broodcock_id]) }}"
-                                               wire:navigate
-                                               class="btn-primary">
-                                                Record Follow-up
-                                            </a>
-                                        @endcan
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-
-                @if ($this->overdue->hasPages())
-                    <div class="border-t border-border bg-muted px-4 py-2.5">
-                        {{ $this->overdue->links() }}
-                    </div>
-                @endif
-            @endif
+            <p class="w-full text-[15px] text-muted-foreground sm:w-auto">Most overdue first, because the bird waiting longest is at most risk.</p>
         </div>
+
+        @if ($this->overdue->isEmpty())
+            <x-empty-state class="mt-4" title="Nothing is overdue."
+                           description="Every follow-up date on file is still in the future. Nothing to do here today."
+                           :icon="$calendarIcon" />
+        @else
+            <ol class="mt-4 border-t border-border">
+                @foreach ($overdueGroups as $date => $records)
+                    @php
+                        $dueOn = $records->first()->next_due_date;
+                        $daysLate = abs((int) $records->first()->daysUntilDue());
+                    @endphp
+                    <li wire:key="overdue-day-{{ $date }}" class="grid gap-x-8 gap-y-2 border-b border-border py-4 md:grid-cols-[13rem_1fr]">
+                        <div class="flex flex-wrap items-center gap-2 md:block md:pt-2.5">
+                            <p class="datum text-[15px] font-medium text-foreground">{{ $dueOn->format('d M Y') }}</p>
+                            {{-- One flex child, not two: `.badge` carries a gap, and a
+                                 bare text node beside the datum span would pick it up
+                                 on top of the word space. --}}
+                            <span class="badge badge-alert md:mt-1.5">
+                                <span class="whitespace-nowrap"><span class="datum">{{ $daysLate }}</span> {{ Str::plural('day', $daysLate) }} late</span>
+                            </span>
+                        </div>
+
+                        <ul class="divide-y divide-border">
+                            @foreach ($records as $record)
+                                <li wire:key="overdue-{{ $record->id }}" class="py-2 md:grid md:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] md:items-center md:gap-x-6">
+                                    <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate
+                                       class="group inline-flex min-h-11 items-center gap-2.5">
+                                        <x-band-dot :bloodline="$record->broodcock->bloodline" />
+                                        <span class="min-w-0">
+                                            <span class="datum block text-[15px] font-medium text-foreground group-hover:underline">{{ $record->broodcock->displayBand() }}</span>
+                                            <span class="block text-[13px] leading-snug text-muted-foreground">{{ $record->broodcock->name }}@if ($record->broodcock->bloodline) &middot; {{ $record->broodcock->bloodline }}@endif</span>
+                                        </span>
+                                    </a>
+
+                                    <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 md:mt-0">
+                                        <span class="badge {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
+                                        <span class="text-[15px] text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
+                                    </div>
+
+                                    @can('create', \App\Models\HealthRecord::class)
+                                        <a href="{{ route('health.create', ['broodcock' => $record->broodcock_id]) }}"
+                                           wire:navigate
+                                           class="btn-quiet -ml-3 mt-1 md:ml-0 md:mt-0">
+                                            Record Follow-up<span class="sr-only"> for {{ $record->broodcock->name }}</span>
+                                        </a>
+                                    @endcan
+                                </li>
+                            @endforeach
+                        </ul>
+                    </li>
+                @endforeach
+            </ol>
+
+            @if ($this->overdue->hasPages())
+                <div class="mt-6">
+                    {{ $this->overdue->links() }}
+                </div>
+            @endif
+        @endif
     </section>
 
     {{-- ---------------------------------------------------------------- --}}
     {{-- Due soon - soonest first                                         --}}
     {{-- ---------------------------------------------------------------- --}}
-    <section aria-labelledby="upcoming-heading">
-        <h2 id="upcoming-heading" class="mb-3 flex flex-wrap items-center gap-2.5 text-[22px] font-semibold tracking-[-0.01em] text-foreground">
-            Due in the next {{ $this->warningDays() }} days
+    <section class="mt-14" aria-labelledby="upcoming-heading" data-reveal>
+        <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h2 id="upcoming-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Due in the next {{ $this->warningDays() }} days</h2>
             <span class="badge badge-warn datum">{{ number_format($this->dueSoonCount) }}</span>
-        </h2>
-
-        <div class="card overflow-hidden">
-            @if ($this->dueSoon->isEmpty())
-                <div class="px-6 py-14 text-center">
-                    <p class="text-[18px] font-medium text-foreground">Nothing is due in the next {{ $this->warningDays() }} days.</p>
-                    <p class="mx-auto mt-2 max-w-[52ch] text-[15px] leading-relaxed text-muted-foreground">
-                        When you record a vaccination or deworming, fill in its
-                        &ldquo;Next Due Date&rdquo; and the follow-up will appear here.
-                    </p>
-                </div>
-            @else
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="hidden bg-muted sm:table-header-group">
-                            <tr class="border-b border-border">
-                                <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Bird</th>
-                                <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Record Type</th>
-                                <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Product</th>
-                                <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Due On</th>
-                                <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">In</th>
-                                <th scope="col" class="px-4 py-2.5 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Actions</th>
-                            </tr>
-                        </thead>
-
-                        <tbody class="block divide-y divide-border sm:table-row-group">
-                            @foreach ($this->dueSoon as $record)
-                                @php $daysLeft = (int) $record->daysUntilDue(); @endphp
-
-                                <tr wire:key="upcoming-{{ $record->id }}" class="block p-4 sm:table-row sm:p-0 sm:align-top sm:hover:bg-muted">
-                                    <td class="block sm:table-cell sm:px-4 sm:py-3">
-                                        <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Bird</span>
-                                        <p class="text-[15px] font-medium leading-snug text-foreground">{{ $record->broodcock->name }}</p>
-                                        <div class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap">
-                                            <x-band-tag :bloodline="$record->broodcock->bloodline"
-                                                        :band="$record->broodcock->band_number"
-                                                        size="xs" />
-                                            @if ($record->broodcock->bloodline)
-                                                <span class="text-[12px] text-muted-foreground sm:whitespace-nowrap">{{ $record->broodcock->bloodline }}</span>
-                                            @endif
-                                        </div>
-                                    </td>
-
-                                    <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
-                                        <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Record Type</span>
-                                        <span class="badge {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
-                                    </td>
-
-                                    <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
-                                        <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Product</span>
-                                        <span class="text-[15px] text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
-                                    </td>
-
-                                    <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
-                                        <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Due On</span>
-                                        <span class="datum text-[15px] text-foreground">{{ $record->next_due_date->format('d M Y') }}</span>
-                                    </td>
-
-                                    <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
-                                        <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">In</span>
-                                        <span class="badge badge-warn">
-                                            @if ($daysLeft === 0)
-                                                Today
-                                            @else
-                                                <span class="whitespace-nowrap"><span class="datum">{{ $daysLeft }}</span> {{ Str::plural('day', $daysLeft) }}</span>
-                                            @endif
-                                        </span>
-                                    </td>
-
-                                    <td class="mt-4 block border-t border-border pt-3 sm:mt-0 sm:table-cell sm:border-0 sm:px-4 sm:py-3 sm:text-right sm:whitespace-nowrap">
-                                        @can('create', \App\Models\HealthRecord::class)
-                                            <a href="{{ route('health.create', ['broodcock' => $record->broodcock_id]) }}"
-                                               wire:navigate
-                                               class="btn-secondary">
-                                                Record Follow-up
-                                            </a>
-                                        @endcan
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-
-                @if ($this->dueSoon->hasPages())
-                    <div class="border-t border-border bg-muted px-4 py-2.5">
-                        {{ $this->dueSoon->links() }}
-                    </div>
-                @endif
-            @endif
+            <p class="w-full text-[15px] text-muted-foreground sm:w-auto">Soonest first, the order they will be done in.</p>
         </div>
+
+        @if ($this->dueSoon->isEmpty())
+            <x-empty-state class="mt-4" title="Nothing is due in the next {{ $this->warningDays() }} days."
+                           description="When you record a vaccination or deworming, fill in its “Next Due Date” and the follow-up will appear here."
+                           :icon="$calendarIcon" />
+        @else
+            <ol class="mt-4 border-t border-border">
+                @foreach ($upcomingGroups as $date => $records)
+                    @php
+                        $dueOn = $records->first()->next_due_date;
+                        $daysLeft = (int) $records->first()->daysUntilDue();
+                    @endphp
+                    <li wire:key="upcoming-day-{{ $date }}" class="grid gap-x-8 gap-y-2 border-b border-border py-4 md:grid-cols-[13rem_1fr]">
+                        <div class="flex flex-wrap items-center gap-2 md:block md:pt-2.5">
+                            <p class="datum text-[15px] font-medium text-foreground">{{ $dueOn->format('d M Y') }}</p>
+                            <span class="badge badge-warn md:mt-1.5">
+                                @if ($daysLeft === 0)
+                                    Today
+                                @else
+                                    <span class="whitespace-nowrap">In <span class="datum">{{ $daysLeft }}</span> {{ Str::plural('day', $daysLeft) }}</span>
+                                @endif
+                            </span>
+                        </div>
+
+                        <ul class="divide-y divide-border">
+                            @foreach ($records as $record)
+                                <li wire:key="upcoming-{{ $record->id }}" class="py-2 md:grid md:grid-cols-[minmax(0,15rem)_minmax(0,1fr)_auto] md:items-center md:gap-x-6">
+                                    <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate
+                                       class="group inline-flex min-h-11 items-center gap-2.5">
+                                        <x-band-dot :bloodline="$record->broodcock->bloodline" />
+                                        <span class="min-w-0">
+                                            <span class="datum block text-[15px] font-medium text-foreground group-hover:underline">{{ $record->broodcock->displayBand() }}</span>
+                                            <span class="block text-[13px] leading-snug text-muted-foreground">{{ $record->broodcock->name }}@if ($record->broodcock->bloodline) &middot; {{ $record->broodcock->bloodline }}@endif</span>
+                                        </span>
+                                    </a>
+
+                                    <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 md:mt-0">
+                                        <span class="badge {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
+                                        <span class="text-[15px] text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
+                                    </div>
+
+                                    @can('create', \App\Models\HealthRecord::class)
+                                        <a href="{{ route('health.create', ['broodcock' => $record->broodcock_id]) }}"
+                                           wire:navigate
+                                           class="btn-quiet -ml-3 mt-1 md:ml-0 md:mt-0">
+                                            Record Follow-up<span class="sr-only"> for {{ $record->broodcock->name }}</span>
+                                        </a>
+                                    @endcan
+                                </li>
+                            @endforeach
+                        </ul>
+                    </li>
+                @endforeach
+            </ol>
+
+            @if ($this->dueSoon->hasPages())
+                <div class="mt-6">
+                    {{ $this->dueSoon->links() }}
+                </div>
+            @endif
+        @endif
     </section>
 </div>

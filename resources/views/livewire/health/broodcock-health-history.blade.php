@@ -1,178 +1,145 @@
 {{--
     One bird's health history, newest first.
 
-    Rendered as a panel so it drops straight into the broodcock detail page:
+    Embedded in the bird page's Health tab:
 
         <livewire:health.broodcock-health-history :broodcock="$broodcock" />
 
-    It is a Console surface embedded in another one, so it carries no page
-    furniture of its own: a hairline head, a ruled callout, and a ledger table
-    whose dates are `.datum` so the check-up column reads down.
+    It sits beside the performance timeline on that tab, so it is built the
+    same way: a section heading, then a timeline of rows between hairlines.
+    No card, no table chrome - the date leads each row, because a history is
+    read down its dates, and every date is `.datum` so the column reads down.
 --}}
-<div class="card overflow-hidden">
-    <div class="flex flex-wrap items-start justify-between gap-4 border-b border-border px-4 py-4 sm:px-5">
+@php
+    $stateBadge = fn (string $state): string => match ($state) {
+        'Overdue' => 'badge-alert',
+        'Due soon' => 'badge-warn',
+        'Scheduled' => 'badge-info',
+        default => 'badge-neutral',
+    };
+@endphp
+<div>
+    <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-5">
         <div class="min-w-0">
-            <h2 class="text-[22px] font-semibold tracking-[-0.01em] text-foreground">Health History</h2>
-            <p class="mt-1 max-w-[65ch] text-[15px] leading-relaxed text-muted-foreground">
+            <h2 class="sb-h2">Health History</h2>
+            <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-muted-foreground">
                 Vaccinations, medications and check-ups for {{ $broodcock->name }}, newest first.
             </p>
-            {{-- The bird this panel belongs to, stated the way the system states
-                 every bird: its band, in its bloodline's colour, with the
-                 bloodline spelled out so colour is never the only channel. --}}
-            <div class="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-                <x-band-tag :bloodline="$broodcock->bloodline" :band="$broodcock->band_number" size="xs" />
-                @if ($broodcock->bloodline)
-                    <span class="text-[12px] text-muted-foreground">{{ $broodcock->bloodline }}</span>
-                @endif
-            </div>
         </div>
 
         @can('create', \App\Models\HealthRecord::class)
             <a href="{{ route('health.create', ['broodcock' => $broodcock->id]) }}" wire:navigate class="btn-primary shrink-0">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                </svg>
                 Add Health Record
             </a>
         @endcan
     </div>
 
-    {{-- The one thing the keeper needs at a glance: what is this bird waiting on? --}}
+    {{-- The one thing the keeper needs at a glance: what is this bird waiting
+         on? One line between hairlines; the badge says the state in words, so
+         the wash is never the only channel. Overdue is assertive, the rest
+         are polite. --}}
     @if ($this->nextFollowUp)
         @php
             $followUp = $this->nextFollowUp;
             $followUpState = $followUp->scheduleState();
-
-            /*
-             * x-alert, not a hand-rolled callout.
-             *
-             * This was a 2px coloured border-left on a tinted ground with the
-             * variant colour spent on the whole sentence. Three things were
-             * wrong with that and the component already solves all of them.
-             *
-             * The thick coloured left rule is a banned default - it is the
-             * decoration every framework reaches for and it means nothing here.
-             *
-             * The text was the variant ink on the variant ground. The alert
-             * component's own note records why that fails: muted ink measures
-             * 5.95:1 on the warning ground, under the console's 7:1 floor, so
-             * only the GLYPH carries the variant colour and the text stays
-             * foreground at 13.7:1.
-             *
-             * And the role was wrong. An overdue vaccination and a scheduled one
-             * were both plain <p> - now danger gets an assertive role="alert"
-             * and the rest are polite role="status", which the component decides.
-             */
-            [$followUpVariant, $followUpTitle] = match ($followUpState) {
-                'Overdue' => ['danger', 'Follow-up overdue'],
-                'Due soon' => ['warning', 'Follow-up due soon'],
-                default => ['info', 'Follow-up scheduled'],
+            $followUpTitle = match ($followUpState) {
+                'Overdue' => 'Follow-up overdue',
+                'Due soon' => 'Follow-up due soon',
+                default => 'Follow-up scheduled',
             };
         @endphp
 
-        <div class="border-b border-border px-4 py-3 sm:px-5">
-            <x-alert :variant="$followUpVariant" :title="$followUpTitle">
+        <div class="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-y border-border py-3"
+             role="{{ $followUpState === 'Overdue' ? 'alert' : 'status' }}">
+            <span class="badge {{ $stateBadge($followUpState) }}">{{ $followUpTitle }}</span>
+            <p class="text-[15px] leading-snug text-foreground">
                 {{ $followUp->record_type->label() }}@if ($followUp->product_name) ({{ $followUp->product_name }})@endif
                 on <span class="datum">{{ $followUp->next_due_date->format('d M Y') }}</span>.
-            </x-alert>
+            </p>
         </div>
     @endif
 
     @if ($this->rows->isEmpty())
-        <div class="px-6 py-14 text-center">
-            <p class="text-[18px] font-medium text-foreground">No health records for this bird yet.</p>
-            <p class="mx-auto mt-2 max-w-[52ch] text-[15px] leading-relaxed text-muted-foreground">
-                @can('create', \App\Models\HealthRecord::class)
-                    Click &ldquo;Add Health Record&rdquo; above to log this bird's first
-                    vaccination, deworming or check-up.
-                @else
-                    Nothing has been recorded for {{ $broodcock->name }} so far.
-                @endcan
-            </p>
-        </div>
+        @php
+            $canAddRecord = auth()->user()?->can('create', \App\Models\HealthRecord::class) ?? false;
+        @endphp
+        <x-empty-state class="mt-6" title="No health records for this bird yet."
+                       :description="$canAddRecord
+                            ? 'Log this bird’s first vaccination, deworming or check-up.'
+                            : 'Nothing has been recorded for '.$broodcock->name.' so far.'"
+                       icon="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z">
+            @if ($canAddRecord)
+                <a href="{{ route('health.create', ['broodcock' => $broodcock->id]) }}" wire:navigate class="btn-primary">
+                    Add Health Record
+                </a>
+            @endif
+        </x-empty-state>
     @else
-        {{-- The card clips, so a table wider than the panel scrolls inside its
-             own container rather than losing its last column. --}}
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead class="hidden bg-muted sm:table-header-group">
-                    <tr class="border-b border-border">
-                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Check-up Date</th>
-                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Record Type</th>
-                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Product / Condition</th>
-                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Next Due Date</th>
-                        <th scope="col" class="px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Status</th>
-                        <th scope="col" class="px-4 py-2.5 text-right text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">Actions</th>
-                    </tr>
-                </thead>
+        <ol @class(['divide-y divide-border border-b border-border', 'mt-6 border-t' => ! $this->nextFollowUp])
+            wire:loading.class="opacity-60" wire:target="gotoPage,nextPage,previousPage">
+            @foreach ($this->rows as $record)
+                @php $state = $record->scheduleState(); @endphp
 
-                <tbody class="block divide-y divide-border sm:table-row-group">
-                    @foreach ($this->rows as $record)
-                        @php
-                            $state = $record->scheduleState();
-                            $stateClasses = match ($state) {
-                                'Overdue' => 'badge-alert',
-                                'Due soon' => 'badge-warn',
-                                'Scheduled' => 'badge-info',
-                                default => 'badge-neutral',
-                            };
-                        @endphp
+                <li wire:key="history-{{ $record->id }}" class="py-4 sm:grid sm:grid-cols-[9rem_minmax(0,1fr)_auto] sm:gap-6">
+                    {{-- When --}}
+                    <div>
+                        <p class="datum text-[16px] font-medium leading-snug text-foreground">{{ $record->checkup_date->format('d M Y') }}</p>
+                        <p class="mt-0.5 text-[13px] text-muted-foreground">{{ $record->checkup_date->diffForHumans() }}</p>
+                    </div>
 
-                        <tr wire:key="history-{{ $record->id }}" class="block p-4 sm:table-row sm:p-0 sm:align-top sm:hover:bg-muted">
-                            <td class="block sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
-                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Check-up Date</span>
-                                <span class="datum text-[15px] font-medium text-foreground">{{ $record->checkup_date->format('d M Y') }}</span>
-                            </td>
+                    {{-- What was done --}}
+                    <div class="mt-2 min-w-0 sm:mt-0">
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span class="badge {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
+                            <span class="text-[15px] leading-snug text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
+                        </div>
 
-                            <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
-                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Record Type</span>
-                                <span class="badge {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
-                            </td>
-
-                            <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3">
-                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Product / Condition</span>
-                                <p class="text-[15px] leading-snug text-foreground">{{ $record->product_name ?: 'Not recorded' }}</p>
+                        @if ($record->dosage || $record->condition)
+                            <p class="mt-1.5 flex flex-wrap gap-x-5 gap-y-0.5 text-[13px] text-muted-foreground">
                                 @if ($record->dosage)
-                                    <p class="mt-0.5 text-[12px] text-muted-foreground">Dosage: <span class="datum">{{ $record->dosage }}</span></p>
+                                    <span>Dosage: <span class="datum text-foreground">{{ $record->dosage }}</span></span>
                                 @endif
                                 @if ($record->condition)
-                                    <p class="mt-0.5 text-[12px] text-muted-foreground">Condition: {{ $record->condition }}</p>
+                                    <span>Condition: <span class="text-foreground">{{ $record->condition }}</span></span>
                                 @endif
-                                {{-- Internal remarks are for farm staff. Customers are
-                                     promised health status, not the farm's notes. --}}
-                                @can('viewRemarks', $record)
-                                    @if ($record->remarks)
-                                        <p class="mt-1.5 max-w-[40ch] border-l border-border pl-2 text-[12px] leading-snug text-muted-foreground"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
-                                    @endif
-                                @endcan
-                            </td>
+                            </p>
+                        @endif
 
-                            <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
-                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Next Due Date</span>
-                                @if ($record->next_due_date)
-                                    <span class="datum text-[15px] text-foreground">{{ $record->next_due_date->format('d M Y') }}</span>
-                                @else
-                                    <span class="text-[15px] text-muted-foreground">None</span>
-                                @endif
-                            </td>
+                        <p class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted-foreground">
+                            Next due:
+                            @if ($record->next_due_date)
+                                <span class="datum text-[15px] text-foreground">{{ $record->next_due_date->format('d M Y') }}</span>
+                                <span class="badge {{ $stateBadge($state) }}">{{ $state }}</span>
+                            @else
+                                <span>None</span>
+                            @endif
+                        </p>
 
-                            <td class="mt-3 block sm:mt-0 sm:table-cell sm:px-4 sm:py-3 sm:whitespace-nowrap">
-                                <span class="mb-1 block text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground sm:hidden">Status</span>
-                                <span class="badge {{ $stateClasses }}">{{ $state }}</span>
-                            </td>
+                        {{-- Internal remarks are for farm staff. Customers are
+                             promised health status, not the farm's notes. --}}
+                        @can('viewRemarks', $record)
+                            @if ($record->remarks)
+                                <p class="mt-2 max-w-[65ch] border-l-2 border-border pl-3 text-[13px] leading-snug text-muted-foreground"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
+                            @endif
+                        @endcan
+                    </div>
 
-                            <td class="mt-4 block border-t border-border pt-3 sm:mt-0 sm:table-cell sm:border-0 sm:px-4 sm:py-3 sm:text-right sm:whitespace-nowrap">
-                                @can('update', $record)
-                                    <a href="{{ route('health.edit', $record) }}" wire:navigate class="btn-secondary">
-                                        Edit<span class="sr-only">, {{ $record->record_type->label() }} on {{ $record->checkup_date->format('d M Y') }}</span>
-                                    </a>
-                                @endcan
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                    @can('update', $record)
+                        <div class="-ml-3 mt-1 sm:-mr-3 sm:-mt-2.5 sm:ml-0">
+                            <a href="{{ route('health.edit', $record) }}" wire:navigate class="btn-quiet">
+                                Edit<span class="sr-only">, {{ $record->record_type->label() }} on {{ $record->checkup_date->format('d M Y') }}</span>
+                            </a>
+                        </div>
+                    @endcan
+                </li>
+            @endforeach
+        </ol>
 
         @if ($this->rows->hasPages())
-            <div class="border-t border-border bg-muted px-4 py-2.5">
+            <div class="mt-6">
                 {{ $this->rows->links() }}
             </div>
         @endif

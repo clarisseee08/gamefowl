@@ -46,13 +46,6 @@ final class Index extends Component
     /** Id of the record the user is being asked to confirm deletion of. */
     public ?int $confirmingDeleteId = null;
 
-    /**
-     * Confirmation shown after a delete. Held on the component rather than
-     * flashed to the session, because deleting does not reload the layout that
-     * renders session flash messages - the user would never see it.
-     */
-    public ?string $statusMessage = null;
-
     #[Url(except: 'checkup_date')]
     public string $sortBy = 'checkup_date';
 
@@ -152,12 +145,9 @@ final class Index extends Component
         $this->confirmingDeleteId = null;
         unset($this->rows, $this->recordPendingDeletion);
 
-        $this->statusMessage = "The {$type} record for {$bird} was deleted.";
-    }
-
-    public function dismissStatus(): void
-    {
-        $this->statusMessage = null;
+        // A toast, not a session flash: deleting does not reload the layout
+        // that renders session flash messages, so the user would never see it.
+        $this->dispatch('toast', message: "The {$type} record for {$bird} was deleted.", tone: 'ok');
     }
 
     // -----------------------------------------------------------------

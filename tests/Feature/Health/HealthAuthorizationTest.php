@@ -150,7 +150,9 @@ final class HealthAuthorizationTest extends TestCase
         Livewire::actingAs(User::factory()->owner()->create())
             ->test(Index::class)
             ->call('confirmDelete', $record->id)
-            ->call('delete');
+            ->call('delete')
+            ->assertDispatched('toast')
+            ->assertSet('confirmingDeleteId', null);
 
         $this->assertSoftDeleted('health_records', ['id' => $record->id]);
     }
