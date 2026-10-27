@@ -14,5 +14,5 @@ where any image on its site came from.
 
 | File | Photograph | Treatment | Source |
 |---|---|---|---|
-| `hero-farm.webp` | Chicken Walking on Grass in Countryside | Cropped only. A farm scene at golden hour rather than a head close-up, which read as aggressive and said nothing about the place | https://www.pexels.com/photo/chicken-walking-on-grass-in-countryside-5557743/ |
-| `visit-band.webp` | Green Grass Field during Sun Rise | Cropped to the lower two thirds, saturation +12%. An earlier duotone drained it to a flat grey band that read as a failed image load | https://www.pexels.com/photo/green-grass-field-during-sun-rise-997121/ |
+| `hero-farm.webp` | Chicken Walking on Grass in Countryside | 2000x1240 from the full-size original, lanczos3 resize and a light unsharp mask (sharp, sigma 0.6), WebP q74. Used on the sign-in panel | https://www.pexels.com/photo/chicken-walking-on-grass-in-countryside-5557743/ |
+| `visit-field.webp` | Green Grass Field during Sun Rise | 4:5 crop at 1240x1550 from the full-size original, lanczos3 resize and a light unsharp mask (sharp, sigma 0.6), WebP q74. The home page's visit section | https://www.pexels.com/photo/green-grass-field-during-sun-rise-997121/ |

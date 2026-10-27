@@ -323,7 +323,7 @@
         <div class="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
             <div class="sb-photo aspect-[4/5] lg:order-2" data-reveal>
                 <img src="{{ asset('photos/visit-field.webp') }}" alt="Pasture at first light"
-                     width="880" height="1100" loading="lazy" decoding="async">
+                     width="1240" height="1550" loading="lazy" decoding="async">
             </div>
 
             <div class="lg:order-1" data-reveal style="--reveal-delay: 100ms">
