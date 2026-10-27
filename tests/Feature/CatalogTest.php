@@ -284,4 +284,39 @@ final class CatalogTest extends TestCase
             ->assertDontSee('Breeding')
             ->assertDontSee('Users');
     }
+
+    public function test_the_catalogue_sorts_youngest_first_with_undated_birds_last(): void
+    {
+        Broodcock::factory()->create(['name' => 'Old', 'date_hatched' => '2022-01-01']);
+        Broodcock::factory()->create(['name' => 'Young', 'date_hatched' => '2025-06-01']);
+        Broodcock::factory()->create(['name' => 'Aardvark', 'date_hatched' => null]);
+
+        Livewire::test(Browse::class)
+            ->set('sort', 'youngest')
+            ->assertSeeInOrder(['Young', 'Old', 'Aardvark']);
+
+        Livewire::test(Browse::class)
+            ->set('sort', 'oldest')
+            ->assertSeeInOrder(['Old', 'Young', 'Aardvark']);
+    }
+
+    public function test_the_catalogue_sorts_by_bloodline(): void
+    {
+        Broodcock::factory()->create(['name' => 'First', 'bloodline' => 'Sweater']);
+        Broodcock::factory()->create(['name' => 'Second', 'bloodline' => 'Kelso']);
+
+        Livewire::test(Browse::class)
+            ->set('sort', 'bloodline')
+            ->assertSeeInOrder(['Second', 'First']);
+    }
+
+    public function test_clearing_the_filters_keeps_the_chosen_order(): void
+    {
+        Livewire::test(Browse::class)
+            ->set('sort', 'oldest')
+            ->set('bloodline', 'Kelso')
+            ->call('clearFilters')
+            ->assertSet('sort', 'oldest')
+            ->assertSet('bloodline', '');
+    }
 }

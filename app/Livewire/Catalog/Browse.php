@@ -69,6 +69,21 @@ final class Browse extends Component
     public bool $forSaleOnly = false;
 
     /**
+     * The order of the grid. Not a filter - clearing the filters keeps it -
+     * and an unknown value from a hand-edited URL falls back to name order.
+     */
+    #[Url(except: 'name')]
+    public string $sort = 'name';
+
+    /** @var array<string, string> */
+    public const SORTS = [
+        'name' => 'Name',
+        'youngest' => 'Youngest first',
+        'oldest' => 'Oldest first',
+        'bloodline' => 'Bloodline',
+    ];
+
+    /**
      * The heading level this component's own title renders at.
      *
      * THE REASON THIS IS A PROP. Browse is routed at /catalog, where "Our
@@ -141,6 +156,12 @@ final class Browse extends Component
             ->bloodline($this->bloodline)
             ->sex($this->sex)
             ->classGrade($this->class)
+            ->when(in_array($this->sort, ['youngest', 'oldest'], true), fn ($query) => $query
+                // A bird with no hatch date sorts last either way, rather than
+                // claiming to be the youngest or the oldest on the farm.
+                ->orderByRaw('date_hatched is null')
+                ->orderBy('date_hatched', $this->sort === 'youngest' ? 'desc' : 'asc'))
+            ->when($this->sort === 'bloodline', fn ($query) => $query->orderByRaw('bloodline is null')->orderBy('bloodline'))
             ->orderBy('name')
             ->paginate(12));
     }
@@ -160,6 +181,7 @@ final class Browse extends Component
             $this->sex,
             $this->class,
             $this->forSaleOnly,
+            $this->sort,
             $this->getPage(),
         ]));
     }

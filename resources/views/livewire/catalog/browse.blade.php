@@ -49,6 +49,12 @@
                     <option value="{{ $option->value }}">{{ $option->farmTerm() }}</option>
                 @endforeach
             </x-filter-select>
+
+            <x-filter-select id="sort" label="Sort" wire:model.live="sort">
+                @foreach (\App\Livewire\Catalog\Browse::SORTS as $value => $label)
+                    <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
+            </x-filter-select>
         </div>
 
         {{-- AVAILABILITY - and the fix for "no birds appear when I tick this".
@@ -71,10 +77,10 @@
         </label>
 
         <div class="flex items-center gap-4 text-[14px] text-muted-foreground lg:ml-auto">
-            <span wire:loading.remove wire:target="search,bloodline,sex,class,forSaleOnly">
+            <span wire:loading.remove wire:target="search,bloodline,sex,class,forSaleOnly,sort">
                 <span class="datum font-semibold text-foreground">{{ number_format($total) }}</span> {{ \Illuminate\Support\Str::plural('bird', $total) }} found.
             </span>
-            <span wire:loading wire:target="search,bloodline,sex,class,forSaleOnly">Searching&hellip;</span>
+            <span wire:loading wire:target="search,bloodline,sex,class,forSaleOnly,sort">Searching&hellip;</span>
 
             @if ($this->hasActiveFilters())
                 <button type="button" wire:click="clearFilters"
