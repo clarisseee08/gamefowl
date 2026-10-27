@@ -7,77 +7,19 @@
    production bundle. The rule against them was generating them. */
 @import 'tailwindcss' source(none);
 
-/* Self-hosted, no CDN. A demo in a provincial venue cannot depend on Google
-   Fonts resolving, and an earlier stack declared 'SF Pro' - which ships only on
-   Apple platforms, so every Windows machine silently rendered Segoe UI.
-   @fontsource ships woff2 with font-display: swap already set, so there is no
-   render-blocking <link> anywhere in this application.
+/* TYPE: Lexend for display, Public Sans for text.
 
-   THREE ROLES, THREE FACES, and the roles are enforced by review:
-     Poppins        headings only, never body
-     Inter          body, UI, forms, tables
-     JetBrains Mono every number, via .datum and tabular-nums
+   Loaded by a Google Fonts <link> with preconnect in
+   components/partials/head-meta.blade.php, which every layout includes. That
+   is the client's instruction, and it replaces the self-hosted @fontsource
+   faces this file used to import - Poppins, Inter and JetBrains Mono are gone
+   entirely, package and token both.
 
-   latin-ext is loaded alongside latin: Filipino place names in the farm's own
-   records carry diacritics that bare latin does not cover, and a missing
-   glyph falls back mid-word to a different face. */
-@import '@fontsource/poppins/latin-600.css';
-@import '@fontsource/inter/latin-400.css';
-@import '@fontsource/inter/latin-500.css';
-@import '@fontsource/inter/latin-600.css';
-@import '@fontsource/jetbrains-mono/latin-400.css';
-@import '@fontsource/jetbrains-mono/latin-500.css';
-/* 600 is loaded because headline figures are .datum AND semibold. Without the
-   real weight the browser synthesises bold by smearing the 500, which is
-   visibly worse at the 32-44px sizes the dashboard uses. */
-@import '@fontsource/jetbrains-mono/latin-600.css';
-
-/* ---------------------------------------------------------------------------
-   LATIN-EXT, DECLARED BY HAND, AND THE REASON IS A MEASUREMENT.
-
-   @fontsource ships one CSS file per subset and NONE of them declare a
-   unicode-range. So `latin-ext-400.css` and `latin-400.css` are two identical
-   @font-face rules - same family, same weight, no range to tell them apart -
-   and the later one simply wins.
-
-   Measured on the dashboard before this change: the browser fetched
-   inter-latin-400 (23.1 KB) AND inter-latin-ext-400 (34.2 KB), and the same
-   again at 500. That is 69.4 KB of latin-ext on every page load, a third of all
-   font weight, to render ZERO characters in the latin-ext range - I checked the
-   rendered text and there were none.
-
-   WHY IT IS KEPT AT ALL. The original comment is right that a missing glyph
-   falls back mid-word to a different face, which looks broken. But the
-   characters that reason was written for - ñ, á, é, í, ó, ú, ü in Filipino and
-   Spanish place names - are all in Latin-1 Supplement, which the `latin` subset
-   already covers. Latin Extended-A begins at U+0100 and is a genuine rarity
-   here, so it should be a fallback the browser fetches ON DEMAND rather than a
-   file every visitor pays for.
-
-   Declaring the range restores exactly that: the file is now downloaded only if
-   a character in it is actually rendered.
---------------------------------------------------------------------------- */
-@font-face {
-    font-family: 'Inter';
-    font-style: normal;
-    font-display: swap;
-    font-weight: 400;
-    src: url('@fontsource/inter/files/inter-latin-ext-400-normal.woff2') format('woff2');
-    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
-                   U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
-                   U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-
-@font-face {
-    font-family: 'Inter';
-    font-style: normal;
-    font-display: swap;
-    font-weight: 500;
-    src: url('@fontsource/inter/files/inter-latin-ext-500-normal.woff2') format('woff2');
-    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
-                   U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
-                   U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
+   THERE IS NO MONOSPACE ANY MORE. Every number used to be set in JetBrains
+   Mono through .datum so that digits aligned down a column. Public Sans has
+   tabular figures, and `font-variant-numeric: tabular-nums` aligns them just
+   as well without a third typeface on the page. The .datum class stays -
+   five enums and dozens of views use it - only what it resolves to changed. */
 
 @source '../views/**/*.blade.php';
 @source '../js/**/*.js';
@@ -110,16 +52,17 @@
 @theme {
     /* THE THREE ROLES. Each face does one job and no other.
 
-       --font-display is headings only. Using it for body text is the single
-       most common way a type system degrades, because Poppins is a geometric
-       face: even, circular, and tiring to read in long runs at 15-17px.
+       --font-display is h1/h2/h3 only. Lexend is drawn wide and open, which
+       is right for a heading and tiring over a paragraph.
 
        --font-mono carries every number through .datum, not just code. Band
        numbers, dates, weights, counts, rates and percentages all have to align
        in a column, which proportional figures cannot do. */
-    --font-display: 'Poppins', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
-    --font-sans: 'Inter', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Menlo, monospace;
+    --font-display: 'Lexend', 'Public Sans', system-ui, sans-serif;
+    --font-sans: 'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    /* Kept as a name so nothing that reads it breaks, but it is the text
+       face now: see the note at the top of this file. */
+    --font-mono: 'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
     /* Surfaces — tinted neutrals. Never pure white for the page, never pure
        black for text: a #FFF page under a #FFF card leaves no elevation to
@@ -233,6 +176,43 @@
     --color-print-rule-strong: #c7cbc5;
     --color-print-zebra: #f7f8f6;
 
+    /* ------------------------------------------------------------------
+       THE BOARD - the public site's palette.
+
+       Proportions from the dealt direction (one warm-black ground, tiles one
+       tone step lighter, white ink, one accent); the COLOURS from the subject.
+       A gamefowl is black plumage, a gold or copper hackle and a red comb, and
+       those are the three this page is made of:
+
+         board / tile / tile-2   the plumage - three steps of warm black
+         comb                    the one action colour; a red fill with white
+                                 text measures 5.1:1
+         comb-light              comb red lightened for TEXT on the board,
+                                 where the fill red would fall to 3.4:1
+         hackle                  gold, as a FIELD on selected tiles only, never
+                                 the action - and never next to an amber,
+                                 because one of this client's other sites
+                                 owns amber
+
+       board-muted is measured against tile, the lighter of the two grounds it
+       sits on: 6.6:1, comfortably past the catalogue's 4.5:1 floor.
+
+       Scoped by use, not by theme. These do not change under data-theme: the
+       public board is one dark design, and the console keeps its own light
+       and dark palettes below. */
+    --color-board: #0c0a08;
+    --color-tile: #181512;
+    --color-tile-2: #231e19;
+    --color-board-ink: #ffffff;
+    --color-board-muted: #a29c95;
+    --color-comb: #d43a2f;
+    --color-comb-light: #ff7a6b;
+    --color-hackle: #c9a45a;
+    --color-hackle-ink: #0c0a08;
+
+    /* One radius on the board, tiles and buttons alike. */
+    --radius-tile: 6px;
+
     --radius-sm: 6px;
     --radius-md: 10px;
     --radius-lg: 14px;
@@ -299,19 +279,29 @@
         background-color: var(--color-background);
         color: var(--color-foreground);
         font-family: var(--font-sans);
+        font-size: 16px;
+        line-height: 1.6;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
     }
 
+    /* Buttons and inputs do NOT inherit font-family by default - which is how
+       a type system quietly ends up with Arial in its form controls. */
+    button, input, select, textarea {
+        font-family: inherit;
+    }
+
     /* Headings, and the ONLY place --font-display appears.
-       Tightened tracking: untracked headings are a large part of why the
-       previous build read as a document rather than a product. Poppins is
-       geometric and runs wide, so it needs more negative tracking than the
-       body face did. */
+
+       Lexend runs wide, so it is always set tighter than the body: -0.015em
+       for h2 and h3, and the hero goes further to -0.03em locally. 600 is the
+       heaviest weight any heading uses - 700 is loaded for nothing heavier
+       than a button, and 800/900 are never requested. */
     h1, h2, h3, h4 {
         font-family: var(--font-display);
         font-weight: 600;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.015em;
+        line-height: 1.2;
         text-wrap: balance;
     }
 
@@ -393,7 +383,7 @@
  * weight column that does not align is the fastest way to look amateur.
  */
 @utility datum {
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum' 1;
     letter-spacing: -0.01em;
@@ -1027,6 +1017,260 @@
 }
 .page-link:hover { @apply bg-muted text-foreground; }
 .page-link-current { @apply bg-muted text-foreground; }
+
+/* =====================================================================
+   THE BOARD - the public site's components.
+
+   One grid, one gap, one radius. Every tile is a FILLED rectangle: a tone
+   step from the ground, a palette field, or a photograph covering it. No
+   tile is outlined and none carries a shadow - surfaces are told apart by
+   tone, which is the rule that stops a board from turning into a page of
+   cards.
+   ===================================================================== */
+
+/* 12 columns, 8px gaps. Rows size to their content unless a tile asks for
+   a height; the board never relies on a fixed row height, because a tile
+   holding a sentence at 390px needs more height than at 1440. */
+.board-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.board-tile {
+    position: relative;
+    border-radius: var(--radius-tile);
+    min-width: 0;
+}
+
+/* A photograph that fills its tile. The tile clips, the image covers; on
+   hover the picture moves a little inside its own frame, never the frame. */
+.board-photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+    transition: transform 600ms var(--ease-out);
+}
+.board-tile:hover > .board-photo,
+.board-tile:focus-within > .board-photo { transform: scale(1.04); }
+.board-tile:has(> .board-photo) { overflow: hidden; }
+
+/* Navigation: plain words. The current page takes the comb colour as a
+   short bar under the word rather than a pill around it. */
+.board-nav-link {
+    position: relative;
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    padding-inline: 12px;
+    border-radius: var(--radius-tile);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--color-board-muted);
+    transition: color var(--dur-fast) var(--ease-in-out),
+                background-color var(--dur-fast) var(--ease-in-out);
+}
+.board-nav-link:hover { color: var(--color-board-ink); background-color: var(--color-tile); }
+.board-nav-link-on { color: var(--color-board-ink); }
+.board-nav-link-on::after {
+    content: '';
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 6px;
+    height: 2px;
+    border-radius: 1px;
+    background-color: var(--color-comb);
+}
+
+/* Buttons. Flat fills, one radius, a press that scales to .97. */
+.board-btn,
+.board-btn-quiet,
+.board-btn-tile {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding-inline: 18px;
+    border-radius: var(--radius-tile);
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background-color var(--dur-fast) var(--ease-in-out),
+                color var(--dur-fast) var(--ease-in-out),
+                transform var(--dur-instant) var(--ease-in-out);
+}
+.board-btn:active,
+.board-btn-quiet:active,
+.board-btn-tile:active { transform: scale(0.97); }
+
+.board-btn { background-color: var(--color-comb); color: #ffffff; }
+.board-btn:hover { background-color: #e04437; }
+
+.board-btn-quiet { color: var(--color-board-ink); background-color: var(--color-tile); }
+.board-btn-quiet:hover { background-color: var(--color-tile-2); }
+
+/* A secondary action that sits ON a tile already the tile colour. */
+.board-btn-tile { color: var(--color-board-ink); background-color: var(--color-tile-2); }
+.board-btn-tile:hover { background-color: #2e2721; }
+
+.board-link {
+    color: var(--color-board-ink);
+    text-decoration: underline;
+    text-decoration-color: rgb(255 255 255 / 0.3);
+    text-underline-offset: 4px;
+    transition: text-decoration-color var(--dur-fast) var(--ease-in-out),
+                color var(--dur-fast) var(--ease-in-out);
+}
+.board-link:hover { color: var(--color-comb-light); text-decoration-color: currentColor; }
+
+/* Focus on the board: the comb-light ring, offset off the dark ground so it
+   reads against a photograph as well as against a tile. */
+.bg-board :focus-visible { outline-color: var(--color-comb-light); }
+
+/* The name that closes every page. One line at any width, clipped by its
+   tile rather than shrunk until it fits. */
+.board-footer-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(34px, 8.6vw, 150px);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+    white-space: nowrap;
+    color: var(--color-board-ink);
+}
+
+/* A short fact set large in a tile: the number, then what it counts. */
+.board-figure {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(44px, 5.2vw, 84px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+}
+
+/* The bloodline picker. Each chip is a real link (it works with scripting
+   off); Alpine marks the chosen one. */
+.board-chip {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 8px;
+    padding-inline: 14px;
+    border-radius: var(--radius-tile);
+    background-color: var(--color-tile-2);
+    color: var(--color-board-muted);
+    font-size: 15px;
+    font-weight: 500;
+    transition: background-color var(--dur-fast) var(--ease-in-out),
+                color var(--dur-fast) var(--ease-in-out),
+                transform var(--dur-instant) var(--ease-in-out);
+}
+.board-chip:hover { color: var(--color-board-ink); background-color: #2e2721; }
+.board-chip:active { transform: scale(0.97); }
+.board-chip-on { background-color: var(--color-board-ink); color: var(--color-board); }
+.board-chip-on:hover { background-color: var(--color-board-ink); color: var(--color-board); }
+
+/* The live thing's effect: a bird outside the chosen bloodline steps back. */
+.board-bird {
+    transition: opacity 320ms var(--ease-out), filter 320ms var(--ease-out),
+                transform var(--dur-instant) var(--ease-in-out);
+}
+.board-bird:active { transform: scale(0.985); }
+.board-bird-dim { opacity: 0.28; filter: grayscale(1); }
+
+/* A contact cell: a filled block that IS the action. */
+.board-cell {
+    display: flex;
+    min-height: 92px;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 16px;
+    border-radius: var(--radius-tile);
+    background-color: var(--color-tile-2);
+    transition: background-color var(--dur-fast) var(--ease-in-out),
+                transform var(--dur-instant) var(--ease-in-out);
+}
+.board-cell:hover { background-color: #2e2721; }
+.board-cell:active { transform: scale(0.97); }
+.board-cell-accent { background-color: var(--color-comb); color: #ffffff; }
+.board-cell-accent:hover { background-color: #e04437; }
+
+/* THE MARQUEE - the page's signature move - DRIVEN BY THE SCROLL, NOT A CLOCK.
+
+   The direction dealt a marquee that loops forever. The client's brief is
+   explicit that nothing loops forever, and the brief wins: the line slides
+   sideways only while the reader scrolls past it, by exactly as much as they
+   scroll, and stops when they stop. It is still the one loud moment on the
+   page; it just answers to the reader instead of running on its own.
+
+   CSS scroll-driven animation, so it costs no script and no scroll listener.
+   Where animation-timeline is not supported the line simply sits still,
+   which is a complete and correct fallback - nothing about the page depends
+   on it moving. */
+.board-marquee {
+    display: flex;
+    width: max-content;
+}
+.board-marquee-run {
+    flex-shrink: 0;
+    padding-right: 0.5em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(36px, 6vw, 96px);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    white-space: nowrap;
+    color: var(--color-board-ink);
+}
+@keyframes board-marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-30%); }
+}
+
+/* The hero photograph drifts a little closer as the page scrolls away from
+   it - the one moving picture. Also scroll-linked, so it never runs on its
+   own and never loops. */
+@keyframes board-drift {
+    from { transform: scale(1); }
+    to   { transform: scale(1.08); }
+}
+
+@supports (animation-timeline: view()) {
+    .board-marquee {
+        animation: board-marquee linear both;
+        animation-timeline: view();
+        animation-range: entry 0% exit 100%;
+    }
+    .board-drift {
+        animation: board-drift linear both;
+        animation-timeline: view();
+        animation-range: exit 0% exit 100%;
+    }
+}
+
+/* THE ENTRANCE. Only armed once the script has run and tagged <html>, so a
+   page whose script fails shows everything rather than nothing. Each
+   element rises 20px and fades in once as it enters; --reveal-delay
+   staggers the parts of a section. */
+.js-reveal .board-reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 560ms var(--ease-out), transform 560ms var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+}
+.js-reveal .board-reveal.is-in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .js-reveal .board-reveal { opacity: 1; transform: none; }
+    .board-marquee, .board-drift { animation: none; }
+}
 
 /* =====================================================================
    DARK THEME

@@ -268,3 +268,46 @@ Route::middleware('active')->prefix('broodcocks')->name('broodcocks.')->group(fu
     Route::livewire('/{broodcock}/pedigree', Broodcocks\Pedigree::class)->name('pedigree');
     Route::livewire('/{broodcock}', Broodcocks\Show::class)->name('show');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Legal
+|--------------------------------------------------------------------------
+|
+| Real pages inside the site, not links out to a PDF.
+|
+| They are plain views rather than Livewire components because neither has
+| any state: they read config('gfms.farm') for the farm's own contact
+| details and render. A Livewire component would add a round trip and a
+| payload to a page that never changes between requests.
+|
+| `active` and nothing else, matching the rest of the public surface - a
+| deactivated account is sent to the login screen everywhere, and a privacy
+| notice is not the one place to make an exception.
+*/
+Route::middleware('active')->name('legal.')->group(function (): void {
+    Route::view('/privacy', 'legal.privacy')->name('privacy');
+    Route::view('/terms', 'legal.terms')->name('terms');
+});
+
+/*
+|--------------------------------------------------------------------------
+| The rest of the public site
+|--------------------------------------------------------------------------
+|
+| THE FRONT PAGE USED TO BE THE WHOLE SITE. Masthead, three statements, the
+| entire catalogue with its filters, and the contact details, on one scroll.
+| A visitor who wanted the phone number scrolled past every bird on the farm
+| to reach it.
+|
+| These two carry the sections that were not the catalogue. Plain views
+| rather than Livewire components, for the same reason as the legal pages:
+| neither holds any state. About reads two cached figures through
+| App\Support\PublicFarm and Visit reads config('gfms.farm'); a Livewire
+| component would add a round trip and a payload to a page that is identical
+| on every request.
+*/
+Route::middleware('active')->name('public.')->group(function (): void {
+    Route::view('/about', 'public.about')->name('about');
+    Route::view('/visit', 'public.visit')->name('visit');
+});

@@ -181,6 +181,35 @@ final class Browse extends Component
             ->all());
     }
 
+    /**
+     * Is there a single bird the farm is actually offering?
+     *
+     * THE BUG THIS FIXES was not in the filter. "Available birds only" worked
+     * perfectly: it returned nothing because nothing on this farm is marked
+     * for sale - eighteen birds, every one of them false. What was broken is
+     * that the catalogue offered a control which could only ever empty the
+     * page, and then told the visitor "No birds match your search", which
+     * blames them for a state they could not have avoided.
+     *
+     * So the checkbox is disabled when this is false, and the empty state says
+     * what is actually true. Both need to know, which is why this is a
+     * computed rather than a flag worked out in the view.
+     *
+     * Cached with the rest of the catalogue. It is one EXISTS against an
+     * indexed column, but in production every uncached query is a ~240ms round
+     * trip to Tokyo, and this one would run on every page view of the busiest
+     * screen in the application.
+     */
+    #[Computed]
+    public function anyForSale(): bool
+    {
+        return RecordCache::remember('catalog:any-for-sale', fn (): bool => Broodcock::query()
+            ->farmStock()
+            ->onFarm()
+            ->where('for_sale', true)
+            ->exists());
+    }
+
     /** @return array<int, Sex> */
     public function sexOptions(): array
     {

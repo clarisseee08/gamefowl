@@ -183,7 +183,16 @@ final class FarmProfileTest extends TestCase
             ->assertSee('Monday to Saturday, 8AM to 5PM');
     }
 
-    public function test_a_note_to_visitors_reaches_the_public_page(): void
+    /**
+     * The note the owner writes reaches the page about visiting.
+     *
+     * It used to be asserted against the front page, because the front page
+     * carried the visiting section along with everything else. The site is
+     * several pages now and the note belongs with the contact details it
+     * qualifies - "ring ahead on Sundays" is advice about arranging a visit,
+     * and on a front page it was advice floating under a list of birds.
+     */
+    public function test_a_note_to_visitors_reaches_the_visit_page(): void
     {
         Livewire::actingAs($this->owner())
             ->test(Farm::class)
@@ -193,7 +202,7 @@ final class FarmProfileTest extends TestCase
             ->call('save')
             ->assertHasNoErrors();
 
-        $this->asVisitor()->get(route('home'))
+        $this->asVisitor()->get(route('public.visit'))
             ->assertOk()
             ->assertSee('Ring ahead if you are coming on a Sunday.');
     }

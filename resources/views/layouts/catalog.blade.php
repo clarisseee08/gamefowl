@@ -8,82 +8,99 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 {{--
-    THE PUBLIC SHELL — the second surface.
+    THE PUBLIC SHELL — the board.
 
-    Full-bleed like the console, but deliberately NOT the console. A dense
-    application sidebar is wrong for a photo-led browse: it spends 240px of a
-    grid that wants to be as wide as possible, and it presents a customer with
-    navigation for screens they cannot open.
+    The public site is one dark design: warm-black ground, tiles a tone
+    lighter, white type, comb red for the one action. It does not follow the
+    light/dark toggle, because it is a single composition built around the
+    birds' own colours - black plumage, gold hackle, red comb - and a light
+    version would be a different site. The toggle stays where it is a working
+    preference: the console and the sign-in screen.
 
-    So: a slim top bar, and the whole width given to the stock. The page scrolls
-    normally here rather than being trapped in a pane, because browsing is a
-    reading behaviour and a customer expects the page to move.
-
-    THE FOOTER IS NEW. Until it existed the catalogue simply stopped at the last
-    row of birds, which reads as an unfinished page rather than the bottom of
-    one. Everything in it comes from config('gfms.farm.*'), and every row is
-    conditional - see the note there.
+    THE MEASURE IS WIDE AND THE MARGINS ARE TIGHT on purpose. The board is
+    tiles fitted edge to edge with 8px gaps; generous outer margins would turn
+    it back into a column floating in the middle of the screen, which is what
+    made the previous public pages read as thin. Capped at 1680px so a tile is
+    never absurd on a very wide monitor, and the pages that are prose (About,
+    the legal pages) hold their own reading measure inside it.
 --}}
-<body class="flex min-h-full flex-col bg-background">
-    <div class="brand-rail" aria-hidden="true"></div>
+<body class="flex min-h-full flex-col bg-board text-board-ink">
     @php
         $user = auth()->user();
         $farm = config('gfms.farm');
+
+        $nav = [
+            ['label' => 'Our stock', 'url' => route('catalog.index'), 'on' => request()->routeIs('catalog.*')],
+            ['label' => 'About', 'url' => route('public.about'), 'on' => request()->routeIs('public.about')],
+            ['label' => 'Visit us', 'url' => route('public.visit'), 'on' => request()->routeIs('public.visit')],
+        ];
     @endphp
 
-    <header class="sticky top-0 z-30 border-b border-border bg-card">
-        <div class="flex h-14 items-center gap-4 px-4 sm:px-6 lg:px-8">
-            <a href="{{ route('home') }}" wire:navigate
-               class="inline-flex min-h-11 shrink-0 items-center gap-2.5 text-[15px] font-semibold text-foreground">
-                <x-brand-mark :size="30" />
-                <span class="truncate">{{ $farm['name'] }}</span>
-            </a>
-
-            {{-- Two destinations, which is the whole of the public site: the
-                 stock, and arranging to come and see it. Hidden on the
-                 narrowest screens, where the footer carries the same links and
-                 a cramped row of them would crowd the farm's own name. --}}
-            <nav class="ml-6 hidden items-center gap-5 sm:flex" aria-label="Main">
-                <a href="{{ route('catalog.index') }}" wire:navigate
-                   class="text-[15px] text-muted-foreground hover:text-foreground">Our stock</a>
-                <a href="{{ route('home') }}#visit"
-                   class="text-[15px] text-muted-foreground hover:text-foreground">Visit us</a>
-            </nav>
-
-            <span class="ml-auto"></span>
-
-            @if ($user?->isInternal())
-                {{-- The way back to the console, shown only to staff. A visitor
-                     never sees a door they cannot open. --}}
-                <a href="{{ route('dashboard') }}" wire:navigate
-                   class="btn-secondary h-11 min-h-0 px-3 text-[14px]">
-                    Console
+    {{-- A PLAIN BAR: the wordmark, three links, one action. No border under
+         it and no shadow - it is separated from the board by being a step
+         darker, the way every surface on this page is separated. --}}
+    <header class="sticky top-0 z-30 bg-board">
+        <div class="mx-auto w-full max-w-[1680px] px-3 sm:px-4">
+            <div class="flex h-16 items-center gap-6">
+                <a href="{{ route('home') }}" wire:navigate
+                   class="inline-flex min-h-11 min-w-0 items-center gap-3 font-display text-[17px] font-semibold tracking-[-0.015em] text-board-ink">
+                    <x-brand-mark :size="34" class="shrink-0 rounded-full" />
+                    <span class="truncate">{{ $farm['name'] }}</span>
                 </a>
-            @endif
 
-            {{-- This shell serves people who are not signed in at all, so it
-                 cannot assume there is a session to end. A bare "Sign out" in
-                 front of a visitor who never signed in is a dead control that
-                 also implies they have an account they do not have.
+                <nav class="hidden items-center gap-1 md:flex" aria-label="Main">
+                    @foreach ($nav as $link)
+                        <a href="{{ $link['url'] }}" wire:navigate
+                           @if ($link['on']) aria-current="page" @endif
+                           @class([
+                               'board-nav-link',
+                               'board-nav-link-on' => $link['on'],
+                           ])>{{ $link['label'] }}</a>
+                    @endforeach
+                </nav>
 
-                 The sign-in link is deliberately quiet: this is a shop window,
-                 and the farm's own staff are the only people it is for. --}}
-            <x-theme-toggle />
+                <span class="ml-auto"></span>
 
-            @auth
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="btn-quiet h-11 min-h-0 px-3 text-[14px]">Sign out</button>
-                </form>
-            @else
-                <a href="{{ route('login') }}" wire:navigate class="btn-quiet h-11 min-h-0 px-3 text-[14px]">Sign in</a>
-            @endauth
+                @if ($user?->isInternal())
+                    {{-- The way back to the console, shown only to staff. A
+                         visitor never sees a door they cannot open. --}}
+                    <a href="{{ route('dashboard') }}" wire:navigate class="board-btn-quiet shrink-0">Console</a>
+                @endif
+
+                {{-- This shell serves people who are not signed in at all, so it
+                     cannot assume there is a session to end. The sign-in link is
+                     deliberately the quiet one: this is a shop window, and the
+                     farm's own staff are the only people it is for. --}}
+                @auth
+                    <form method="POST" action="{{ route('logout') }}" class="shrink-0">
+                        @csrf
+                        <button type="submit" class="board-btn-quiet">Sign out</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" wire:navigate class="board-btn-quiet shrink-0">Sign in</a>
+                @endauth
+            </div>
+
+            {{-- ON A PHONE THE LINKS GET THEIR OWN ROW rather than a hamburger.
+                 Three short words fit across a 390px screen, and hiding three
+                 links behind a button to save 44px of height costs every
+                 visitor a tap to find out what the site has. --}}
+            <nav class="-mt-1 flex gap-1 overflow-x-auto pb-2 md:hidden" aria-label="Main">
+                @foreach ($nav as $link)
+                    <a href="{{ $link['url'] }}" wire:navigate
+                       @if ($link['on']) aria-current="page" @endif
+                       @class([
+                           'board-nav-link shrink-0',
+                           'board-nav-link-on' => $link['on'],
+                       ])>{{ $link['label'] }}</a>
+                @endforeach
+            </nav>
         </div>
     </header>
 
-    <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+    <main class="mx-auto w-full max-w-[1680px] flex-1 px-3 pb-3 sm:px-4 sm:pb-4">
         @if (session('success'))
-            <div class="mb-5 rounded-[var(--radius-md)] bg-success-bg px-4 py-3 text-[15px] text-foreground" role="status">
+            <div class="mb-2 rounded-[var(--radius-tile)] bg-tile px-5 py-4 text-[15px] text-board-ink" role="status">
                 {{ session('success') }}
             </div>
         @endif
@@ -92,94 +109,73 @@
     </main>
 
     {{--
-        EVERY ROW HERE IS CONDITIONAL, and that is the rule rather than caution.
+        THE FOOTER IS THE LAST ROW OF THE BOARD, not a sitemap stapled under it.
 
-        The application genuinely does not know the farm's address, phone,
-        email or hours - all four default to an empty string and are supplied
-        through the environment. A footer that renders "Phone" with nothing
-        after it looks broken in a way that an absent row does not, so a value
-        the farm has not given produces no markup at all.
+        The farm's name returns at full width as the close. Under it, four
+        tiles: where to find the farm, how to reach it, the pages, and the
+        legal pages - Privacy and Terms are real pages on this site.
+
+        EVERY CONTACT ROW IS CONDITIONAL. The farm's address, phone, email and
+        hours come from the farm_settings row the owner edits at /settings, and
+        a tile that says "Phone" with nothing after it looks broken in a way an
+        absent one does not.
     --}}
-    <footer class="mt-12 border-t border-border bg-card">
-        <div class="px-4 py-10 sm:px-6 lg:px-8">
-            <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-
-                <div>
-                    <div class="flex items-center gap-2.5">
-                        <x-brand-mark :size="26" />
-                        <span class="text-[15px] font-semibold text-foreground">{{ $farm['name'] }}</span>
-                    </div>
-                    <p class="mt-3 max-w-[42ch] text-[15px] leading-relaxed text-muted-foreground">
-                        Gamefowl bred and recorded on the farm, with the pedigree of every
-                        bird kept from hatch.
-                    </p>
+    <footer class="mx-auto mt-2 w-full max-w-[1680px] px-3 pb-3 sm:px-4 sm:pb-4">
+        <div class="board-grid">
+            @if ($farm['address'] || $farm['hours'])
+                <div class="board-tile col-span-12 bg-tile p-5 sm:col-span-6 sm:p-6 lg:col-span-3">
+                    <h2 class="text-[15px] font-semibold text-board-ink">Find the farm</h2>
+                    @if ($farm['address'])
+                        <p class="mt-3 max-w-[30ch] text-[15px] leading-relaxed text-board-muted">{{ $farm['address'] }}</p>
+                    @endif
+                    @if ($farm['hours'])
+                        <p class="mt-2 max-w-[30ch] text-[15px] leading-relaxed text-board-muted">{{ $farm['hours'] }}</p>
+                    @endif
                 </div>
+            @endif
 
-                @if ($farm['address'] || $farm['phone'] || $farm['email'] || $farm['hours'])
-                    <div>
-                        <h2 class="text-[13px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">
-                            Find us
-                        </h2>
-                        <dl class="mt-4 space-y-3 text-[15px]">
-                            @if ($farm['address'])
-                                <div>
-                                    <dt class="text-muted-foreground">Address</dt>
-                                    <dd class="mt-0.5 max-w-[38ch] text-foreground">{{ $farm['address'] }}</dd>
-                                </div>
-                            @endif
-                            @if ($farm['phone'])
-                                <div>
-                                    <dt class="text-muted-foreground">Phone</dt>
-                                    {{-- A phone number is registry data: monospaced so the
-                                         digits group the way a written one does. --}}
-                                    <dd class="datum mt-0.5 text-foreground">{{ $farm['phone'] }}</dd>
-                                </div>
-                            @endif
-                            @if ($farm['email'])
-                                <div>
-                                    <dt class="text-muted-foreground">Email</dt>
-                                    <dd class="mt-0.5 text-foreground">
-                                        <a href="mailto:{{ $farm['email'] }}" class="hover:underline">{{ $farm['email'] }}</a>
-                                    </dd>
-                                </div>
-                            @endif
-                            @if ($farm['hours'])
-                                <div>
-                                    <dt class="text-muted-foreground">Visiting hours</dt>
-                                    <dd class="mt-0.5 max-w-[38ch] text-foreground">{{ $farm['hours'] }}</dd>
-                                </div>
-                            @endif
-                        </dl>
-                    </div>
-                @endif
-
-                <div>
-                    <h2 class="text-[13px] font-semibold uppercase tracking-[0.07em] text-muted-foreground">
-                        Browse
-                    </h2>
-                    <ul class="mt-4 space-y-2.5 text-[15px]">
-                        <li>
-                            <a href="{{ route('catalog.index') }}" wire:navigate
-                               class="text-foreground hover:underline">Our stock</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('home') }}#visit"
-                               class="text-foreground hover:underline">Visit us</a>
-                        </li>
-                        @guest
-                            <li>
-                                <a href="{{ route('login') }}" wire:navigate
-                                   class="text-muted-foreground hover:underline">Staff sign in</a>
-                            </li>
-                        @endguest
-                    </ul>
+            @if ($farm['phone'] || $farm['email'])
+                <div class="board-tile col-span-12 bg-tile p-5 sm:col-span-6 sm:p-6 lg:col-span-3">
+                    <h2 class="text-[15px] font-semibold text-board-ink">Get in touch</h2>
+                    @if ($farm['phone'])
+                        <p class="datum mt-3 text-[15px] text-board-muted">{{ $farm['phone'] }}</p>
+                    @endif
+                    @if ($farm['email'])
+                        <p class="mt-2 break-words text-[15px]">
+                            <a href="mailto:{{ $farm['email'] }}" class="board-link">{{ $farm['email'] }}</a>
+                        </p>
+                    @endif
                 </div>
+            @endif
+
+            <div class="board-tile col-span-12 bg-tile p-5 sm:col-span-6 sm:p-6 lg:col-span-3">
+                <h2 class="text-[15px] font-semibold text-board-ink">The farm</h2>
+                <ul class="mt-3 space-y-2 text-[15px]">
+                    @foreach ($nav as $link)
+                        <li><a href="{{ $link['url'] }}" wire:navigate class="board-link">{{ $link['label'] }}</a></li>
+                    @endforeach
+                    @guest
+                        <li><a href="{{ route('login') }}" wire:navigate class="board-link">Staff sign in</a></li>
+                    @endguest
+                </ul>
             </div>
 
-            <div class="mt-10 border-t border-border pt-6">
-                <p class="text-[14px] text-muted-foreground">
-                    &copy; <span class="datum">{{ now()->year }}</span> {{ $farm['name'] }}.
+            <div class="board-tile col-span-12 flex flex-col justify-between gap-6 bg-tile p-5 sm:col-span-6 sm:p-6 lg:col-span-3">
+                <ul class="space-y-2 text-[15px]">
+                    <li><a href="{{ route('legal.privacy') }}" wire:navigate class="board-link">Privacy notice</a></li>
+                    <li><a href="{{ route('legal.terms') }}" wire:navigate class="board-link">Terms of use</a></li>
+                </ul>
+                <p class="text-[13px] text-board-muted">
+                    &copy; <span class="datum">{{ now()->year }}</span> {{ $farm['name'] }}
                 </p>
+            </div>
+
+            {{-- The name, built large, as the last thing on the page: it closes
+                 the board rather than opening the footer. Sized to FIT on one
+                 line - a first version let the tile crop it, and "SSGuad Game
+                 Fa" reads as a layout bug, not a design. --}}
+            <div class="board-tile col-span-12 overflow-hidden bg-tile px-5 pb-4 pt-7 sm:px-6">
+                <p class="board-footer-name" aria-hidden="true">{{ $farm['name'] }}</p>
             </div>
         </div>
     </footer>

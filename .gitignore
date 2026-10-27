@@ -45,3 +45,7 @@ Thumbs.db
 /.cursor/
 /.codex/
 /opencode.json
+/.claude/web-redesign-brief.md
+/audit/
+/.playwright-mcp/
+/.taste-skill/

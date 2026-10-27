@@ -16,6 +16,15 @@
 
 <title>{{ $title ? $title.' · ' : '' }}{{ $short }}</title>
 
+{{-- Lexend for display, Public Sans for text - the client's chosen pair,
+     loaded exactly as specified: Google Fonts with preconnect, here because
+     every layout and the error pages include this partial. Only 400-700 are
+     requested and the stylesheet never asks for 800 or 900, which the browser
+     would otherwise fake-bold. FontPayloadTest holds both of those lines. --}}
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+
 <meta name="description" content="{{ $description }}">
 <meta name="application-name" content="{{ $system }}">
 

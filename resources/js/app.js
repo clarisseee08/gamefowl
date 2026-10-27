@@ -239,3 +239,44 @@ const applyStoredTheme = () => {
 };
 
 document.addEventListener('livewire:navigated', applyStoredTheme);
+
+/**
+ * The board's entrance: each .board-reveal rises and fades in once, as it
+ * enters the viewport.
+ *
+ * ARMED BY TAGGING <html>, never by hiding things in CSS up front. The hidden
+ * starting state only exists under .js-reveal, which this script adds - so if
+ * the script never runs, nothing is hidden and the page is simply still.
+ *
+ * Re-armed on every soft navigation, because wire:navigate swaps the page body
+ * without reloading this script, and the new page's elements would otherwise
+ * sit at opacity 0 forever.
+ */
+const armReveals = () => {
+    const targets = document.querySelectorAll('.board-reveal:not(.is-in)');
+
+    if (! ('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        targets.forEach((el) => el.classList.add('is-in'));
+        return;
+    }
+
+    document.documentElement.classList.add('js-reveal');
+
+    const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-in');
+                io.unobserve(entry.target);
+            }
+        });
+    }, { rootMargin: '0px 0px -8% 0px' });
+
+    targets.forEach((el) => io.observe(el));
+};
+
+document.addEventListener('livewire:navigated', armReveals);
+
+// The plain pages (About, Visit, the legal pages) carry no Livewire component,
+// so livewire:navigated never fires there. Arm on load as well; arming twice
+// is harmless, because armed elements are skipped by the :not(.is-in) query.
+document.addEventListener('DOMContentLoaded', armReveals);

@@ -125,20 +125,35 @@ final class Index extends Component
     #[Computed]
     public function featuredBirds()
     {
-        return RecordCache::remember('landing:featured', fn () => Broodcock::query()
+        return RecordCache::remember('landing:featured:8', fn () => Broodcock::query()
             ->with('primaryPhoto')
             ->farmStock()
             ->onFarm()
             ->orderByRaw('CASE WHEN band_number IS NULL OR band_number = ? THEN 1 ELSE 0 END', [''])
             ->orderByDesc('for_sale')
             ->orderByDesc('date_hatched')
-            // Four, not three. The masthead's left page is now a full-height
-            // nameplate, and three rows left the register short enough that the
-            // rule dividing the spread ran past the bottom of its own column.
-            // A fourth row is more of the thing the register is for, and it
-            // costs nothing: the query is limited and cached either way.
-            ->limit(4)
+            // EIGHT, for the board. The front page is a board of tiles and the
+            // birds are most of what fills it: two rows of four on a desktop,
+            // four rows of two on a phone. The farm keeps ten, so this is
+            // nearly all of them, and the "see all" tile carries the rest.
+            // Limited and cached either way, so the count costs nothing.
+            ->limit(8)
             ->get());
+    }
+
+    /**
+     * The bird whose photograph stands in the masthead's left rail.
+     *
+     * Reuses featuredBirds() rather than issuing a query, so the bird in the
+     * masthead is always one the board below also shows. Null when none of
+     * them has a photograph, and the rail falls back to a plain tile.
+     */
+    #[Computed]
+    public function heroBird(): ?Broodcock
+    {
+        return $this->featuredBirds->first(
+            static fn (Broodcock $bird): bool => $bird->primaryPhoto !== null,
+        );
     }
 
     public function render(): View
