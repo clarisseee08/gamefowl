@@ -271,3 +271,19 @@ new MutationObserver((mutations) => {
         armReveals();
     });
 }).observe(document.documentElement, { childList: true, subtree: true });
+
+/**
+ * PAGE TRANSITIONS. On a soft navigation the header and the sidebar are
+ * re-rendered identically and so appear to stay; only <main> fades up into
+ * place. The class is removed when the animation ends so it can run again.
+ */
+document.addEventListener('livewire:navigated', () => {
+    const main = document.querySelector('main');
+    if (! main || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+    }
+    main.classList.remove('page-enter');
+    void main.offsetWidth;
+    main.classList.add('page-enter');
+    main.addEventListener('animationend', () => main.classList.remove('page-enter'), { once: true });
+});
