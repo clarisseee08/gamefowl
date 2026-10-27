@@ -127,9 +127,11 @@ final class Show extends Component
 
         $count = $created->count();
 
-        session()->flash('success', $count === 1
+        // A toast, not a session flash: this action does not redirect, so a
+        // flash would not appear here and would surface stale on the next page.
+        $this->dispatch('toast', message: $count === 1
             ? '1 chick has been registered with its sire and dam already filled in.'
-            : "{$count} chicks have been registered with their sire and dam already filled in.");
+            : "{$count} chicks have been registered with their sire and dam already filled in.", tone: 'ok');
     }
 
     public function render(): View
