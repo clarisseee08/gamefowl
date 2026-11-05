@@ -101,5 +101,5 @@
 
     {{-- Light / dark / follow the device. Placed last so it sits at the edge
          of the bar and never between the two controls someone reaches for. --}}
-    <x-theme-toggle />
+    <x-ui.theme-menu />
 </header>

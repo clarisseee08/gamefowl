@@ -320,6 +320,22 @@ final class EmsComponentsTest extends TestCase
             ->assertSee('wire:click="confirmDelete(1)"', escape: false);
     }
 
+    public function test_the_theme_menu_offers_light_dark_and_system(): void
+    {
+        $this->blade('<x-ui.theme-menu />')
+            ->assertSee('aria-label="Theme"', escape: false)
+            ->assertSeeInOrder(['data-theme-choice="light"', 'Light', 'data-theme-choice="dark"', 'Dark', 'data-theme-choice="system"', 'System'], escape: false)
+            ->assertSee('role="menuitemradio"', escape: false);
+    }
+
+    public function test_the_console_top_bar_carries_the_theme_menu(): void
+    {
+        $this->actingAs(User::factory()->owner()->create())
+            ->get(route('dashboard'))
+            ->assertSee('data-theme-choice="system"', escape: false)
+            ->assertDontSee('data-theme-toggle', escape: false);
+    }
+
     public function test_the_design_page_shows_the_ems_components_to_staff(): void
     {
         $this->actingAs(User::factory()->owner()->create())

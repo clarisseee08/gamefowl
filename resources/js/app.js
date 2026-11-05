@@ -565,6 +565,65 @@ const applyStoredTheme = () => {
 document.addEventListener('livewire:navigated', applyStoredTheme);
 
 /**
+ * Light / Dark / System - the EMS theme menu (Part B §2.7), the owner's choice
+ * over a two-state toggle. Light and dark are stored and stamped on <html>;
+ * System clears both, which hands the choice back to the CSS media query, so
+ * the page follows the operating system live with no listener. Every
+ * [data-theme-choice] item on the page shows which one is in force.
+ */
+const currentThemeChoice = () => {
+    try {
+        const stored = localStorage.getItem('gfms-theme');
+
+        return stored === 'light' || stored === 'dark' ? stored : 'system';
+    } catch (e) {
+        return 'system';
+    }
+};
+
+const markThemeChoice = () => {
+    const current = currentThemeChoice();
+
+    document.querySelectorAll('[data-theme-choice]').forEach((item) => {
+        const chosen = item.dataset.themeChoice === current;
+        item.setAttribute('aria-checked', chosen ? 'true' : 'false');
+        item.querySelector('[data-theme-check]')?.toggleAttribute('hidden', ! chosen);
+    });
+};
+
+document.addEventListener('click', (event) => {
+    const item = event.target.closest('[data-theme-choice]');
+
+    if (! item) {
+        return;
+    }
+
+    const choice = item.dataset.themeChoice;
+    const root = document.documentElement;
+
+    try {
+        if (choice === 'system') {
+            localStorage.removeItem('gfms-theme');
+        } else {
+            localStorage.setItem('gfms-theme', choice);
+        }
+    } catch (e) {
+        // Storage blocked: the attribute below still applies to this page.
+    }
+
+    if (choice === 'system') {
+        root.removeAttribute('data-theme');
+    } else {
+        root.setAttribute('data-theme', choice);
+    }
+
+    markThemeChoice();
+});
+
+document.addEventListener('DOMContentLoaded', markThemeChoice);
+document.addEventListener('livewire:navigated', markThemeChoice);
+
+/**
  * The public site's entrance: each [data-reveal] rises and fades in once, as it
  * enters the viewport.
  *
