@@ -1,6 +1,6 @@
 # GFMS — how this repo works, and where the EMS redesign stands
 
-_Last updated 2026-11-06._
+_Last updated 2026-11-06 (evening)._
 
 ## 1. The system in one paragraph
 
@@ -104,34 +104,27 @@ win. In short:
 
 ### Not finished: start here
 
-1. **Modal reopen bug.** Opening a form, closing it, then opening another
-   record from the same list doesn't reopen the dialog yet. The dialog follows
-   the Livewire `showForm` property through `emsDialog` in
-   `resources/js/app.js` (`options.model`, `$wire.$watch`). Check that the
-   close → `$wire.set(false)` → `openForm()` sequence fires the watcher.
-2. **Run the full suite again.** The forms-as-modals work is committed
-   (`71227ab`). The suite last ran at 770 of 771 before two small test fixes;
-   both fixed files pass, but there hasn't been a full run since.
-3. **Gamefowl edit from the bird page.** It still links to
-   `/broodcocks/{id}/edit`, which opens the list with the sheet. Ideally the
-   sheet opens on the bird page itself. Breeding edit from a mating page works
-   the same way.
-4. **Remaining EMS pieces:**
+Done since the first version of this list:
+- The modal reopen bug was a test-timing issue. Reopening works.
+- Edit on a bird's page and on a mating's page opens a side sheet right there.
+- Forms open instantly with a skeleton.
+- The responsive sweep is clean at 375, 768, 1024 and 1366px.
+- The sidebar has the EMS look.
+- The top bar has the Light / Dark / System menu.
+
+Still to do:
+1. **Remaining EMS pieces:**
    - Empty and error states with Retry.
    - Breadcrumbs on detail pages.
    - Combobox for searchable selects.
    - Command palette restyle.
-   - The app shell: sidebar with 3 states, and the account menu with
-     Light / Dark / System.
+   - Account menu in the top bar (avatar, name, sign out).
    - The DataTable card with toolbar and page size.
-5. **EMS copy pass:** sentence-case titles ("Health records", not "Health
-   Records") and buttons, and removing intro sentences. Change each test in
-   the same commit as its wording.
-6. **Responsiveness:** rerun the sweep at 375, 768, 1024, 1366 and 1517px.
-   The tables on five lists overflowed at 768–1024 before the icon actions
-   went in.
-7. **Finish:** push `redesign/ems`, open PRs (fixes first, then the redesign),
-   and merge to `main` only when the owner says so.
+2. **EMS copy pass:** sentence-case titles ("Health records") and buttons, and
+   removing intro sentences. Change each test in the same commit as its
+   wording.
+3. **Ship it:** push `redesign/ems`, open PRs (fixes first, then the
+   redesign), and merge to `main` only when the owner says so.
 
 ### Known decisions against the EMS spec (keep them)
 
