@@ -87,7 +87,7 @@
 
     {{-- What needs doing: two columns on a desktop, one on a phone. --}}
     <div class="mt-16 grid gap-x-12 gap-y-14 lg:grid-cols-2" data-reveal>
-        <section aria-labelledby="vaccinations-heading">
+        <section class="min-w-0" aria-labelledby="vaccinations-heading">
             <div class="flex flex-wrap items-end justify-between gap-x-4 border-b border-border pb-3">
                 <h2 id="vaccinations-heading" class="{{ $headingClass }}">Vaccinations needing attention</h2>
                 @if (Route::has('health.schedule'))
@@ -158,7 +158,7 @@
             @endif
         </section>
 
-        <section aria-labelledby="mortality-heading">
+        <section class="min-w-0" aria-labelledby="mortality-heading">
             <div class="flex flex-wrap items-end justify-between gap-x-4 border-b border-border pb-3">
                 <h2 id="mortality-heading" class="{{ $headingClass }}">Recent mortality</h2>
                 <span class="text-[14px] lg:text-xs text-muted-foreground"><span class="datum">{{ $this->deathsThisYear }}</span> this year</span>

@@ -175,127 +175,130 @@
         {{-- Wider screens: the ledger. No horizontal scroll wrapper - that would
              make its own scroll box and stop the header sticking - so the
              least load-bearing columns drop out below xl and 2xl instead. --}}
-        <table class="d-table hidden w-full md:table [&_td]:border-border [&_th]:border-border">
-            <thead>
-                <tr>
-                    @foreach ($columns as $column)
-                        @php
-                            $isSorted = $column['sort'] !== null && $sortBy === $column['sort'];
-                            $ariaSort = $isSorted ? ($sortDirection === 'asc' ? 'ascending' : 'descending') : 'none';
-                        @endphp
-                        <th scope="col"
-                            @if ($column['sort'] !== null) aria-sort="{{ $ariaSort }}" @endif
-                            @class([
-                                'sticky top-0 z-10 bg-background px-3 py-2 text-[13px] lg:text-[11px] font-semibold text-muted-foreground whitespace-nowrap',
-                                'text-right' => $column['align'] === 'right',
-                                'text-left' => $column['align'] !== 'right',
-                                $column['cell'],
-                            ])>
-                            @if ($column['sort'] !== null)
-                                <button type="button" wire:click="sort('{{ $column['sort'] }}')"
-                                        @class([
-                                            'inline-flex items-center gap-1 hover:text-foreground',
-                                            'flex-row-reverse' => $column['align'] === 'right',
-                                            'text-foreground' => $isSorted,
-                                        ])>
+        {{-- EMS: a wide table scrolls inside its own container; the page never does. --}}
+        <div class="overflow-x-auto">
+            <table class="d-table hidden w-full md:table [&_td]:border-border [&_th]:border-border">
+                <thead>
+                    <tr>
+                        @foreach ($columns as $column)
+                            @php
+                                $isSorted = $column['sort'] !== null && $sortBy === $column['sort'];
+                                $ariaSort = $isSorted ? ($sortDirection === 'asc' ? 'ascending' : 'descending') : 'none';
+                            @endphp
+                            <th scope="col"
+                                @if ($column['sort'] !== null) aria-sort="{{ $ariaSort }}" @endif
+                                @class([
+                                    'sticky top-0 z-10 bg-background px-3 py-2 text-[13px] lg:text-[11px] font-semibold text-muted-foreground whitespace-nowrap',
+                                    'text-right' => $column['align'] === 'right',
+                                    'text-left' => $column['align'] !== 'right',
+                                    $column['cell'],
+                                ])>
+                                @if ($column['sort'] !== null)
+                                    <button type="button" wire:click="sort('{{ $column['sort'] }}')"
+                                            @class([
+                                                'inline-flex items-center gap-1 hover:text-foreground',
+                                                'flex-row-reverse' => $column['align'] === 'right',
+                                                'text-foreground' => $isSorted,
+                                            ])>
+                                        {{ $column['label'] }}
+                                        @if ($isSorted)
+                                            <svg class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $sortDirection === 'asc' ? 'm4.5 15.75 7.5-7.5 7.5 7.5' : 'm19.5 8.25-7.5 7.5-7.5-7.5' }}"/>
+                                            </svg>
+                                            <span class="sr-only">sorted {{ $sortDirection === 'asc' ? 'ascending' : 'descending' }}</span>
+                                        @endif
+                                    </button>
+                                @else
                                     {{ $column['label'] }}
-                                    @if ($isSorted)
-                                        <svg class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="{{ $sortDirection === 'asc' ? 'm4.5 15.75 7.5-7.5 7.5 7.5' : 'm19.5 8.25-7.5 7.5-7.5-7.5' }}"/>
-                                        </svg>
-                                        <span class="sr-only">sorted {{ $sortDirection === 'asc' ? 'ascending' : 'descending' }}</span>
-                                    @endif
-                                </button>
-                            @else
-                                {{ $column['label'] }}
-                            @endif
-                        </th>
-                    @endforeach
-                    <th scope="col" class="sticky top-0 z-10 bg-background px-3 py-2 text-right text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Actions</th>
-                </tr>
-            </thead>
-
-            <tbody wire:loading.remove wire:target="{{ $loadingTargets }}">
-                @foreach ($records as $record)
-                    <tr wire:key="perf-tr-{{ $record->id }}" class="hover:bg-muted/60">
-                        <td class="whitespace-nowrap px-3 py-2 text-[15px] lg:text-xs font-medium text-foreground">
-                            @if ($record->broodcock !== null)
-                                {{-- Name only: displayName() appends the band in
-                                     parentheses, which the tag already shows. --}}
-                                <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate
-                                   class="inline-flex min-h-11 items-center gap-2 hover:underline">
-                                    <x-band-tag :bloodline="$record->broodcock->bloodline"
-                                                :band="$record->broodcock->band_number" size="xs" />
-                                    {{ $record->broodcock->name }}
-                                </a>
-                            @else
-                                <span class="font-normal text-muted-foreground">Bird removed</span>
-                            @endif
-                        </td>
-                        <td class="datum whitespace-nowrap px-3 py-2 text-[15px] lg:text-xs text-foreground">
-                            {{ $record->event_date->format('d M Y') }}
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-2">
-                            <span class="d-badge d-badge-soft {{ $record->event_type->badgeClasses() }}">{{ $record->event_type->label() }}</span>
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-2">
-                            <span class="d-badge d-badge-soft {{ $record->result->badgeClasses() }}">{{ $record->result->label() }}</span>
-                        </td>
-                        <td @class([
-                            'whitespace-nowrap px-3 py-2 text-right text-[15px] lg:text-xs',
-                            'datum text-foreground' => $record->weight !== null,
-                            'text-muted-foreground' => $record->weight === null,
-                        ])>
-                            {{ $record->weight !== null ? $record->weight.' kg' : 'Not recorded' }}
-                        </td>
-                        <td @class([
-                            'hidden whitespace-nowrap px-3 py-2 text-right text-[15px] lg:text-xs xl:table-cell',
-                            'datum text-foreground' => $record->durationLabel() !== null,
-                            'text-muted-foreground' => $record->durationLabel() === null,
-                        ])>
-                            {{ $record->durationLabel() ?? 'Not recorded' }}
-                        </td>
-                        <td class="hidden whitespace-nowrap px-3 py-2 xl:table-cell">
-                            @if ($record->rating === null)
-                                <span class="text-[14px] lg:text-xs text-muted-foreground">Not rated</span>
-                            @else
-                                {{-- Ink stars, not amber: colour in this system means
-                                     bloodline, so a rating is drawn with fill and
-                                     outline instead of hue. --}}
-                                <span class="inline-flex items-center gap-0.5" role="img"
-                                      aria-label="{{ $record->rating }} out of 5 stars">
-                                    @for ($star = 1; $star <= 5; $star++)
-                                        <svg class="h-4 w-4 {{ $star <= $record->rating ? 'text-foreground' : 'text-muted-foreground' }}"
-                                             viewBox="0 0 20 20" aria-hidden="true"
-                                             fill="{{ $star <= $record->rating ? 'currentColor' : 'none' }}"
-                                             stroke="currentColor"
-                                             stroke-width="{{ $star <= $record->rating ? '0' : '1.25' }}">
-                                            <path stroke-linejoin="round" d="M10 1.5l2.6 5.27 5.82.85-4.21 4.1.99 5.79L10 14.78l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85L10 1.5z"/>
-                                        </svg>
-                                    @endfor
-                                </span>
-                            @endif
-                        </td>
-                        <td class="hidden max-w-[11rem] truncate px-3 py-2 text-[15px] lg:text-xs text-muted-foreground 2xl:table-cell"
-                            title="{{ $record->recordedBy?->full_name }}">
-                            {{ $record->recordedBy?->full_name ?? 'Not recorded' }}
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-2 text-right">
-                            <span class="inline-flex items-center justify-end gap-0.5">
-                                @can('update', $record)
-                                    <x-ui.row-action icon="pencil" :label="'Edit the '.$record->event_type->label().' record'" :href="route('performance.edit', $record)" wire:click.prevent="openForm({{ $record->id }})" />
-                                @endcan
-                                @can('delete', $record)
-                                    <x-ui.row-action icon="trash-2" :label="'Delete the '.$record->event_type->label().' record'" :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
-                                @endcan
-                            </span>
-                        </td>
+                                @endif
+                            </th>
+                        @endforeach
+                        <th scope="col" class="sticky top-0 z-10 bg-background px-3 py-2 text-right text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Actions</th>
                     </tr>
-                @endforeach
-            </tbody>
+                </thead>
 
-            <x-table-skeleton :cols="6" wire:loading wire:target="{{ $loadingTargets }}" />
-        </table>
+                <tbody wire:loading.remove wire:target="{{ $loadingTargets }}">
+                    @foreach ($records as $record)
+                        <tr wire:key="perf-tr-{{ $record->id }}" class="hover:bg-muted/60">
+                            <td class="whitespace-nowrap px-3 py-2 text-[15px] lg:text-xs font-medium text-foreground">
+                                @if ($record->broodcock !== null)
+                                    {{-- Name only: displayName() appends the band in
+                                         parentheses, which the tag already shows. --}}
+                                    <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate
+                                       class="inline-flex min-h-11 items-center gap-2 hover:underline">
+                                        <x-band-tag :bloodline="$record->broodcock->bloodline"
+                                                    :band="$record->broodcock->band_number" size="xs" />
+                                        {{ $record->broodcock->name }}
+                                    </a>
+                                @else
+                                    <span class="font-normal text-muted-foreground">Bird removed</span>
+                                @endif
+                            </td>
+                            <td class="datum whitespace-nowrap px-3 py-2 text-[15px] lg:text-xs text-foreground">
+                                {{ $record->event_date->format('d M Y') }}
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-2">
+                                <span class="d-badge d-badge-soft {{ $record->event_type->badgeClasses() }}">{{ $record->event_type->label() }}</span>
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-2">
+                                <span class="d-badge d-badge-soft {{ $record->result->badgeClasses() }}">{{ $record->result->label() }}</span>
+                            </td>
+                            <td @class([
+                                'whitespace-nowrap px-3 py-2 text-right text-[15px] lg:text-xs',
+                                'datum text-foreground' => $record->weight !== null,
+                                'text-muted-foreground' => $record->weight === null,
+                            ])>
+                                {{ $record->weight !== null ? $record->weight.' kg' : 'Not recorded' }}
+                            </td>
+                            <td @class([
+                                'hidden whitespace-nowrap px-3 py-2 text-right text-[15px] lg:text-xs xl:table-cell',
+                                'datum text-foreground' => $record->durationLabel() !== null,
+                                'text-muted-foreground' => $record->durationLabel() === null,
+                            ])>
+                                {{ $record->durationLabel() ?? 'Not recorded' }}
+                            </td>
+                            <td class="hidden whitespace-nowrap px-3 py-2 xl:table-cell">
+                                @if ($record->rating === null)
+                                    <span class="text-[14px] lg:text-xs text-muted-foreground">Not rated</span>
+                                @else
+                                    {{-- Ink stars, not amber: colour in this system means
+                                         bloodline, so a rating is drawn with fill and
+                                         outline instead of hue. --}}
+                                    <span class="inline-flex items-center gap-0.5" role="img"
+                                          aria-label="{{ $record->rating }} out of 5 stars">
+                                        @for ($star = 1; $star <= 5; $star++)
+                                            <svg class="h-4 w-4 {{ $star <= $record->rating ? 'text-foreground' : 'text-muted-foreground' }}"
+                                                 viewBox="0 0 20 20" aria-hidden="true"
+                                                 fill="{{ $star <= $record->rating ? 'currentColor' : 'none' }}"
+                                                 stroke="currentColor"
+                                                 stroke-width="{{ $star <= $record->rating ? '0' : '1.25' }}">
+                                                <path stroke-linejoin="round" d="M10 1.5l2.6 5.27 5.82.85-4.21 4.1.99 5.79L10 14.78l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85L10 1.5z"/>
+                                            </svg>
+                                        @endfor
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="hidden max-w-[11rem] truncate px-3 py-2 text-[15px] lg:text-xs text-muted-foreground 2xl:table-cell"
+                                title="{{ $record->recordedBy?->full_name }}">
+                                {{ $record->recordedBy?->full_name ?? 'Not recorded' }}
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-2 text-right">
+                                <span class="inline-flex items-center justify-end gap-0.5">
+                                    @can('update', $record)
+                                        <x-ui.row-action icon="pencil" :label="'Edit the '.$record->event_type->label().' record'" :href="route('performance.edit', $record)" wire:click.prevent="openForm({{ $record->id }})" />
+                                    @endcan
+                                    @can('delete', $record)
+                                        <x-ui.row-action icon="trash-2" :label="'Delete the '.$record->event_type->label().' record'" :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
+                                    @endcan
+                                </span>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+
+                <x-table-skeleton :cols="6" wire:loading wire:target="{{ $loadingTargets }}" />
+            </table>
+        </div>
 
         <div class="mt-6 border-t border-border pt-4">
             {{ $records->links() }}
