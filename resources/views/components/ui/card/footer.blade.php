@@ -1,3 +1,3 @@
-<div {{ $attributes->class('flex items-center px-6') }}>
+<div {{ $attributes->class('flex items-center px-5') }}>
     {{ $slot }}
 </div>

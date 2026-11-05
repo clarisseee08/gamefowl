@@ -30,9 +30,22 @@ final class Overview extends Component
     #[Url(except: 12)]
     public int $trendMonths = 12;
 
+    /**
+     * Add gamefowl opens its form in a dialog over the dashboard rather than
+     * sending the owner to another page (the owner's decision). The form
+     * component is unchanged.
+     */
+    public bool $showForm = false;
+
     public function mount(): void
     {
         $this->authorize('viewAny', BreedingRecord::class);
+    }
+
+    public function openForm(): void
+    {
+        $this->authorize('create', Broodcock::class);
+        $this->showForm = true;
     }
 
     // -----------------------------------------------------------------

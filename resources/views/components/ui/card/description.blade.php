@@ -1,1 +1,1 @@
-<p {{ $attributes->class('text-sm text-muted-foreground') }}>{{ $slot }}</p>
+<p {{ $attributes->class('text-xs text-muted-foreground') }}>{{ $slot }}</p>

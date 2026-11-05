@@ -150,6 +150,22 @@ final class DashboardTest extends TestCase
     }
 
     /**
+     * Add gamefowl opens the form in a dialog on the dashboard itself, rather
+     * than navigating to the gamefowl list to open it there.
+     */
+    public function test_add_gamefowl_opens_the_form_in_a_dialog_on_the_dashboard(): void
+    {
+        Livewire::actingAs(User::factory()->staff()->create())
+            ->test(Overview::class)
+            ->assertSet('showForm', false)
+            ->assertSee('Add a Gamefowl')
+            ->call('openForm')
+            ->assertSet('showForm', true)
+            ->assertNoRedirect()
+            ->assertSeeLivewire('broodcocks.form');
+    }
+
+    /**
      * The first tile counts every bird on record, sold and deceased included,
      * so it says so. "Total broodcocks" read as the flock on the farm, which
      * is the smaller number in the heading above it.

@@ -1,3 +1,3 @@
-<div {{ $attributes->class('px-6') }}>
+<div {{ $attributes->class('px-5') }}>
     {{ $slot }}
 </div>

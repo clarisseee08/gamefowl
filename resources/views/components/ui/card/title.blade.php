@@ -3,4 +3,4 @@
     'as' => 'h2',
 ])
 
-<{{ $as }} {{ $attributes->class('text-base leading-none font-semibold text-card-foreground') }}>{{ $slot }}</{{ $as }}>
+<{{ $as }} {{ $attributes->class('text-sm leading-none font-semibold text-card-foreground') }}>{{ $slot }}</{{ $as }}>

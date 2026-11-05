@@ -225,6 +225,10 @@ clone. `/design` and `docs/design-brief.md` are the real references.)
 The owner's decisions on it — and every screen's status — are in
 `docs/design-audit.md`; where EMS and this file disagree, those decisions win.
 
+**Any UI work uses the EMS design system** — the owner's standing instruction.
+Build from the wrappers in `resources/views/components/ui/` (shown on `/design`),
+at EMS density, type sizes and spacing.
+
 The short version:
 
 - **Colour means bloodline and nothing else.** Everything else is ink, rule, and
