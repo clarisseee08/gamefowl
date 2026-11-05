@@ -63,14 +63,14 @@
 @endphp
 
 <div x-data="emsDialog({ model: @js($model), guardDirty: @js((bool) $guardDirty) })"
-     x-on:ems-dialog.window="if ($event.detail === @js($id)) openNow()"
+     x-on:ems-dialog.window="if (($event.detail?.id ?? $event.detail) === @js($id)) openNow($event.detail?.wait === true)"
      x-on:ems-close-form.window="requestClose()"
      {{ $attributes }}>
     <dialog x-ref="dialog" wire:ignore.self class="d-modal ems-modal"
             aria-labelledby="{{ $id }}-title" @if ($description) aria-describedby="{{ $id }}-description" @endif
             x-on:cancel.prevent="requestClose()">
         <div x-ref="panel" tabindex="-1"
-             class="ems-modal-panel group/dialog relative flex flex-col gap-0 overflow-hidden bg-card/95 p-0 text-card-foreground shadow-2xl outline-none backdrop-blur-xl"
+             class="ems-modal-panel group/dialog relative flex flex-col gap-0 overflow-hidden bg-card p-0 text-card-foreground shadow-2xl outline-none"
              x-bind:class="maximized ? '{{ $maximized }}' : '{{ $normal }}'">
 
             <div class="absolute top-2 right-2 z-50 flex items-center gap-1 lg:top-3 lg:right-3"
@@ -132,7 +132,14 @@
                 </div>
             </form>
             @else
-                <div class="flex min-h-0 flex-1 flex-col overflow-hidden" x-on:input="dirty = true" x-on:change="dirty = true">
+                {{-- An edit waits for its record: the shape of a form stands in
+                     until the server answers. A new form never waits. --}}
+                <div x-show="loading" x-cloak class="flex min-h-0 flex-1 flex-col" aria-busy="true">
+                    <div class="px-5 pt-5 pb-3"><x-ui.skeleton class="h-5 w-48" /></div>
+                    <x-ui.form-skeleton :fields="5" :marker="false" />
+                </div>
+
+                <div x-show="! loading" class="flex min-h-0 flex-1 flex-col overflow-hidden" x-on:input="dirty = true" x-on:change="dirty = true">
                 <div class="flex shrink-0 flex-col gap-2 px-5 pt-5 pb-3 text-left">
                     {{-- While the form is still loading its title is not known yet - an
                          edit would read "Add" for a moment - so a bar stands in. --}}

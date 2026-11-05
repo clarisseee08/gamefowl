@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\BroodcockPhotoController;
+use App\Http\Controllers\CommandSearchController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DesignGalleryController;
 use App\Http\Controllers\DiagnosticsController;
@@ -96,6 +97,9 @@ Route::middleware('active')->group(function (): void {
 
 Route::middleware(['auth', 'active'])->group(function (): void {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+
+    /* Records for the command palette (Ctrl+K). */
+    Route::get('/search', CommandSearchController::class)->middleware('throttle:120,1')->name('search');
 
     /* Broodcocks - the central entity. */
     Route::prefix('broodcocks')->name('broodcocks.')->group(function (): void {

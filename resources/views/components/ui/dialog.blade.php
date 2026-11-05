@@ -35,7 +35,7 @@
             aria-labelledby="{{ $id }}-title" @if ($description) aria-describedby="{{ $id }}-description" @endif
             x-on:cancel.prevent="requestClose()">
         <div x-ref="panel" tabindex="-1"
-             class="ems-modal-panel relative flex max-h-[90vh] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] flex-col gap-0 overflow-hidden rounded-xl border border-border/60 bg-card/95 p-0 text-card-foreground shadow-2xl outline-none backdrop-blur-xl {{ $width }}">
+             class="ems-modal-panel relative flex max-h-[90vh] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] flex-col gap-0 overflow-hidden rounded-xl border border-border/60 bg-card p-0 text-card-foreground shadow-2xl outline-none {{ $width }}">
             <button type="button" x-on:click="requestClose()"
                     class="absolute top-2 right-2 inline-flex size-11 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:ring-2 focus:ring-ring focus:outline-none lg:top-3 lg:right-3 lg:size-7">
                 <x-ui.icon name="x" class="size-3.5" />
@@ -54,6 +54,10 @@
             </div>
 
             <div class="flex shrink-0 justify-end gap-2.5 border-t border-border/60 bg-background/60 p-3">
+                {{-- Anything to do from here (Edit), before the OK that closes it. --}}
+                @isset($actions)
+                    {{ $actions }}
+                @endisset
                 <button type="button" x-on:click="requestClose()"
                         class="inline-flex h-11 min-w-[80px] flex-1 items-center justify-center rounded-lg bg-primary px-4 text-sm text-primary-foreground shadow-lg shadow-primary/20 outline-none transition-transform hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-card active:scale-95 sm:flex-none lg:h-7 lg:text-xs">OK</button>
             </div>

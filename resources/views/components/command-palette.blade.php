@@ -5,8 +5,8 @@
 
     /*
      * Route targets are built server-side and filtered by role, so the palette
-     * can never offer a jump the Policy would then reject. Bird search is added
-     * by the Livewire island inside; this list is the static half.
+     * can never offer a jump the Policy would then reject. This list is the
+     * static half; records come from CommandSearchController as you type.
      */
     $targets = collect([
         ['label' => 'Dashboard', 'hint' => 'Go to', 'route' => 'dashboard', 'internal' => true],
@@ -58,16 +58,44 @@
         query: '',
         active: 0,
         targets: @js($targets),
+        searchUrl: @js(route('search')),
+        records: [],
+        searching: false,
+        timer: null,
+        request: null,
         get results() {
             const q = this.query.trim().toLowerCase();
             if (! q) return this.targets.slice(0, 8);
-            return this.targets.filter(t => t.label.toLowerCase().includes(q)).slice(0, 8);
+            const pages = this.targets.filter(t => t.label.toLowerCase().includes(q)).slice(0, 5);
+            return [...pages, ...this.records];
         },
         show() {
             this.open = true;
             this.query = '';
+            this.records = [];
             this.active = 0;
             this.$nextTick(() => this.$refs.input?.focus());
+        },
+        {{-- Records are asked for 200ms after typing stops, two characters
+             or more; a newer query cancels the one still in flight, and an
+             answer is used only if the box still says what was asked. --}}
+        search() {
+            this.active = 0;
+            clearTimeout(this.timer);
+            const q = this.query.trim();
+            if (q.length < 2) { this.request?.abort(); this.records = []; this.searching = false; return; }
+            this.searching = true;
+            this.timer = setTimeout(async () => {
+                this.request?.abort();
+                this.request = new AbortController();
+                try {
+                    const response = await fetch(this.searchUrl + '?q=' + encodeURIComponent(q), { headers: { Accept: 'application/json' }, signal: this.request.signal });
+                    const data = await response.json();
+                    if (this.query.trim() === q) { this.records = data.results ?? []; this.searching = false; }
+                } catch (error) {
+                    if (error.name !== 'AbortError') { this.searching = false; }
+                }
+            }, 200);
         },
         move(delta) {
             const n = this.results.length;
@@ -131,9 +159,9 @@
                        @keydown.down.prevent="move(1)"
                        @keydown.up.prevent="move(-1)"
                        @keydown.enter.prevent="go()"
-                       @input="active = 0"
-                       placeholder="Jump to a screen…"
-                       aria-label="Search commands"
+                       @input="search()"
+                       placeholder="Search gamefowl, matings or pages…"
+                       aria-label="Search"
                        class="min-h-11 w-full border-0 bg-transparent py-3 text-[16px] text-foreground placeholder:text-muted-foreground focus:outline-none">
                 <kbd class="d-kbd d-kbd-sm datum hidden text-muted-foreground sm:inline-flex">Esc</kbd>
             </div>
@@ -141,18 +169,23 @@
             <ul class="d-menu max-h-[50vh] w-full flex-nowrap overflow-y-auto p-1.5 [--d-menu-active-bg:var(--color-primary-50)] [--d-menu-active-fg:var(--color-primary-700)]" role="listbox">
                 <template x-for="(item, i) in results" :key="item.url + i">
                     <li>
+                        <span x-show="i === 0 || results[i - 1].group !== item.group"
+                              class="d-menu-title px-2.5 pt-2 pb-1 text-[11px] font-medium text-muted-foreground" x-text="item.group"></span>
                         <a :href="item.url" wire:navigate
                            @mouseenter="active = i"
                            :class="active === i ? 'd-menu-active' : 'text-foreground'"
-                           class="flex min-h-11 items-center gap-3 px-2.5 text-[14px]"
+                           class="flex min-h-11 items-center gap-3 px-2.5 text-[14px] lg:min-h-9 lg:text-xs"
                            :aria-selected="active === i"
                            role="option">
-                            <span class="text-[11px] uppercase tracking-[0.07em] text-muted-foreground" x-text="item.hint"></span>
-                            <span class="truncate" x-text="item.label"></span>
+                            <span class="min-w-0 flex-1 truncate" x-text="item.label"></span>
+                            <span class="shrink-0 truncate text-[12px] text-muted-foreground lg:text-[11px]" x-text="item.hint"></span>
                         </a>
                     </li>
                 </template>
-                <li x-show="results.length === 0" class="px-4 py-6 text-center text-[14px] text-muted-foreground">
+                <li x-show="searching" class="px-4 py-3 text-center text-[14px] text-muted-foreground lg:text-xs">
+                    Searching records&hellip;
+                </li>
+                <li x-show="! searching && results.length === 0" class="px-4 py-6 text-center text-[14px] text-muted-foreground">
                     Nothing matches that.
                 </li>
             </ul>

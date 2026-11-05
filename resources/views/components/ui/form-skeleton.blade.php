@@ -1,6 +1,12 @@
 @props([
     /** How many label-and-field pairs to draw. */
     'fields' => 5,
+    /**
+     * Marks this as "the form has not arrived yet", which hides the dialog's
+     * title behind a bar (form-dialog). Off for a skeleton that is always in
+     * the dialog and only shown on demand - or the title would never appear.
+     */
+    'marker' => true,
 ])
 
 {{--
@@ -10,7 +16,7 @@
     fields land. Label bars are short, field bars full width, as the real
     form is laid out.
 --}}
-<div data-form-skeleton {{ $attributes->class('space-y-5 px-5 pt-1 pb-5') }} aria-busy="true">
+<div @if ($marker) data-form-skeleton @endif {{ $attributes->class('space-y-5 px-5 pt-1 pb-5') }} aria-busy="true">
     <span class="sr-only" role="status">Loading the form&hellip;</span>
     @for ($i = 0; $i < $fields; $i++)
         <div class="space-y-2">

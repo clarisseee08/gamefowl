@@ -29,6 +29,14 @@
         x-data="{
             collapsed: localStorage.getItem('gfms-sidebar') === '1',
             mobileNav: false,
+            toggleSidebar() {
+                if (! matchMedia('(min-width: 1024px)').matches) {
+                    this.mobileNav = true;
+                    return;
+                }
+                this.collapsed = ! this.collapsed;
+                localStorage.setItem('gfms-sidebar', this.collapsed ? '1' : '0');
+            },
         }"
         class="flex h-full w-full overflow-hidden"
     >

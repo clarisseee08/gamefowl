@@ -5,6 +5,8 @@
     'description' => null,
     /** Inline SVG path data. Optional. */
     'icon' => null,
+    /** Inside a card: no box of its own - the card is the box. */
+    'bare' => false,
 ])
 
 {{--
@@ -45,7 +47,7 @@
       is 17px and the body 15px, because this text is the only thing on the
       screen at the moment it appears.
 --}}
-<div {{ $attributes->merge(['class' => 'flex flex-col items-center justify-center rounded-box border border-border bg-base-100 px-6 py-12 text-center']) }}>
+<div {{ $attributes->class(['flex flex-col items-center justify-center px-6 text-center', 'rounded-box border border-border bg-base-100 py-12' => ! $bare]) }}>
     @if ($icon)
         {{-- The circle is a background step, which is how this system draws
              elevation. A shadow would be the other way, and it is banned. --}}

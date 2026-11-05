@@ -38,7 +38,7 @@
         'outline' => 'border-border bg-background text-foreground shadow-xs hover:bg-muted hover:text-foreground',
         'secondary' => 'border-transparent bg-muted text-foreground hover:bg-muted/80',
         'ghost' => 'd-btn-ghost border-transparent bg-transparent text-foreground shadow-none hover:bg-muted hover:text-foreground',
-        'link' => 'd-btn-link border-transparent bg-transparent text-primary no-underline shadow-none underline-offset-4 hover:underline',
+        'link' => 'd-btn-link border-transparent bg-transparent text-primary no-underline shadow-none underline-offset-4',
         'success' => 'border-transparent bg-success text-success-content hover:bg-success/90',
         'outline-destructive' => 'border-destructive bg-transparent text-destructive hover:bg-destructive/10 hover:text-destructive',
         'outline-success' => 'border-success bg-transparent text-success hover:bg-success/10 hover:text-success',

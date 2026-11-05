@@ -12,7 +12,7 @@
     rather than growing, which the EMS spec allows.
 --}}
 <details @if ($open) open @endif {{ $attributes->class('group border-b border-border last:border-b-0') }}>
-    <summary class="flex min-h-11 cursor-pointer list-none items-start justify-between gap-4 rounded-md py-4 text-left text-sm font-medium text-foreground outline-none transition-all hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 lg:min-h-0 [&::-webkit-details-marker]:hidden">
+    <summary class="flex min-h-11 cursor-pointer list-none items-start justify-between gap-4 rounded-md py-4 text-left text-sm font-medium text-foreground outline-none transition-all focus-visible:ring-[3px] focus-visible:ring-ring/50 lg:min-h-0 [&::-webkit-details-marker]:hidden">
         {{ $title }}
         <x-ui.icon name="chevron-down" class="pointer-events-none size-4 shrink-0 translate-y-0.5 text-muted-foreground transition-transform duration-200 group-open:rotate-180" />
     </summary>

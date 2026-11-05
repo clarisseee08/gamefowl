@@ -5,6 +5,8 @@
     'label' => null,
     /** icon (the row-actions kebab, the default) · button (an outline app button) · bare (style it yourself) */
     'triggerVariant' => 'icon',
+    /** Replaces the panel's shape (width, radius, padding) - the account menu's hero panel. */
+    'panelClass' => null,
 ])
 
 {{--
@@ -30,6 +32,8 @@
         'button' => "inline-flex h-11 shrink-0 items-center gap-2 rounded-lg border border-border bg-background px-4 text-sm font-medium text-foreground shadow-sm outline-none transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50 lg:h-7 lg:px-3 lg:text-xs [&_svg:not([class*='size-'])]:size-4 lg:[&_svg:not([class*='size-'])]:size-3.5",
         'bare' => 'rounded-md outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
     ][$triggerVariant] ?? '';
+
+    $panelShape = $panelClass ?? 'min-w-[8rem] rounded-md p-1';
 @endphp
 
 <div x-data="emsMenu" x-on:click.outside="close(false)" {{ $attributes->class('relative inline-flex') }}>
@@ -61,7 +65,7 @@
          x-on:keydown.escape.prevent.stop="close()"
          x-on:keydown.tab="close(false)"
          x-on:keydown="typeahead($event)"
-         class="z-50 max-h-[min(24rem,70vh)] min-w-[8rem] overflow-x-hidden overflow-y-auto rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md">
+         @class(['z-50 max-h-[min(32rem,80vh)] overflow-x-hidden overflow-y-auto border border-border bg-popover text-popover-foreground shadow-md', $panelShape])>
         {{ $slot }}
     </div>
 </div>

@@ -316,7 +316,13 @@ document.addEventListener('alpine:init', () => {
         maximized: false,
         returnFocus: null,
 
-        // Opened at the click, before the server has answered.
+        // Opened at the click; the server has not confirmed it yet.
+        awaiting: false,
+
+        // Typed in and then discarded: the next close still resets the form.
+        touched: false,
+
+        // ...and the body is the server's to fill (an edit): show a skeleton.
         loading: false,
 
         // Closed again while still loading: the server's late "open" is
@@ -332,22 +338,35 @@ document.addEventListener('alpine:init', () => {
                 this.$wire.$watch(options.model, (value) => {
                     if (value && this.cancelled) {
                         this.cancelled = false;
+                        this.awaiting = false;
                         this.loading = false;
                         this.$wire.set(options.model, false);
 
                         return;
                     }
 
+                    this.awaiting = false;
                     this.loading = false;
                     this.open = Boolean(value);
                 });
             }
 
             this.$watch('open', (value) => {
+                const wasDirty = this.dirty || this.touched;
+                this.touched = false;
                 this.sync(value);
 
-                if (options.model && this.$wire && ! value && this.$wire.get(options.model)) {
+                if (! options.model || ! this.$wire || value) {
+                    return;
+                }
+
+                // A form the server opened (an edit) is closed through the
+                // same property. A pre-built new form opened with no server
+                // call at all; it is reset only if something was typed in it.
+                if (this.$wire.get(options.model)) {
                     this.$wire.set(options.model, false);
+                } else if (wasDirty && typeof this.$wire.resetForm === 'function') {
+                    this.$wire.resetForm();
                 }
             });
             this.$nextTick(() => this.sync(this.open));
@@ -372,16 +391,22 @@ document.addEventListener('alpine:init', () => {
             return this.$refs.dialog.querySelector('[data-loading]') !== null;
         },
 
-        /** Open at once, from a click; the server's answer fills it in. */
-        openNow() {
-            this.loading = Boolean(options.model);
+        /**
+         * Open at once, from a click. `wait` is for a form the server has to
+         * fill first (an edit): a skeleton stands in until it answers. A new,
+         * blank form is already on the page and shows straight away.
+         */
+        openNow(wait = false) {
+            this.awaiting = wait && Boolean(options.model);
+            this.loading = this.awaiting;
             this.cancelled = false;
             this.open = true;
         },
 
         requestClose() {
-            if (this.loading) {
+            if (this.awaiting) {
                 this.cancelled = true;
+                this.awaiting = false;
                 this.loading = false;
                 this.open = false;
 
@@ -399,7 +424,8 @@ document.addEventListener('alpine:init', () => {
                     cancelLabel: 'Keep editing',
                     confirmLabel: 'Discard',
                     tone: 'danger',
-                    run: () => { this.dirty = false; this.open = false; },
+                    // Discarding keeps `touched`, so the close still resets the form.
+                    run: () => { this.touched = true; this.dirty = false; this.open = false; },
                 });
 
                 return;

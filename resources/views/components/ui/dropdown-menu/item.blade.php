@@ -30,6 +30,15 @@
         ($inset || $hasIndicator) ? 'pl-8' : '',
     ];
 
+    /*
+     * The item's own click (close the menu) and any click passed in run as
+     * ONE handler. Written as two x-on:click attributes, the browser keeps
+     * only the first - the menu closed and the passed action (Sign out)
+     * silently never ran.
+     */
+    $onClick = trim('close(); '.(string) $attributes->get('x-on:click', ''));
+    $attributes = $attributes->except('x-on:click');
+
     $attrs = $attributes->class($classes)->merge(array_filter([
         'role' => $role,
         'tabindex' => '-1',
@@ -39,9 +48,9 @@
 @endphp
 
 @if ($href && ! $disabled)
-    <a href="{{ $href }}" x-on:mouseenter="$el.focus()" x-on:keydown.space.prevent="$el.click()" x-on:click="close()" {{ $attrs }}>
+    <a href="{{ $href }}" x-on:mouseenter="$el.focus()" x-on:keydown.space.prevent="$el.click()" x-on:click="{{ $onClick }}" {{ $attrs }}>
 @else
-    <button type="button" x-on:mouseenter="$el.focus()" x-on:click="close()" @disabled($disabled) {{ $attrs }}>
+    <button type="button" x-on:mouseenter="$el.focus()" x-on:click="{{ $onClick }}" @disabled($disabled) {{ $attrs }}>
 @endif
     @if ($hasIndicator && $checked)
         <span class="absolute left-2 flex size-3.5 items-center justify-center">

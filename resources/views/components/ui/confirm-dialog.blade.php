@@ -22,7 +22,7 @@
             aria-labelledby="ems-confirm-title" aria-describedby="ems-confirm-description"
             x-on:cancel.prevent="cancel()">
         <div x-ref="panel" tabindex="-1"
-             class="ems-modal-panel flex w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] flex-col gap-0 overflow-hidden rounded-xl border border-border/60 bg-card/95 p-0 text-card-foreground shadow-2xl outline-none backdrop-blur-xl sm:w-[448px]">
+             class="ems-modal-panel flex w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] flex-col gap-0 overflow-hidden rounded-xl border border-border/60 bg-card p-0 text-card-foreground shadow-2xl outline-none sm:w-[448px]">
             <div class="p-5">
                 <h2 id="ems-confirm-title" class="block text-base font-semibold text-foreground" x-text="title"></h2>
                 <p id="ems-confirm-description" class="mt-1.5 block text-sm leading-snug text-foreground"

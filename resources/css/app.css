@@ -418,6 +418,18 @@
    Density is desktop-only, like the control sizes: below lg a menu item or a
    table row keeps its touch-sized spacing. */
 @layer utilities {
+    /* Links carry no underline, at rest or on hover - the owner's call:
+       underlines made the console look unfinished. Colour and position say
+       "link"; hover darkens it. Links inside running text (.long-form)
+       are set in a heavier weight instead. */
+    :where(.d-link, .d-link:hover, .d-btn-link, .d-btn-link:hover, .d-breadcrumbs a, .d-breadcrumbs a:hover) { text-decoration-line: none; }
+    :where(.d-link:hover) { filter: brightness(0.85); }
+
+    /* A field's help line is a paragraph under its control. daisyUI draws
+       .d-label inline, so beside a short control (a date) it sat on the
+       same line as the box. */
+    :where(p.d-label) { display: block; }
+
     /* Buttons: sentence case at 500, no press nudge, no bevel, no noise. */
     :where(.d-btn) {
         text-transform: none;
@@ -613,7 +625,9 @@
    and scales up from 0.98 over 300ms while the backdrop fades in. It rests
    at `scale: none`, not 1 (the sheet at `translate: none`): any other value
    makes the panel the containing block for fixed children, and a select's
-   open list inside a form would be clipped by the panel's scroll area. */
+   open list inside a form would be clipped by the panel's scroll area. The
+   same goes for backdrop-filter, so the EMS blur is on the dialog - the
+   full-screen backdrop - and never on the panel, which is solid. */
 .ems-modal {
     transition: background-color 300ms ease-out, display 300ms allow-discrete, overlay 300ms allow-discrete;
 }
@@ -624,6 +638,7 @@
     transition: opacity 300ms ease-out, scale 300ms ease-out;
 }
 .ems-modal[open] .ems-modal-panel { opacity: 1; scale: none; }
+.ems-modal[open] { backdrop-filter: blur(4px); }
 @starting-style {
     .ems-modal[open] .ems-modal-panel { opacity: 0; scale: 0.98; }
     .ems-modal[open] { background-color: rgb(0 0 0 / 0); }
@@ -1320,18 +1335,21 @@
    17px and 1.7, and every heading clears the sticky header when a contents
    link jumps to it. */
 .long-form h2 {
-    font-family: var(--font-display);
-    font-size: 1.4rem;
-    font-weight: 600;
-    letter-spacing: -0.015em;
-    line-height: 1.25;
-    margin-top: 3rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
     scroll-margin-top: 6rem;
 }
-.long-form h2:first-child { margin-top: 0; }
-.long-form p { margin-top: 1rem; font-size: 17px; line-height: 1.7; color: var(--color-foreground); }
-.long-form a { color: var(--color-primary); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, currentColor 30%, transparent); }
-.long-form a:hover { text-decoration-color: currentColor; }
+.long-form h2:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.long-form p { margin-top: 0.875rem; font-size: 16px; line-height: 1.7; color: var(--color-foreground); }
+/* No underline, as everywhere else (the owner's call); the weight and the
+   green tell a link from the words around it. */
+.long-form a { color: var(--color-primary); font-weight: 600; text-decoration: none; }
+.long-form a:hover { filter: brightness(0.85); }
 
 /* The sign-in photograph settles from 1.04 as it fades in. */
 .auth-photo { animation: sb-settle 600ms var(--ease-out) both; }
@@ -1365,8 +1383,8 @@
 @media (min-width: 1024px) { .sb-wrap { padding-inline: 40px; } }
 
 /* Sections: 64px apart on a phone, 112px on a desktop. */
-.sb-section { padding-block: 64px; }
-@media (min-width: 1024px) { .sb-section { padding-block: 112px; } }
+.sb-section { padding-block: 56px; }
+@media (min-width: 1024px) { .sb-section { padding-block: 88px; } }
 
 /* The kicker: sentence case, 13px, 600, in the accent. Never caps. */
 .sb-eyebrow {
@@ -1378,26 +1396,26 @@
 
 .sb-hero-title {
     font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 2.4rem;
-    line-height: 1.04;
-    letter-spacing: -0.03em;
+    font-weight: 700;
+    font-size: 2.1rem;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
     color: var(--color-foreground);
 }
-@media (min-width: 640px)  { .sb-hero-title { font-size: 3.25rem; } }
-@media (min-width: 1024px) { .sb-hero-title { font-size: 3.6rem; } }
+@media (min-width: 640px)  { .sb-hero-title { font-size: 2.6rem; } }
+@media (min-width: 1024px) { .sb-hero-title { font-size: 3rem; } }
 
 .sb-h2 {
     font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 1.6rem;
+    font-weight: 700;
+    font-size: 1.4rem;
     line-height: 1.2;
     letter-spacing: -0.015em;
 }
-@media (min-width: 1024px) { .sb-h2 { font-size: 2rem; } }
+@media (min-width: 1024px) { .sb-h2 { font-size: 1.75rem; } }
 
 .sb-lead {
-    font-size: 18px;
+    font-size: 16px;
     line-height: 1.6;
     color: var(--color-muted-foreground);
     max-width: 52ch;
@@ -1412,12 +1430,10 @@
     font-size: 15px;
     font-weight: 600;
     color: var(--color-primary);
-    text-decoration: underline;
-    text-decoration-color: color-mix(in srgb, currentColor 30%, transparent);
+    text-decoration: none;
     text-underline-offset: 5px;
-    transition: text-decoration-color 200ms var(--ease-out);
 }
-.sb-link:hover { text-decoration-color: currentColor; }
+.sb-link:hover { filter: brightness(0.85); }
 
 /* Header links. The current page is marked by ink colour and a short accent
    line under the word - not a pill. */
@@ -1460,16 +1476,18 @@
 @media (min-width: 640px) {
     .pill-row { flex-wrap: wrap; overflow: visible; margin-inline: 0; padding-inline: 0; }
 }
+@media (min-width: 1024px) { .pill { min-height: 34px; } }
 .pill {
     display: inline-flex;
     flex-shrink: 0;
     min-height: 44px;
     align-items: center;
     gap: 8px;
-    padding-inline: 16px;
+    padding-inline: 14px;
     border-radius: 999px;
     box-shadow: inset 0 0 0 1px var(--color-input);
-    font-size: 14px;
+    background-color: var(--color-card);
+    font-size: 13px;
     font-weight: 500;
     color: var(--color-foreground);
     white-space: nowrap;
@@ -1737,3 +1755,45 @@
     transition-property: transform, opacity;
     transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1), ease;
 }
+
+/* The family tree's connectors (x-family-tree.branch). Each parent's branch
+   drops a line from its card to a bar that joins the pair, and the bird
+   below rises from that bar - the shape a family tree is read by. Drawn at
+   the muted ink, not the hairline token: a connector carries meaning, so it
+   has to stay visible (3:1) in both themes. */
+.ft-parents { display: flex; align-items: flex-end; justify-content: center; }
+.ft-branch { position: relative; display: flex; flex-direction: column; align-items: center; padding: 0 0.625rem 1.25rem; }
+.ft-branch::after,
+.ft-child::before { content: ''; position: absolute; left: 50%; height: 1.25rem; border-left: 1.5px solid var(--ft-line); }
+.ft-branch::after { bottom: 0; }
+.ft-branch::before { content: ''; position: absolute; bottom: 0; border-bottom: 1.5px solid var(--ft-line); }
+.ft-branch:first-child::before { left: 50%; right: 0; }
+.ft-branch:last-child::before { left: 0; right: 50%; }
+.ft-child { position: relative; padding-top: 1.25rem; }
+.ft-child::before { top: 0; }
+:root { --ft-line: color-mix(in srgb, var(--color-muted-foreground) 60%, transparent); }
+
+/* Forms inside a dialog (x-ui.form-dialog's .ems-modal-panel). The dialog's
+   own title already names the form, so a form's section headings - "What
+   Was Done", "Dates", "Notes" - and the hairlines under them only spent the
+   little height a dialog has (the owner's call). The heading stays for
+   screen readers, which is what each section's aria-labelledby points at;
+   its one-line description and the divider go. Unlayered, so it beats the
+   spacing utilities the same forms use as full pages. */
+.ems-modal-panel section > h2 {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+.ems-modal-panel section > h2 + p { display: none; }
+.ems-modal-panel section > h2 ~ div { margin-top: 0; padding-top: 0; border-top-width: 0; }
+.ems-modal-panel section.border-t { border-top-width: 0; padding-top: 0; margin-top: 1rem; }
+
+/* Field rhythm inside a dialog, at EMS's density: 16px between fields, 6px
+   from a label to its control, no padding above the first section. The same
+   forms keep their roomier spacing as full pages. daisyUI pads its legend
+   top and bottom, which is most of what made the gaps look loose. */
+.ems-modal-panel section:first-child { padding-top: 0.25rem; }
+.ems-modal-panel .space-y-6 > :not(:last-child) { margin-block-start: 0; margin-block-end: 1rem; }
+.ems-modal-panel .gap-6 { gap: 1rem; }
+.ems-modal-panel .d-fieldset-legend { padding-block: 0; margin-bottom: 0.375rem; }
+.ems-modal-panel .d-fieldset-legend + :is(.d-input, .d-textarea, .d-select, div, input, textarea) { margin-top: 0; }
