@@ -20,6 +20,8 @@
             </p>
         </header>
 
+        @include('design.ems')
+
         {{-- 1 ─ ELEVATION. The biggest single lever in the direction change. --}}
         <section>
             <h2 class="text-[19px] font-semibold text-foreground">Elevation</h2>

@@ -146,6 +146,11 @@
     --color-primary-950: #081a11;
     --color-primary-foreground: #ffffff;
 
+    /* EMS's focus colour is the primary (Part B §2.2: --ring: var(--primary)).
+       A name of its own so ring-ring/50 and border-ring read as EMS writes them;
+       it follows primary into the dark theme because it points at it. */
+    --color-ring: var(--color-primary);
+
     /* Brand — the forest green. CHROME ONLY: sidebar, mark, top rail, auth
        panel, PDF. Never a button, link or status pill; DesignSystemGuardTest
        enforces that separation. */
@@ -547,7 +552,10 @@
     100% { box-shadow: 0 0 0 0 var(--attention-ring, rgb(245 158 11 / 0.45)); }
 }
 
-.animate-ems-fade-in { animation: ems-fade-in 0.4s ease-out both; }
+/* `backwards`, not EMS's `both`: a fill that outlives the animation pins
+   opacity at 1 above every ordinary rule, so a disabled or busy button never
+   dimmed. Measured: computed opacity 1 under disabled:opacity-50. */
+.animate-ems-fade-in { animation: ems-fade-in 0.4s ease-out backwards; }
 /* `backwards`, not `both`: a filled opacity animation keeps a stacking context
    after it ends, which would trap a page's fixed overlays under the sidebar. */
 .animate-page-in { animation: ems-page-in 0.3s ease-out backwards; }
@@ -599,6 +607,52 @@
 
 @media (prefers-reduced-motion: reduce) {
     .animate-attention-pulse { animation: none !important; }
+}
+
+/* =====================================================================
+   EMS COMPONENT CSS - the parts a utility class cannot reach
+   =====================================================================
+
+   In the components layer, so a utility on the element (a width, say) still
+   wins. Nothing here is daisyUI's: the slider is a plain range input. */
+@layer components {
+    /* The slider (Part B §5.8): a 6px track filled to --value, a 16px thumb
+       with a primary edge, and a 4px ring on hover and focus. */
+    .ems-range {
+        appearance: none;
+        height: 0.375rem;
+        border-radius: 9999px;
+        background: linear-gradient(var(--color-primary), var(--color-primary)) 0 / var(--value, 0%) 100% no-repeat, var(--color-muted);
+        outline: none;
+        cursor: pointer;
+    }
+    .ems-range::-webkit-slider-thumb {
+        appearance: none;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 9999px;
+        border: 1px solid var(--color-primary);
+        background: white;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        transition: box-shadow 150ms;
+    }
+    .ems-range::-moz-range-thumb {
+        width: 1rem;
+        height: 1rem;
+        border-radius: 9999px;
+        border: 1px solid var(--color-primary);
+        background: white;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    }
+    .ems-range:hover::-webkit-slider-thumb,
+    .ems-range:focus-visible::-webkit-slider-thumb {
+        box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-ring) 50%, transparent);
+    }
+    .ems-range:hover::-moz-range-thumb,
+    .ems-range:focus-visible::-moz-range-thumb {
+        box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-ring) 50%, transparent);
+    }
+    .ems-range:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
 @layer base {
