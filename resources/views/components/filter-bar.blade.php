@@ -77,7 +77,7 @@
              not in the footer: the footer only exists once a filter is active,
              so a loading state living there is invisible on the first search. --}}
         @if ($loading)
-            <div class="shrink-0 text-[14px] text-muted-foreground">{{ $loading }}</div>
+            <div class="shrink-0 text-[14px] lg:text-xs text-muted-foreground">{{ $loading }}</div>
         @endif
     </div>
 
@@ -88,7 +88,7 @@
                      block above and the only markup added afterwards is the
                      .datum span, so there is no path from caller input to
                      rendered HTML here. --}}
-                <p class="text-[14px] text-muted-foreground">{!! $summaryHtml !!}</p>
+                <p class="text-[14px] lg:text-xs text-muted-foreground">{!! $summaryHtml !!}</p>
             @else
                 <span></span>
             @endif

@@ -22,7 +22,7 @@
     <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-5">
         <div class="min-w-0">
             <h2 class="sb-h2">Health History</h2>
-            <p class="mt-2 max-w-[65ch] text-[15px] leading-relaxed text-muted-foreground">
+            <p class="mt-2 max-w-[65ch] text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                 Vaccinations, medications and check-ups for {{ $broodcock->name }}, newest first.
             </p>
         </div>
@@ -55,7 +55,7 @@
         <div class="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-y border-border py-3"
              role="{{ $followUpState === 'Overdue' ? 'alert' : 'status' }}">
             <span class="d-badge d-badge-soft {{ $stateBadge($followUpState) }}">{{ $followUpTitle }}</span>
-            <p class="text-[15px] leading-snug text-foreground">
+            <p class="text-[15px] lg:text-xs leading-snug text-foreground">
                 {{ $followUp->record_type->label() }}@if ($followUp->product_name) ({{ $followUp->product_name }})@endif
                 on <span class="datum">{{ $followUp->next_due_date->format('d M Y') }}</span>.
             </p>
@@ -86,19 +86,19 @@
                 <li wire:key="history-{{ $record->id }}" class="py-4 sm:grid sm:grid-cols-[9rem_minmax(0,1fr)_auto] sm:gap-6">
                     {{-- When --}}
                     <div>
-                        <p class="datum text-[16px] font-medium leading-snug text-foreground">{{ $record->checkup_date->format('d M Y') }}</p>
-                        <p class="mt-0.5 text-[13px] text-muted-foreground">{{ $record->checkup_date->diffForHumans() }}</p>
+                        <p class="datum text-[16px] lg:text-xs font-medium leading-snug text-foreground">{{ $record->checkup_date->format('d M Y') }}</p>
+                        <p class="mt-0.5 text-[13px] lg:text-[11px] text-muted-foreground">{{ $record->checkup_date->diffForHumans() }}</p>
                     </div>
 
                     {{-- What was done --}}
                     <div class="mt-2 min-w-0 sm:mt-0">
                         <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
                             <span class="d-badge d-badge-soft {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
-                            <span class="text-[15px] leading-snug text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
+                            <span class="text-[15px] lg:text-xs leading-snug text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
                         </div>
 
                         @if ($record->dosage || $record->condition)
-                            <p class="mt-1.5 flex flex-wrap gap-x-5 gap-y-0.5 text-[13px] text-muted-foreground">
+                            <p class="mt-1.5 flex flex-wrap gap-x-5 gap-y-0.5 text-[13px] lg:text-[11px] text-muted-foreground">
                                 @if ($record->dosage)
                                     <span>Dosage: <span class="datum text-foreground">{{ $record->dosage }}</span></span>
                                 @endif
@@ -108,10 +108,10 @@
                             </p>
                         @endif
 
-                        <p class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted-foreground">
+                        <p class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] lg:text-[11px] text-muted-foreground">
                             Next due:
                             @if ($record->next_due_date)
-                                <span class="datum text-[15px] text-foreground">{{ $record->next_due_date->format('d M Y') }}</span>
+                                <span class="datum text-[15px] lg:text-xs text-foreground">{{ $record->next_due_date->format('d M Y') }}</span>
                                 <span class="d-badge d-badge-soft {{ $stateBadge($state) }}">{{ $state }}</span>
                             @else
                                 <span>None</span>
@@ -122,7 +122,7 @@
                              promised health status, not the farm's notes. --}}
                         @can('viewRemarks', $record)
                             @if ($record->remarks)
-                                <p class="mt-2 max-w-[65ch] border-l-2 border-border pl-3 text-[13px] leading-snug text-muted-foreground"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
+                                <p class="mt-2 max-w-[65ch] border-l-2 border-border pl-3 text-[13px] lg:text-[11px] leading-snug text-muted-foreground"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
                             @endif
                         @endcan
                     </div>

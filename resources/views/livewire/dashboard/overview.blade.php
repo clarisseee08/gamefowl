@@ -27,8 +27,8 @@
     $breedingShare = $flock['on_farm'] > 0 ? round($flock['breeding'] / $flock['on_farm'] * 100) : null;
     $hasOverdue = $this->overdueCount > 0;
 
-    $headingClass = 'font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground';
-    $labelClass = 'text-[13px] font-semibold text-muted-foreground';
+    $headingClass = 'font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground';
+    $labelClass = 'text-[13px] lg:text-[11px] font-semibold text-muted-foreground';
     $figureClass = 'datum mt-2 font-display text-[2rem] font-semibold leading-none tracking-[-0.025em]';
 
     // A headline figure is a d-stat laid out on paper: the hairline above it
@@ -37,7 +37,7 @@
     $statClass = 'd-stat border-t border-e-0 border-border px-0 pb-0 pt-4';
     $statTitleClass = 'd-stat-title whitespace-normal '.$labelClass;
     $statValueClass = 'd-stat-value '.$figureClass;
-    $statDescClass = 'd-stat-desc whitespace-normal text-[13px] text-muted-foreground';
+    $statDescClass = 'd-stat-desc whitespace-normal text-[13px] lg:text-[11px] text-muted-foreground';
 @endphp
 
 {{--
@@ -98,7 +98,7 @@
             </div>
 
             @if ($this->overdueVaccinations->isEmpty() && $this->upcomingVaccinations->isEmpty())
-                <p class="flex items-start gap-3 py-5 text-[15px] text-foreground">
+                <p class="flex items-start gap-3 py-5 text-[15px] lg:text-xs text-foreground">
                     <svg class="mt-0.5 h-5 w-5 shrink-0 text-success" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
                     </svg>
@@ -116,14 +116,14 @@
                     @foreach ($this->overdueVaccinations as $record)
                         <li class="flex min-h-11 items-center justify-between gap-3 py-3">
                             <div class="min-w-0">
-                                <p class="truncate text-[15px] font-semibold text-foreground">
+                                <p class="truncate text-[15px] lg:text-xs font-semibold text-foreground">
                                     @if ($record->broodcock)
                                         <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate class="hover:underline hover:underline-offset-4">{{ $record->broodcock->name }}</a>
                                     @else
                                         Unknown bird
                                     @endif
                                 </p>
-                                <p class="truncate text-[13px] text-muted-foreground">
+                                <p class="truncate text-[13px] lg:text-[11px] text-muted-foreground">
                                     {{ $record->record_type->label() }}
                                     @if ($record->product_name) &middot; {{ $record->product_name }} @endif
                                 </p>
@@ -137,14 +137,14 @@
                     @foreach ($this->upcomingVaccinations as $record)
                         <li class="flex min-h-11 items-center justify-between gap-3 py-3">
                             <div class="min-w-0">
-                                <p class="truncate text-[15px] font-semibold text-foreground">
+                                <p class="truncate text-[15px] lg:text-xs font-semibold text-foreground">
                                     @if ($record->broodcock)
                                         <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate class="hover:underline hover:underline-offset-4">{{ $record->broodcock->name }}</a>
                                     @else
                                         Unknown bird
                                     @endif
                                 </p>
-                                <p class="truncate text-[13px] text-muted-foreground">
+                                <p class="truncate text-[13px] lg:text-[11px] text-muted-foreground">
                                     {{ $record->record_type->label() }}
                                     @if ($record->product_name) &middot; {{ $record->product_name }} @endif
                                 </p>
@@ -161,11 +161,11 @@
         <section aria-labelledby="mortality-heading">
             <div class="flex flex-wrap items-end justify-between gap-x-4 border-b border-border pb-3">
                 <h2 id="mortality-heading" class="{{ $headingClass }}">Recent mortality</h2>
-                <span class="text-[14px] text-muted-foreground"><span class="datum">{{ $this->deathsThisYear }}</span> this year</span>
+                <span class="text-[14px] lg:text-xs text-muted-foreground"><span class="datum">{{ $this->deathsThisYear }}</span> this year</span>
             </div>
 
             @if ($this->recentMortality->isEmpty())
-                <p class="flex items-start gap-3 py-5 text-[15px] text-foreground">
+                <p class="flex items-start gap-3 py-5 text-[15px] lg:text-xs text-foreground">
                     <svg class="mt-0.5 h-5 w-5 shrink-0 text-success" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
                     </svg>
@@ -176,16 +176,16 @@
                     @foreach ($this->recentMortality as $record)
                         <li class="flex min-h-11 items-center justify-between gap-3 py-3">
                             <div class="min-w-0">
-                                <p class="truncate text-[15px] font-semibold text-foreground">
+                                <p class="truncate text-[15px] lg:text-xs font-semibold text-foreground">
                                     @if ($record->broodcock)
                                         <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate class="hover:underline hover:underline-offset-4">{{ $record->broodcock->name }}</a>
                                     @else
                                         Unknown bird
                                     @endif
                                 </p>
-                                <p class="truncate text-[13px] text-muted-foreground">{{ $record->cause_of_death }}</p>
+                                <p class="truncate text-[13px] lg:text-[11px] text-muted-foreground">{{ $record->cause_of_death }}</p>
                             </div>
-                            <span class="datum shrink-0 text-[14px] text-muted-foreground">
+                            <span class="datum shrink-0 text-[14px] lg:text-xs text-muted-foreground">
                                 {{ $record->date_of_death->format('j M Y') }}
                             </span>
                         </li>
@@ -202,7 +202,7 @@
         <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-4 border-b border-border pb-4">
             <div class="min-w-0">
                 <h2 id="breeding-heading" class="{{ $headingClass }}">Breeding success trend</h2>
-                <p class="mt-2 max-w-[62ch] text-[15px] leading-relaxed text-muted-foreground">
+                <p class="mt-2 max-w-[62ch] text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     Fertility rate per month, worked out from total eggs, not by averaging
                     each mating's percentage, which would let a 2-egg mating count as much
                     as a 200-egg one.
@@ -231,7 +231,7 @@
                     <div class="d-stat-desc mt-3 flex items-center gap-3 whitespace-normal">
                         <x-sparkline :points="$fertilitySeries" tone="primary"
                                      label="Monthly fertility rate over the last {{ count($trend) }} months" />
-                        <span class="text-[13px] text-muted-foreground">Last <span class="datum">{{ count($trend) }}</span> months</span>
+                        <span class="text-[13px] lg:text-[11px] text-muted-foreground">Last <span class="datum">{{ count($trend) }}</span> months</span>
                     </div>
                 </dd>
             </div>
@@ -279,7 +279,7 @@
                     <span class="datum w-16 text-center text-[12px] text-muted-foreground">{{ Str::before($month['label'], ' ') }}</span>
                 @endforeach
             </div>
-            <p class="mt-3 text-[13px] text-muted-foreground">
+            <p class="mt-3 text-[13px] lg:text-[11px] text-muted-foreground">
                 No data means no matings were recorded that month, which is different from a 0% result.
             </p>
         </div>
@@ -297,14 +297,14 @@
                 <div>
                     <h3 class="border-b border-border pb-2 {{ $labelClass }}">{{ $heading }}</h3>
                     @if ($rows->isEmpty())
-                        <p class="py-4 text-[15px] text-muted-foreground">No birds recorded yet.</p>
+                        <p class="py-4 text-[15px] lg:text-xs text-muted-foreground">No birds recorded yet.</p>
                     @else
                         <ul class="divide-y divide-border">
                             @foreach ($rows as $row)
                                 @php $enum = $row->{$field}; @endphp
                                 <li class="flex min-h-11 items-center justify-between gap-3 py-2">
                                     <span class="d-badge d-badge-soft {{ $enum->badgeClasses() }}">{{ $enum->label() }}</span>
-                                    <span class="datum text-[15px] font-medium text-foreground">{{ number_format($row->total) }}</span>
+                                    <span class="datum text-[15px] lg:text-xs font-medium text-foreground">{{ number_format($row->total) }}</span>
                                 </li>
                             @endforeach
                         </ul>
@@ -315,7 +315,7 @@
             <div>
                 <h3 class="border-b border-border pb-2 {{ $labelClass }}">By bloodline</h3>
                 @if ($this->byBloodline->isEmpty())
-                    <p class="py-4 text-[15px] text-muted-foreground">No bloodlines recorded yet.</p>
+                    <p class="py-4 text-[15px] lg:text-xs text-muted-foreground">No bloodlines recorded yet.</p>
                 @else
                     {{-- The one breakdown whose subject IS bloodline carries the
                          band colour, as a dot beside the written name. --}}
@@ -324,9 +324,9 @@
                             <li class="flex min-h-11 items-center justify-between gap-3 py-2">
                                 <span class="flex min-w-0 items-center gap-2.5">
                                     <x-band-dot :bloodline="$row->bloodline" />
-                                    <span class="truncate text-[15px] text-foreground">{{ $row->bloodline }}</span>
+                                    <span class="truncate text-[15px] lg:text-xs text-foreground">{{ $row->bloodline }}</span>
                                 </span>
-                                <span class="datum text-[15px] font-medium text-foreground">{{ number_format($row->total) }}</span>
+                                <span class="datum text-[15px] lg:text-xs font-medium text-foreground">{{ number_format($row->total) }}</span>
                             </li>
                         @endforeach
                     </ul>
@@ -338,7 +338,7 @@
     @if ($this->birdsWithoutPedigree > 0)
         <section class="mt-16 border-t border-border pt-6" aria-labelledby="pedigree-heading" data-reveal>
             <h2 id="pedigree-heading" class="{{ $headingClass }}">Pedigree completeness</h2>
-            <p class="mt-2 max-w-[66ch] text-[15px] leading-relaxed text-muted-foreground">
+            <p class="mt-2 max-w-[66ch] text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                 <span class="datum font-semibold text-foreground">{{ number_format($this->birdsWithoutPedigree) }}</span>
                 {{ Str::plural('bird', $this->birdsWithoutPedigree) }} have no sire or dam recorded, so they
                 cannot appear in a family tree. Recording parents is what turns the bloodline

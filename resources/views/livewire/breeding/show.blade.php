@@ -22,17 +22,17 @@
 --}}
 <div>
     <a href="{{ route('breeding.index') }}" wire:navigate
-       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold underline-offset-4">
+       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] lg:text-xs font-semibold underline-offset-4">
         <span aria-hidden="true">&larr;</span> Back to breeding records
     </a>
 
     <header class="mt-2 flex flex-wrap items-end justify-between gap-x-10 gap-y-5 border-b border-border pb-6 sm:pb-8">
         <div class="min-w-0">
             <p class="sb-line sb-eyebrow" style="--line: 0ms">Breeding record</p>
-            <h1 class="mt-2 text-base font-bold text-foreground" style="--line: 60ms">
+            <h1 class="mt-2 text-base lg:text-xs font-bold text-foreground" style="--line: 60ms">
                 {{ $breeding->sire?->name ?? 'Bird removed' }} &times; {{ $breeding->dam?->name ?? 'Bird removed' }}
             </h1>
-            <p class="sb-line mt-3 text-[15px] text-muted-foreground" style="--line: 120ms">
+            <p class="sb-line mt-3 text-[15px] lg:text-xs text-muted-foreground" style="--line: 120ms">
                 Mated on <span class="datum text-foreground">{{ $breeding->mating_date->format('j F Y') }}</span>
                 @if ($breeding->recordedBy)
                     &middot; recorded by {{ $breeding->recordedBy->full_name }}
@@ -55,18 +55,18 @@
     <section aria-label="The pair" class="mt-8 grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr] sm:gap-4">
         @foreach ([['Sire', $breeding->sire], ['Dam', $breeding->dam]] as [$role, $parent])
             @if (! $loop->first)
-                <span class="hidden text-center font-display text-[22px] text-muted-foreground sm:block" aria-hidden="true">&times;</span>
+                <span class="hidden text-center font-display text-[22px] lg:text-base text-muted-foreground sm:block" aria-hidden="true">&times;</span>
             @endif
 
             {{-- A deleted parent keeps its place in the record, greyed and not
                  linked: the history is kept, but its own page is gone. --}}
             @if ($parent === null || $parent->trashed())
                 <div class="block min-h-11 rounded-[12px] border border-border bg-card p-5">
-                    <span class="block text-[14px] font-medium text-muted-foreground">{{ $role }}</span>
-                    <span class="mt-1 block font-display text-[22px] font-semibold leading-tight tracking-[-0.015em] text-muted-foreground">
+                    <span class="block text-[14px] lg:text-xs font-medium text-muted-foreground">{{ $role }}</span>
+                    <span class="mt-1 block font-display text-[22px] lg:text-base font-semibold leading-tight tracking-[-0.015em] text-muted-foreground">
                         {{ $parent?->name ?? 'Bird removed' }}
                     </span>
-                    <span class="mt-3 block text-[15px] text-muted-foreground">
+                    <span class="mt-3 block text-[15px] lg:text-xs text-muted-foreground">
                         @if ($parent?->band_number)<span class="datum">{{ $parent->band_number }}</span> &middot; @endif
                         Removed from the records
                     </span>
@@ -76,11 +76,11 @@
 
             <a href="{{ route('broodcocks.show', $parent) }}" wire:navigate
                class="group block min-h-11 rounded-[12px] border border-border bg-card p-5 elev-1">
-                <span class="block text-[14px] font-medium text-muted-foreground">{{ $role }}</span>
-                <span class="mt-1 block font-display text-[22px] font-semibold leading-tight tracking-[-0.015em] text-foreground group-hover:underline group-hover:underline-offset-4">
+                <span class="block text-[14px] lg:text-xs font-medium text-muted-foreground">{{ $role }}</span>
+                <span class="mt-1 block font-display text-[22px] lg:text-base font-semibold leading-tight tracking-[-0.015em] text-foreground group-hover:underline group-hover:underline-offset-4">
                     {{ $parent->name }}
                 </span>
-                <span class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[15px]">
+                <span class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[15px] lg:text-xs">
                     <span class="inline-flex items-center gap-2 text-foreground">
                         <x-band-dot :bloodline="$parent->bloodline" />
                         @if ($parent->band_number)
@@ -112,13 +112,13 @@
             <x-field-row label="Fertile">
                 <span class="datum">{{ $breeding->eggs_fertile }}</span>
                 @if ($rate($breeding->fertilityRate()))
-                    <span class="ml-2 text-[14px] text-muted-foreground"><span class="datum">{{ $rate($breeding->fertilityRate()) }}</span> of eggs set</span>
+                    <span class="ml-2 text-[14px] lg:text-xs text-muted-foreground"><span class="datum">{{ $rate($breeding->fertilityRate()) }}</span> of eggs set</span>
                 @endif
             </x-field-row>
             <x-field-row label="Hatched">
                 <span class="datum">{{ $breeding->eggs_hatched }}</span>
                 @if ($rate($breeding->hatchRate()))
-                    <span class="ml-2 text-[14px] text-muted-foreground"><span class="datum">{{ $rate($breeding->hatchRate()) }}</span> of fertile</span>
+                    <span class="ml-2 text-[14px] lg:text-xs text-muted-foreground"><span class="datum">{{ $rate($breeding->hatchRate()) }}</span> of fertile</span>
                 @endif
             </x-field-row>
             <x-field-row label="End to end">
@@ -149,7 +149,7 @@
         <div class="flex flex-wrap items-end justify-between gap-4">
             <div>
                 <h2 id="offspring-heading" class="sb-h2">Offspring</h2>
-                <p class="mt-2 text-[15px] text-muted-foreground">
+                <p class="mt-2 text-[15px] lg:text-xs text-muted-foreground">
                     <span class="datum text-foreground">{{ $breeding->offspring_count }}</span> of
                     <span class="datum text-foreground">{{ $breeding->eggs_hatched }}</span>
                     {{ Str::plural('chick', $breeding->eggs_hatched) }} registered as bird records.
@@ -167,8 +167,8 @@
 
         @if ($generating)
             <div class="mt-6 max-w-[44rem] rounded-[12px] border border-border bg-card p-5 sm:p-6" role="group" aria-labelledby="generate-heading">
-                <h3 id="generate-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Register chicks from this hatch</h3>
-                <p class="mt-2 text-[15px] leading-relaxed text-muted-foreground">
+                <h3 id="generate-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Register chicks from this hatch</h3>
+                <p class="mt-2 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     Each chick will be created with
                     <strong class="font-semibold text-foreground">{{ $breeding->sire?->name ?? 'Bird removed' }}</strong> as its sire and
                     <strong class="font-semibold text-foreground">{{ $breeding->dam?->name ?? 'Bird removed' }}</strong> as its dam, so it appears in the
@@ -182,7 +182,7 @@
                                wire:model="generateCount"
                                @error('generateCount') aria-invalid="true" aria-describedby="generateCount-error" @enderror
                                class="d-input w-full datum mt-1 @error('generateCount') d-input-error @enderror">
-                        @error('generateCount') <p id="generateCount-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('generateCount') <p id="generateCount-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -200,7 +200,7 @@
                                max="{{ today()->toDateString() }}"
                                @error('generateDateHatched') aria-invalid="true" aria-describedby="generateDateHatched-error" @enderror
                                class="d-input w-full datum mt-1 @error('generateDateHatched') d-input-error @enderror">
-                        @error('generateDateHatched') <p id="generateDateHatched-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('generateDateHatched') <p id="generateDateHatched-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -236,10 +236,10 @@
                         <li wire:key="c-m-{{ $child->id }}">
                             <a href="{{ route('broodcocks.show', $child) }}" wire:navigate class="block py-3">
                                 <span class="flex min-h-11 items-center justify-between gap-3">
-                                    <span class="min-w-0 truncate text-[16px] font-medium text-foreground">{{ $child->name }}</span>
+                                    <span class="min-w-0 truncate text-[16px] lg:text-xs font-medium text-foreground">{{ $child->name }}</span>
                                     <span class="d-badge d-badge-soft {{ $child->status->badgeClasses() }}">{{ $child->status->label() }}</span>
                                 </span>
-                                <span class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px] text-muted-foreground">
+                                <span class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px] lg:text-xs text-muted-foreground">
                                     <span class="inline-flex items-center gap-1.5">
                                         <x-band-dot :bloodline="$child->bloodline" />
                                         @if ($child->band_number)
@@ -263,12 +263,12 @@
                 </ul>
 
                 {{-- Wider screens: a ledger. --}}
-                <table class="d-table hidden w-full border-separate border-spacing-0 text-[15px] md:table">
+                <table class="d-table hidden w-full border-separate border-spacing-0 text-[15px] lg:text-xs md:table">
                     <thead class="sticky top-0 z-10 bg-background">
                         <tr>
                             @foreach (['Name', 'Band', 'Sex', 'Hatched', 'Status'] as $heading)
                                 <th scope="col" @class([
-                                    'border-b border-border py-3 text-left text-[13px] font-semibold text-muted-foreground',
+                                    'border-b border-border py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground',
                                     'pl-0 pr-4' => $loop->first,
                                     'px-4' => ! $loop->first,
                                 ])>{{ $heading }}</th>

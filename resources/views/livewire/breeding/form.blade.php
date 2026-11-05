@@ -14,7 +14,7 @@
 --}}
 <div>
     <a href="{{ route('breeding.index') }}" wire:navigate
-       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold underline-offset-4">
+       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] lg:text-xs font-semibold underline-offset-4">
         <span aria-hidden="true">&larr;</span> Back to breeding records
     </a>
 
@@ -26,8 +26,8 @@
                  The pair
             ------------------------------------------------------- --}}
             <section aria-labelledby="pair-heading">
-                <h2 id="pair-heading" class="border-b border-border pb-3 font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">The Pair</h2>
-                <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                <h2 id="pair-heading" class="border-b border-border pb-3 font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">The Pair</h2>
+                <p class="mt-3 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     Only male birds can be chosen as the sire and only female birds as the dam.
                     If a parent is not one of the farm's own birds &mdash; a borrowed or visiting
                     breeder &mdash; pick &ldquo;Someone else's bird&rdquo; at the end of the list
@@ -60,7 +60,7 @@
                                     <input id="sire_external_name" type="text" wire:model.blur="sire_external_name"
                                            @error('sire_external_name') aria-invalid="true" aria-describedby="sire_external_name-error" @enderror
                                            class="d-input w-full mt-1 @error('sire_external_name') d-input-error @enderror">
-                                    @error('sire_external_name') <p id="sire_external_name-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                                    @error('sire_external_name') <p id="sire_external_name-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
 
                                 <div>
@@ -69,7 +69,7 @@
                                            aria-describedby="sire_external_bloodline-help @error('sire_external_bloodline') sire_external_bloodline-error @enderror"
                                            class="d-input w-full mt-1 @error('sire_external_bloodline') d-input-error @enderror">
                                     <p id="sire_external_bloodline-help" class="d-label mt-1">Optional. Recorded so the bird carries its bloodline tag.</p>
-                                    @error('sire_external_bloodline') <p id="sire_external_bloodline-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                                    @error('sire_external_bloodline') <p id="sire_external_bloodline-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
                             </div>
                         @endif
@@ -95,7 +95,7 @@
                                     <input id="dam_external_name" type="text" wire:model.blur="dam_external_name"
                                            @error('dam_external_name') aria-invalid="true" aria-describedby="dam_external_name-error" @enderror
                                            class="d-input w-full mt-1 @error('dam_external_name') d-input-error @enderror">
-                                    @error('dam_external_name') <p id="dam_external_name-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                                    @error('dam_external_name') <p id="dam_external_name-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
 
                                 <div>
@@ -104,7 +104,7 @@
                                            aria-describedby="dam_external_bloodline-help @error('dam_external_bloodline') dam_external_bloodline-error @enderror"
                                            class="d-input w-full mt-1 @error('dam_external_bloodline') d-input-error @enderror">
                                     <p id="dam_external_bloodline-help" class="d-label mt-1">Optional. Recorded so the bird carries its bloodline tag.</p>
-                                    @error('dam_external_bloodline') <p id="dam_external_bloodline-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                                    @error('dam_external_bloodline') <p id="dam_external_bloodline-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
                             </div>
                         @endif
@@ -115,7 +115,7 @@
                         <input id="mating_date" type="date" wire:model.blur="mating_date" max="{{ today()->toDateString() }}"
                                @error('mating_date') aria-invalid="true" aria-describedby="mating_date-error" @enderror
                                class="d-input w-full datum mt-1 sm:max-w-[16rem] @error('mating_date') d-input-error @enderror">
-                        @error('mating_date') <p id="mating_date-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('mating_date') <p id="mating_date-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </section>
@@ -124,8 +124,8 @@
                  Egg results
             ------------------------------------------------------- --}}
             <section aria-labelledby="eggs-heading">
-                <h2 id="eggs-heading" class="border-b border-border pb-3 font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Egg Results</h2>
-                <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                <h2 id="eggs-heading" class="border-b border-border pb-3 font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Egg Results</h2>
+                <p class="mt-3 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     Enter the counts and the system works out the rates. Each number must be
                     equal to or smaller than the one before it.
                 </p>
@@ -149,7 +149,7 @@
                                    @error($field) aria-invalid="true" @enderror
                                    class="d-input w-full datum mt-1 sm:max-w-[12rem] @error($field) d-input-error @enderror">
                             <p id="{{ $field }}-help" class="d-label mt-1">{{ $help }}</p>
-                            @error($field) <p id="{{ $field }}-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                            @error($field) <p id="{{ $field }}-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                         </div>
                     @endforeach
                 </div>
@@ -157,18 +157,18 @@
                 {{-- Live rate preview. Always calculated, never typed. --}}
                 <dl class="mt-8 grid grid-cols-2 gap-6 border-t border-border pt-5" aria-live="polite">
                     <div>
-                        <dt class="text-[14px] font-medium text-muted-foreground">Fertility Rate</dt>
-                        <dd class="datum mt-1 font-display text-[28px] font-semibold leading-tight tracking-[-0.02em] text-foreground">
+                        <dt class="text-[14px] lg:text-xs font-medium text-muted-foreground">Fertility Rate</dt>
+                        <dd class="datum mt-1 font-display text-[28px] lg:text-base font-semibold leading-tight tracking-[-0.02em] text-foreground">
                             {{ $rates['fertility'] !== null ? $rates['fertility'].'%' : 'No data' }}
                         </dd>
-                        <dd class="mt-1 text-[13px] text-muted-foreground">Fertile eggs ÷ eggs set</dd>
+                        <dd class="mt-1 text-[13px] lg:text-[11px] text-muted-foreground">Fertile eggs ÷ eggs set</dd>
                     </div>
                     <div>
-                        <dt class="text-[14px] font-medium text-muted-foreground">Hatch Rate</dt>
-                        <dd class="datum mt-1 font-display text-[28px] font-semibold leading-tight tracking-[-0.02em] text-foreground">
+                        <dt class="text-[14px] lg:text-xs font-medium text-muted-foreground">Hatch Rate</dt>
+                        <dd class="datum mt-1 font-display text-[28px] lg:text-base font-semibold leading-tight tracking-[-0.02em] text-foreground">
                             {{ $rates['hatch'] !== null ? $rates['hatch'].'%' : 'No data' }}
                         </dd>
-                        <dd class="mt-1 text-[13px] text-muted-foreground">Hatched ÷ fertile eggs</dd>
+                        <dd class="mt-1 text-[13px] lg:text-[11px] text-muted-foreground">Hatched ÷ fertile eggs</dd>
                     </div>
                 </dl>
             </section>
@@ -181,7 +181,7 @@
                 <textarea id="notes" rows="4" wire:model.blur="notes"
                           @error('notes') aria-invalid="true" aria-describedby="notes-error" @enderror
                           class="d-textarea w-full mt-1 @error('notes') d-textarea-error @enderror"></textarea>
-                @error('notes') <p id="notes-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                @error('notes') <p id="notes-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
             </div>
         </div>
 

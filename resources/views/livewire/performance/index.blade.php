@@ -51,9 +51,9 @@
          delete lives here rather than in the layout's session flash. --}}
     @if ($statusMessage !== '')
         <div class="d-alert d-alert-soft d-alert-success mt-6 flex items-start justify-between gap-4 text-base-content" role="status">
-            <p class="text-[15px] leading-snug text-foreground">{{ $statusMessage }}</p>
+            <p class="text-[15px] lg:text-xs leading-snug text-foreground">{{ $statusMessage }}</p>
             <button type="button" wire:click="dismissStatus"
-                    class="d-link d-link-hover -my-2 inline-flex min-h-11 shrink-0 items-center px-1 text-[14px] font-medium text-foreground underline-offset-4">
+                    class="d-link d-link-hover -my-2 inline-flex min-h-11 shrink-0 items-center px-1 text-[14px] lg:text-xs font-medium text-foreground underline-offset-4">
                 Dismiss
             </button>
         </div>
@@ -128,19 +128,19 @@
                         <div class="min-w-0">
                             @if ($record->broodcock !== null)
                                 <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate
-                                   class="inline-flex min-h-11 max-w-full items-center gap-2 text-[16px] font-medium text-foreground hover:underline">
+                                   class="inline-flex min-h-11 max-w-full items-center gap-2 text-[16px] lg:text-xs font-medium text-foreground hover:underline">
                                     <x-band-tag :bloodline="$record->broodcock->bloodline"
                                                 :band="$record->broodcock->band_number" size="xs" />
                                     <span class="truncate">{{ $record->broodcock->name }}</span>
                                 </a>
                             @else
-                                <p class="flex min-h-11 items-center text-[16px] text-muted-foreground">Bird removed</p>
+                                <p class="flex min-h-11 items-center text-[16px] lg:text-xs text-muted-foreground">Bird removed</p>
                             @endif
                         </div>
-                        <p class="datum shrink-0 pt-3 text-[14px] text-muted-foreground">{{ $record->event_date->format('d M Y') }}</p>
+                        <p class="datum shrink-0 pt-3 text-[14px] lg:text-xs text-muted-foreground">{{ $record->event_date->format('d M Y') }}</p>
                     </div>
 
-                    <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-2 text-[14px] text-muted-foreground">
+                    <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-2 text-[14px] lg:text-xs text-muted-foreground">
                         <span class="d-badge d-badge-soft {{ $record->event_type->badgeClasses() }}">{{ $record->event_type->label() }}</span>
                         @if ($record->result->countsTowardRecord())
                             <span class="d-badge d-badge-soft {{ $record->result->badgeClasses() }}">{{ $record->result->label() }}</span>
@@ -156,13 +156,13 @@
                         <div class="mt-2 flex flex-wrap items-center gap-x-6">
                             @can('update', $record)
                                 <a href="{{ route('performance.edit', $record) }}" wire:navigate
-                                   class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center text-[15px] font-medium">
+                                   class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
                                     Edit<span class="sr-only">, {{ $record->event_type->label() }} record</span>
                                 </a>
                             @endcan
                             @can('delete', $record)
                                 <button type="button" wire:click="confirmDelete({{ $record->id }})"
-                                        class="d-link d-link-hover d-link-error inline-flex min-h-11 items-center text-[15px] font-medium">
+                                        class="d-link d-link-hover d-link-error inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
                                     Delete<span class="sr-only">, {{ $record->event_type->label() }} record</span>
                                 </button>
                             @endcan
@@ -186,7 +186,7 @@
                         <th scope="col"
                             @if ($column['sort'] !== null) aria-sort="{{ $ariaSort }}" @endif
                             @class([
-                                'sticky top-0 z-10 bg-background px-3 py-2 text-[13px] font-semibold text-muted-foreground whitespace-nowrap',
+                                'sticky top-0 z-10 bg-background px-3 py-2 text-[13px] lg:text-[11px] font-semibold text-muted-foreground whitespace-nowrap',
                                 'text-right' => $column['align'] === 'right',
                                 'text-left' => $column['align'] !== 'right',
                                 $column['cell'],
@@ -220,7 +220,7 @@
             <tbody wire:loading.remove wire:target="{{ $loadingTargets }}">
                 @foreach ($records as $record)
                     <tr wire:key="perf-tr-{{ $record->id }}" class="hover:bg-muted/60">
-                        <td class="whitespace-nowrap px-3 py-2 text-[15px] font-medium text-foreground">
+                        <td class="whitespace-nowrap px-3 py-2 text-[15px] lg:text-xs font-medium text-foreground">
                             @if ($record->broodcock !== null)
                                 {{-- Name only: displayName() appends the band in
                                      parentheses, which the tag already shows. --}}
@@ -234,7 +234,7 @@
                                 <span class="font-normal text-muted-foreground">Bird removed</span>
                             @endif
                         </td>
-                        <td class="datum whitespace-nowrap px-3 py-2 text-[15px] text-foreground">
+                        <td class="datum whitespace-nowrap px-3 py-2 text-[15px] lg:text-xs text-foreground">
                             {{ $record->event_date->format('d M Y') }}
                         </td>
                         <td class="whitespace-nowrap px-3 py-2">
@@ -244,14 +244,14 @@
                             <span class="d-badge d-badge-soft {{ $record->result->badgeClasses() }}">{{ $record->result->label() }}</span>
                         </td>
                         <td @class([
-                            'whitespace-nowrap px-3 py-2 text-right text-[15px]',
+                            'whitespace-nowrap px-3 py-2 text-right text-[15px] lg:text-xs',
                             'datum text-foreground' => $record->weight !== null,
                             'text-muted-foreground' => $record->weight === null,
                         ])>
                             {{ $record->weight !== null ? $record->weight.' kg' : 'Not recorded' }}
                         </td>
                         <td @class([
-                            'hidden whitespace-nowrap px-3 py-2 text-right text-[15px] xl:table-cell',
+                            'hidden whitespace-nowrap px-3 py-2 text-right text-[15px] lg:text-xs xl:table-cell',
                             'datum text-foreground' => $record->durationLabel() !== null,
                             'text-muted-foreground' => $record->durationLabel() === null,
                         ])>
@@ -259,7 +259,7 @@
                         </td>
                         <td class="hidden whitespace-nowrap px-3 py-2 xl:table-cell">
                             @if ($record->rating === null)
-                                <span class="text-[14px] text-muted-foreground">Not rated</span>
+                                <span class="text-[14px] lg:text-xs text-muted-foreground">Not rated</span>
                             @else
                                 {{-- Ink stars, not amber: colour in this system means
                                      bloodline, so a rating is drawn with fill and
@@ -278,7 +278,7 @@
                                 </span>
                             @endif
                         </td>
-                        <td class="hidden max-w-[11rem] truncate px-3 py-2 text-[15px] text-muted-foreground 2xl:table-cell"
+                        <td class="hidden max-w-[11rem] truncate px-3 py-2 text-[15px] lg:text-xs text-muted-foreground 2xl:table-cell"
                             title="{{ $record->recordedBy?->full_name }}">
                             {{ $record->recordedBy?->full_name ?? 'Not recorded' }}
                         </td>
@@ -286,13 +286,13 @@
                             <div class="flex items-center justify-end gap-5">
                                 @can('update', $record)
                                     <a href="{{ route('performance.edit', $record) }}" wire:navigate
-                                       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center text-[15px] font-medium">
+                                       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
                                         Edit<span class="sr-only">, {{ $record->event_type->label() }} record</span>
                                     </a>
                                 @endcan
                                 @can('delete', $record)
                                     <button type="button" wire:click="confirmDelete({{ $record->id }})"
-                                            class="d-link d-link-hover d-link-error inline-flex min-h-11 items-center text-[15px] font-medium">
+                                            class="d-link d-link-hover d-link-error inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
                                         Delete<span class="sr-only">, {{ $record->event_type->label() }} record</span>
                                     </button>
                                 @endcan
@@ -318,16 +318,16 @@
              x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.d-btn-outline')?.click()"
              role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title" aria-describedby="delete-dialog-body">
             <div class="d-modal-box elev-3 max-w-md">
-                <h2 id="delete-dialog-title" class="font-display text-[22px] font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
+                <h2 id="delete-dialog-title" class="font-display text-[22px] lg:text-base font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
                     Delete the {{ $pending->event_type->label() }} record for {{ $pending->broodcock?->displayName() ?? 'this bird' }}?
                 </h2>
 
                 <div id="delete-dialog-body">
-                    <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                    <p class="mt-3 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                         The record dated <strong class="datum font-medium text-foreground">{{ $pending->event_date->format('d M Y') }}</strong>
                         will be removed from the bird's timeline and will stop counting towards its win rate.
                     </p>
-                    <p class="mt-2 text-[15px] leading-relaxed text-muted-foreground">
+                    <p class="mt-2 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                         The farm owner can restore it later if this was a mistake.
                     </p>
                 </div>

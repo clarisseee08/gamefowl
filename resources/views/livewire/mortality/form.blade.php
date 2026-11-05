@@ -8,7 +8,7 @@
 --}}
 <div>
     <a href="{{ route('mortality.index') }}" wire:navigate
-       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold underline-offset-4">
+       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] lg:text-xs font-semibold underline-offset-4">
         <span aria-hidden="true">&larr;</span> Back to Mortality Records
     </a>
 
@@ -28,7 +28,7 @@
                  Which bird
             ------------------------------------------------------- --}}
             <section aria-labelledby="bird-heading" class="space-y-6">
-                <h2 id="bird-heading" class="border-b border-border pb-3 font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">The bird</h2>
+                <h2 id="bird-heading" class="border-b border-border pb-3 font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">The bird</h2>
 
                 <div>
                     <label for="birdSearch" class="d-fieldset-legend">Find the Bird</label>
@@ -72,7 +72,7 @@
                  When and why
             ------------------------------------------------------- --}}
             <section aria-labelledby="when-heading" class="space-y-6">
-                <h2 id="when-heading" class="border-b border-border pb-3 font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">When and why</h2>
+                <h2 id="when-heading" class="border-b border-border pb-3 font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">When and why</h2>
 
                 <div>
                     <label for="date_of_death" class="d-fieldset-legend">Date of Death <span class="text-destructive">*</span></label>
@@ -89,7 +89,7 @@
                            required>
 
                     @error('date_of_death')
-                        <p id="date_of_death-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
+                        <p id="date_of_death-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p>
                     @enderror
 
                     @if ($this->selectedBird?->date_hatched)
@@ -122,7 +122,7 @@
                     </datalist>
 
                     @error('cause_of_death')
-                        <p id="cause_of_death-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
+                        <p id="cause_of_death-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p>
                     @enderror
 
                     <p id="cause_of_death-help" class="d-label mt-1">
@@ -136,7 +136,7 @@
                  Afterwards
             ------------------------------------------------------- --}}
             <section aria-labelledby="after-heading" class="space-y-6">
-                <h2 id="after-heading" class="border-b border-border pb-3 font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Afterwards</h2>
+                <h2 id="after-heading" class="border-b border-border pb-3 font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Afterwards</h2>
 
                 <div>
                     <label for="disposal_method" class="d-fieldset-legend">How Was the Bird Disposed Of?</label>
@@ -157,7 +157,7 @@
                     </datalist>
 
                     @error('disposal_method')
-                        <p id="disposal_method-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
+                        <p id="disposal_method-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p>
                     @enderror
 
                     <p id="disposal_method-help" class="d-label mt-1">You can leave this blank and fill it in later.</p>
@@ -174,7 +174,7 @@
                               @class(['d-textarea w-full mt-1', 'd-textarea-error' => $errors->has('remarks')])></textarea>
 
                     @error('remarks')
-                        <p id="remarks-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
+                        <p id="remarks-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p>
                     @enderror
 
                     <p id="remarks-help" class="d-label mt-1">Optional. Only farm staff can read this.</p>
@@ -204,12 +204,12 @@
              x-on:keydown.escape.window="$wire.cancelConfirmation()"
              role="dialog" aria-modal="true" aria-labelledby="confirm-mortality-title">
             <div class="d-modal-box elev-3 max-w-md">
-                <h2 id="confirm-mortality-title" class="font-display text-[22px] font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
+                <h2 id="confirm-mortality-title" class="font-display text-[22px] lg:text-base font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
                     Record the death of {{ $this->selectedBird->displayName() }}?
                 </h2>
 
                 {{-- A read-back of exactly what is about to be written. --}}
-                <dl class="mt-4 border-t border-border text-[15px]">
+                <dl class="mt-4 border-t border-border text-[15px] lg:text-xs">
                     <div class="flex justify-between gap-4 border-b border-border py-2.5">
                         <dt class="text-muted-foreground">Date of death</dt>
                         <dd class="datum font-medium text-foreground">
@@ -226,7 +226,7 @@
                     </div>
                 </dl>
 
-                <p class="d-alert d-alert-soft d-alert-error mt-4 block px-3 py-2.5 text-[15px] leading-relaxed text-base-content">
+                <p class="d-alert d-alert-soft d-alert-error mt-4 block px-3 py-2.5 text-[15px] lg:text-xs leading-relaxed text-base-content">
                     {{ $this->selectedBird->name }} will be marked as <strong class="font-semibold">deceased</strong> and
                     removed from the active flock and from breeding. Only the farm owner can undo this.
                 </p>

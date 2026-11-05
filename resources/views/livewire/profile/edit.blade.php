@@ -15,8 +15,8 @@
         <div class="max-w-[40rem] space-y-12">
             {{-- Photo --}}
             <section aria-labelledby="photo-heading" x-data="{ confirmRemove: false }">
-                <h2 id="photo-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Photo</h2>
-                <p class="mt-1 text-[15px] leading-relaxed text-muted-foreground">
+                <h2 id="photo-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Photo</h2>
+                <p class="mt-1 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     Shown beside your name in the sidebar. JPG or PNG, up to
                     <span class="datum">4 MB</span>.
                 </p>
@@ -70,7 +70,7 @@
                         @if ($photo && $photo->isPreviewable())
                             <p class="d-label mt-1" wire:loading.remove wire:target="photo">New photo selected. Save changes to use it.</p>
                         @endif
-                        @error('photo') <p id="photo-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('photo') <p id="photo-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
@@ -85,10 +85,10 @@
                          x-trap.noscroll="confirmRemove" x-on:keydown.escape.window="confirmRemove = false"
                          role="dialog" aria-modal="true" aria-labelledby="remove-photo-title" aria-describedby="remove-photo-body">
                         <div class="d-modal-box elev-3 w-full max-w-md" x-on:click.outside="confirmRemove = false">
-                            <h2 id="remove-photo-title" class="font-display text-[22px] font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
+                            <h2 id="remove-photo-title" class="font-display text-[22px] lg:text-base font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
                                 Remove your profile photo?
                             </h2>
-                            <p id="remove-photo-body" class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                            <p id="remove-photo-body" class="mt-3 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                                 The photo is deleted, and your initials are shown beside your name in the
                                 sidebar instead. You can upload a new one at any time.
                             </p>
@@ -105,7 +105,7 @@
 
             {{-- Details --}}
             <section aria-labelledby="details-heading">
-                <h2 id="details-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Your details</h2>
+                <h2 id="details-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Your details</h2>
 
                 <div class="mt-4 space-y-6 border-t border-border pt-6">
                     <div>
@@ -113,7 +113,7 @@
                         <input id="full_name" type="text" wire:model="full_name" autocomplete="name"
                                @error('full_name') aria-invalid="true" aria-describedby="full_name-error" @enderror
                                class="d-input w-full @error('full_name') d-input-error @enderror">
-                        @error('full_name') <p id="full_name-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('full_name') <p id="full_name-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -121,7 +121,7 @@
                         <input id="email" type="email" wire:model="email" autocomplete="email"
                                @error('email') aria-invalid="true" aria-describedby="email-error" @enderror
                                class="d-input w-full @error('email') d-input-error @enderror">
-                        @error('email') <p id="email-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('email') <p id="email-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -129,7 +129,7 @@
                         <input id="contact_number" type="tel" inputmode="tel" wire:model="contact_number" autocomplete="tel"
                                @error('contact_number') aria-invalid="true" aria-describedby="contact_number-error" @enderror
                                class="d-input w-full datum @error('contact_number') d-input-error @enderror">
-                        @error('contact_number') <p id="contact_number-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('contact_number') <p id="contact_number-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -139,7 +139,7 @@
                                @error('position') aria-invalid="true" @enderror
                                class="d-input w-full @error('position') d-input-error @enderror">
                         <p id="position-help" class="d-label mt-1">What you do on the farm.</p>
-                        @error('position') <p id="position-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('position') <p id="position-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -147,16 +147,16 @@
                         <input id="address" type="text" wire:model="address" autocomplete="street-address"
                                @error('address') aria-invalid="true" aria-describedby="address-error" @enderror
                                class="d-input w-full @error('address') d-input-error @enderror">
-                        @error('address') <p id="address-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('address') <p id="address-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Role is read-only here on purpose: it belongs to the
                          owner, and showing it is clearer than leaving a user to
                          wonder where it went. --}}
                     <div class="flex flex-wrap items-center gap-3 border-t border-border pt-5">
-                        <span class="text-[14px] font-semibold text-foreground">Role</span>
+                        <span class="text-[14px] lg:text-xs font-semibold text-foreground">Role</span>
                         <span class="d-badge d-badge-soft d-badge-info">{{ $user->role->label() }}</span>
-                        <span class="text-[14px] text-muted-foreground">Set by the farm owner.</span>
+                        <span class="text-[14px] lg:text-xs text-muted-foreground">Set by the farm owner.</span>
                     </div>
                 </div>
             </section>
@@ -174,8 +174,8 @@
          against the current password and saved on its own. --}}
     <form wire:submit="updatePassword" class="mt-12 max-w-[40rem]">
         <section aria-labelledby="password-heading">
-            <h2 id="password-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Change password</h2>
-            <p class="mt-1 text-[15px] leading-relaxed text-muted-foreground">
+            <h2 id="password-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Change password</h2>
+            <p class="mt-1 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                 You need your current password to set a new one.
             </p>
 
@@ -186,7 +186,7 @@
                            autocomplete="current-password"
                            @error('current_password') aria-invalid="true" aria-describedby="current_password-error" @enderror
                            class="d-input w-full @error('current_password') d-input-error @enderror">
-                    @error('current_password') <p id="current_password-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                    @error('current_password') <p id="current_password-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
@@ -197,7 +197,7 @@
                            @error('password') aria-invalid="true" @enderror
                            class="d-input w-full @error('password') d-input-error @enderror">
                     <p id="password-help" class="d-label mt-1">At least 8 characters.</p>
-                    @error('password') <p id="password-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                    @error('password') <p id="password-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                 </div>
 
                 <div>

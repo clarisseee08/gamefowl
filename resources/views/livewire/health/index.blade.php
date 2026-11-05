@@ -26,7 +26,7 @@
         $typeSegments[] = ['key' => $type->value, 'label' => $type->label()];
     }
 
-    $th = 'sticky top-0 z-10 h-12 border-b border-border bg-background px-4 text-left align-middle text-[13px] font-semibold text-muted-foreground';
+    $th = 'sticky top-0 z-10 h-12 border-b border-border bg-background px-4 text-left align-middle text-[13px] lg:text-[11px] font-semibold text-muted-foreground';
     $td = 'border-b-0 p-0 md:table-cell md:border-b md:border-border md:px-4 md:py-3.5 md:align-top';
 @endphp
 <div>
@@ -167,13 +167,13 @@
                              the name so colour is never the only channel. --}}
                         <td class="block {{ $td }}">
                             @if ($bird === null)
-                                <p class="flex min-h-11 items-center text-[15px] text-muted-foreground">Bird removed</p>
+                                <p class="flex min-h-11 items-center text-[15px] lg:text-xs text-muted-foreground">Bird removed</p>
                             @elseif ($bird->trashed())
                                 <span class="-my-1 inline-flex min-h-11 items-center gap-2.5">
                                     <x-band-dot :bloodline="$bird->bloodline" />
                                     <span class="min-w-0">
-                                        <span class="datum block text-[15px] font-medium text-muted-foreground">{{ $bird->displayBand() }}</span>
-                                        <span class="block text-[13px] leading-snug text-muted-foreground">{{ $bird->name }} &middot; removed</span>
+                                        <span class="datum block text-[15px] lg:text-xs font-medium text-muted-foreground">{{ $bird->displayBand() }}</span>
+                                        <span class="block text-[13px] lg:text-[11px] leading-snug text-muted-foreground">{{ $bird->name }} &middot; removed</span>
                                     </span>
                                 </span>
                             @else
@@ -181,8 +181,8 @@
                                    class="group -my-1 inline-flex min-h-11 items-center gap-2.5">
                                     <x-band-dot :bloodline="$bird->bloodline" />
                                     <span class="min-w-0">
-                                        <span class="datum block text-[15px] font-medium text-foreground group-hover:underline">{{ $bird->displayBand() }}</span>
-                                        <span class="block text-[13px] leading-snug text-muted-foreground">{{ $bird->name }}@if ($bird->bloodline) &middot; {{ $bird->bloodline }}@endif</span>
+                                        <span class="datum block text-[15px] lg:text-xs font-medium text-foreground group-hover:underline">{{ $bird->displayBand() }}</span>
+                                        <span class="block text-[13px] lg:text-[11px] leading-snug text-muted-foreground">{{ $bird->name }}@if ($bird->bloodline) &middot; {{ $bird->bloodline }}@endif</span>
                                     </span>
                                 </a>
                             @endif
@@ -191,35 +191,35 @@
                         <td class="mt-2 block md:mt-0 {{ $td }}">
                             <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
                                 <span class="d-badge d-badge-soft {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
-                                <span class="text-[15px] leading-snug text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
+                                <span class="text-[15px] lg:text-xs leading-snug text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
                             </div>
                             @if ($record->dosage)
-                                <p class="mt-1 text-[13px] text-muted-foreground">Dosage: <span class="datum">{{ $record->dosage }}</span></p>
+                                <p class="mt-1 text-[13px] lg:text-[11px] text-muted-foreground">Dosage: <span class="datum">{{ $record->dosage }}</span></p>
                             @endif
                             @if ($record->condition)
-                                <p class="mt-0.5 text-[13px] text-muted-foreground">Condition: {{ $record->condition }}</p>
+                                <p class="mt-0.5 text-[13px] lg:text-[11px] text-muted-foreground">Condition: {{ $record->condition }}</p>
                             @endif
                             {{-- Internal remarks. Customers are promised health STATUS,
                                  never the farm's private notes - the Policy decides. --}}
                             @can('viewRemarks', $record)
                                 @if ($record->remarks)
-                                    <p class="mt-1.5 max-w-[46ch] border-l border-border pl-2 text-[13px] leading-snug text-muted-foreground"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
+                                    <p class="mt-1.5 max-w-[46ch] border-l border-border pl-2 text-[13px] lg:text-[11px] leading-snug text-muted-foreground"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
                                 @endif
                             @endcan
                         </td>
 
                         <td class="mt-3 mr-6 inline-block align-top md:mt-0 md:mr-0 md:whitespace-nowrap {{ $td }}">
-                            <span class="block text-[13px] text-muted-foreground md:hidden">Check-up date</span>
-                            <span class="datum text-[15px] text-foreground">{{ $record->checkup_date->format('d M Y') }}</span>
+                            <span class="block text-[13px] lg:text-[11px] text-muted-foreground md:hidden">Check-up date</span>
+                            <span class="datum text-[15px] lg:text-xs text-foreground">{{ $record->checkup_date->format('d M Y') }}</span>
                         </td>
 
                         <td class="mt-3 inline-block align-top md:mt-0 md:whitespace-nowrap {{ $td }}">
-                            <span class="block text-[13px] text-muted-foreground md:hidden">Next due date</span>
+                            <span class="block text-[13px] lg:text-[11px] text-muted-foreground md:hidden">Next due date</span>
                             @if ($record->next_due_date)
-                                <span class="datum text-[15px] text-foreground">{{ $record->next_due_date->format('d M Y') }}</span>
+                                <span class="datum text-[15px] lg:text-xs text-foreground">{{ $record->next_due_date->format('d M Y') }}</span>
                                 <span class="d-badge d-badge-soft {{ $stateClasses }} ml-1.5 md:ml-0 md:mt-1.5 md:flex md:w-fit">{{ $state }}</span>
                             @else
-                                <span class="text-[15px] text-muted-foreground">None</span>
+                                <span class="text-[15px] lg:text-xs text-muted-foreground">None</span>
                             @endif
                         </td>
 
@@ -268,13 +268,13 @@
              x-data x-trap.noscroll="true" x-on:keydown.escape.window="$wire.cancelDelete()"
              role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title">
             <div class="d-modal-box elev-3 max-w-md">
-                <h2 id="delete-dialog-title" class="font-display text-[22px] font-semibold leading-snug tracking-[-0.015em] text-foreground">
+                <h2 id="delete-dialog-title" class="font-display text-[22px] lg:text-base font-semibold leading-snug tracking-[-0.015em] text-foreground">
                     Delete the {{ Str::lower($pending->record_type->label()) }} record for
                     <span class="datum">{{ $pendingBird }}</span> on
                     <span class="datum">{{ $pending->checkup_date->format('j M Y') }}</span>?
                 </h2>
 
-                <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                <p class="mt-3 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     @if ($pending->broodcock)
                         <strong class="font-medium text-foreground">{{ $pending->broodcock->name }}</strong>
                         (Band Number: <span class="datum text-foreground">{{ $pending->broodcock->displayBand() }}</span>),

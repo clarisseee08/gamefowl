@@ -3,7 +3,7 @@
      sits outside the column so it can run the full width of the canvas. --}}
 <div>
     <a href="{{ route('performance.index') }}" wire:navigate
-       class="d-link d-link-hover d-link-primary -mt-2 inline-flex min-h-11 items-center gap-1.5 text-[14px] font-medium">
+       class="d-link d-link-hover d-link-primary -mt-2 inline-flex min-h-11 items-center gap-1.5 text-[14px] lg:text-xs font-medium">
         <span aria-hidden="true">&larr;</span> Back to performance records
     </a>
 
@@ -16,8 +16,8 @@
         <div class="max-w-[40rem] space-y-12">
             {{-- What happened --}}
             <section aria-labelledby="event-heading">
-                <h2 id="event-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">The Event</h2>
-                <p class="mt-1 text-[15px] leading-relaxed text-muted-foreground">Which bird, when, and what kind of event it was.</p>
+                <h2 id="event-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">The Event</h2>
+                <p class="mt-1 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">Which bird, when, and what kind of event it was.</p>
 
                 <div class="mt-5 space-y-6 border-t border-border pt-6">
                     <x-form-select id="broodcock_id" label="Bird" required wire:model.live="broodcock_id">
@@ -35,7 +35,7 @@
                                @error('event_date') aria-invalid="true" @enderror
                                class="d-input w-full datum @error('event_date') d-input-error @enderror">
                         <p id="event_date-help" class="d-label mt-1">The day the event actually took place. It cannot be a future date.</p>
-                        @error('event_date') <p id="event_date-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('event_date') <p id="event_date-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <x-form-select id="event_type" label="Type of Event" required wire:model.live="event_type">
@@ -48,8 +48,8 @@
 
             {{-- Outcome --}}
             <section aria-labelledby="outcome-heading">
-                <h2 id="outcome-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">How the Bird Did</h2>
-                <p class="mt-1 text-[15px] leading-relaxed text-muted-foreground">Measurements taken and, for a contest, the outcome.</p>
+                <h2 id="outcome-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">How the Bird Did</h2>
+                <p class="mt-1 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">Measurements taken and, for a contest, the outcome.</p>
 
                 <div class="mt-5 space-y-6 border-t border-border pt-6">
                     {{-- A weigh-in or conditioning session has no winner, so the
@@ -63,7 +63,7 @@
                             @endforeach
                         </x-form-select>
                     @else
-                        <p class="border-l-2 border-border pl-3 text-[15px] leading-relaxed text-muted-foreground">
+                        <p class="border-l-2 border-border pl-3 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                             A
                             <strong class="font-medium text-foreground">{{ $this->eventTypeLabel() }}</strong>
                             has no winner or loser, so no result is recorded for it.
@@ -79,7 +79,7 @@
                                @error('weight') aria-invalid="true" @enderror
                                class="d-input w-full datum @error('weight') d-input-error @enderror">
                         <p id="weight-help" class="d-label mt-1">Leave empty if the bird was not weighed at this event.</p>
-                        @error('weight') <p id="weight-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('weight') <p id="weight-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -90,7 +90,7 @@
                                @error('duration_seconds') aria-invalid="true" @enderror
                                class="d-input w-full datum @error('duration_seconds') d-input-error @enderror">
                         <p id="duration_seconds-help" class="d-label mt-1">How long it lasted, in seconds. 180 seconds is 3 minutes.</p>
-                        @error('duration_seconds') <p id="duration_seconds-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('duration_seconds') <p id="duration_seconds-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -118,7 +118,7 @@
                             @endfor
 
                             <span @class([
-                                'ml-2 text-[15px] text-muted-foreground',
+                                'ml-2 text-[15px] lg:text-xs text-muted-foreground',
                                 'datum' => $rating !== null && $rating !== '',
                             ])>
                                 {{ $rating !== null && $rating !== '' ? $rating.' of 5' : 'Not rated' }}
@@ -129,7 +129,7 @@
                             How well the bird performed, from 1 star (poor) to 5 stars (excellent).
                             Tap a star again to clear the rating.
                         </p>
-                        @error('rating') <p class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('rating') <p class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </section>
@@ -138,8 +138,8 @@
                  never see remarks - the policy is the gate, this is the courtesy. --}}
             @if (auth()->user()?->isInternal())
                 <section aria-labelledby="remarks-heading">
-                    <h2 id="remarks-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Remarks</h2>
-                    <p class="mt-1 text-[15px] leading-relaxed text-muted-foreground">
+                    <h2 id="remarks-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Remarks</h2>
+                    <p class="mt-1 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                         Notes for farm staff only. Customers never see these.
                     </p>
 
@@ -149,7 +149,7 @@
                                   placeholder="e.g. Tired in the last minute, needs more conditioning."
                                   @error('remarks') aria-invalid="true" aria-describedby="remarks-error" @enderror
                                   class="d-textarea w-full @error('remarks') d-textarea-error @enderror"></textarea>
-                        @error('remarks') <p id="remarks-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('remarks') <p id="remarks-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </section>
             @endif

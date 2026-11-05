@@ -57,10 +57,10 @@
         </span>
     @endif
 
-    <p class="text-[17px] text-base-content">{{ $title }}</p>
+    <p class="text-[17px] lg:text-sm text-base-content">{{ $title }}</p>
 
     @if ($description)
-        <p class="mt-2 max-w-[46ch] text-[15px] text-muted-foreground">{{ $description }}</p>
+        <p class="mt-2 max-w-[46ch] text-[15px] lg:text-xs text-muted-foreground">{{ $description }}</p>
     @endif
 
     @if (trim($slot) !== '')

@@ -20,7 +20,7 @@
 @endphp
 <div>
     <a href="{{ route('health.index') }}" wire:navigate
-       class="d-link d-link-hover d-link-primary -mt-2 inline-flex min-h-11 items-center gap-1.5 text-[14px] font-medium">
+       class="d-link d-link-hover d-link-primary -mt-2 inline-flex min-h-11 items-center gap-1.5 text-[14px] lg:text-xs font-medium">
         <span aria-hidden="true">&larr;</span> Back to Health Records
     </a>
 
@@ -35,7 +35,7 @@
         <div class="max-w-[40rem] space-y-12">
             {{-- Which bird --}}
             <section aria-labelledby="bird-heading">
-                <h2 id="bird-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">The Bird</h2>
+                <h2 id="bird-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">The Bird</h2>
 
                 <div class="mt-5 space-y-6 border-t border-border pt-6">
                     <x-form-select id="broodcock_id" label="Bird" required
@@ -51,7 +51,7 @@
 
             {{-- What was done --}}
             <section aria-labelledby="treatment-heading">
-                <h2 id="treatment-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">What Was Done</h2>
+                <h2 id="treatment-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">What Was Done</h2>
 
                 <div class="mt-5 space-y-6 border-t border-border pt-6">
                     <x-form-select id="record_type" label="Record Type" required
@@ -72,7 +72,7 @@
                                @error('product_name') aria-invalid="true" @enderror
                                @class(['d-input w-full', 'd-input-error' => $errors->has('product_name')])>
                         <p id="product_name-help" class="d-label mt-1">The name of the vaccine, medicine or dewormer used.</p>
-                        @error('product_name') <p id="product_name-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('product_name') <p id="product_name-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -83,7 +83,7 @@
                                placeholder="e.g. 0.5 ml"
                                @if ($errors->has('dosage')) aria-describedby="dosage-error" aria-invalid="true" @endif
                                @class(['d-input w-full datum max-w-[16rem]', 'd-input-error' => $errors->has('dosage')])>
-                        @error('dosage') <p id="dosage-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('dosage') <p id="dosage-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -96,14 +96,14 @@
                                @error('condition') aria-invalid="true" @enderror
                                @class(['d-input w-full', 'd-input-error' => $errors->has('condition')])>
                         <p id="condition-help" class="d-label mt-1">How the bird was on the day.</p>
-                        @error('condition') <p id="condition-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('condition') <p id="condition-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </section>
 
             {{-- When --}}
             <section aria-labelledby="dates-heading">
-                <h2 id="dates-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Dates</h2>
+                <h2 id="dates-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Dates</h2>
 
                 <div class="mt-5 space-y-6 border-t border-border pt-6">
                     <div>
@@ -116,7 +116,7 @@
                                @error('checkup_date') aria-invalid="true" @enderror
                                @class(['d-input w-full datum max-w-[16rem]', 'd-input-error' => $errors->has('checkup_date')])>
                         <p id="checkup_date-help" class="d-label mt-1">The day this was actually done. It cannot be in the future.</p>
-                        @error('checkup_date') <p id="checkup_date-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('checkup_date') <p id="checkup_date-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -145,14 +145,14 @@
                         @else
                             <p id="next_due_date-help" class="d-label mt-1">Leave blank if no follow-up is needed.</p>
                         @endif
-                        @error('next_due_date') <p id="next_due_date-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('next_due_date') <p id="next_due_date-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </section>
 
             {{-- Notes --}}
             <section aria-labelledby="notes-heading">
-                <h2 id="notes-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Notes</h2>
+                <h2 id="notes-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Notes</h2>
 
                 <div class="mt-5 space-y-6 border-t border-border pt-6">
                     <div>
@@ -165,7 +165,7 @@
                                   @error('remarks') aria-invalid="true" @enderror
                                   @class(['d-textarea w-full', 'd-textarea-error' => $errors->has('remarks')])></textarea>
                         <p id="remarks-help" class="d-label mt-1">Internal note for farm staff only. Customers never see this.</p>
-                        @error('remarks') <p id="remarks-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('remarks') <p id="remarks-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </section>

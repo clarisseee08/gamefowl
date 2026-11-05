@@ -3,11 +3,11 @@
     $history = $this->history;
     $pageTargets = 'gotoPage,nextPage,previousPage';
 
-    $th = 'px-4 py-3 text-left text-[13px] font-semibold text-muted-foreground';
+    $th = 'px-4 py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground';
     // d-table pads every cell and rules every row; below md each row stacks as
     // a block, so both are reset there and restored from md up.
     $td = 'block border-b-0 px-0 py-0 md:table-cell md:border-b md:border-border md:px-4 md:py-3 md:align-top';
-    $headingClass = 'font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground';
+    $headingClass = 'font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground';
 @endphp
 
 {{--
@@ -57,7 +57,7 @@
     <section class="mt-14" aria-labelledby="reports-heading" data-reveal>
         <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-1 border-b border-border pb-3">
             <h2 id="reports-heading" class="{{ $headingClass }}">Download a report</h2>
-            <p class="text-[14px] text-muted-foreground">
+            <p class="text-[14px] lg:text-xs text-muted-foreground">
                 @if ($from !== '' || $to !== '')
                     Covering
                     @if ($from !== '') from <span class="datum text-foreground">{{ $from }}</span> @endif
@@ -72,8 +72,8 @@
             @foreach ($this->reports as $report)
                 <li class="grid gap-4 py-5 sm:grid-cols-[1fr_auto] sm:items-center sm:gap-10">
                     <div class="min-w-0">
-                        <h3 class="text-[16px] font-semibold text-foreground">{{ $report->title() }}</h3>
-                        <p class="mt-1 max-w-[62ch] text-[15px] leading-relaxed text-muted-foreground">{{ $report->description() }}</p>
+                        <h3 class="text-[16px] lg:text-xs font-semibold text-foreground">{{ $report->title() }}</h3>
+                        <p class="mt-1 max-w-[62ch] text-[15px] lg:text-xs leading-relaxed text-muted-foreground">{{ $report->description() }}</p>
                     </div>
                     <div class="flex flex-wrap gap-3">
                         <a href="{{ route('reports.csv', $report->key()).($query ? '?'.$query : '') }}"
@@ -93,7 +93,7 @@
     {{-- Audit trail --}}
     <section class="mt-14" aria-labelledby="history-heading" data-reveal>
         <h2 id="history-heading" class="{{ $headingClass }}">Report history</h2>
-        <p class="mt-2 text-[15px] leading-relaxed text-muted-foreground">
+        <p class="mt-2 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
             Every report generated, who ran it, and exactly which filters were used.
         </p>
 
@@ -120,7 +120,7 @@
                 <tbody class="block divide-y divide-border md:table-row-group md:divide-y-0" wire:loading.remove wire:target="{{ $pageTargets }}">
                     @foreach ($history as $entry)
                         <tr class="block py-4 transition-colors hover:bg-muted/60 md:table-row md:py-0">
-                            <td class="{{ $td }} text-[15px] font-semibold text-foreground">
+                            <td class="{{ $td }} text-[15px] lg:text-xs font-semibold text-foreground">
                                 {{ Str::headline($entry->report_type) }}
                             </td>
                             {{-- d-badge-neutral rather than the utilities it resolves
@@ -137,7 +137,7 @@
                             <td class="ml-3 inline-block border-b-0 px-0 py-0 text-[14px] text-muted-foreground md:ml-0 md:table-cell md:border-b md:border-border md:px-4 md:py-3 md:text-right md:align-top">
                                 <span class="datum text-foreground">{{ number_format((int) $entry->row_count) }}</span><span class="md:hidden"> rows</span>
                             </td>
-                            <td class="mt-2 {{ $td }} text-[13px] text-muted-foreground">
+                            <td class="mt-2 {{ $td }} text-[13px] lg:text-[11px] text-muted-foreground">
                                 @if (empty($entry->parameters))
                                     No filters (all records)
                                 @else
@@ -152,10 +152,10 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="mt-2 {{ $td }} text-[14px] text-muted-foreground">
+                            <td class="mt-2 {{ $td }} text-[14px] lg:text-xs text-muted-foreground">
                                 <span class="md:hidden">By </span>{{ $entry->generatedBy?->full_name ?? 'Deleted account' }}
                             </td>
-                            <td class="mt-1 {{ $td }} text-[14px] text-muted-foreground md:whitespace-nowrap">
+                            <td class="mt-1 {{ $td }} text-[14px] lg:text-xs text-muted-foreground md:whitespace-nowrap">
                                 <span class="datum">{{ $entry->generated_at->format('j M Y, g:i a') }}</span>
                             </td>
                         </tr>

@@ -107,16 +107,16 @@
                 <li class="py-4" wire:key="m-{{ $record->id }}">
                     <a href="{{ route('breeding.show', $record) }}" wire:navigate
                        class="flex min-h-11 items-start justify-between gap-3">
-                        <span class="min-w-0 text-[16px] font-medium text-foreground">
+                        <span class="min-w-0 text-[16px] lg:text-xs font-medium text-foreground">
                             {{ $record->sire?->name ?? 'Bird removed' }}@if ($record->sire?->trashed()) <span class="text-muted-foreground">(removed)</span>@endif
                             <span class="text-muted-foreground" aria-hidden="true">&times;</span>
                             <span class="sr-only">with</span>
                             {{ $record->dam?->name ?? 'Bird removed' }}@if ($record->dam?->trashed()) <span class="text-muted-foreground">(removed)</span>@endif
                         </span>
-                        <span class="datum shrink-0 pt-0.5 text-[14px] text-muted-foreground">{{ $record->mating_date->format('j M Y') }}</span>
+                        <span class="datum shrink-0 pt-0.5 text-[14px] lg:text-xs text-muted-foreground">{{ $record->mating_date->format('j M Y') }}</span>
                     </a>
 
-                    <p class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px] text-muted-foreground">
+                    <p class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px] lg:text-xs text-muted-foreground">
                         @foreach (array_filter([$record->sire, $record->dam]) as $parent)
                             <span class="inline-flex items-center gap-1.5">
                                 <x-band-dot :bloodline="$parent->bloodline" />
@@ -129,7 +129,7 @@
                         @endforeach
                     </p>
 
-                    <p class="mt-2 text-[14px] text-muted-foreground">
+                    <p class="mt-2 text-[14px] lg:text-xs text-muted-foreground">
                         <span class="datum text-foreground">{{ $record->eggs_set }}</span> set
                         &middot; <span class="datum text-foreground">{{ $record->eggs_fertile }}</span> fertile
                         &middot; <span class="datum text-foreground">{{ $record->eggs_hatched }}</span> hatched
@@ -165,7 +165,7 @@
              topbar. The table is separate-bordered so the header's hairline
              travels with it when it sticks; a collapsed border stays behind.
         --------------------------------------------------------------- --}}
-        <table class="d-table hidden w-full border-separate border-spacing-0 text-[15px] md:table">
+        <table class="d-table hidden w-full border-separate border-spacing-0 text-[15px] lg:text-xs md:table">
             <thead class="sticky top-0 z-10 bg-background">
                 <tr>
                     {{-- The date and the three egg counts sort. Fertility and
@@ -175,7 +175,7 @@
                                     :current="$sortBy" :direction="$sortDirection"
                                     cell="border-b border-border pl-0" wire:click="sort('mating_date')" />
 
-                    <th scope="col" class="border-b border-border px-4 py-3 text-left text-[13px] font-semibold text-muted-foreground">Pair</th>
+                    <th scope="col" class="border-b border-border px-4 py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Pair</th>
 
                     @foreach ([['eggs_set', 'Eggs Set'], ['eggs_fertile', 'Fertile'], ['eggs_hatched', 'Hatched']] as [$field, $heading])
                         <x-sort-control :field="$field" :label="$heading" align="right"
@@ -183,8 +183,8 @@
                                         cell="border-b border-border" wire:click="sort('{{ $field }}')" />
                     @endforeach
 
-                    <th scope="col" class="hidden border-b border-border px-4 py-3 text-right text-[13px] font-semibold text-muted-foreground lg:table-cell">Fertility</th>
-                    <th scope="col" class="border-b border-border px-4 py-3 text-right text-[13px] font-semibold text-muted-foreground">Hatch rate</th>
+                    <th scope="col" class="hidden border-b border-border px-4 py-3 text-right text-[13px] lg:text-[11px] font-semibold text-muted-foreground lg:table-cell">Fertility</th>
+                    <th scope="col" class="border-b border-border px-4 py-3 text-right text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Hatch rate</th>
                     <th scope="col" class="border-b border-border py-3 pl-4 pr-0"><span class="sr-only">Open</span></th>
                 </tr>
             </thead>
@@ -211,7 +211,7 @@
                                         <span class="inline-flex min-h-11 items-center gap-2 text-muted-foreground">
                                             <x-band-dot :bloodline="$parent->bloodline" />
                                             <span>{{ $parent->name }}</span>
-                                            <span class="text-[13px]">removed</span>
+                                            <span class="text-[13px] lg:text-[11px]">removed</span>
                                         </span>
                                     @else
                                         <a href="{{ route('broodcocks.show', $parent) }}" wire:navigate
@@ -219,9 +219,9 @@
                                             <x-band-dot :bloodline="$parent->bloodline" />
                                             <span class="text-foreground group-hover:underline group-hover:underline-offset-4">{{ $parent->name }}</span>
                                             @if ($parent->band_number)
-                                                <span class="datum text-[13px] text-muted-foreground">{{ $parent->band_number }}</span>
+                                                <span class="datum text-[13px] lg:text-[11px] text-muted-foreground">{{ $parent->band_number }}</span>
                                             @else
-                                                <span class="text-[13px] text-muted-foreground">Not yet banded</span>
+                                                <span class="text-[13px] lg:text-[11px] text-muted-foreground">Not yet banded</span>
                                             @endif
                                         </a>
                                     @endif

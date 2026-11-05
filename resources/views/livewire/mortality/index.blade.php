@@ -56,44 +56,25 @@
         </x-slot:actions>
     </x-anchor-block>
 
+    {{-- The register's figures as EMS KPI tiles. --}}
+    @php $leading = $this->causeBreakdown->first(); @endphp
+    <x-ui.kpi-row class="mt-6" role="group" aria-label="Mortality figures">
+        <x-ui.kpi-tile label="This year" icon="calendar" :value="number_format($summary['this_year'])"
+                       :caption="'Deaths recorded in '.now()->year" />
+        <x-ui.kpi-tile label="This month" icon="calendar" :value="number_format($summary['this_month'])"
+                       :caption="'Deaths recorded in '.now()->format('F')" />
+        <x-ui.kpi-tile label="All time" icon="clipboard-list" :value="number_format($summary['total'])"
+                       caption="Every death on the register" />
+        <x-ui.kpi-tile label="Leading cause" icon="triangle-alert" :value="$leading['cause'] ?? null"
+                       :caption="$leading ? $leading['total'].' of '.$this->causeBreakdown->sum('total').' '.Str::plural('death', $this->causeBreakdown->sum('total')) : 'No deaths recorded'" />
+    </x-ui.kpi-row>
+
     {{-- A Livewire update does not re-render the layout, so the confirmation
          of a delete is shown from inside the component. --}}
     @if ($status)
-        <div class="d-alert d-alert-soft d-alert-success mt-6 block text-[15px] text-base-content" role="status">
+        <div class="d-alert d-alert-soft d-alert-success mt-6 block text-[15px] lg:text-xs text-base-content" role="status">
             {{ $status }}
         </div>
-    @endif
-
-    {{-- ---------------------------------------------------------------
-         Causes. A printed bar, not a chart widget: ink on a sunk track.
-         Colour means bloodline here, so none is spent on this.
-    ---------------------------------------------------------------- --}}
-    @if ($this->causeBreakdown->isNotEmpty())
-        @php $breakdownTotal = $this->causeBreakdown->sum('total'); @endphp
-
-        <section class="mt-8 max-w-[44rem]" aria-labelledby="causes-heading">
-            <h2 id="causes-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">
-                Causes of death
-                <span class="ml-1 font-sans text-[14px] font-normal tracking-normal text-muted-foreground">
-                    {{ $filtering ? 'for the records you are filtering' : 'all records' }}
-                </span>
-            </h2>
-
-            <ul class="mt-4 space-y-3.5 border-t border-border pt-4">
-                @foreach ($this->causeBreakdown as $line)
-                    @php $share = $breakdownTotal > 0 ? round($line['total'] / $breakdownTotal * 100) : 0; @endphp
-                    <li>
-                        <div class="flex items-baseline justify-between gap-4 text-[15px]">
-                            <span class="font-medium text-foreground">{{ $line['cause'] }}</span>
-                            <span class="shrink-0 text-muted-foreground">
-                                <span class="datum">{{ $line['total'] }}</span> {{ Str::plural('bird', $line['total']) }} (<span class="datum">{{ $share }}%</span>)
-                            </span>
-                        </div>
-                        <progress class="d-progress mt-1.5 block h-1.5 w-full" value="{{ $share }}" max="100" aria-hidden="true"></progress>
-                    </li>
-                @endforeach
-            </ul>
-        </section>
     @endif
 
     {{-- ---------------------------------------------------------------
@@ -149,11 +130,11 @@
             @foreach ($rows as $record)
                 <li class="py-4" wire:key="card-{{ $record->id }}">
                     <div class="flex items-start justify-between gap-3">
-                        <p class="min-w-0 truncate text-[16px] font-medium text-foreground">{{ $record->broodcock?->name ?? 'Unknown bird' }}</p>
-                        <p class="datum shrink-0 pt-0.5 text-[14px] text-muted-foreground">{{ $record->date_of_death->format('d M Y') }}</p>
+                        <p class="min-w-0 truncate text-[16px] lg:text-xs font-medium text-foreground">{{ $record->broodcock?->name ?? 'Unknown bird' }}</p>
+                        <p class="datum shrink-0 pt-0.5 text-[14px] lg:text-xs text-muted-foreground">{{ $record->date_of_death->format('d M Y') }}</p>
                     </div>
 
-                    <p class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px] text-muted-foreground">
+                    <p class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px] lg:text-xs text-muted-foreground">
                         @if ($record->broodcock)
                             <span class="inline-flex items-center gap-1.5">
                                 <x-band-dot :bloodline="$record->broodcock->bloodline" />
@@ -167,7 +148,7 @@
                         <span class="datum">{{ $ageLabel($record->ageAtDeathInMonths()) }}</span>
                     </p>
 
-                    <dl class="mt-2 space-y-1 text-[15px]">
+                    <dl class="mt-2 space-y-1 text-[15px] lg:text-xs">
                         <div class="flex gap-2">
                             <dt class="shrink-0 text-muted-foreground">Cause:</dt>
                             <dd class="text-foreground">{{ $record->cause_of_death }}</dd>
@@ -205,19 +186,19 @@
 
         {{-- Wider screens: a ledger with a header that stays in view. No
              overflow wrapper - a scrolling ancestor would stop it sticking. --}}
-        <table class="d-table hidden w-full border-separate border-spacing-0 text-[15px] md:table">
+        <table class="d-table hidden w-full border-separate border-spacing-0 text-[15px] lg:text-xs md:table">
             <thead class="sticky top-0 z-10 bg-background">
                 <tr>
                     <x-sort-control field="date_of_death" label="Date of Death"
                                     :current="$sortBy" :direction="$sortDirection"
                                     cell="border-b border-border pl-0" wire:click="sort('date_of_death')" />
-                    <th scope="col" class="border-b border-border px-4 py-3 text-left text-[13px] font-semibold text-muted-foreground">Bird</th>
+                    <th scope="col" class="border-b border-border px-4 py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Bird</th>
                     <x-sort-control field="cause_of_death" label="Cause of Death"
                                     :current="$sortBy" :direction="$sortDirection"
                                     cell="border-b border-border" wire:click="sort('cause_of_death')" />
-                    <th scope="col" class="hidden border-b border-border px-4 py-3 text-left text-[13px] font-semibold text-muted-foreground lg:table-cell">Disposal method</th>
-                    <th scope="col" class="border-b border-border px-4 py-3 text-left text-[13px] font-semibold text-muted-foreground">Age at death</th>
-                    <th scope="col" class="hidden border-b border-border px-4 py-3 text-left text-[13px] font-semibold text-muted-foreground lg:table-cell">Recorded by</th>
+                    <th scope="col" class="hidden border-b border-border px-4 py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground lg:table-cell">Disposal method</th>
+                    <th scope="col" class="border-b border-border px-4 py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Age at death</th>
+                    <th scope="col" class="hidden border-b border-border px-4 py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground lg:table-cell">Recorded by</th>
                     @if ($canDelete)
                         <th scope="col" class="border-b border-border py-3 pl-4 pr-0"><span class="sr-only">Actions</span></th>
                     @endif
@@ -232,7 +213,7 @@
                         </td>
                         <td class="border-b border-border px-4 py-3">
                             <p class="font-medium text-foreground">{{ $record->broodcock?->name ?? 'Unknown bird' }}</p>
-                            <p class="mt-0.5 inline-flex items-center gap-1.5 text-[13px] text-muted-foreground">
+                            <p class="mt-0.5 inline-flex items-center gap-1.5 text-[13px] lg:text-[11px] text-muted-foreground">
                                 @if ($record->broodcock)
                                     <x-band-dot :bloodline="$record->broodcock->bloodline" />
                                     @if ($record->broodcock->band_number)
@@ -283,18 +264,18 @@
              x-on:keydown.escape.window="$wire.cancelDelete()"
              role="dialog" aria-modal="true" aria-labelledby="delete-mortality-title">
             <div class="d-modal-box elev-3 max-w-md">
-                <h2 id="delete-mortality-title" class="font-display text-[22px] font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
+                <h2 id="delete-mortality-title" class="font-display text-[22px] lg:text-base font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
                     Delete the death record for
                     {{ $confirming->broodcock?->displayName() ?? 'this bird' }}?
                 </h2>
 
-                <div class="mt-3 space-y-3 text-[15px] leading-relaxed text-muted-foreground">
+                <div class="mt-3 space-y-3 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     <p>
                         The death recorded on
                         <strong class="datum font-semibold text-foreground">{{ $confirming->date_of_death->format('d M Y') }}</strong>
                         ({{ $confirming->cause_of_death }}) will be removed from the register.
                     </p>
-                    <p class="d-alert d-alert-soft d-alert-error block px-3 py-2.5 text-[15px] leading-relaxed text-base-content">
+                    <p class="d-alert d-alert-soft d-alert-error block px-3 py-2.5 text-[15px] lg:text-xs leading-relaxed text-base-content">
                         {{ $confirming->broodcock?->name ?? 'The bird' }}
                         will be put back on the <strong class="font-semibold">active</strong> list, as if the death had never
                         been recorded. Do this only if the death was entered by mistake.

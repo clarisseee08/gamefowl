@@ -151,9 +151,9 @@
 
             <div id="bc-columns" x-show="colsOpen" x-cloak @click.outside="colsOpen = false" @keydown.escape.window="colsOpen = false"
                  class="bg-base-100 rounded-box border border-base-300 elev-2 enter-pop absolute right-0 z-30 mt-2 w-56 p-2">
-                <p class="px-2 pb-1.5 pt-1 text-[13px] font-semibold text-muted-foreground">Show columns</p>
+                <p class="px-2 pb-1.5 pt-1 text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Show columns</p>
                 @foreach ($optionalColumns as $key => $label)
-                    <label class="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[var(--radius-sm)] px-2 text-[15px] text-foreground hover:bg-muted">
+                    <label class="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[var(--radius-sm)] px-2 text-[15px] lg:text-xs text-foreground hover:bg-muted">
                         <input type="checkbox" class="d-checkbox d-checkbox-primary"
                                x-model="cols['{{ $key }}']" @change="save()">
                         {{ $label }}
@@ -168,7 +168,7 @@
          The polite "Searching" lives here too, beside the count it is about to
          change - the round trip is to Tokyo, so a keystroke and its answer are
          most of a second apart. --}}
-    <div class="mt-3 flex min-h-11 flex-wrap items-center gap-x-4 gap-y-1 text-[14px] text-muted-foreground" aria-live="polite">
+    <div class="mt-3 flex min-h-11 flex-wrap items-center gap-x-4 gap-y-1 text-[14px] lg:text-xs text-muted-foreground" aria-live="polite">
         <span wire:loading.remove wire:target="{{ $filterTargets }}">
             @if ($this->hasActiveFilters())
                 Showing <span class="datum text-foreground">{{ number_format($total) }}</span> {{ Str::plural('bird', $total) }} matching your filters.
@@ -224,14 +224,14 @@
                         <span class="min-w-0 flex-1">
                             <span class="flex items-baseline gap-2">
                                 @if ($bird->band_number)
-                                    <span class="datum font-display text-[17px] font-semibold text-foreground">{{ $bird->band_number }}</span>
-                                    <span class="truncate text-[15px] text-muted-foreground">{{ $bird->name }}</span>
+                                    <span class="datum font-display text-[17px] lg:text-sm font-semibold text-foreground">{{ $bird->band_number }}</span>
+                                    <span class="truncate text-[15px] lg:text-xs text-muted-foreground">{{ $bird->name }}</span>
                                 @else
-                                    <span class="truncate font-display text-[17px] font-semibold text-foreground">{{ $bird->name }}</span>
-                                    <span class="shrink-0 text-[14px] text-muted-foreground">Not yet banded</span>
+                                    <span class="truncate font-display text-[17px] lg:text-sm font-semibold text-foreground">{{ $bird->name }}</span>
+                                    <span class="shrink-0 text-[14px] lg:text-xs text-muted-foreground">Not yet banded</span>
                                 @endif
                             </span>
-                            <span class="mt-0.5 flex items-center gap-1.5 truncate text-[14px] text-muted-foreground">
+                            <span class="mt-0.5 flex items-center gap-1.5 truncate text-[14px] lg:text-xs text-muted-foreground">
                                 <x-band-dot :bloodline="$bird->bloodline" />
                                 <span class="truncate">{{ $bird->bloodline ?? 'Bloodline not recorded' }} &middot; {{ $bird->sex->label() }} &middot; <span class="datum">{{ $bird->ageLabel() ?? 'Age unknown' }}</span></span>
                             </span>
@@ -287,7 +287,7 @@
                             @if ($column['vis']) x-show="cols.{{ $column['vis'] }}" @endif
                             @if ($column['sort']) aria-sort="{{ $isSorted ? ($isAscending ? 'ascending' : 'descending') : 'none' }}" @endif
                             @class([
-                                'whitespace-nowrap px-3 py-0 text-[13px] font-semibold text-muted-foreground',
+                                'whitespace-nowrap px-3 py-0 text-[13px] lg:text-[11px] font-semibold text-muted-foreground',
                                 'text-right' => $column['align'] === 'right',
                                 'text-left' => $column['align'] !== 'right',
                                 $column['cell'],
@@ -345,12 +345,12 @@
                         <td class="whitespace-nowrap px-3 py-1.5">
                             @if ($bird->band_number)
                                 <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate
-                                   class="datum font-display text-[16px] font-semibold text-foreground hover:underline hover:underline-offset-4">{{ $bird->band_number }}</a>
+                                   class="datum font-display text-[16px] lg:text-xs font-semibold text-foreground hover:underline hover:underline-offset-4">{{ $bird->band_number }}</a>
                             @else
-                                <span class="text-[14px] text-muted-foreground">Not yet banded</span>
+                                <span class="text-[14px] lg:text-xs text-muted-foreground">Not yet banded</span>
                             @endif
                         </td>
-                        <td class="px-3 py-1.5 text-[15px] text-foreground">
+                        <td class="px-3 py-1.5 text-[15px] lg:text-xs text-foreground">
                             <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate class="hover:underline hover:underline-offset-4">
                                 {{ $bird->name }}
                             </a>
@@ -360,7 +360,7 @@
                                 <span class="d-badge d-badge-soft d-badge-neutral ml-1.5" title="Belongs to another farm; recorded so the pedigree stays complete">Outside</span>
                             @endif
                         </td>
-                        <td x-show="cols.bloodline" class="whitespace-nowrap px-3 py-1.5 text-[15px] text-foreground">
+                        <td x-show="cols.bloodline" class="whitespace-nowrap px-3 py-1.5 text-[15px] lg:text-xs text-foreground">
                             <span class="inline-flex items-center gap-2">
                                 <x-band-dot :bloodline="$bird->bloodline" />
                                 @if ($bird->bloodline)
@@ -370,8 +370,8 @@
                                 @endif
                             </span>
                         </td>
-                        <td x-show="cols.sex" class="hidden whitespace-nowrap px-3 py-1.5 text-[15px] text-muted-foreground md:table-cell">{{ $bird->sex->label() }}</td>
-                        <td x-show="cols.age" class="whitespace-nowrap px-3 py-1.5 text-right text-[15px]">
+                        <td x-show="cols.sex" class="hidden whitespace-nowrap px-3 py-1.5 text-[15px] lg:text-xs text-muted-foreground md:table-cell">{{ $bird->sex->label() }}</td>
+                        <td x-show="cols.age" class="whitespace-nowrap px-3 py-1.5 text-right text-[15px] lg:text-xs">
                             @if ($bird->ageLabel())
                                 <span class="datum text-foreground">{{ $bird->ageLabel() }}</span>
                             @else
@@ -418,7 +418,7 @@
     @if (count($selected) > 0)
         <div class="sticky bottom-4 z-30 mt-6 flex justify-center" role="status" aria-live="polite">
             <div class="elev-3 enter-pop flex items-center gap-2 rounded-full border border-border bg-card py-1.5 pl-5 pr-1.5">
-                <span class="pr-2 text-[15px] text-foreground">
+                <span class="pr-2 text-[15px] lg:text-xs text-foreground">
                     <span class="datum font-semibold">{{ count($selected) }}</span>
                     {{ Str::plural('bird', count($selected)) }} selected
                 </span>
@@ -452,10 +452,10 @@
              x-data x-trap.noscroll="true" x-on:keydown.escape.window="$wire.cancelDeleteSelected()"
              role="dialog" aria-modal="true" aria-labelledby="bulk-delete-title" aria-describedby="bulk-delete-body">
             <div class="d-modal-box elev-3 w-full max-w-md">
-                <h2 id="bulk-delete-title" class="font-display text-[22px] font-semibold tracking-[-0.015em] text-foreground">
+                <h2 id="bulk-delete-title" class="font-display text-[22px] lg:text-base font-semibold tracking-[-0.015em] text-foreground">
                     Delete <span class="datum">{{ count($selected) }}</span> {{ Str::plural('bird', count($selected)) }}?
                 </h2>
-                <p id="bulk-delete-body" class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                <p id="bulk-delete-body" class="mt-3 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     This removes <strong class="font-semibold text-foreground">{{ implode(', ', $named) }}@if ($more > 0) and <span class="datum">{{ $more }}</span> more @endif</strong>
                     from the active records. Their health, breeding and performance history is kept and the
                     deletion is recorded in the activity log. Birds your role cannot delete are left as they are.

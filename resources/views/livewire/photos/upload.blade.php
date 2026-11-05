@@ -14,8 +14,8 @@
 --}}
 <section aria-labelledby="upload-heading" class="border-b border-border pb-10">
     <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-        <h2 id="upload-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Add photos</h2>
-        <p class="text-[15px] text-muted-foreground">
+        <h2 id="upload-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Add photos</h2>
+        <p class="text-[15px] lg:text-xs text-muted-foreground">
             @if ($this->isFull)
                 This bird already has the most photos allowed (<span class="datum">{{ $maxPerBird }}</span>).
                 Delete one below before adding another.
@@ -69,11 +69,11 @@
                       d="M3 16.5V18a2.25 2.25 0 0 0 2.25 2.25h13.5A2.25 2.25 0 0 0 21 18v-1.5M16.5 7.5 12 3m0 0L7.5 7.5M12 3v13.5"/>
             </svg>
 
-            <span class="text-[17px] font-medium text-foreground"
+            <span class="text-[17px] lg:text-sm font-medium text-foreground"
                   x-text="dragging ? 'Drop to add them' : 'Tap to choose photos'">
                 Tap to choose photos
             </span>
-            <span class="max-w-[42ch] text-[15px] leading-snug text-muted-foreground">
+            <span class="max-w-[42ch] text-[15px] lg:text-xs leading-snug text-muted-foreground">
                 You can pick more than one, or drag them here. JPG, PNG or WEBP, up to <span class="datum">{{ $maxMb }} MB</span> each.
             </span>
 
@@ -90,7 +90,7 @@
         {{-- Upload progress. Farm staff are often on a slow phone connection;
              a page that looks frozen gets tapped again and again. --}}
         <div x-show="uploading" x-cloak class="mt-4" role="status" aria-live="polite">
-            <div class="flex items-center justify-between text-[15px] text-foreground">
+            <div class="flex items-center justify-between text-[15px] lg:text-xs text-foreground">
                 <span>Uploading your photos&hellip;</span>
                 <span class="datum" x-text="progress + '%'"></span>
             </div>
@@ -103,14 +103,14 @@
                       x-bind:value="progress"
                       value="0"
                       max="100"></progress>
-            <p class="mt-2 text-[13px] leading-snug text-muted-foreground">Please keep this page open until it finishes.</p>
+            <p class="mt-2 text-[13px] lg:text-[11px] leading-snug text-muted-foreground">Please keep this page open until it finishes.</p>
         </div>
 
         {{-- A rejected file is the one thing here that must not be missed, so
              it gets the alert wash rather than a line of red text. The tint is
              the only colour; the words stay in ink. --}}
         @error('photos')
-            <div id="photos-error" class="d-alert d-alert-soft d-alert-error mt-4 items-start text-[15px] leading-snug text-base-content" role="alert">
+            <div id="photos-error" class="d-alert d-alert-soft d-alert-error mt-4 items-start text-[15px] lg:text-xs leading-snug text-base-content" role="alert">
                 <svg class="mt-0.5 h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008M10.34 3.94l-8.19 14.2A1.5 1.5 0 0 0 3.45 20.4h17.1a1.5 1.5 0 0 0 1.3-2.26l-8.19-14.2a1.5 1.5 0 0 0-2.6 0Z"/>
                 </svg>
@@ -121,7 +121,7 @@
         {{-- The last save, stated here as well as in the toast, so it is still
              on screen after the toast has gone. --}}
         @if ($status !== '' && count($photos) === 0)
-            <p class="mt-4 flex items-center gap-2 text-[15px] text-foreground">
+            <p class="mt-4 flex items-center gap-2 text-[15px] lg:text-xs text-foreground">
                 <svg class="h-5 w-5 shrink-0 text-muted-foreground" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
                 </svg>
@@ -132,7 +132,7 @@
         {{-- Preview before saving: what you picked, before it is committed. --}}
         @if (count($photos) > 0)
             <div class="mt-6">
-                <p class="text-[15px] font-semibold text-foreground">
+                <p class="text-[15px] lg:text-xs font-semibold text-foreground">
                     Ready to save (<span class="datum">{{ count($photos) }}</span>)
                 </p>
 
@@ -148,7 +148,7 @@
                                              alt="Photo {{ $index + 1 }} waiting to be saved"
                                              class="h-full w-full object-cover">
                                     @else
-                                        <div class="flex h-full w-full items-center justify-center px-2 text-center text-[13px] leading-snug text-muted-foreground">
+                                        <div class="flex h-full w-full items-center justify-center px-2 text-center text-[13px] lg:text-[11px] leading-snug text-muted-foreground">
                                             No preview available
                                         </div>
                                     @endif
@@ -168,7 +168,7 @@
                             </div>
 
                             @error('photos.'.$index)
-                                <p class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
+                                <p class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p>
                             @enderror
                         </li>
                     @endforeach
@@ -186,7 +186,7 @@
                        @class(['d-input w-full', 'mt-1', 'd-input-error' => $errors->has('caption')])>
                 <p id="photo-caption-help" class="d-label mt-1">Added to every photo you are saving now. You can change it later.</p>
                 @error('caption')
-                    <p id="photo-caption-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
+                    <p id="photo-caption-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p>
                 @enderror
             </div>
 

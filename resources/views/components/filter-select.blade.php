@@ -121,9 +121,9 @@
     {{-- d-input rather than d-select: d-select paints its own chevron, and
          this one has to rotate. The d-label as first child is what gives the
          prefix its divider. --}}
-    <div class="d-input w-full cursor-pointer gap-0 sm:w-auto">
+    <div class="d-input w-full cursor-pointer items-center gap-0 sm:w-auto">
         <span id="{{ $id }}-label"
-              class="d-label shrink-0 text-[13px] font-medium lg:text-[11px]">
+              class="d-label inline-flex shrink-0 items-center self-stretch text-[13px] leading-none font-medium lg:text-[11px]">
             {{ $label }}
         </span>
 

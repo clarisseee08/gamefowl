@@ -81,13 +81,13 @@
                     <div class="flex items-start gap-3">
                         <x-avatar :name="$person->full_name" size="md" class="mt-0.5 shrink-0" />
                         <div class="min-w-0 flex-1">
-                            <p class="text-[16px] font-medium text-foreground">
+                            <p class="text-[16px] lg:text-xs font-medium text-foreground">
                                 {{ $person->full_name }}
                                 @if ($person->is(auth()->user()))
-                                    <span class="text-[14px] font-normal text-muted-foreground">(you)</span>
+                                    <span class="text-[14px] lg:text-xs font-normal text-muted-foreground">(you)</span>
                                 @endif
                             </p>
-                            <p class="mt-0.5 break-all text-[14px] text-muted-foreground">{{ $person->email }}</p>
+                            <p class="mt-0.5 break-all text-[14px] lg:text-xs text-muted-foreground">{{ $person->email }}</p>
 
                             <div class="mt-2 flex flex-wrap items-center gap-2">
                                 <span class="d-badge d-badge-soft d-badge-neutral">{{ $person->role->label() }}</span>
@@ -96,20 +96,20 @@
                                 @else
                                     <span class="d-badge d-badge-soft d-badge-neutral">Deactivated</span>
                                 @endif
-                                <span class="text-[14px] text-muted-foreground">{{ $person->position ?? 'No position recorded' }}</span>
+                                <span class="text-[14px] lg:text-xs text-muted-foreground">{{ $person->position ?? 'No position recorded' }}</span>
                             </div>
 
                             @canany(['update', 'deactivate'], $person)
                                 <div class="mt-1 flex flex-wrap items-center gap-x-6">
                                     @can('update', $person)
                                         <a href="{{ route('users.edit', $person) }}" wire:navigate
-                                           class="d-link d-link-primary d-link-hover inline-flex min-h-11 items-center text-[15px] font-medium">
+                                           class="d-link d-link-primary d-link-hover inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
                                             Edit<span class="sr-only">, {{ $person->full_name }}</span>
                                         </a>
                                     @endcan
                                     @can('deactivate', $person)
                                         <button type="button" wire:click="confirmToggle({{ $person->id }})"
-                                                class="d-link d-link-hover inline-flex min-h-11 items-center text-[15px] font-medium {{ $person->is_active ? 'd-link-error' : 'd-link-primary' }}">
+                                                class="d-link d-link-hover inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium {{ $person->is_active ? 'd-link-error' : 'd-link-primary' }}">
                                             {{ $person->is_active ? 'Deactivate' : 'Reactivate' }}<span class="sr-only">, {{ $person->full_name }}</span>
                                         </button>
                                     @endcan
@@ -134,7 +134,7 @@
                         @endphp
                         <th scope="col"
                             @if ($column['sort'] !== null) aria-sort="{{ $ariaSort }}" @endif
-                            class="sticky top-0 z-10 whitespace-nowrap bg-background px-3 py-2 text-left text-[13px] font-semibold text-muted-foreground {{ $column['cell'] }}">
+                            class="sticky top-0 z-10 whitespace-nowrap bg-background px-3 py-2 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground {{ $column['cell'] }}">
                             @if ($column['sort'] !== null)
                                 <button type="button" wire:click="sort('{{ $column['sort'] }}')"
                                         @class(['inline-flex items-center gap-1 hover:text-foreground', 'text-foreground' => $isSorted])>
@@ -164,22 +164,22 @@
                             <div class="flex items-center gap-3">
                                 <x-avatar :name="$person->full_name" size="md" class="shrink-0" />
                                 <div class="min-w-0">
-                                    <p class="text-[15px] font-medium text-foreground">
+                                    <p class="text-[15px] lg:text-xs font-medium text-foreground">
                                         {{ $person->full_name }}
                                         @if ($person->is(auth()->user()))
-                                            <span class="ml-1 text-[13px] font-normal text-muted-foreground">(you)</span>
+                                            <span class="ml-1 text-[13px] lg:text-[11px] font-normal text-muted-foreground">(you)</span>
                                         @endif
                                     </p>
-                                    <p class="mt-0.5 truncate text-[14px] text-muted-foreground">{{ $person->email }}</p>
+                                    <p class="mt-0.5 truncate text-[14px] lg:text-xs text-muted-foreground">{{ $person->email }}</p>
                                 </div>
                             </div>
                         </td>
                         <td class="whitespace-nowrap px-3 py-3">
                             <span class="d-badge d-badge-soft d-badge-neutral">{{ $person->role->label() }}</span>
                         </td>
-                        <td class="hidden whitespace-nowrap px-3 py-3 text-[15px] text-muted-foreground lg:table-cell">{{ $person->position ?? 'Not recorded' }}</td>
+                        <td class="hidden whitespace-nowrap px-3 py-3 text-[15px] lg:text-xs text-muted-foreground lg:table-cell">{{ $person->position ?? 'Not recorded' }}</td>
                         <td @class([
-                            'hidden whitespace-nowrap px-3 py-3 text-[15px] text-muted-foreground xl:table-cell',
+                            'hidden whitespace-nowrap px-3 py-3 text-[15px] lg:text-xs text-muted-foreground xl:table-cell',
                             'datum' => $person->contact_number !== null,
                         ])>{{ $person->contact_number ?? 'Not recorded' }}</td>
                         <td class="whitespace-nowrap px-3 py-3">
@@ -193,13 +193,13 @@
                             <div class="flex items-center justify-end gap-5">
                                 @can('update', $person)
                                     <a href="{{ route('users.edit', $person) }}" wire:navigate
-                                       class="d-link d-link-primary d-link-hover inline-flex min-h-11 items-center text-[15px] font-medium">
+                                       class="d-link d-link-primary d-link-hover inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
                                         Edit<span class="sr-only">, {{ $person->full_name }}</span>
                                     </a>
                                 @endcan
                                 @can('deactivate', $person)
                                     <button type="button" wire:click="confirmToggle({{ $person->id }})"
-                                            class="d-link d-link-hover inline-flex min-h-11 items-center text-[15px] font-medium {{ $person->is_active ? 'd-link-error' : 'd-link-primary' }}">
+                                            class="d-link d-link-hover inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium {{ $person->is_active ? 'd-link-error' : 'd-link-primary' }}">
                                         {{ $person->is_active ? 'Deactivate' : 'Reactivate' }}<span class="sr-only">, {{ $person->full_name }}</span>
                                     </button>
                                 @endcan
@@ -225,13 +225,13 @@
             <div class="d-modal-box elev-3 w-full max-w-md">
                 <div class="flex items-center gap-3">
                     <x-avatar :name="$pending->full_name" size="md" class="shrink-0" />
-                    <p class="min-w-0 truncate text-[14px] text-muted-foreground">{{ $pending->email }}</p>
+                    <p class="min-w-0 truncate text-[14px] lg:text-xs text-muted-foreground">{{ $pending->email }}</p>
                 </div>
 
-                <h2 id="toggle-user-title" class="mt-4 font-display text-[22px] font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
+                <h2 id="toggle-user-title" class="mt-4 font-display text-[22px] lg:text-base font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
                     {{ $pending->is_active ? 'Deactivate' : 'Reactivate' }} {{ $pending->full_name }}?
                 </h2>
-                <p id="toggle-user-body" class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                <p id="toggle-user-body" class="mt-3 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     @if ($pending->is_active)
                         They will be signed out immediately and will not be able to sign in again.
                         Everything they have recorded is kept, and their name still appears on those
