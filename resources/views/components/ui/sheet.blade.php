@@ -13,6 +13,8 @@
     'cancelLabel' => 'Cancel',
     'guardDirty' => true,
     'id' => null,
+    /** false when the body is a Livewire form that brings its own <form> and buttons. */
+    'wrap' => true,
 ])
 
 {{--
@@ -36,11 +38,11 @@
         '2xl' => 'sm:max-w-2xl',
     ][$size] ?? 'sm:max-w-xl';
 
-    $state = $model ? "\$wire.entangle('{$model}')" : 'false';
 @endphp
 
-<div x-data="emsDialog({ open: {!! $state !!}, guardDirty: @js((bool) $guardDirty), closeOnBackdrop: true })"
+<div x-data="emsDialog({ model: @js($model), guardDirty: @js((bool) $guardDirty), closeOnBackdrop: true })"
      x-on:ems-dialog.window="if ($event.detail === @js($id)) open = true"
+     x-on:ems-close-form.window="requestClose()"
      {{ $attributes }}>
     <dialog x-ref="dialog" wire:ignore.self data-side="{{ $side }}"
             class="ems-sheet m-0 h-full max-h-none w-full max-w-none bg-transparent p-0"
@@ -59,6 +61,7 @@
                 <span class="sr-only">Close</span>
             </button>
 
+            @if ($wrap)
             <form @if ($submit) wire:submit="{{ $submit }}" @else x-on:submit.prevent @endif
                   x-on:input="dirty = true" x-on:change="dirty = true"
                   class="flex min-h-0 flex-1 flex-col">
@@ -91,6 +94,20 @@
                     </div>
                 @endif
             </form>
+            @else
+                <div class="flex min-h-0 flex-1 flex-col" x-on:input="dirty = true" x-on:change="dirty = true">
+                <div class="flex shrink-0 flex-col gap-1.5 p-4 pr-14">
+                    <h2 id="{{ $id }}-title" class="text-base font-semibold text-foreground">{{ $title }}</h2>
+                    @if ($description)
+                        <p class="text-sm text-muted-foreground">{{ $description }}</p>
+                    @endif
+                </div>
+
+                    <div class="flex min-h-0 flex-1 flex-col">
+                        {{ $slot }}
+                    </div>
+                </div>
+            @endif
         </div>
     </dialog>
 </div>

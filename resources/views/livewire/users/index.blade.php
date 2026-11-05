@@ -31,7 +31,7 @@
 
         @can('create', App\Models\User::class)
             <x-slot:actions>
-                <a href="{{ route('users.create') }}" wire:navigate class="d-btn d-btn-primary">
+                <a href="{{ route('users.create') }}" wire:click.prevent="openForm" class="d-btn d-btn-primary">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                     </svg>
@@ -102,7 +102,7 @@
                             @canany(['update', 'deactivate'], $person)
                                 <div class="mt-1 flex flex-wrap items-center gap-x-6">
                                     @can('update', $person)
-                                        <a href="{{ route('users.edit', $person) }}" wire:navigate
+                                        <a href="{{ route('users.edit', $person) }}" wire:click.prevent="openForm({{ $person->id }})"
                                            class="d-link d-link-primary d-link-hover inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
                                             Edit<span class="sr-only">, {{ $person->full_name }}</span>
                                         </a>
@@ -192,7 +192,7 @@
                         <td class="whitespace-nowrap px-3 py-3 text-right">
                             <div class="flex items-center justify-end gap-0.5">
                                 @can('update', $person)
-                                    <x-ui.row-action icon="pencil" :label="'Edit '.$person->full_name" :href="route('users.edit', $person)" wire:navigate />
+                                    <x-ui.row-action icon="pencil" :label="'Edit '.$person->full_name" :href="route('users.edit', $person)" wire:click.prevent="openForm({{ $person->id }})" />
                                 @endcan
                                 @can('deactivate', $person)
                                     <x-ui.row-action :icon="$person->is_active ? 'user-x' : 'user-check'"
@@ -247,4 +247,12 @@
             </div>
         </div>
     @endif
+
+    {{-- Add and edit open here, over the list, never on a page of their own. --}}
+    <x-ui.form-dialog id="users-form" model="showForm" size="lg" :wrap="false" :title="$formRecordId ? 'Edit '.(\App\Models\User::find($formRecordId)?->full_name ?? 'user') : 'Add a User'">
+        @if ($showForm)
+            <livewire:users.form :user="$formRecordId ? \App\Models\User::find($formRecordId) : null"
+                                  :in-dialog="true" :key="'users-form-'.($formRecordId ?? 'new').'-'.($formBroodcockId ?? '')" />
+        @endif
+    </x-ui.form-dialog>
 </div>

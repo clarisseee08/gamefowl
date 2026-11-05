@@ -27,7 +27,8 @@
     bar is sticky, so on a phone the button is never a long scroll away from
     the field just filled in.
 --}}
-<div>
+<div @class(['flex min-h-0 flex-1 flex-col' => $inDialog])>
+    @unless ($inDialog)
     <div class="max-w-[40rem]">
         <a href="{{ $editing ? route('broodcocks.show', $broodcock) : route('broodcocks.index') }}" wire:navigate
            class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] lg:text-xs font-semibold underline-offset-4">
@@ -36,7 +37,7 @@
 
         <header class="mt-3 border-b border-border pb-6">
             <p class="sb-line sb-eyebrow" style="--line: 0ms">{{ $editing ? 'Edit bird' : 'Register a bird' }}</p>
-            <h1 class="mt-2 text-base lg:text-xs font-bold text-foreground" style="--line: 60ms">
+            <h1 class="mt-2 text-base font-bold text-foreground" style="--line: 60ms">
                 {{ $editing ? 'Edit '.$broodcock->name : 'Add a Gamefowl' }}
             </h1>
             <p class="sb-line mt-3 text-[16px] lg:text-xs leading-relaxed text-muted-foreground" style="--line: 120ms">
@@ -45,9 +46,10 @@
             </p>
         </header>
     </div>
+    @endunless
 
-    <form wire:submit="save" novalidate>
-        <div class="max-w-[40rem]">
+    <form wire:submit="save" novalidate @class(['flex min-h-0 flex-1 flex-col' => $inDialog])>
+        <div @class(['max-w-[40rem]' => ! $inDialog, 'min-h-0 flex-1 overflow-y-auto px-4 pb-4' => $inDialog])>
             {{-- IDENTITY --}}
             <section class="pt-8" aria-labelledby="identity-heading">
                 <h2 id="identity-heading" class="{{ $heading }}">Identity</h2>
@@ -410,10 +412,14 @@
 
         {{-- THE SAVE BAR. Sticky to the bottom of the content region, so Save
              is always in reach on a phone. Ground, not blur. --}}
-        <div class="sticky bottom-0 z-20 -mx-4 mt-10 border-t border-border bg-background/95 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-            <div class="flex max-w-[40rem] justify-end gap-3">
-                <a href="{{ $editing ? route('broodcocks.show', $broodcock) : route('broodcocks.index') }}" wire:navigate
-                   class="d-btn d-btn-outline">Cancel</a>
+        <div @class(['sticky bottom-0 z-20 -mx-4 mt-10 border-t border-border bg-background/95 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8' => ! $inDialog, 'shrink-0 border-t border-border/60 bg-card p-3' => $inDialog])>
+            <div @class(['flex justify-end gap-3', 'max-w-[40rem]' => ! $inDialog])>
+                @if ($inDialog)
+                    <button type="button" class="d-btn d-btn-outline" x-on:click="$dispatch('ems-close-form')">Cancel</button>
+                @else
+                    <a href="{{ $editing ? route('broodcocks.show', $broodcock) : route('broodcocks.index') }}" wire:navigate
+                       class="d-btn d-btn-outline">Cancel</a>
+                @endif
 
                 <button type="submit" class="d-btn d-btn-primary" wire:loading.attr="disabled" wire:target="save, photos">
                     <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="save"></span>

@@ -29,6 +29,9 @@ use Livewire\Component;
 #[Title('Record a Death')]
 final class Form extends Component
 {
+    /** Rendered inside the list's form dialog rather than as a page of its own. */
+    public bool $inDialog = false;
+
     public string $broodcock_id = '';
 
     public string $date_of_death = '';

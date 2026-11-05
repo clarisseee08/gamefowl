@@ -19,6 +19,9 @@ use Livewire\Component;
 
 final class Form extends Component
 {
+    /** Rendered inside the list's form dialog rather than as a page of its own. */
+    public bool $inDialog = false;
+
     public ?PerformanceRecord $record = null;
 
     // Form state as individual public properties rather than an array, so

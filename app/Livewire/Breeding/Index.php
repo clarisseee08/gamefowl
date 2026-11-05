@@ -9,6 +9,7 @@ use App\Models\Broodcock;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -61,13 +62,45 @@ final class Index extends Component
         $this->resetPage();
     }
 
-    public function mount(): void
+    /**
+     * The add / edit form, open in a side sheet over this list (the owner's
+     * decision: create and edit never leave the list). The old create and
+     * edit URLs still work - they render this list with the form open. The
+     * form component itself is unchanged: it authorizes, validates and saves
+     * exactly as it did as a page.
+     */
+    public bool $showForm = false;
+
+    #[Locked]
+    public ?int $formRecordId = null;
+
+    #[Locked]
+    public ?int $formBroodcockId = null;
+
+    public function mount(?BreedingRecord $record = null): void
     {
         $this->authorize('viewAny', BreedingRecord::class);
+
+        if ($record?->exists) {
+            $this->openForm($record->id);
+        } elseif (request()->routeIs('breeding.create')) {
+            $this->openForm(null, null);
+        }
+    }
+
+    public function openForm(?int $recordId = null, ?int $broodcockId = null): void
+    {
+        $this->formRecordId = $recordId;
+        $this->formBroodcockId = $broodcockId;
+        $this->showForm = true;
     }
 
     public function updating(string $property): void
     {
+        if ($property === 'showForm') {
+            return;
+        }
+
         if ($property !== 'page') {
             $this->resetPage();
         }

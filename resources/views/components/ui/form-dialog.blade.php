@@ -18,6 +18,12 @@
     'guardDirty' => true,
     /** Ids for the title and description; set one when a page has two dialogs. */
     'id' => null,
+    /**
+     * false when the body is a Livewire form component that brings its own
+     * <form> and buttons - forms cannot nest. The dialog then draws only its
+     * chrome; the form's Cancel closes it with $dispatch('ems-close-form').
+     */
+    'wrap' => true,
 ])
 
 {{--
@@ -54,11 +60,11 @@
     $normal = "max-h-[90vh] w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] rounded-xl border border-border/60 {$width}";
     $maximized = 'h-[100dvh] max-h-none w-screen max-w-none rounded-none border-0';
 
-    $state = $model ? "\$wire.entangle('{$model}')" : 'false';
 @endphp
 
-<div x-data="emsDialog({ open: {!! $state !!}, guardDirty: @js((bool) $guardDirty) })"
+<div x-data="emsDialog({ model: @js($model), guardDirty: @js((bool) $guardDirty) })"
      x-on:ems-dialog.window="if ($event.detail === @js($id)) open = true"
+     x-on:ems-close-form.window="requestClose()"
      {{ $attributes }}>
     <dialog x-ref="dialog" wire:ignore.self class="d-modal ems-modal"
             aria-labelledby="{{ $id }}-title" @if ($description) aria-describedby="{{ $id }}-description" @endif
@@ -82,7 +88,8 @@
                 </button>
             </div>
 
-            <form @if ($submit) wire:submit="{{ $submit }}" @else x-on:submit.prevent @endif
+            @if ($wrap)
+                <form @if ($submit) wire:submit="{{ $submit }}" @else x-on:submit.prevent @endif
                   x-on:input="dirty = true" x-on:change="dirty = true"
                   class="flex min-h-0 flex-1 flex-col overflow-hidden">
                 <div class="flex shrink-0 flex-col gap-2 px-5 pt-5 pb-3 text-left">
@@ -121,6 +128,25 @@
                     @endisset
                 </div>
             </form>
+            @else
+                <div class="flex min-h-0 flex-1 flex-col overflow-hidden" x-on:input="dirty = true" x-on:change="dirty = true">
+                <div class="flex shrink-0 flex-col gap-2 px-5 pt-5 pb-3 text-left">
+                    <h2 id="{{ $id }}-title" class="flex items-center gap-2.5 pr-14 text-base font-bold text-foreground">
+                        @if ($icon)
+                            <x-ui.icon :name="$icon" class="size-4 text-muted-foreground" />
+                        @endif
+                        {{ $title }}
+                    </h2>
+                    @if ($description)
+                        <p id="{{ $id }}-description" class="text-[13px] leading-snug text-muted-foreground lg:text-[11px]">{{ $description }}</p>
+                    @endif
+                </div>
+
+                    <div class="flex min-h-0 flex-1 flex-col">
+                        {{ $slot }}
+                    </div>
+                </div>
+            @endif
         </div>
     </dialog>
 </div>

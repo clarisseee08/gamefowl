@@ -12,16 +12,18 @@
     updatedDamChoice, and ResolveExternalParent turns the typed name into a
     real broodcock row on save. Only the markup around it changed.
 --}}
-<div>
+<div @class(['flex min-h-0 flex-1 flex-col' => $inDialog])>
+    @unless ($inDialog)
     <a href="{{ route('breeding.index') }}" wire:navigate
        class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] lg:text-xs font-semibold underline-offset-4">
         <span aria-hidden="true">&larr;</span> Back to breeding records
     </a>
 
     <x-anchor-block class="mt-2" eyebrow="Breeding" :title="$editing ? 'Edit Breeding Record' : 'Record a Mating'" />
+    @endunless
 
-    <form wire:submit="save" class="mt-8">
-        <div class="max-w-[40rem] space-y-12 pb-10">
+    <form wire:submit="save" @class(['mt-8' => ! $inDialog, 'flex min-h-0 flex-1 flex-col' => $inDialog])>
+        <div @class(['max-w-[40rem] space-y-12 pb-10' => ! $inDialog, 'min-h-0 flex-1 space-y-8 overflow-y-auto px-5 pb-5' => $inDialog])>
             {{-- -------------------------------------------------------
                  The pair
             ------------------------------------------------------- --}}
@@ -187,8 +189,12 @@
 
         {{-- The Save bar stays in reach at the bottom of the screen, so a
              keeper on a phone never scrolls back up to find it. --}}
-        <div class="sticky bottom-0 z-10 -mx-4 flex justify-end gap-3 border-t border-border bg-background/95 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-            <a href="{{ route('breeding.index') }}" wire:navigate class="d-btn d-btn-outline">Cancel</a>
+        <div @class(['sticky bottom-0 z-10 -mx-4 flex justify-end gap-3 border-t border-border bg-background/95 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8' => ! $inDialog, 'flex shrink-0 justify-end gap-2 border-t border-border/60 bg-background/60 p-3' => $inDialog])>
+            @if ($inDialog)
+                <button type="button" class="d-btn d-btn-outline" x-on:click="$dispatch('ems-close-form')">Cancel</button>
+            @else
+                <a href="{{ route('breeding.index') }}" wire:navigate class="d-btn d-btn-outline">Cancel</a>
+            @endif
             <button type="submit" class="d-btn d-btn-primary" wire:loading.attr="disabled" wire:target="save">
                 <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="save"></span>
                 <span wire:loading.remove wire:target="save">{{ $editing ? 'Save Changes' : 'Save Breeding Record' }}</span>

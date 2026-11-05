@@ -15,6 +15,9 @@ use Livewire\Component;
 final class Form extends Component
 {
     /** Which account is being edited is never re-assignable from the browser. */
+    /** Rendered inside the list's form dialog rather than as a page of its own. */
+    public bool $inDialog = false;
+
     #[Locked]
     public ?int $userId = null;
 

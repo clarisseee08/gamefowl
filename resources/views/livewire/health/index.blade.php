@@ -37,7 +37,7 @@
 
         <x-slot:actions>
             @can('create', \App\Models\HealthRecord::class)
-                <a href="{{ route('health.create') }}" wire:navigate class="d-btn d-btn-primary">
+                <a href="{{ route('health.create') }}" wire:click.prevent="openForm" class="d-btn d-btn-primary">
                     Add Health Record
                 </a>
             @endcan
@@ -105,7 +105,7 @@
                 <button type="button" wire:click="clearFilters" class="d-btn d-btn-outline">Clear filters</button>
             @else
                 @can('create', \App\Models\HealthRecord::class)
-                    <a href="{{ route('health.create') }}" wire:navigate class="d-btn d-btn-primary">Add Health Record</a>
+                    <a href="{{ route('health.create') }}" wire:click.prevent="openForm" class="d-btn d-btn-primary">Add Health Record</a>
                 @endcan
             @endif
         </x-empty-state>
@@ -227,7 +227,7 @@
                             <div class="-ml-3 flex gap-0.5 md:ml-0 md:justify-end">
                                 @php $what = $record->record_type->label().' for '.$birdName.' on '.$record->checkup_date->format('d M Y'); @endphp
                                 @can('update', $record)
-                                    <x-ui.row-action icon="pencil" :label="'Edit the '.$what" :href="route('health.edit', $record)" wire:navigate />
+                                    <x-ui.row-action icon="pencil" :label="'Edit the '.$what" wire:click="openForm({{ $record->id }})" />
                                 @endcan
                                 @can('delete', $record)
                                     <x-ui.row-action icon="trash-2" :label="'Delete the '.$what" :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
@@ -288,4 +288,14 @@
             </div>
         </div>
     @endif
+
+    {{-- Add and edit open here, over the list, never on a page of their own. --}}
+    <x-ui.form-dialog id="health-form" model="showForm" size="lg" :wrap="false"
+                      :title="$formRecordId ? 'Edit Health Record' : 'Add Health Record'"
+                      description="Record a vaccination, medication, deworming, treatment or check-up for one bird.">
+        @if ($showForm)
+            <livewire:health.form :record="$formRecordId ? \App\Models\HealthRecord::find($formRecordId) : null"
+                                  :in-dialog="true" :key="'health-form-'.($formRecordId ?? 'new')" />
+        @endif
+    </x-ui.form-dialog>
 </div>

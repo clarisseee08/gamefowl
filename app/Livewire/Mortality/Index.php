@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Mortality;
 
 use App\Actions\Mortality\DeleteMortality;
+use App\Models\Broodcock;
 use App\Models\MortalityRecord;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -13,6 +14,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -76,13 +78,43 @@ final class Index extends Component
         $this->resetPage();
     }
 
-    public function mount(): void
+    /**
+     * The add / edit form, open in a dialog over this list (the owner's
+     * decision: create and edit never leave the list). The old create and
+     * edit URLs still work - they render this list with the form open. The
+     * form component itself is unchanged: it authorizes, validates and saves
+     * exactly as it did as a page.
+     */
+    public bool $showForm = false;
+
+    #[Locked]
+    public ?int $formRecordId = null;
+
+    #[Locked]
+    public ?int $formBroodcockId = null;
+
+    public function mount(?Broodcock $broodcock = null): void
     {
         $this->authorize('viewAny', MortalityRecord::class);
+
+        if (request()->routeIs('mortality.create')) {
+            $this->openForm(null, $broodcock?->id);
+        }
+    }
+
+    public function openForm(?int $recordId = null, ?int $broodcockId = null): void
+    {
+        $this->formRecordId = $recordId;
+        $this->formBroodcockId = $broodcockId;
+        $this->showForm = true;
     }
 
     public function updating(string $property): void
     {
+        if ($property === 'showForm') {
+            return;
+        }
+
         // Any filter change must return to page 1, or the user lands on an
         // empty page and thinks the filter found nothing.
         if ($property !== 'page') {

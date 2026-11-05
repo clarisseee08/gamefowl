@@ -156,13 +156,27 @@ document.addEventListener('alpine:init', () => {
      * Cancel all go through requestClose(). Nothing closes while it saves.
      */
     window.Alpine.data('emsDialog', (options = {}) => ({
-        open: options.open ?? false,
+        open: false,
         dirty: false,
         maximized: false,
         returnFocus: null,
 
         init() {
-            this.$watch('open', (value) => this.sync(value));
+            // A Livewire property holds the dialog open: follow it both ways.
+            // Watched explicitly - an entangle handed through this factory
+            // never linked, so a dialog opened by the server stayed shut.
+            if (options.model && this.$wire) {
+                this.open = Boolean(this.$wire.get(options.model));
+                this.$wire.$watch(options.model, (value) => { this.open = Boolean(value); });
+            }
+
+            this.$watch('open', (value) => {
+                this.sync(value);
+
+                if (options.model && this.$wire && ! value && this.$wire.get(options.model)) {
+                    this.$wire.set(options.model, false);
+                }
+            });
             this.$nextTick(() => this.sync(this.open));
         },
 

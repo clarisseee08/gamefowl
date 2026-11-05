@@ -17,6 +17,9 @@ use Livewire\Component;
 
 final class Form extends Component
 {
+    /** Rendered inside the list's form dialog rather than as a page of its own. */
+    public bool $inDialog = false;
+
     public ?BreedingRecord $record = null;
 
     public ?string $sire_id = null;

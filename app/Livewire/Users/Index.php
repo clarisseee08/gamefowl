@@ -10,6 +10,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -69,13 +70,45 @@ final class Index extends Component
         $this->resetPage();
     }
 
-    public function mount(): void
+    /**
+     * The add / edit form, open in a dialog over this list (the owner's
+     * decision: create and edit never leave the list). The old create and
+     * edit URLs still work - they render this list with the form open. The
+     * form component itself is unchanged: it authorizes, validates and saves
+     * exactly as it did as a page.
+     */
+    public bool $showForm = false;
+
+    #[Locked]
+    public ?int $formRecordId = null;
+
+    #[Locked]
+    public ?int $formBroodcockId = null;
+
+    public function mount(?User $user = null): void
     {
         $this->authorize('viewAny', User::class);
+
+        if ($user?->exists) {
+            $this->openForm($user->id);
+        } elseif (request()->routeIs('users.create')) {
+            $this->openForm(null, null);
+        }
+    }
+
+    public function openForm(?int $recordId = null, ?int $broodcockId = null): void
+    {
+        $this->formRecordId = $recordId;
+        $this->formBroodcockId = $broodcockId;
+        $this->showForm = true;
     }
 
     public function updating(string $property): void
     {
+        if ($property === 'showForm') {
+            return;
+        }
+
         if ($property !== 'page') {
             $this->resetPage();
         }

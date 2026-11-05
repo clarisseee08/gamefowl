@@ -26,10 +26,9 @@
         'xl' => 'sm:w-[768px]',
     ][$size] ?? 'sm:w-[448px]';
 
-    $state = $model ? "\$wire.entangle('{$model}')" : 'false';
 @endphp
 
-<div x-data="emsDialog({ open: {!! $state !!} })"
+<div x-data="emsDialog({ model: @js($model) })"
      x-on:ems-dialog.window="if ($event.detail === @js($id)) open = true"
      {{ $attributes }}>
     <dialog x-ref="dialog" wire:ignore.self class="d-modal ems-modal"

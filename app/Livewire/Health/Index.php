@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -78,14 +79,42 @@ final class Index extends Component
         $this->resetPage();
     }
 
-    public function mount(): void
+    /**
+     * The add / edit form, open in a dialog over this list (the owner's
+     * decision: create and edit never leave the list). /health/create and
+     * /health/{record}/edit still work - they render this list with the
+     * dialog already open. The form component itself is unchanged; it
+     * authorizes, validates and saves exactly as it did as a page.
+     */
+    public bool $showForm = false;
+
+    #[Locked]
+    public ?int $formRecordId = null;
+
+    public function mount(?HealthRecord $record = null): void
     {
         $this->authorize('viewAny', HealthRecord::class);
+
+        if ($record?->exists) {
+            $this->openForm($record->id);
+        } elseif (request()->routeIs('health.create')) {
+            $this->openForm();
+        }
+    }
+
+    public function openForm(?int $recordId = null): void
+    {
+        $this->formRecordId = $recordId;
+        $this->showForm = true;
     }
 
     /** Any filter change must return to page 1, or the user lands on an empty page. */
     public function updating(string $property): void
     {
+        if ($property === 'showForm') {
+            return;
+        }
+
         if ($property !== 'page' && ! str_starts_with($property, 'paginators')) {
             $this->resetPage();
         }

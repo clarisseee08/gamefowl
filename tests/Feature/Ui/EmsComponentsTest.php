@@ -264,7 +264,7 @@ final class EmsComponentsTest extends TestCase
             ->assertSee('wire:ignore.self', escape: false)
             ->assertSee('aria-labelledby="dialog-showForm-title"', escape: false)
             ->assertSee('<h2 id="dialog-showForm-title"', escape: false)
-            ->assertSee("\$wire.entangle('showForm')", escape: false)
+            ->assertSee("emsDialog({ model: 'showForm'", escape: false)
             ->assertSee('wire:submit="save"', escape: false)
             ->assertSeeInOrder(['Edit health record', 'Fields', 'Cancel', 'Save', 'Saving...']);
     }

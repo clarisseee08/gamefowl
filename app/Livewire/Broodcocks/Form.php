@@ -122,6 +122,9 @@ final class Form extends Component
 
     public ?string $notes = null;
 
+    /** Rendered inside the gamefowl list's side sheet rather than as a page of its own. */
+    public bool $inDialog = false;
+
     public function mount(?Broodcock $broodcock = null): void
     {
         if ($broodcock?->exists) {
