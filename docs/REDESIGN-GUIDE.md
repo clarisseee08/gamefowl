@@ -109,9 +109,9 @@ win. In short:
    the Livewire `showForm` property through `emsDialog` in
    `resources/js/app.js` (`options.model`, `$wire.$watch`). Check that the
    close → `$wire.set(false)` → `openForm()` sequence fires the watcher.
-2. **Commit the modal work.** The forms-as-modals changes are not committed
-   yet. Run the checks above, then commit on `redesign/ems`. All 771 tests
-   passed before the last two small test fixes, and both fixed files pass.
+2. **Run the full suite again.** The forms-as-modals work is committed
+   (`71227ab`). The suite last ran at 770 of 771 before two small test fixes;
+   both fixed files pass, but there hasn't been a full run since.
 3. **Gamefowl edit from the bird page.** It still links to
    `/broodcocks/{id}/edit`, which opens the list with the sheet. Ideally the
    sheet opens on the bird page itself. Breeding edit from a mating page works
