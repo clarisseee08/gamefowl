@@ -10,6 +10,7 @@ use App\Models\Broodcock;
 use App\Models\HealthRecord;
 use App\Models\MortalityRecord;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
@@ -166,6 +167,12 @@ final class Overview extends Component
     // Breeding success trend
     // -----------------------------------------------------------------
 
+    /** First day of the trend window: shared by the chart and the figures above it. */
+    private function trendStart(): Carbon
+    {
+        return now()->startOfMonth()->subMonths($this->trendMonths - 1);
+    }
+
     /**
      * Fertility and hatch rate per month.
      *
@@ -178,7 +185,7 @@ final class Overview extends Component
     #[Computed]
     public function breedingTrend(): array
     {
-        $since = now()->startOfMonth()->subMonths($this->trendMonths - 1);
+        $since = $this->trendStart();
 
         $records = BreedingRecord::query()
             ->where('mating_date', '>=', $since->toDateString())
@@ -233,7 +240,10 @@ final class Overview extends Component
     #[Computed]
     public function breedingOverall(): array
     {
+        // The same window as the chart beneath the period selector. Counting all
+        // time here put an all-time 81.3% next to a 75% month on screen.
         $row = BreedingRecord::query()
+            ->where('mating_date', '>=', $this->trendStart()->toDateString())
             ->selectRaw('count(*) as matings')
             ->selectRaw('coalesce(sum(eggs_set), 0) as eggs_set')
             ->selectRaw('coalesce(sum(eggs_fertile), 0) as eggs_fertile')

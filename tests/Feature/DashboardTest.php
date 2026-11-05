@@ -149,6 +149,7 @@ final class DashboardTest extends TestCase
             ->assertSee(route('broodcocks.create'), escape: false);
     }
 
+
     public function test_an_up_to_date_flock_says_so_rather_than_showing_an_empty_list(): void
     {
         Livewire::actingAs(User::factory()->staff()->create())
@@ -201,5 +202,30 @@ final class DashboardTest extends TestCase
             'Every figure must be aggregated in SQL - a per-row query here would make the '.
             'landing page unusable against a remote database.'
         );
+    }
+
+    /**
+     * The figures sit directly under the period selector, so they count the
+     * same period as the chart. They used to count all time, which put an
+     * all-time 81.3% beside a 75% month.
+     */
+    public function test_the_breeding_figures_follow_the_selected_period(): void
+    {
+        BreedingRecord::factory()->create([
+            'mating_date' => today(),
+            'eggs_set' => 10, 'eggs_fertile' => 5, 'eggs_hatched' => 5, 'offspring_count' => 0,
+        ]);
+        BreedingRecord::factory()->create([
+            'mating_date' => now()->subYears(3),
+            'eggs_set' => 10, 'eggs_fertile' => 10, 'eggs_hatched' => 10, 'offspring_count' => 0,
+        ]);
+
+        $overall = Livewire::actingAs(User::factory()->staff()->create())
+            ->test(Overview::class)
+            ->instance()
+            ->breedingOverall;
+
+        $this->assertSame(1, $overall['matings']);
+        $this->assertSame(50.0, $overall['fertility']);
     }
 }
