@@ -42,7 +42,7 @@
 
         @can('update', $breeding)
             <div class="sb-line flex flex-wrap items-center gap-3" style="--line: 180ms">
-                <a href="{{ route('breeding.edit', $breeding) }}" wire:navigate class="d-btn d-btn-outline">Edit</a>
+                <a href="{{ route('breeding.edit', $breeding) }}" wire:click.prevent="openForm" class="d-btn d-btn-outline">Edit</a>
             </div>
         @endcan
     </header>
@@ -312,4 +312,13 @@
             @endif
         </div>
     </section>
+
+    @can('update', $this->record)
+        {{-- Edit opens here, in a side sheet over this page. --}}
+        <x-ui.sheet id="breeding-form" model="showForm" size="xl" :wrap="false" :title="'Edit Breeding Record'">
+            @if ($showForm)
+                <livewire:breeding.form :record="$this->record" :in-dialog="true" :key="'breeding-show-form'" />
+            @endif
+        </x-ui.sheet>
+    @endcan
 </div>

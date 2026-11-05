@@ -28,6 +28,18 @@ final class Show extends Component
 
     public bool $confirmingDeletion = false;
 
+    /**
+     * The edit form, open in a side sheet over this page rather than on a page
+     * of its own (the owner's decision). The form component is unchanged.
+     */
+    public bool $showForm = false;
+
+    public function openForm(): void
+    {
+        $this->authorize('update', $this->broodcock);
+        $this->showForm = true;
+    }
+
     public function mount(Broodcock $broodcock): void
     {
         $this->authorize('view', $broodcock);

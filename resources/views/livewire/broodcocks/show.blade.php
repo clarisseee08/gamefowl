@@ -138,7 +138,7 @@
             <div class="sb-line mt-8 flex flex-wrap gap-3" style="--line: 260ms">
                 @if ($internal)
                     @can('update', $bird)
-                        <a href="{{ route('broodcocks.edit', $bird) }}" wire:navigate class="d-btn d-btn-primary">Edit bird</a>
+                        <a href="{{ route('broodcocks.edit', $bird) }}" wire:click.prevent="openForm" class="d-btn d-btn-primary">Edit bird</a>
                     @endcan
                     <a href="{{ route('broodcocks.pedigree', $bird) }}" wire:navigate class="d-btn d-btn-outline">Family Tree</a>
                     @can('delete', $bird)
@@ -343,4 +343,13 @@
             </div>
         </div>
     @endif
+
+    @can('update', $this->broodcock)
+        {{-- Edit opens here, in a side sheet over this page. --}}
+        <x-ui.sheet id="broodcocks-form" model="showForm" size="2xl" :wrap="false" :title="'Edit '.$this->broodcock->name">
+            @if ($showForm)
+                <livewire:broodcocks.form :broodcock="$this->broodcock" :in-dialog="true" :key="'broodcocks-show-form'" />
+            @endif
+        </x-ui.sheet>
+    @endcan
 </div>

@@ -32,6 +32,18 @@ final class Show extends Component
 
     public ?string $generatePenId = null;
 
+    /**
+     * The edit form, open in a side sheet over this page rather than on a page
+     * of its own (the owner's decision). The form component is unchanged.
+     */
+    public bool $showForm = false;
+
+    public function openForm(): void
+    {
+        $this->authorize('update', $this->record);
+        $this->showForm = true;
+    }
+
     public function mount(BreedingRecord $record): void
     {
         $this->authorize('view', $record);
