@@ -102,10 +102,14 @@ final class Index extends Component
             ->between($this->from ?: null, $this->to ?: null)
             ->when($this->search !== '', function ($query): void {
                 $term = "%{$this->search}%";
-                $query->whereHas('sire', fn ($q) => $q->whereLike('name', $term, caseSensitive: false)
-                    ->orWhereLike('band_number', $term, caseSensitive: false))
-                    ->orWhereHas('dam', fn ($q) => $q->whereLike('name', $term, caseSensitive: false)
-                        ->orWhereLike('band_number', $term, caseSensitive: false));
+                // Grouped: an ungrouped orWhereHas would let a mating whose dam
+                // matches escape the date and bloodline filters around it.
+                $query->where(function ($query) use ($term): void {
+                    $query->whereHas('sire', fn ($q) => $q->whereLike('name', $term, caseSensitive: false)
+                        ->orWhereLike('band_number', $term, caseSensitive: false))
+                        ->orWhereHas('dam', fn ($q) => $q->whereLike('name', $term, caseSensitive: false)
+                            ->orWhereLike('band_number', $term, caseSensitive: false));
+                });
             })
             ->when($this->bloodline !== '', function ($query): void {
                 $query->whereHas('sire', fn ($q) => $q->where('bloodline', $this->bloodline));
