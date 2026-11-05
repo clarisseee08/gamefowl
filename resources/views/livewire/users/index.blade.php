@@ -248,13 +248,13 @@
         </div>
     @endif
 
-    {{-- Add and edit open here, over the list, never on a page of their own. --}}
-    <x-ui.form-dialog id="users-form" model="showForm" size="lg" :wrap="false" :title="$formRecordId ? 'Edit '.(\App\Models\User::find($formRecordId)?->full_name ?? 'user') : 'Add a User'">
+    {{-- Add and edit open here, in a side sheet over the list, never on a page of their own. --}}
+    <x-ui.sheet id="users-form" model="showForm" size="xl" :wrap="false" :title="$formRecordId ? 'Edit '.(\App\Models\User::find($formRecordId)?->full_name ?? 'user') : 'Add a User'">
         @if ($showForm)
             <livewire:users.form :user="$formRecordId ? \App\Models\User::find($formRecordId) : null"
                                   :in-dialog="true" :key="'users-form-'.($formRecordId ?? 'new').'-'.($formBroodcockId ?? '')" />
         @else
             <x-ui.form-skeleton :fields="5" />
         @endif
-    </x-ui.form-dialog>
+    </x-ui.sheet>
 </div>

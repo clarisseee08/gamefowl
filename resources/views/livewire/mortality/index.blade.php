@@ -292,13 +292,13 @@
         </div>
     @endif
 
-    {{-- Add and edit open here, over the list, never on a page of their own. --}}
-    <x-ui.form-dialog id="mortality-form" model="showForm" size="lg" :wrap="false" :title="'Record a Death'">
+    {{-- Add and edit open here, in a side sheet over the list, never on a page of their own. --}}
+    <x-ui.sheet id="mortality-form" model="showForm" size="xl" :wrap="false" :title="'Record a Death'">
         @if ($showForm)
             <livewire:mortality.form :broodcock="$formBroodcockId ? \App\Models\Broodcock::find($formBroodcockId) : null"
                                   :in-dialog="true" :key="'mortality-form-'.($formRecordId ?? 'new').'-'.($formBroodcockId ?? '')" />
         @else
             <x-ui.form-skeleton :fields="5" />
         @endif
-    </x-ui.form-dialog>
+    </x-ui.sheet>
 </div>

@@ -68,7 +68,7 @@
                 <div class="flex shrink-0 flex-col gap-1.5 p-4 pr-14">
                     <h2 id="{{ $id }}-title" class="text-base font-semibold text-foreground">{{ $title }}</h2>
                     @if ($description)
-                        <p class="text-sm text-muted-foreground">{{ $description }}</p>
+                        <p class="text-sm text-muted-foreground lg:text-xs">{{ $description }}</p>
                     @endif
                 </div>
 
@@ -99,7 +99,7 @@
                 <div class="flex shrink-0 flex-col gap-1.5 p-4 pr-14">
                     <h2 id="{{ $id }}-title" class="text-base font-semibold text-foreground">{{ $title }}</h2>
                     @if ($description)
-                        <p class="text-sm text-muted-foreground">{{ $description }}</p>
+                        <p class="text-sm text-muted-foreground lg:text-xs">{{ $description }}</p>
                     @endif
                 </div>
 
