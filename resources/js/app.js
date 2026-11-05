@@ -161,13 +161,31 @@ document.addEventListener('alpine:init', () => {
         maximized: false,
         returnFocus: null,
 
+        // Opened at the click, before the server has answered.
+        loading: false,
+
+        // Closed again while still loading: the server's late "open" is
+        // refused instead of reopening the dialog under the person's hand.
+        cancelled: false,
+
         init() {
             // A Livewire property holds the dialog open: follow it both ways.
             // Watched explicitly - an entangle handed through this factory
             // never linked, so a dialog opened by the server stayed shut.
             if (options.model && this.$wire) {
                 this.open = Boolean(this.$wire.get(options.model));
-                this.$wire.$watch(options.model, (value) => { this.open = Boolean(value); });
+                this.$wire.$watch(options.model, (value) => {
+                    if (value && this.cancelled) {
+                        this.cancelled = false;
+                        this.loading = false;
+                        this.$wire.set(options.model, false);
+
+                        return;
+                    }
+
+                    this.loading = false;
+                    this.open = Boolean(value);
+                });
             }
 
             this.$watch('open', (value) => {
@@ -199,7 +217,22 @@ document.addEventListener('alpine:init', () => {
             return this.$refs.dialog.querySelector('[data-loading]') !== null;
         },
 
+        /** Open at once, from a click; the server's answer fills it in. */
+        openNow() {
+            this.loading = Boolean(options.model);
+            this.cancelled = false;
+            this.open = true;
+        },
+
         requestClose() {
+            if (this.loading) {
+                this.cancelled = true;
+                this.loading = false;
+                this.open = false;
+
+                return;
+            }
+
             if (this.busy()) {
                 return;
             }

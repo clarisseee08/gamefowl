@@ -338,13 +338,13 @@
         </div>
     @endif
 
-    {{-- Add and edit open here, in a side sheet over the list, never on a page of their own. --}}
-    <x-ui.sheet id="performance-form" model="showForm" size="xl" :wrap="false" :title="$formRecordId ? 'Edit Performance Record' : 'Add a Performance Record'">
+    {{-- Add and edit open here, in a dialog over the list, never on a page of their own. --}}
+    <x-ui.form-dialog id="performance-form" model="showForm" size="lg" :wrap="false" :title="$formRecordId ? 'Edit Performance Record' : 'Add a Performance Record'">
         @if ($showForm)
             <livewire:performance.form :record="$formRecordId ? \App\Models\PerformanceRecord::find($formRecordId) : null" :broodcock="$formBroodcockId ? \App\Models\Broodcock::find($formBroodcockId) : null"
                                   :in-dialog="true" :key="'performance-form-'.($formRecordId ?? 'new').'-'.($formBroodcockId ?? '')" />
         @else
             <x-ui.form-skeleton :fields="5" />
         @endif
-    </x-ui.sheet>
+    </x-ui.form-dialog>
 </div>

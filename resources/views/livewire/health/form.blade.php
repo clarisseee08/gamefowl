@@ -36,10 +36,9 @@
     <form wire:submit="save" @class(['mt-8' => ! $inDialog, 'flex min-h-0 flex-1 flex-col' => $inDialog])>
         <div @class(['max-w-[40rem] space-y-12' => ! $inDialog, 'min-h-0 flex-1 space-y-8 overflow-y-auto px-5 pb-5' => $inDialog])>
             {{-- Which bird --}}
-            <section aria-labelledby="bird-heading">
-                <h2 id="bird-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">The Bird</h2>
-
-                <div class="mt-5 space-y-6 border-t border-border pt-6">
+            {{-- No heading: the field's own label already says "Bird". --}}
+            <section aria-label="Bird">
+                <div class="space-y-6">
                     <x-form-select id="broodcock_id" label="Bird" required
                                    wire:model="broodcock_id"
                                    help="Birds are listed by name, with the band number in brackets.">

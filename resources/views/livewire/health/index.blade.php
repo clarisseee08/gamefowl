@@ -289,8 +289,8 @@
         </div>
     @endif
 
-    {{-- Add and edit open here, in a side sheet over the list, never on a page of their own. --}}
-    <x-ui.sheet id="health-form" model="showForm" size="xl" :wrap="false"
+    {{-- Add and edit open here, in a dialog over the list, never on a page of their own. --}}
+    <x-ui.form-dialog id="health-form" model="showForm" size="lg" :wrap="false"
                       :title="$formRecordId ? 'Edit Health Record' : 'Add Health Record'"
                       description="Record a vaccination, medication, deworming, treatment or check-up for one bird.">
         @if ($showForm)
@@ -299,5 +299,5 @@
         @else
             <x-ui.form-skeleton :fields="5" />
         @endif
-    </x-ui.sheet>
+    </x-ui.form-dialog>
 </div>

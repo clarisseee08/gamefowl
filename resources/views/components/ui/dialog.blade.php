@@ -29,7 +29,7 @@
 @endphp
 
 <div x-data="emsDialog({ model: @js($model) })"
-     x-on:ems-dialog.window="if ($event.detail === @js($id)) open = true"
+     x-on:ems-dialog.window="if ($event.detail === @js($id)) openNow()"
      {{ $attributes }}>
     <dialog x-ref="dialog" wire:ignore.self class="d-modal ems-modal"
             aria-labelledby="{{ $id }}-title" @if ($description) aria-describedby="{{ $id }}-description" @endif

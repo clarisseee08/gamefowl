@@ -474,8 +474,8 @@
         </div>
     @endif
 
-    {{-- Add and edit open here, in a side sheet over the list, never on a page of their own. --}}
-    <x-ui.sheet id="broodcocks-form" model="showForm" size="2xl" :wrap="false"
+    {{-- Add and edit open here, in a dialog over the list, never on a page of their own. --}}
+    <x-ui.form-dialog id="broodcocks-form" model="showForm" size="xl" :wrap="false"
                 :title="$formRecordId ? 'Edit '.(\App\Models\Broodcock::find($formRecordId)?->name ?? 'gamefowl') : 'Add a Gamefowl'">
         @if ($showForm)
             <livewire:broodcocks.form :broodcock="$formRecordId ? \App\Models\Broodcock::find($formRecordId) : null"
@@ -483,5 +483,5 @@
         @else
             <x-ui.form-skeleton :fields="7" />
         @endif
-    </x-ui.sheet>
+    </x-ui.form-dialog>
 </div>

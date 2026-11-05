@@ -41,7 +41,7 @@
 @endphp
 
 <div x-data="emsDialog({ model: @js($model), guardDirty: @js((bool) $guardDirty), closeOnBackdrop: true })"
-     x-on:ems-dialog.window="if ($event.detail === @js($id)) open = true"
+     x-on:ems-dialog.window="if ($event.detail === @js($id)) openNow()"
      x-on:ems-close-form.window="requestClose()"
      {{ $attributes }}>
     <dialog x-ref="dialog" wire:ignore.self data-side="{{ $side }}"

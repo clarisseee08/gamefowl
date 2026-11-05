@@ -345,13 +345,13 @@
     @endif
 
     @can('update', $this->broodcock)
-        {{-- Edit opens here, in a side sheet over this page. --}}
-        <x-ui.sheet id="broodcocks-form" model="showForm" size="2xl" :wrap="false" :title="'Edit '.$this->broodcock->name">
+        {{-- Edit opens here, in a dialog over this page. --}}
+        <x-ui.form-dialog id="broodcocks-form" model="showForm" size="xl" :wrap="false" :title="'Edit '.$this->broodcock->name">
             @if ($showForm)
                 <livewire:broodcocks.form :broodcock="$this->broodcock" :in-dialog="true" :key="'broodcocks-show-form'" />
             @else
                 <x-ui.form-skeleton :fields="7" />
             @endif
-        </x-ui.sheet>
+        </x-ui.form-dialog>
     @endcan
 </div>

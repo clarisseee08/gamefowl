@@ -63,14 +63,14 @@
 @endphp
 
 <div x-data="emsDialog({ model: @js($model), guardDirty: @js((bool) $guardDirty) })"
-     x-on:ems-dialog.window="if ($event.detail === @js($id)) open = true"
+     x-on:ems-dialog.window="if ($event.detail === @js($id)) openNow()"
      x-on:ems-close-form.window="requestClose()"
      {{ $attributes }}>
     <dialog x-ref="dialog" wire:ignore.self class="d-modal ems-modal"
             aria-labelledby="{{ $id }}-title" @if ($description) aria-describedby="{{ $id }}-description" @endif
             x-on:cancel.prevent="requestClose()">
         <div x-ref="panel" tabindex="-1"
-             class="ems-modal-panel relative flex flex-col gap-0 overflow-hidden bg-card/95 p-0 text-card-foreground shadow-2xl outline-none backdrop-blur-xl"
+             class="ems-modal-panel group/dialog relative flex flex-col gap-0 overflow-hidden bg-card/95 p-0 text-card-foreground shadow-2xl outline-none backdrop-blur-xl"
              x-bind:class="maximized ? '{{ $maximized }}' : '{{ $normal }}'">
 
             <div class="absolute top-2 right-2 z-50 flex items-center gap-1 lg:top-3 lg:right-3"
@@ -93,7 +93,10 @@
                   x-on:input="dirty = true" x-on:change="dirty = true"
                   class="flex min-h-0 flex-1 flex-col overflow-hidden">
                 <div class="flex shrink-0 flex-col gap-2 px-5 pt-5 pb-3 text-left">
-                    <h2 id="{{ $id }}-title" class="flex items-center gap-2.5 pr-14 text-base font-bold text-foreground">
+                    {{-- While the form is still loading its title is not known yet - an
+                         edit would read "Add" for a moment - so a bar stands in. --}}
+                    <x-ui.skeleton class="hidden h-5 w-48 group-has-[[data-form-skeleton]]/dialog:block" />
+                    <h2 id="{{ $id }}-title" class="flex items-center gap-2.5 pr-14 text-base font-bold text-foreground group-has-[[data-form-skeleton]]/dialog:hidden">
                         @if ($icon)
                             <x-ui.icon :name="$icon" class="size-4 text-muted-foreground" />
                         @endif
@@ -131,7 +134,10 @@
             @else
                 <div class="flex min-h-0 flex-1 flex-col overflow-hidden" x-on:input="dirty = true" x-on:change="dirty = true">
                 <div class="flex shrink-0 flex-col gap-2 px-5 pt-5 pb-3 text-left">
-                    <h2 id="{{ $id }}-title" class="flex items-center gap-2.5 pr-14 text-base font-bold text-foreground">
+                    {{-- While the form is still loading its title is not known yet - an
+                         edit would read "Add" for a moment - so a bar stands in. --}}
+                    <x-ui.skeleton class="hidden h-5 w-48 group-has-[[data-form-skeleton]]/dialog:block" />
+                    <h2 id="{{ $id }}-title" class="flex items-center gap-2.5 pr-14 text-base font-bold text-foreground group-has-[[data-form-skeleton]]/dialog:hidden">
                         @if ($icon)
                             <x-ui.icon :name="$icon" class="size-4 text-muted-foreground" />
                         @endif

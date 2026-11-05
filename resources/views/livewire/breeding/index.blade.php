@@ -269,12 +269,12 @@
     @endif
 
     {{-- Add and edit open here, over the list, never on a page of their own. --}}
-    <x-ui.sheet id="breeding-form" model="showForm" size="xl" :wrap="false" :title="$formRecordId ? 'Edit Breeding Record' : 'Record a Mating'">
+    <x-ui.form-dialog id="breeding-form" model="showForm" size="xl" :wrap="false" :title="$formRecordId ? 'Edit Breeding Record' : 'Record a Mating'">
         @if ($showForm)
             <livewire:breeding.form :record="$formRecordId ? \App\Models\BreedingRecord::find($formRecordId) : null"
                                   :in-dialog="true" :key="'breeding-form-'.($formRecordId ?? 'new').'-'.($formBroodcockId ?? '')" />
         @else
             <x-ui.form-skeleton :fields="7" />
         @endif
-    </x-ui.sheet>
+    </x-ui.form-dialog>
 </div>

@@ -1047,4 +1047,4 @@ Kept current as Part B proceeds. Each line is a deliberate departure, not an omi
 - **Icons are Lucide's own paths in Blade components** (ISC licence), not `lucide-react` — no new dependency, same glyphs.
 - **daisyUI corrections live in `@layer utilities` under `:where()`**: daisyUI is nested inside `utilities` in this build, so they beat daisyUI while any wrapper utility still beats them.
 - **The pressed-button reset is `translate: none` alone**: beside `transform: none`, Lightning CSS drops it from the production build.
-- **Update (2026-11-06): every create and edit form opens in the side Sheet**, sliding in from the right - the owner preferred it to the centred FormDialog once both were on screen. The FormDialog stays in the component set (it is on /design) but no form uses it now.
+- **Update (2026-11-06, final): every create and edit form opens in the centred FormDialog** - the owner tried the side Sheet for all of them and went back to the dialog. Short forms are 576px wide, the gamefowl and breeding forms 768px. The Sheet stays in the component set (it is on /design) but no form uses it now.

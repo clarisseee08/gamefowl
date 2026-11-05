@@ -15,14 +15,14 @@ use Tests\TestCase;
 
 /**
  * Edit never leaves the page it starts on (the owner's decision): on a bird's
- * page and on a mating's page it opens the existing form in a side sheet, and
+ * page and on a mating's page it opens the existing form in a dialog, and
  * only for someone allowed to edit.
  */
-final class EditOpensInASheetTest extends TestCase
+final class EditOpensInADialogTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_editing_a_bird_opens_its_form_in_a_sheet_on_the_bird_page(): void
+    public function test_editing_a_bird_opens_its_form_in_a_dialog_on_the_bird_page(): void
     {
         $bird = Broodcock::factory()->create(['name' => 'Kingpin']);
 
@@ -35,7 +35,7 @@ final class EditOpensInASheetTest extends TestCase
             ->assertSee('Edit Kingpin');
     }
 
-    public function test_editing_a_mating_opens_its_form_in_a_sheet_on_the_mating_page(): void
+    public function test_editing_a_mating_opens_its_form_in_a_dialog_on_the_mating_page(): void
     {
         $record = BreedingRecord::factory()->create();
 
@@ -47,7 +47,7 @@ final class EditOpensInASheetTest extends TestCase
             ->assertSee('Edit Breeding Record');
     }
 
-    public function test_a_customer_gets_no_edit_sheet_and_cannot_open_one(): void
+    public function test_a_customer_gets_no_edit_dialog_and_cannot_open_one(): void
     {
         $bird = Broodcock::factory()->create();
 

@@ -314,13 +314,13 @@
     </section>
 
     @can('update', $this->record)
-        {{-- Edit opens here, in a side sheet over this page. --}}
-        <x-ui.sheet id="breeding-form" model="showForm" size="xl" :wrap="false" :title="'Edit Breeding Record'">
+        {{-- Edit opens here, in a dialog over this page. --}}
+        <x-ui.form-dialog id="breeding-form" model="showForm" size="xl" :wrap="false" :title="'Edit Breeding Record'">
             @if ($showForm)
                 <livewire:breeding.form :record="$this->record" :in-dialog="true" :key="'breeding-show-form'" />
             @else
                 <x-ui.form-skeleton :fields="7" />
             @endif
-        </x-ui.sheet>
+        </x-ui.form-dialog>
     @endcan
 </div>
