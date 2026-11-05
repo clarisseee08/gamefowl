@@ -30,6 +30,14 @@
     $headingClass = 'font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground';
     $labelClass = 'text-[13px] font-semibold text-muted-foreground';
     $figureClass = 'datum mt-2 font-display text-[2rem] font-semibold leading-none tracking-[-0.025em]';
+
+    // A headline figure is a d-stat laid out on paper: the hairline above it
+    // stays, daisyUI's own inline padding goes, and every part is reset to the
+    // console ink - daisyUI draws title and desc at 60% opacity, under 7:1.
+    $statClass = 'd-stat border-t border-e-0 border-border px-0 pb-0 pt-4';
+    $statTitleClass = 'd-stat-title whitespace-normal '.$labelClass;
+    $statValueClass = 'd-stat-value '.$figureClass;
+    $statDescClass = 'd-stat-desc whitespace-normal text-[13px] text-muted-foreground';
 @endphp
 
 {{--
@@ -48,67 +56,66 @@
 
         @can('create', App\Models\Broodcock::class)
             <x-slot:actions>
-                <a href="{{ route('broodcocks.create') }}" wire:navigate class="btn-primary">Add broodcock</a>
+                <a href="{{ route('broodcocks.create') }}" wire:navigate class="d-btn d-btn-primary">Add gamefowl</a>
             </x-slot:actions>
         @endcan
     </x-anchor-block>
 
     {{-- Headline figures --}}
     <dl class="mt-10 grid gap-x-10 gap-y-8 sm:grid-cols-2 xl:grid-cols-4" aria-label="Headline figures">
-        <div class="border-t border-border pt-4">
-            <dt class="{{ $labelClass }}">Total broodcocks</dt>
+        <div class="{{ $statClass }}">
+            <dt class="{{ $statTitleClass }}">Total broodcocks</dt>
             <dd>
-                <p class="{{ $figureClass }} text-foreground">{{ number_format($flock['total']) }}</p>
+                <p class="{{ $statValueClass }} text-foreground">{{ number_format($flock['total']) }}</p>
                 @if ($onFarmShare !== null)
-                    <div class="meter mt-4"><span class="bg-foreground" style="width: {{ $onFarmShare }}%"></span></div>
-                    <p class="mt-2 text-[13px] text-muted-foreground">
+                    <progress class="d-progress d-progress-neutral mt-4 h-1.5" value="{{ $onFarmShare }}" max="100" aria-hidden="true"></progress>
+                    <p class="mt-2 {{ $statDescClass }}">
                         <span class="datum">{{ $onFarmShare }}%</span> still on the farm, excluding sold and deceased
                     </p>
                 @else
-                    <p class="mt-3 text-[13px] text-muted-foreground">Every bird ever recorded</p>
+                    <p class="mt-3 {{ $statDescClass }}">Every bird ever recorded</p>
                 @endif
             </dd>
         </div>
 
-        <div class="border-t border-border pt-4">
-            <dt class="{{ $labelClass }}">Currently breeding</dt>
+        <div class="{{ $statClass }}">
+            <dt class="{{ $statTitleClass }}">Currently breeding</dt>
             <dd>
-                <p class="{{ $figureClass }} text-foreground">{{ number_format($flock['breeding']) }}</p>
+                <p class="{{ $statValueClass }} text-foreground">{{ number_format($flock['breeding']) }}</p>
                 @if ($breedingShare !== null)
-                    <div class="meter mt-4"><span class="bg-foreground" style="width: {{ $breedingShare }}%"></span></div>
-                    <p class="mt-2 text-[13px] text-muted-foreground">
+                    <progress class="d-progress d-progress-neutral mt-4 h-1.5" value="{{ $breedingShare }}" max="100" aria-hidden="true"></progress>
+                    <p class="mt-2 {{ $statDescClass }}">
                         <span class="datum">{{ $breedingShare }}%</span> of birds on the farm
                     </p>
                 @else
-                    <p class="mt-3 text-[13px] text-muted-foreground">Status set to breeding</p>
+                    <p class="mt-3 {{ $statDescClass }}">Status set to breeding</p>
                 @endif
             </dd>
         </div>
 
-        <div class="border-t border-border pt-4">
-            <dt class="{{ $labelClass }}">Overdue vaccinations</dt>
+        <div class="{{ $statClass }}">
+            <dt class="{{ $statTitleClass }}">Overdue vaccinations</dt>
             <dd>
-                <p @class([$figureClass, 'text-destructive' => $hasOverdue, 'text-foreground' => ! $hasOverdue])>
+                <p @class([$statValueClass, 'text-destructive' => $hasOverdue, 'text-foreground' => ! $hasOverdue])>
                     {{ number_format($this->overdueCount) }}
                 </p>
-                <p class="mt-3 text-[13px] text-muted-foreground">{{ $hasOverdue ? 'Needs attention' : 'Nothing overdue' }}</p>
+                <p class="mt-3 {{ $statDescClass }}">{{ $hasOverdue ? 'Needs attention' : 'Nothing overdue' }}</p>
             </dd>
         </div>
 
-        <div class="border-t border-border pt-4">
-            <dt class="{{ $labelClass }}">Vaccination compliance</dt>
+        <div class="{{ $statClass }}">
+            <dt class="{{ $statTitleClass }}">Vaccination compliance</dt>
             <dd>
-                <p class="{{ $figureClass }} text-foreground">{{ $compliance !== null ? $compliance.'%' : 'No data' }}</p>
+                <p class="{{ $statValueClass }} text-foreground">{{ $compliance !== null ? $compliance.'%' : 'No data' }}</p>
                 @if ($compliance !== null)
-                    <div class="meter mt-4">
-                        <span class="{{ $compliance < 80 ? 'bg-warning' : 'bg-success' }}" style="width: {{ $compliance }}%"></span>
-                    </div>
-                    <p class="mt-2 text-[13px] text-muted-foreground">
+                    <progress class="d-progress {{ $compliance < 80 ? 'd-progress-warning' : 'd-progress-success' }} mt-4 h-1.5"
+                              value="{{ $compliance }}" max="100" aria-hidden="true"></progress>
+                    <p class="mt-2 {{ $statDescClass }}">
                         <span class="datum">{{ $scheduled - $this->overdueCount }}</span> of
                         <span class="datum">{{ $scheduled }}</span> scheduled follow-ups are not overdue
                     </p>
                 @else
-                    <p class="mt-3 text-[13px] text-muted-foreground">Nothing is scheduled in the window.</p>
+                    <p class="mt-3 {{ $statDescClass }}">Nothing is scheduled in the window.</p>
                 @endif
             </dd>
         </div>
@@ -157,7 +164,7 @@
                                     @if ($record->product_name) &middot; {{ $record->product_name }} @endif
                                 </p>
                             </div>
-                            <span class="badge badge-alert datum shrink-0">
+                            <span class="d-badge d-badge-soft d-badge-error datum shrink-0">
                                 {{ abs((int) $record->daysUntilDue()) }} days overdue
                             </span>
                         </li>
@@ -178,7 +185,7 @@
                                     @if ($record->product_name) &middot; {{ $record->product_name }} @endif
                                 </p>
                             </div>
-                            <span class="badge badge-warn datum shrink-0">
+                            <span class="d-badge d-badge-soft d-badge-warning datum shrink-0">
                                 due in {{ (int) $record->daysUntilDue() }} days
                             </span>
                         </li>
@@ -249,24 +256,24 @@
         </div>
 
         <dl class="mt-8 grid gap-x-10 gap-y-8 sm:grid-cols-3">
-            <div class="border-t border-border pt-4">
-                <dt class="{{ $labelClass }}">Matings recorded</dt>
-                <dd class="{{ $figureClass }} text-foreground">{{ number_format($breeding['matings']) }}</dd>
+            <div class="{{ $statClass }}">
+                <dt class="{{ $statTitleClass }}">Matings recorded</dt>
+                <dd class="{{ $statValueClass }} text-foreground">{{ number_format($breeding['matings']) }}</dd>
             </div>
-            <div class="border-t border-border pt-4">
-                <dt class="{{ $labelClass }}">Overall fertility</dt>
+            <div class="{{ $statClass }}">
+                <dt class="{{ $statTitleClass }}">Overall fertility</dt>
                 <dd>
-                    <p class="{{ $figureClass }} text-foreground">{{ $breeding['fertility'] !== null ? $breeding['fertility'].'%' : 'No data' }}</p>
-                    <div class="mt-3 flex items-center gap-3">
+                    <p class="{{ $statValueClass }} text-foreground">{{ $breeding['fertility'] !== null ? $breeding['fertility'].'%' : 'No data' }}</p>
+                    <div class="d-stat-desc mt-3 flex items-center gap-3 whitespace-normal">
                         <x-sparkline :points="$fertilitySeries" tone="primary"
                                      label="Monthly fertility rate over the last {{ count($trend) }} months" />
                         <span class="text-[13px] text-muted-foreground">Last <span class="datum">{{ count($trend) }}</span> months</span>
                     </div>
                 </dd>
             </div>
-            <div class="border-t border-border pt-4">
-                <dt class="{{ $labelClass }}">Overall hatch rate</dt>
-                <dd class="{{ $figureClass }} text-foreground">{{ $breeding['hatch'] !== null ? $breeding['hatch'].'%' : 'No data' }}</dd>
+            <div class="{{ $statClass }}">
+                <dt class="{{ $statTitleClass }}">Overall hatch rate</dt>
+                <dd class="{{ $statValueClass }} text-foreground">{{ $breeding['hatch'] !== null ? $breeding['hatch'].'%' : 'No data' }}</dd>
             </div>
         </dl>
 
@@ -332,7 +339,7 @@
                             @foreach ($rows as $row)
                                 @php $enum = $row->{$field}; @endphp
                                 <li class="flex min-h-11 items-center justify-between gap-3 py-2">
-                                    <span class="badge {{ $enum->badgeClasses() }}">{{ $enum->label() }}</span>
+                                    <span class="d-badge d-badge-soft {{ $enum->badgeClasses() }}">{{ $enum->label() }}</span>
                                     <span class="datum text-[15px] font-medium text-foreground">{{ number_format($row->total) }}</span>
                                 </li>
                             @endforeach

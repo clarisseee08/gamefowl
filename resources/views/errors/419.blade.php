@@ -13,6 +13,6 @@
     </p>
 
     <x-slot:actions>
-        <button type="button" onclick="history.back()" class="btn-secondary">Go back</button>
+        <button type="button" onclick="history.back()" class="d-btn d-btn-outline">Go back</button>
     </x-slot:actions>
 </x-error-page>

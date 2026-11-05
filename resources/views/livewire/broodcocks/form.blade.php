@@ -30,14 +30,14 @@
 <div>
     <div class="max-w-[40rem]">
         <a href="{{ $editing ? route('broodcocks.show', $broodcock) : route('broodcocks.index') }}" wire:navigate
-           class="inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-primary hover:underline hover:underline-offset-4">
-            <span aria-hidden="true">&larr;</span> {{ $editing ? 'Back to '.($broodcock->band_number ?: $broodcock->name) : 'Back to broodcocks' }}
+           class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold underline-offset-4">
+            <span aria-hidden="true">&larr;</span> {{ $editing ? 'Back to '.($broodcock->band_number ?: $broodcock->name) : 'Back to gamefowl' }}
         </a>
 
         <header class="mt-3 border-b border-border pb-6">
             <p class="sb-line sb-eyebrow" style="--line: 0ms">{{ $editing ? 'Edit bird' : 'Register a bird' }}</p>
             <h1 class="sb-line mt-2 font-display text-[1.9rem] font-semibold leading-[1.08] tracking-[-0.025em] text-foreground sm:text-[2.3rem]" style="--line: 60ms">
-                {{ $editing ? 'Edit '.$broodcock->name : 'Add a Broodcock' }}
+                {{ $editing ? 'Edit '.$broodcock->name : 'Add a Gamefowl' }}
             </h1>
             <p class="sb-line mt-3 text-[16px] leading-relaxed text-muted-foreground" style="--line: 120ms">
                 Fields marked <span class="text-destructive" aria-hidden="true">*</span><span class="sr-only">with an asterisk</span>
@@ -55,32 +55,32 @@
 
                 <div class="mt-6 space-y-6">
                     <div>
-                        <label for="name" class="label">Name <span class="text-destructive">*</span></label>
+                        <label for="name" class="d-fieldset-legend justify-start">Name <span class="text-destructive">*</span></label>
                         <input id="name" type="text" wire:model.blur="name" autocomplete="off"
                                @if ($describedBy('name')) aria-describedby="{{ $describedBy('name') }}" @endif
                                @error('name') aria-invalid="true" @enderror
-                               class="input mt-1 @error('name') input-error @enderror">
-                        @error('name') <p id="name-error" class="error" role="alert">{{ $message }}</p> @enderror
+                               class="d-input w-full mt-1 @error('name') d-input-error @enderror">
+                        @error('name') <p id="name-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label for="band_number" class="label">Band number</label>
+                        <label for="band_number" class="d-fieldset-legend">Band number</label>
                         <input id="band_number" type="text" wire:model.blur="band_number" autocomplete="off"
                                placeholder="e.g. SW-1024"
                                aria-describedby="{{ $describedBy('band_number', true) }}"
                                @error('band_number') aria-invalid="true" @enderror
-                               class="input datum mt-1 @error('band_number') input-error @enderror">
-                        <p id="band_number-help" class="help">Leave empty if the bird has not been banded yet.</p>
-                        @error('band_number') <p id="band_number-error" class="error" role="alert">{{ $message }}</p> @enderror
+                               class="d-input w-full datum mt-1 @error('band_number') d-input-error @enderror">
+                        <p id="band_number-help" class="d-label mt-1">Leave empty if the bird has not been banded yet.</p>
+                        @error('band_number') <p id="band_number-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label for="bloodline" class="label">Bloodline</label>
+                        <label for="bloodline" class="d-fieldset-legend">Bloodline</label>
                         <input id="bloodline" type="text" wire:model.blur="bloodline" autocomplete="off"
                                @if ($describedBy('bloodline')) aria-describedby="{{ $describedBy('bloodline') }}" @endif
                                @error('bloodline') aria-invalid="true" @enderror
-                               class="input mt-1 @error('bloodline') input-error @enderror">
-                        @error('bloodline') <p id="bloodline-error" class="error" role="alert">{{ $message }}</p> @enderror
+                               class="d-input w-full mt-1 @error('bloodline') d-input-error @enderror">
+                        @error('bloodline') <p id="bloodline-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <x-form-select id="sex" label="Sex" required wire:model.live="sex">
@@ -143,21 +143,21 @@
                                  to the choice above rather than as two more questions. --}}
                             <div class="mt-4 space-y-4 border-l-2 border-border pl-4">
                                 <div>
-                                    <label for="sire_external_name" class="label">Name of the outside cock</label>
+                                    <label for="sire_external_name" class="d-fieldset-legend">Name of the outside cock</label>
                                     <input id="sire_external_name" type="text" wire:model.blur="sire_external_name" autocomplete="off"
                                            @if ($describedBy('sire_external_name')) aria-describedby="{{ $describedBy('sire_external_name') }}" @endif
                                            @error('sire_external_name') aria-invalid="true" @enderror
-                                           class="input mt-1 @error('sire_external_name') input-error @enderror">
-                                    @error('sire_external_name') <p id="sire_external_name-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                           class="d-input w-full mt-1 @error('sire_external_name') d-input-error @enderror">
+                                    @error('sire_external_name') <p id="sire_external_name-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
                                 <div>
-                                    <label for="sire_external_bloodline" class="label">Bloodline</label>
+                                    <label for="sire_external_bloodline" class="d-fieldset-legend">Bloodline</label>
                                     <input id="sire_external_bloodline" type="text" wire:model.blur="sire_external_bloodline" autocomplete="off"
                                            aria-describedby="{{ $describedBy('sire_external_bloodline', true) }}"
                                            @error('sire_external_bloodline') aria-invalid="true" @enderror
-                                           class="input mt-1 @error('sire_external_bloodline') input-error @enderror">
-                                    <p id="sire_external_bloodline-help" class="help">Optional. Recorded so the bird carries its bloodline tag.</p>
-                                    @error('sire_external_bloodline') <p id="sire_external_bloodline-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                           class="d-input w-full mt-1 @error('sire_external_bloodline') d-input-error @enderror">
+                                    <p id="sire_external_bloodline-help" class="d-label mt-1">Optional. Recorded so the bird carries its bloodline tag.</p>
+                                    @error('sire_external_bloodline') <p id="sire_external_bloodline-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
                             </div>
                         @endif
@@ -178,21 +178,21 @@
                         @if ($dam_is_external)
                             <div class="mt-4 space-y-4 border-l-2 border-border pl-4">
                                 <div>
-                                    <label for="dam_external_name" class="label">Name of the outside hen</label>
+                                    <label for="dam_external_name" class="d-fieldset-legend">Name of the outside hen</label>
                                     <input id="dam_external_name" type="text" wire:model.blur="dam_external_name" autocomplete="off"
                                            @if ($describedBy('dam_external_name')) aria-describedby="{{ $describedBy('dam_external_name') }}" @endif
                                            @error('dam_external_name') aria-invalid="true" @enderror
-                                           class="input mt-1 @error('dam_external_name') input-error @enderror">
-                                    @error('dam_external_name') <p id="dam_external_name-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                           class="d-input w-full mt-1 @error('dam_external_name') d-input-error @enderror">
+                                    @error('dam_external_name') <p id="dam_external_name-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
                                 <div>
-                                    <label for="dam_external_bloodline" class="label">Bloodline</label>
+                                    <label for="dam_external_bloodline" class="d-fieldset-legend">Bloodline</label>
                                     <input id="dam_external_bloodline" type="text" wire:model.blur="dam_external_bloodline" autocomplete="off"
                                            aria-describedby="{{ $describedBy('dam_external_bloodline', true) }}"
                                            @error('dam_external_bloodline') aria-invalid="true" @enderror
-                                           class="input mt-1 @error('dam_external_bloodline') input-error @enderror">
-                                    <p id="dam_external_bloodline-help" class="help">Optional. Recorded so the bird carries its bloodline tag.</p>
-                                    @error('dam_external_bloodline') <p id="dam_external_bloodline-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                           class="d-input w-full mt-1 @error('dam_external_bloodline') d-input-error @enderror">
+                                    <p id="dam_external_bloodline-help" class="d-label mt-1">Optional. Recorded so the bird carries its bloodline tag.</p>
+                                    @error('dam_external_bloodline') <p id="dam_external_bloodline-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
                             </div>
                         @endif
@@ -210,71 +210,71 @@
                 <div class="mt-6 space-y-6">
                     <div class="grid gap-6 sm:grid-cols-2">
                         <div>
-                            <label for="date_hatched" class="label">Date hatched</label>
+                            <label for="date_hatched" class="d-fieldset-legend">Date hatched</label>
                             <input id="date_hatched" type="date" wire:model.blur="date_hatched" max="{{ today()->toDateString() }}"
                                    @if ($describedBy('date_hatched')) aria-describedby="{{ $describedBy('date_hatched') }}" @endif
                                    @error('date_hatched') aria-invalid="true" @enderror
-                                   class="input datum mt-1 @error('date_hatched') input-error @enderror">
-                            @error('date_hatched') <p id="date_hatched-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                   class="d-input w-full datum mt-1 @error('date_hatched') d-input-error @enderror">
+                            @error('date_hatched') <p id="date_hatched-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label for="date_acquired" class="label">Date acquired</label>
+                            <label for="date_acquired" class="d-fieldset-legend">Date acquired</label>
                             <input id="date_acquired" type="date" wire:model.blur="date_acquired" max="{{ today()->toDateString() }}"
                                    aria-describedby="{{ $describedBy('date_acquired', true) }}"
                                    @error('date_acquired') aria-invalid="true" @enderror
-                                   class="input datum mt-1 @error('date_acquired') input-error @enderror">
-                            <p id="date_acquired-help" class="help">When the farm obtained this bird.</p>
-                            @error('date_acquired') <p id="date_acquired-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                   class="d-input w-full datum mt-1 @error('date_acquired') d-input-error @enderror">
+                            <p id="date_acquired-help" class="d-label mt-1">When the farm obtained this bird.</p>
+                            @error('date_acquired') <p id="date_acquired-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
                     <div class="sm:w-1/2 sm:pr-3">
-                        <label for="weight" class="label">Weight (kg)</label>
+                        <label for="weight" class="d-fieldset-legend">Weight (kg)</label>
                         <input id="weight" type="number" step="0.01" min="0" inputmode="decimal" wire:model.blur="weight"
                                @if ($describedBy('weight')) aria-describedby="{{ $describedBy('weight') }}" @endif
                                @error('weight') aria-invalid="true" @enderror
-                               class="input datum mt-1 @error('weight') input-error @enderror">
-                        @error('weight') <p id="weight-error" class="error" role="alert">{{ $message }}</p> @enderror
+                               class="d-input w-full datum mt-1 @error('weight') d-input-error @enderror">
+                        @error('weight') <p id="weight-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label for="color" class="label">Colour</label>
+                        <label for="color" class="d-fieldset-legend">Colour</label>
                         <input id="color" type="text" wire:model.blur="color" placeholder="e.g. Red, Black, Spangled"
                                @if ($describedBy('color')) aria-describedby="{{ $describedBy('color') }}" @endif
                                @error('color') aria-invalid="true" @enderror
-                               class="input mt-1 @error('color') input-error @enderror">
-                        @error('color') <p id="color-error" class="error" role="alert">{{ $message }}</p> @enderror
+                               class="d-input w-full mt-1 @error('color') d-input-error @enderror">
+                        @error('color') <p id="color-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="grid gap-6 sm:grid-cols-2">
                         <div>
-                            <label for="comb_type" class="label">Comb type</label>
+                            <label for="comb_type" class="d-fieldset-legend">Comb type</label>
                             <input id="comb_type" type="text" wire:model.blur="comb_type" placeholder="e.g. Straight, Pea"
                                    @if ($describedBy('comb_type')) aria-describedby="{{ $describedBy('comb_type') }}" @endif
                                    @error('comb_type') aria-invalid="true" @enderror
-                                   class="input mt-1 @error('comb_type') input-error @enderror">
-                            @error('comb_type') <p id="comb_type-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                   class="d-input w-full mt-1 @error('comb_type') d-input-error @enderror">
+                            @error('comb_type') <p id="comb_type-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label for="leg_color" class="label">Leg colour</label>
+                            <label for="leg_color" class="d-fieldset-legend">Leg colour</label>
                             <input id="leg_color" type="text" wire:model.blur="leg_color" placeholder="e.g. Yellow, White"
                                    @if ($describedBy('leg_color')) aria-describedby="{{ $describedBy('leg_color') }}" @endif
                                    @error('leg_color') aria-invalid="true" @enderror
-                                   class="input mt-1 @error('leg_color') input-error @enderror">
-                            @error('leg_color') <p id="leg_color-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                   class="d-input w-full mt-1 @error('leg_color') d-input-error @enderror">
+                            @error('leg_color') <p id="leg_color-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
                     <div>
-                        <label for="distinguishing_marks" class="label">Distinguishing marks</label>
+                        <label for="distinguishing_marks" class="d-fieldset-legend">Distinguishing marks</label>
                         <textarea id="distinguishing_marks" rows="3" wire:model.blur="distinguishing_marks"
                                   placeholder="Anything that helps tell this bird apart from a similar one"
                                   @if ($describedBy('distinguishing_marks')) aria-describedby="{{ $describedBy('distinguishing_marks') }}" @endif
                                   @error('distinguishing_marks') aria-invalid="true" @enderror
-                                  class="input mt-1 @error('distinguishing_marks') input-error @enderror"></textarea>
-                        @error('distinguishing_marks') <p id="distinguishing_marks-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                  class="d-textarea w-full mt-1 @error('distinguishing_marks') d-textarea-error @enderror"></textarea>
+                        @error('distinguishing_marks') <p id="distinguishing_marks-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </section>
@@ -291,20 +291,20 @@
                     <div>
                         <label for="for_sale" class="flex min-h-11 cursor-pointer items-center gap-3">
                             <input id="for_sale" type="checkbox" wire:model="for_sale" aria-describedby="for_sale-help"
-                                   class="h-5 w-5 shrink-0 accent-primary">
+                                   class="d-checkbox d-checkbox-primary shrink-0">
                             <span class="text-[16px] text-foreground">This bird is for sale</span>
                         </label>
-                        <p id="for_sale-help" class="help pl-8">Shown to customers in the catalogue.</p>
+                        <p id="for_sale-help" class="d-label mt-1 pl-8">Shown to customers in the catalogue.</p>
                     </div>
 
                     <div>
-                        <label for="notes" class="label">Notes</label>
+                        <label for="notes" class="d-fieldset-legend">Notes</label>
                         <textarea id="notes" rows="4" wire:model.blur="notes"
                                   aria-describedby="{{ $describedBy('notes', true) }}"
                                   @error('notes') aria-invalid="true" @enderror
-                                  class="input mt-1 @error('notes') input-error @enderror"></textarea>
-                        <p id="notes-help" class="help">Internal notes. Customers never see these.</p>
-                        @error('notes') <p id="notes-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                  class="d-textarea w-full mt-1 @error('notes') d-textarea-error @enderror"></textarea>
+                        <p id="notes-help" class="d-label mt-1">Internal notes. Customers never see these.</p>
+                        @error('notes') <p id="notes-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </section>
@@ -363,14 +363,13 @@
                             <span>Uploading&hellip;</span>
                             <span class="datum" x-text="progress + '%'"></span>
                         </div>
-                        <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted" role="progressbar"
-                             aria-valuemin="0" aria-valuemax="100" x-bind:aria-valuenow="progress" aria-label="Upload progress">
-                            <div class="h-full bg-foreground transition-[width] duration-150" :style="`width: ${progress}%`"></div>
-                        </div>
+                        <progress class="d-progress d-progress-primary mt-2 w-full" role="progressbar"
+                                  aria-valuemin="0" aria-valuemax="100" x-bind:aria-valuenow="progress" aria-label="Upload progress"
+                                  x-bind:value="progress" value="0" max="100"></progress>
                     </div>
 
-                    @error('photos') <p id="photos-error" class="error" role="alert">{{ $message }}</p> @enderror
-                    @error('photos.*') <p class="error" role="alert">{{ $message }}</p> @enderror
+                    @error('photos') <p id="photos-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                    @error('photos.*') <p class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
 
                     @if ($photos)
                         <ul class="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-4">
@@ -391,7 +390,7 @@
                                         @endif
                                     </div>
                                     <button type="button" wire:click="removePhoto({{ $index }})"
-                                            class="elev-1 absolute right-1 top-1 inline-flex h-11 w-11 items-center justify-center rounded-full bg-card text-foreground hover:bg-muted"
+                                            class="d-btn d-btn-circle elev-1 absolute right-1 top-1"
                                             aria-label="Remove selected photo {{ $index + 1 }}" title="Remove this photo">
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
@@ -414,12 +413,12 @@
         <div class="sticky bottom-0 z-20 -mx-4 mt-10 border-t border-border bg-background/95 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
             <div class="flex max-w-[40rem] justify-end gap-3">
                 <a href="{{ $editing ? route('broodcocks.show', $broodcock) : route('broodcocks.index') }}" wire:navigate
-                   class="btn-secondary">Cancel</a>
+                   class="d-btn d-btn-outline">Cancel</a>
 
-                <button type="submit" class="btn-primary" wire:loading.attr="disabled" wire:target="save, photos">
-                    <span class="btn-spinner" wire:loading wire:target="save"></span>
+                <button type="submit" class="d-btn d-btn-primary" wire:loading.attr="disabled" wire:target="save, photos">
+                    <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="save"></span>
                     <span wire:loading.remove wire:target="save">
-                        {{ $editing ? 'Save Changes' : 'Add Broodcock' }}
+                        {{ $editing ? 'Save Changes' : 'Add Gamefowl' }}
                     </span>
                     <span wire:loading wire:target="save">Saving&hellip;</span>
                 </button>

@@ -27,7 +27,7 @@
     }
 
     $th = 'sticky top-0 z-10 h-12 border-b border-border bg-background px-4 text-left align-middle text-[13px] font-semibold text-muted-foreground';
-    $td = 'md:table-cell md:border-b md:border-border md:px-4 md:py-3.5 md:align-top';
+    $td = 'border-b-0 p-0 md:table-cell md:border-b md:border-border md:px-4 md:py-3.5 md:align-top';
 @endphp
 <div>
     <x-anchor-block eyebrow="Manage" title="Health Records"
@@ -37,13 +37,13 @@
 
         <x-slot:actions>
             @can('create', \App\Models\HealthRecord::class)
-                <a href="{{ route('health.create') }}" wire:navigate class="btn-primary">
+                <a href="{{ route('health.create') }}" wire:navigate class="d-btn d-btn-primary">
                     Add Health Record
                 </a>
             @endcan
 
             @can('viewSchedule', \App\Models\HealthRecord::class)
-                <a href="{{ route('health.schedule') }}" wire:navigate class="btn-secondary">
+                <a href="{{ route('health.schedule') }}" wire:navigate class="d-btn d-btn-outline">
                     Vaccination Schedule
                 </a>
             @endcan
@@ -64,7 +64,7 @@
             <input id="filter-search"
                    type="search"
                    wire:model.live.debounce.400ms="search"
-                   class="input"
+                   class="d-input w-full"
                    placeholder="Bird name, band number, product or condition">
         </x-slot:search>
 
@@ -78,13 +78,13 @@
         {{-- The two dates are one control in two halves, so they stay together
              on a wrap and read as a range rather than as two unrelated fields. --}}
         <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="filter-from" class="label mb-0 shrink-0">From</label>
-            <input id="filter-from" type="date" wire:model.live="dateFrom" class="input datum w-full sm:w-auto">
+            <label for="filter-from" class="d-fieldset-legend mb-0 shrink-0 py-0">From</label>
+            <input id="filter-from" type="date" wire:model.live="dateFrom" class="d-input datum w-full sm:w-auto">
         </div>
 
         <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="filter-to" class="label mb-0 shrink-0">To</label>
-            <input id="filter-to" type="date" wire:model.live="dateTo" class="input datum w-full sm:w-auto">
+            <label for="filter-to" class="d-fieldset-legend mb-0 shrink-0 py-0">To</label>
+            <input id="filter-to" type="date" wire:model.live="dateTo" class="d-input datum w-full sm:w-auto">
         </div>
 
         {{-- The search is debounced and the round trip is long, so without this
@@ -102,15 +102,15 @@
                             : 'Nothing has been recorded yet. Log the first vaccination, medication or check-up.'"
                        icon="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z">
             @if ($isFiltered)
-                <button type="button" wire:click="clearFilters" class="btn-secondary">Clear filters</button>
+                <button type="button" wire:click="clearFilters" class="d-btn d-btn-outline">Clear filters</button>
             @else
                 @can('create', \App\Models\HealthRecord::class)
-                    <a href="{{ route('health.create') }}" wire:navigate class="btn-primary">Add Health Record</a>
+                    <a href="{{ route('health.create') }}" wire:navigate class="d-btn d-btn-primary">Add Health Record</a>
                 @endcan
             @endif
         </x-empty-state>
     @else
-        <table class="block w-full border-separate border-spacing-0 text-left md:table">
+        <table class="d-table block w-full border-separate border-spacing-0 text-left md:table">
             <thead class="hidden md:table-header-group">
                 <tr>
                     <th scope="col" class="{{ $th }}">Bird</th>
@@ -151,10 +151,10 @@
                         // The status washes are the only colour besides a band, and
                         // the word itself carries the state - never hue alone.
                         $stateClasses = match ($state) {
-                            'Overdue' => 'badge-alert',
-                            'Due soon' => 'badge-warn',
-                            'Scheduled' => 'badge-info',
-                            default => 'badge-neutral',
+                            'Overdue' => 'd-badge-error',
+                            'Due soon' => 'd-badge-warning',
+                            'Scheduled' => 'd-badge-info',
+                            default => 'd-badge-neutral',
                         };
                     @endphp
 
@@ -175,7 +175,7 @@
 
                         <td class="mt-2 block md:mt-0 {{ $td }}">
                             <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                <span class="badge {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
+                                <span class="d-badge d-badge-soft {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
                                 <span class="text-[15px] leading-snug text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
                             </div>
                             @if ($record->dosage)
@@ -202,26 +202,26 @@
                             <span class="block text-[13px] text-muted-foreground md:hidden">Next due date</span>
                             @if ($record->next_due_date)
                                 <span class="datum text-[15px] text-foreground">{{ $record->next_due_date->format('d M Y') }}</span>
-                                <span class="badge {{ $stateClasses }} ml-1.5 md:ml-0 md:mt-1.5 md:flex md:w-fit">{{ $state }}</span>
+                                <span class="d-badge d-badge-soft {{ $stateClasses }} ml-1.5 md:ml-0 md:mt-1.5 md:flex md:w-fit">{{ $state }}</span>
                             @else
                                 <span class="text-[15px] text-muted-foreground">None</span>
                             @endif
                         </td>
 
-                        <td class="mt-3 block md:mt-0 md:table-cell md:border-b md:border-border md:px-4 md:py-2 md:text-right md:align-top md:whitespace-nowrap">
+                        <td class="mt-3 block border-b-0 p-0 md:mt-0 md:table-cell md:border-b md:border-border md:px-4 md:py-2 md:text-right md:align-top md:whitespace-nowrap">
                             <div class="-ml-3 flex gap-1 md:ml-0 md:justify-end">
                                 @can('update', $record)
-                                    <a href="{{ route('health.edit', $record) }}" wire:navigate class="btn-quiet">
+                                    <a href="{{ route('health.edit', $record) }}" wire:navigate class="d-btn d-btn-ghost">
                                         Edit<span class="sr-only">, {{ $record->record_type->label() }} for {{ $bird->name }} on {{ $record->checkup_date->format('d M Y') }}</span>
                                     </a>
                                 @endcan
-                                {{-- Quiet, not the filled .btn-danger: a solid crimson
+                                {{-- Ghost, not the filled .d-btn-error: a solid crimson
                                      control repeated down every row out-shouts the band
                                      colours. The filled variant is kept for the dialog,
                                      where destroying the record IS the primary action. --}}
                                 @can('delete', $record)
                                     <button type="button" wire:click="confirmDelete({{ $record->id }})"
-                                            class="btn-quiet text-destructive hover:bg-destructive-bg">
+                                            class="d-btn d-btn-ghost text-destructive hover:bg-destructive-bg">
                                         Delete<span class="sr-only">, {{ $record->record_type->label() }} for {{ $bird->name }} on {{ $record->checkup_date->format('d M Y') }}</span>
                                     </button>
                                 @endcan
@@ -249,10 +249,10 @@
             $pendingBird = $pending->broodcock->band_number ?: $pending->broodcock->name;
         @endphp
 
-        <div class="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 p-4"
+        <div class="d-modal d-modal-open"
              x-data x-trap.noscroll="true" x-on:keydown.escape.window="$wire.cancelDelete()"
              role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title">
-            <div class="dialog-panel elev-3 w-full max-w-md rounded-[12px] bg-card p-6">
+            <div class="d-modal-box elev-3 max-w-md">
                 <h2 id="delete-dialog-title" class="font-display text-[22px] font-semibold leading-snug tracking-[-0.015em] text-foreground">
                     Delete the {{ Str::lower($pending->record_type->label()) }} record for
                     <span class="datum">{{ $pendingBird }}</span> on
@@ -267,12 +267,12 @@
                     but it will no longer appear in lists or reports.
                 </p>
 
-                <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                    <button type="button" wire:click="cancelDelete" class="btn-secondary">
+                <div class="d-modal-action flex-col-reverse gap-3 sm:flex-row">
+                    <button type="button" wire:click="cancelDelete" class="d-btn d-btn-outline">
                         Cancel
                     </button>
-                    <button type="button" wire:click="delete" class="btn-danger" wire:loading.attr="disabled" wire:target="delete">
-                        <span class="btn-spinner" wire:loading wire:target="delete"></span>
+                    <button type="button" wire:click="delete" class="d-btn d-btn-error" wire:loading.attr="disabled" wire:target="delete">
+                        <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="delete"></span>
                         Yes, delete this record
                     </button>
                 </div>

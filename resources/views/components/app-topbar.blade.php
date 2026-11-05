@@ -16,7 +16,7 @@
 
     $sectionLabels = [
         'dashboard' => 'Dashboard',
-        'broodcocks' => 'Broodcocks',
+        'broodcocks' => 'Gamefowl',
         'catalog' => 'Catalogue',
         'health' => 'Health',
         'breeding' => 'Breeding',
@@ -44,7 +44,7 @@
     Top bar. 56px, inside the content column - NOT spanning above the sidebar.
     Sticky, so the breadcrumb stays put while the region beneath it scrolls.
 --}}
-<header class="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-card px-4 sm:px-6">
+<header class="d-navbar sticky top-0 z-30 h-14 min-h-14 shrink-0 gap-3 border-b border-border bg-card px-4 py-0 sm:px-6">
     {{-- Off-canvas trigger. Below 1024px the sidebar is a sheet, so this is the
          only way back to navigation. --}}
     <button type="button"
@@ -66,11 +66,12 @@
 
         On a SUB-page it is the way back, so it stays there.
     --}}
-    <nav class="flex min-w-0 flex-1 items-center gap-2 text-[13px]" aria-label="Breadcrumb">
+    <nav class="d-breadcrumbs min-w-0 flex-1 text-[13px]" aria-label="Breadcrumb">
         @if ($sectionRoute && $crumb)
-            <a href="{{ $sectionRoute }}" wire:navigate class="truncate text-muted-foreground hover:text-foreground">{{ $sectionLabel }}</a>
-            <span class="text-muted-foreground" aria-hidden="true">/</span>
-            <span class="truncate font-medium text-foreground" aria-current="page">{{ $crumb }}</span>
+            <ul>
+                <li><a href="{{ $sectionRoute }}" wire:navigate class="truncate text-muted-foreground hover:text-foreground">{{ $sectionLabel }}</a></li>
+                <li><span class="truncate font-medium text-foreground" aria-current="page">{{ $crumb }}</span></li>
+            </ul>
         @endif
     </nav>
 
@@ -84,7 +85,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
         </svg>
         <span>Search</span>
-        <kbd class="datum ml-4 rounded-[3px] border border-border bg-card px-1.5 py-0.5 text-[11px] text-muted-foreground">
+        <kbd class="d-kbd d-kbd-sm datum ml-4 text-muted-foreground">
             {{ str_contains(strtolower(request()->userAgent() ?? ''), 'mac') ? '⌘K' : 'Ctrl K' }}
         </kbd>
     </button>

@@ -21,13 +21,13 @@
                     <h2 id="identity-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Name</h2>
 
                     <div class="mt-4 border-t border-border pt-6">
-                        <label for="farm_name" class="label">Farm name <span class="text-destructive">*</span></label>
+                        <label for="farm_name" class="d-fieldset-legend justify-start">Farm name <span class="text-destructive">*</span></label>
                         <input id="farm_name" type="text" wire:model.blur="farm_name"
                                aria-describedby="farm_name-help @error('farm_name') farm_name-error @enderror"
                                @error('farm_name') aria-invalid="true" @enderror
-                               class="input @error('farm_name') input-error @enderror">
-                        <p id="farm_name-help" class="help">Shown in the sidebar, the browser tab and the footer of every PDF.</p>
-                        @error('farm_name') <p id="farm_name-error" class="error" role="alert">{{ $message }}</p> @enderror
+                               class="d-input w-full @error('farm_name') d-input-error @enderror">
+                        <p id="farm_name-help" class="d-label mt-1">Shown in the sidebar, the browser tab and the footer of every PDF.</p>
+                        @error('farm_name') <p id="farm_name-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </section>
 
@@ -44,39 +44,39 @@
 
                     <div class="mt-4 space-y-6 border-t border-border pt-6">
                         <div>
-                            <label for="phone" class="label">Phone</label>
+                            <label for="phone" class="d-fieldset-legend">Phone</label>
                             {{-- .datum: a phone number is registry data and
                                  belongs in tabular figures. --}}
                             <input id="phone" type="tel" wire:model.blur="phone"
                                    aria-describedby="phone-help @error('phone') phone-error @enderror"
                                    @error('phone') aria-invalid="true" @enderror
-                                   class="input datum @error('phone') input-error @enderror">
-                            <p id="phone-help" class="help">The number the public is told to ring.</p>
-                            @error('phone') <p id="phone-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                   class="d-input w-full datum @error('phone') d-input-error @enderror">
+                            <p id="phone-help" class="d-label mt-1">The number the public is told to ring.</p>
+                            @error('phone') <p id="phone-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label for="email" class="label">Email</label>
+                            <label for="email" class="d-fieldset-legend">Email</label>
                             <input id="email" type="email" wire:model.blur="email"
                                    @error('email') aria-invalid="true" aria-describedby="email-error" @enderror
-                                   class="input @error('email') input-error @enderror">
-                            @error('email') <p id="email-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                   class="d-input w-full @error('email') d-input-error @enderror">
+                            @error('email') <p id="email-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label for="address" class="label">Where to find us</label>
+                            <label for="address" class="d-fieldset-legend">Where to find us</label>
                             <input id="address" type="text" wire:model.blur="address"
                                    @error('address') aria-invalid="true" aria-describedby="address-error" @enderror
-                                   class="input @error('address') input-error @enderror">
-                            @error('address') <p id="address-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                   class="d-input w-full @error('address') d-input-error @enderror">
+                            @error('address') <p id="address-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label for="hours" class="label">Visiting hours</label>
+                            <label for="hours" class="d-fieldset-legend">Visiting hours</label>
                             <input id="hours" type="text" wire:model.blur="hours"
                                    @error('hours') aria-invalid="true" aria-describedby="hours-error" @enderror
-                                   class="input @error('hours') input-error @enderror">
-                            @error('hours') <p id="hours-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                   class="d-input w-full @error('hours') d-input-error @enderror">
+                            @error('hours') <p id="hours-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                         </div>
                     </div>
                 </section>
@@ -85,18 +85,18 @@
                     <h2 id="note-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">For visitors</h2>
 
                     <div class="mt-4 border-t border-border pt-6">
-                        <label for="visitor_note" class="label">
+                        <label for="visitor_note" class="d-fieldset-legend justify-start">
                             Note to visitors <span class="font-normal text-muted-foreground">(optional)</span>
                         </label>
                         <textarea id="visitor_note" rows="3" wire:model.blur="visitor_note"
                                   aria-describedby="visitor_note-help @error('visitor_note') visitor_note-error @enderror"
                                   @error('visitor_note') aria-invalid="true" @enderror
-                                  class="input @error('visitor_note') input-error @enderror"></textarea>
-                        <p id="visitor_note-help" class="help">
+                                  class="d-textarea w-full @error('visitor_note') d-textarea-error @enderror"></textarea>
+                        <p id="visitor_note-help" class="d-label mt-1">
                             Anything else the public should know before coming &mdash; ring ahead on
                             Sundays, where to park. Leave it blank and nothing is shown.
                         </p>
-                        @error('visitor_note') <p id="visitor_note-error" class="error" role="alert">{{ $message }}</p> @enderror
+                        @error('visitor_note') <p id="visitor_note-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </section>
             </div>
@@ -160,8 +160,8 @@
             @if ($saved)
                 <p class="mr-auto text-[14px] text-muted-foreground" wire:loading.remove wire:target="save">All changes saved.</p>
             @endif
-            <button type="submit" class="btn-primary" wire:loading.attr="disabled" wire:target="save">
-                <span class="btn-spinner" wire:loading wire:target="save"></span>
+            <button type="submit" class="d-btn d-btn-primary" wire:loading.attr="disabled" wire:target="save">
+                <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="save"></span>
                 Save changes
             </button>
         </div>

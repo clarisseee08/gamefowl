@@ -37,10 +37,10 @@ enum PerformanceEventType: string
     public function badgeClasses(): string
     {
         return match ($this) {
-            self::Sparring => 'badge-info',
-            self::Conditioning => 'badge-ok',
-            self::WeighIn => 'badge-neutral',
-            self::Derby => 'badge-warn',
+            self::Sparring => 'd-badge-info',
+            self::Conditioning => 'd-badge-success',
+            self::WeighIn => 'd-badge-neutral',
+            self::Derby => 'd-badge-warning',
         };
     }
 

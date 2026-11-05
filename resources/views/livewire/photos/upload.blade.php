@@ -94,14 +94,15 @@
                 <span>Uploading your photos&hellip;</span>
                 <span class="datum" x-text="progress + '%'"></span>
             </div>
-            <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted"
-                 role="progressbar"
-                 aria-label="Upload progress"
-                 aria-valuemin="0"
-                 aria-valuemax="100"
-                 x-bind:aria-valuenow="progress">
-                <div class="h-full rounded-full bg-foreground transition-[width] duration-150" :style="`width: ${progress}%`"></div>
-            </div>
+            <progress class="d-progress d-progress-primary mt-2 w-full"
+                      role="progressbar"
+                      aria-label="Upload progress"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                      x-bind:aria-valuenow="progress"
+                      x-bind:value="progress"
+                      value="0"
+                      max="100"></progress>
             <p class="mt-2 text-[13px] leading-snug text-muted-foreground">Please keep this page open until it finishes.</p>
         </div>
 
@@ -109,7 +110,7 @@
              it gets the alert wash rather than a line of red text. The tint is
              the only colour; the words stay in ink. --}}
         @error('photos')
-            <div id="photos-error" class="mt-4 flex items-start gap-2 rounded-[8px] bg-destructive-bg px-4 py-3 text-[15px] leading-snug text-foreground" role="alert">
+            <div id="photos-error" class="d-alert d-alert-soft d-alert-error mt-4 items-start text-[15px] leading-snug text-base-content" role="alert">
                 <svg class="mt-0.5 h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008M10.34 3.94l-8.19 14.2A1.5 1.5 0 0 0 3.45 20.4h17.1a1.5 1.5 0 0 0 1.3-2.26l-8.19-14.2a1.5 1.5 0 0 0-2.6 0Z"/>
                 </svg>
@@ -157,7 +158,7 @@
                                         wire:click="removePending({{ $index }})"
                                         wire:loading.attr="disabled"
                                         wire:target="save"
-                                        class="elev-1 absolute right-2 top-2 inline-flex h-11 w-11 items-center justify-center rounded-full bg-card text-foreground hover:bg-muted"
+                                        class="d-btn d-btn-circle elev-1 absolute right-2 top-2"
                                         aria-label="Remove this photo from the list"
                                         title="Remove this photo from the list">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
@@ -167,7 +168,7 @@
                             </div>
 
                             @error('photos.'.$index)
-                                <p class="error" role="alert">{{ $message }}</p>
+                                <p class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
                             @enderror
                         </li>
                     @endforeach
@@ -175,35 +176,35 @@
             </div>
 
             <div class="mt-6 max-w-[40rem]">
-                <label for="photo-caption" class="label">Description (optional)</label>
+                <label for="photo-caption" class="d-fieldset-legend">Description (optional)</label>
                 <input id="photo-caption"
                        type="text"
                        wire:model="caption"
                        maxlength="255"
                        placeholder="e.g. Side view after conditioning"
                        aria-describedby="photo-caption-help @error('caption') photo-caption-error @enderror"
-                       @class(['input', 'mt-1', 'input-error' => $errors->has('caption')])>
-                <p id="photo-caption-help" class="help">Added to every photo you are saving now. You can change it later.</p>
+                       @class(['d-input w-full', 'mt-1', 'd-input-error' => $errors->has('caption')])>
+                <p id="photo-caption-help" class="d-label mt-1">Added to every photo you are saving now. You can change it later.</p>
                 @error('caption')
-                    <p id="photo-caption-error" class="error" role="alert">{{ $message }}</p>
+                    <p id="photo-caption-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
                 @enderror
             </div>
 
             <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <button type="button"
                         wire:click="$set('photos', [])"
-                        class="btn-secondary w-full sm:w-auto"
+                        class="d-btn d-btn-outline w-full sm:w-auto"
                         wire:loading.attr="disabled"
                         wire:target="save">
                     Cancel
                 </button>
 
                 <button type="submit"
-                        class="btn-primary w-full sm:w-auto"
+                        class="d-btn d-btn-primary w-full sm:w-auto"
                         wire:loading.attr="disabled"
                         wire:target="save, photos"
                         x-bind:disabled="uploading">
-                    <span class="btn-spinner" wire:loading wire:target="save"></span>
+                    <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="save"></span>
                     <span wire:loading.remove wire:target="save">
                         Save <span class="datum">{{ count($photos) }}</span> {{ Str::plural('photo', count($photos)) }}
                     </span>

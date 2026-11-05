@@ -8,7 +8,7 @@
 --}}
 <div>
     <a href="{{ route('mortality.index') }}" wire:navigate
-       class="inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-primary hover:underline hover:underline-offset-4">
+       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold underline-offset-4">
         <span aria-hidden="true">&larr;</span> Back to Mortality Records
     </a>
 
@@ -31,15 +31,15 @@
                 <h2 id="bird-heading" class="border-b border-border pb-3 font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">The bird</h2>
 
                 <div>
-                    <label for="birdSearch" class="label">Find the Bird</label>
+                    <label for="birdSearch" class="d-fieldset-legend">Find the Bird</label>
                     <input id="birdSearch"
                            type="search"
                            wire:model.live.debounce.300ms="birdSearch"
                            placeholder="Type a name, band number, breed or bloodline"
                            autocomplete="off"
                            aria-describedby="birdSearch-help"
-                           class="input mt-1">
-                    <p id="birdSearch-help" class="help">Optional. Use this if the list below is long.</p>
+                           class="d-input w-full mt-1">
+                    <p id="birdSearch-help" class="d-label mt-1">Optional. Use this if the list below is long.</p>
                 </div>
 
                 <div>
@@ -75,7 +75,7 @@
                 <h2 id="when-heading" class="border-b border-border pb-3 font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">When and why</h2>
 
                 <div>
-                    <label for="date_of_death" class="label">Date of Death <span class="text-destructive">*</span></label>
+                    <label for="date_of_death" class="d-fieldset-legend">Date of Death <span class="text-destructive">*</span></label>
                     <input id="date_of_death"
                            type="date"
                            wire:model="date_of_death"
@@ -85,25 +85,25 @@
                            @endif
                            aria-describedby="date_of_death-help @error('date_of_death') date_of_death-error @enderror"
                            @error('date_of_death') aria-invalid="true" @enderror
-                           @class(['input datum mt-1 sm:max-w-[16rem]', 'input-error' => $errors->has('date_of_death')])
+                           @class(['d-input w-full datum mt-1 sm:max-w-[16rem]', 'd-input-error' => $errors->has('date_of_death')])
                            required>
 
                     @error('date_of_death')
-                        <p id="date_of_death-error" class="error" role="alert">{{ $message }}</p>
+                        <p id="date_of_death-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
                     @enderror
 
                     @if ($this->selectedBird?->date_hatched)
-                        <p id="date_of_death-help" class="help">
+                        <p id="date_of_death-help" class="d-label mt-1">
                             This bird hatched on <span class="datum">{{ $this->selectedBird->date_hatched->format('d M Y') }}</span>,
                             so the date of death must be on or after that day. It cannot be in the future.
                         </p>
                     @else
-                        <p id="date_of_death-help" class="help">The date cannot be in the future.</p>
+                        <p id="date_of_death-help" class="d-label mt-1">The date cannot be in the future.</p>
                     @endif
                 </div>
 
                 <div>
-                    <label for="cause_of_death" class="label">Cause of Death <span class="text-destructive">*</span></label>
+                    <label for="cause_of_death" class="d-fieldset-legend">Cause of Death <span class="text-destructive">*</span></label>
                     <input id="cause_of_death"
                            type="text"
                            list="cause-suggestions"
@@ -112,7 +112,7 @@
                            maxlength="255"
                            aria-describedby="cause_of_death-help @error('cause_of_death') cause_of_death-error @enderror"
                            @error('cause_of_death') aria-invalid="true" @enderror
-                           @class(['input mt-1', 'input-error' => $errors->has('cause_of_death')])
+                           @class(['d-input w-full mt-1', 'd-input-error' => $errors->has('cause_of_death')])
                            required>
 
                     <datalist id="cause-suggestions">
@@ -122,10 +122,10 @@
                     </datalist>
 
                     @error('cause_of_death')
-                        <p id="cause_of_death-error" class="error" role="alert">{{ $message }}</p>
+                        <p id="cause_of_death-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
                     @enderror
 
-                    <p id="cause_of_death-help" class="help">
+                    <p id="cause_of_death-help" class="d-label mt-1">
                         Pick one of the suggestions or type your own. Using the same words each
                         time makes the mortality report easier to read.
                     </p>
@@ -139,7 +139,7 @@
                 <h2 id="after-heading" class="border-b border-border pb-3 font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Afterwards</h2>
 
                 <div>
-                    <label for="disposal_method" class="label">How Was the Bird Disposed Of?</label>
+                    <label for="disposal_method" class="d-fieldset-legend">How Was the Bird Disposed Of?</label>
                     <input id="disposal_method"
                            type="text"
                            list="disposal-suggestions"
@@ -148,7 +148,7 @@
                            maxlength="120"
                            aria-describedby="disposal_method-help @error('disposal_method') disposal_method-error @enderror"
                            @error('disposal_method') aria-invalid="true" @enderror
-                           @class(['input mt-1', 'input-error' => $errors->has('disposal_method')])>
+                           @class(['d-input w-full mt-1', 'd-input-error' => $errors->has('disposal_method')])>
 
                     <datalist id="disposal-suggestions">
                         @foreach ($this->disposalSuggestions as $suggestion)
@@ -157,27 +157,27 @@
                     </datalist>
 
                     @error('disposal_method')
-                        <p id="disposal_method-error" class="error" role="alert">{{ $message }}</p>
+                        <p id="disposal_method-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
                     @enderror
 
-                    <p id="disposal_method-help" class="help">You can leave this blank and fill it in later.</p>
+                    <p id="disposal_method-help" class="d-label mt-1">You can leave this blank and fill it in later.</p>
                 </div>
 
                 <div>
-                    <label for="remarks" class="label">Remarks</label>
+                    <label for="remarks" class="d-fieldset-legend">Remarks</label>
                     <textarea id="remarks"
                               rows="4"
                               wire:model="remarks"
                               placeholder="Anything else worth remembering - symptoms, what the vet said, whether other birds are affected."
                               aria-describedby="remarks-help @error('remarks') remarks-error @enderror"
                               @error('remarks') aria-invalid="true" @enderror
-                              @class(['input mt-1', 'input-error' => $errors->has('remarks')])></textarea>
+                              @class(['d-textarea w-full mt-1', 'd-textarea-error' => $errors->has('remarks')])></textarea>
 
                     @error('remarks')
-                        <p id="remarks-error" class="error" role="alert">{{ $message }}</p>
+                        <p id="remarks-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
                     @enderror
 
-                    <p id="remarks-help" class="help">Optional. Only farm staff can read this.</p>
+                    <p id="remarks-help" class="d-label mt-1">Optional. Only farm staff can read this.</p>
                 </div>
             </section>
         </div>
@@ -186,9 +186,9 @@
              only checks the form - nothing is written until the bird is named
              back in the confirmation below. --}}
         <div class="sticky bottom-0 z-10 -mx-4 flex justify-end gap-3 border-t border-border bg-background/95 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-            <a href="{{ route('mortality.index') }}" wire:navigate class="btn-secondary">Cancel</a>
-            <button type="submit" class="btn-primary" wire:loading.attr="disabled" wire:target="review">
-                <span class="btn-spinner" wire:loading wire:target="review"></span>
+            <a href="{{ route('mortality.index') }}" wire:navigate class="d-btn d-btn-outline">Cancel</a>
+            <button type="submit" class="d-btn d-btn-primary" wire:loading.attr="disabled" wire:target="review">
+                <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="review"></span>
                 <span wire:loading.remove wire:target="review">Record This Death</span>
                 <span wire:loading wire:target="review">Checking&hellip;</span>
             </button>
@@ -199,11 +199,11 @@
          Confirmation. Names the bird, and says plainly what will change.
     ---------------------------------------------------------------- --}}
     @if ($confirming && $this->selectedBird)
-        <div class="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 p-4"
+        <div class="d-modal d-modal-open"
              x-data x-trap.noscroll="true"
              x-on:keydown.escape.window="$wire.cancelConfirmation()"
              role="dialog" aria-modal="true" aria-labelledby="confirm-mortality-title">
-            <div class="dialog-panel elev-3 w-full max-w-md rounded-[12px] bg-card p-6">
+            <div class="d-modal-box elev-3 max-w-md">
                 <h2 id="confirm-mortality-title" class="font-display text-[22px] font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
                     Record the death of {{ $this->selectedBird->displayName() }}?
                 </h2>
@@ -226,17 +226,17 @@
                     </div>
                 </dl>
 
-                <p class="mt-4 rounded-[8px] bg-destructive-bg px-3 py-2.5 text-[15px] leading-relaxed text-foreground">
+                <p class="d-alert d-alert-soft d-alert-error mt-4 block px-3 py-2.5 text-[15px] leading-relaxed text-base-content">
                     {{ $this->selectedBird->name }} will be marked as <strong class="font-semibold">deceased</strong> and
                     removed from the active flock and from breeding. Only the farm owner can undo this.
                 </p>
 
-                <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                    <button type="button" wire:click="cancelConfirmation" class="btn-secondary">
+                <div class="d-modal-action flex-col-reverse gap-3 sm:flex-row">
+                    <button type="button" wire:click="cancelConfirmation" class="d-btn d-btn-outline">
                         Go Back and Check
                     </button>
-                    <button type="button" wire:click="save" class="btn-danger" wire:loading.attr="disabled" wire:target="save">
-                        <span class="btn-spinner" wire:loading wire:target="save"></span>
+                    <button type="button" wire:click="save" class="d-btn d-btn-error" wire:loading.attr="disabled" wire:target="save">
+                        <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="save"></span>
                         <span wire:loading.remove wire:target="save">Yes, Record the Death</span>
                         <span wire:loading wire:target="save">Saving&hellip;</span>
                     </button>

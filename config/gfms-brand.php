@@ -24,81 +24,80 @@ declare(strict_types=1);
 | every semantic pair clears 4.5:1 — so screen and print cannot silently drift
 | apart, and no pairing can quietly become illegible.
 |
-| THE FOUR CLIENT COLOURS. The farm specified #8B2626, #EF6905, #F1E5A1 and
-| #486C2F. Each is placed by what it can actually carry, measured rather than
-| assumed:
+| THE FIVE-STEP FOREST PALETTE. #0F2A1D, #375534, #6B9071, #AEC3B0 and
+| #E3EED4 replace the earlier red/orange/cream/green set. Each is placed by
+| what it can actually carry, measured rather than assumed:
 |
-|   #486C2F  green   -> brand chrome (sidebar, mark, rail, PDF chrome).
-|   #8B2626  red     -> primary, the interactive colour. 8.74:1 on card, so it
-|                       clears the Console 7:1 floor as link text. The green,
-|                       at 6.07:1, does not — which is why the roles sit this
-|                       way round rather than the other.
-|   #F1E5A1  cream   -> warning_bg, the callout ground. It cannot be a general
-|                       surface: secondary ink lands at 6.01:1 on it, under the
-|                       7:1 floor.
-|   #EF6905  orange  -> accent. FILL ONLY, never text: 3.14:1 on white, below
-|                       even the 4.5 AA floor. It carries dark ink at 5.51:1,
-|                       which is the only way it is used.
+|   #0F2A1D  forest  -> ink (foreground), brand_deep chrome, primary_900.
+|                       15.34:1 on card.
+|   #375534  pine    -> primary, the interactive colour, and brand. 8.36:1 on
+|                       card and 7.61:1 on the page, so it clears the Console
+|                       7:1 floor as link text. White on it is 8.36:1.
+|   #6B9071  sage    -> primary_400. FILL ONLY, never text: 3.58:1 on white,
+|                       4.27:1 under forest ink — under 4.5 either way.
+|   #AEC3B0  mist    -> primary_200, accent, input border, and the light
+|                       primary of the dark theme. Carries forest ink at 8.20:1.
+|   #E3EED4  celery  -> muted (wells, sidebar, table headers), primary_100,
+|                       brand_foreground. Secondary ink holds 7.41:1 on it.
+|
+| The cream and the red survive only as semantic grounds: warning_bg and
+| destructive. They mean status, not brand.
 |
 */
 
 return [
 
     /*
-     * SURFACES. Tinted neutrals — never pure white for the page, never pure
-     * black for text. A pure #FFF page under a #FFF card gives you no
-     * elevation to work with, which is precisely what made the previous
-     * direction read as a printed document rather than software.
+     * SURFACES. Tinted with the palette's lightest step — never pure white for
+     * the page, never pure black for text. A pure #FFF page under a #FFF card
+     * gives you no elevation to work with.
      *
-     * These stay neutral. The four client colours contain no neutral, and
-     * painting the page cream would drop secondary text to 6.01:1 — below the
-     * Console floor the farm's own outdoor use requires.
+     * The page is a lighter cut of #E3EED4 rather than #E3EED4 itself: on the
+     * full celery, primary link text measures 6.95:1 — a hair under the
+     * Console floor. On #F1F6EA it is 7.61:1. The celery is kept, exact, as
+     * muted, where the sidebar and table headers carry ink rather than links.
      */
-    'background' => '#F7F6F3',   // the page
+    'background' => '#F1F6EA',   // the page
     'card' => '#FFFFFF',         // raised surfaces
-    'muted' => '#EFECE7',        // wells, table headers, inactive
+    'muted' => '#E3EED4',        // wells, table headers, sidebar, inactive
     'popover' => '#FFFFFF',
-    'border' => '#E2DED7',
-    'input' => '#D6D1C9',
+    'border' => '#D3E0C6',
+    'input' => '#AEC3B0',
 
     /*
      * TEXT. Each surface names the foreground that belongs on it, so a
      * component never has to guess and a theme swap never orphans a colour.
      */
-    'foreground' => '#1C1A17',
+    'foreground' => '#0F2A1D',
 
     /*
      * The Console 7:1 floor. The staff screens are used outdoors in Philippine
-     * daylight, where 5:1 secondary text greys out. #4E5550 measures 7.40 on
-     * background, 7.67 on card, 7.01 on muted.
+     * daylight, where 5:1 secondary text greys out. #34503A measures 8.12 on
+     * background, 8.92 on card, 7.41 on muted.
      */
-    'muted_foreground' => '#4F4B46',
+    'muted_foreground' => '#34503A',
 
-    'card_foreground' => '#1C1A17',
-    'popover_foreground' => '#1C1A17',
+    'card_foreground' => '#0F2A1D',
+    'popover_foreground' => '#0F2A1D',
 
     /*
-     * PRIMARY — the farm's deep red. THE INTERACTIVE COLOUR: buttons, links,
-     * active nav, focus rings. A full scale rather than a single accent;
-     * -50/-100 are fills for active nav and selected rows, -600/-700 are hover
-     * and press.
-     *
-     * Red carries the interactive role rather than the green because of one
-     * measurement: #8B2626 is 8.74:1 on card and #486C2F is 6.07:1. Link text
-     * has to clear the Console 7:1 floor, and only one of the two does.
+     * PRIMARY — pine, #375534. THE INTERACTIVE COLOUR: buttons, links, active
+     * nav, focus rings. A full scale rather than a single accent; -50/-100 are
+     * fills for active nav and selected rows, -600/-700 are hover and press.
+     * The scale is the five palette steps with the gaps between them filled.
      */
-    'primary_50' => '#FAF0EF',
-    'primary_100' => '#F1DAD8',
-    'primary_200' => '#E0B4B0',
-    'primary_400' => '#B5453F',
-    'primary' => '#8B2626',
-    'primary_600' => '#74201F',
-    'primary_700' => '#5C1A19',
-    'primary_900' => '#331010',
-    'primary_foreground' => '#FFFFFF',   // 8.74:1 on primary
+    'primary_50' => '#EEF4E6',
+    'primary_100' => '#E3EED4',
+    'primary_200' => '#AEC3B0',
+    'primary_400' => '#6B9071',
+    'primary' => '#375534',
+    'primary_600' => '#2C4A2D',
+    'primary_700' => '#1F3D25',
+    'primary_900' => '#0F2A1D',
+    'primary_foreground' => '#FFFFFF',   // 8.36:1 on primary
 
     /*
-     * BRAND — the farm's green. CHROME ONLY.
+     * BRAND — the forest green. CHROME ONLY.
      *
      * This is the identity colour: the sidebar surface, the mark, the top rail,
      * the auth panel, PDF chrome. It is never used on a button, a link, a status
@@ -106,27 +105,19 @@ return [
      * DesignSystemGuardTest::test_brand_red_is_never_used_on_an_interactive_element
      * enforces that separation.
      */
-    'brand' => '#486C2F',
-    'brand_deep' => '#243619',
-    'brand_deeper' => '#1A2711',
-    'brand_foreground' => '#EDF3EA',   // 11.51:1 on brand_deep
-    'brand_muted_fg' => '#BFCFBB',     //  7.95:1 on brand_deep
+    'brand' => '#375534',
+    'brand_deep' => '#0F2A1D',
+    'brand_deeper' => '#0A1E14',
+    'brand_foreground' => '#E3EED4',   // 12.74:1 on brand_deep
+    'brand_muted_fg' => '#AEC3B0',     //  8.20:1 on brand_deep
 
     /*
-     * ACCENT — the farm's orange. FILL ONLY, and that is a measurement rather
-     * than a stylistic preference.
-     *
-     * #EF6905 is 3.14:1 on white. That is below the 4.5 AA floor, so it cannot
-     * be a link, a label, a status word or any other text, at any size. It
-     * carries dark ink at 5.51:1, so it is used as a ground with
+     * ACCENT — mist, #AEC3B0. FILL ONLY: 1.87:1 on white, so it is never text.
+     * It carries forest ink at 8.20:1, so it is used as a ground with
      * accent_foreground on it, and as a chart or marker fill.
-     *
-     * It is also 1.16:1 against the ember band (#E8552E) — very nearly the same
-     * colour. So it is kept away from anything sitting near a bloodline tag,
-     * where the two would read as the same signal.
      */
-    'accent' => '#EF6905',
-    'accent_foreground' => '#161C19',   // 5.51:1 on accent
+    'accent' => '#AEC3B0',
+    'accent_foreground' => '#0F2A1D',   // 8.20:1 on accent
 
     /*
      * SEMANTIC. Full foreground/background pairs, not single hues. Every pair
@@ -135,19 +126,20 @@ return [
     'success' => '#1F7A4D',      'success_bg' => '#E8F4EE',   // 4.71:1
 
     /*
-     * The cream is the warning ground. The previous warning ink (#906308)
+     * The cream is the warning ground — kept from the earlier palette because
+     * amber-on-cream reads as "attention" and no green can.
+     *
+     * The previous warning ink (#906308)
      * measured 4.14:1 on it — just under the floor — so it was taken down to
      * #755006, which reads 5.66:1 on the cream and 7.23:1 on white.
      */
     'warning' => '#755006',      'warning_bg' => '#F1E5A1',   // 5.66:1
 
     /*
-     * DESTRUCTIVE had to move. .btn-primary and .btn-danger are both solid
-     * fills carrying white text, so with primary now a deep red the old
-     * #B3261E sat 1.34:1 away from it — Save and Delete would have been the
-     * same button. #D32F2F is 1.76:1 from primary: the same danger convention,
-     * clearly brighter. Its ground was lightened to #FEF5F4 so the alert badge
-     * still clears 4.5:1.
+     * DESTRUCTIVE. .btn-primary and .btn-danger are both solid fills carrying
+     * white text. With primary green, Save and Delete now differ by hue as
+     * well as by luminance (1.68:1), so #D32F2F reads as danger at a glance.
+     * Its ground is #FEF5F4 so the alert badge still clears 4.5:1.
      */
     'destructive' => '#D32F2F',  'destructive_bg' => '#FEF5F4',  // 4.64:1
     'info' => '#3C4A8A',         'info_bg' => '#ECEEF8',         // 7.15:1
@@ -210,9 +202,9 @@ return [
      * grey smear on a mono office printer. Print-adapted, not print-different.
      */
     'print' => [
-        'rule' => '#E4E6E2',
-        'rule_strong' => '#C7CBC5',
-        'zebra' => '#F7F8F6',
+        'rule' => '#DCE6D3',
+        'rule_strong' => '#AEC3B0',
+        'zebra' => '#F3F7EE',
     ],
 
     /*
@@ -233,12 +225,15 @@ return [
      * against it rather than picked by eye. The binding pair is
      * muted_foreground on muted, which is the narrowest gap in either theme:
      *
-     *   foreground       on background  17.85:1
-     *   foreground       on card        16.23:1
-     *   foreground       on muted       13.19:1
-     *   muted_foreground on background  10.24:1
-     *   muted_foreground on card         9.32:1
-     *   muted_foreground on muted        7.57:1   <- the binding constraint
+     * The surfaces are the forest palette taken toward black, so the dark
+     * theme is the same green rather than a neutral grey with green buttons.
+     *
+     *   foreground       on background  16.37:1
+     *   foreground       on card        14.90:1
+     *   foreground       on muted       12.47:1
+     *   muted_foreground on background   9.82:1
+     *   muted_foreground on card         8.94:1
+     *   muted_foreground on muted        7.48:1   <- the binding constraint
      *
      * An earlier muted of #2E3531 put that last pair at 6.77:1. It reads as
      * fine and it is below the floor, which is exactly why the test measures
@@ -248,39 +243,39 @@ return [
      * paper has no dark mode.
      */
     'dark' => [
-        'background' => '#0D110F',   // the page
-        'card' => '#161C19',         // raised surfaces
-        'muted' => '#272D2A',        // wells, table headers, inactive
-        'popover' => '#1B2220',
-        'border' => '#2E3531',
-        'input' => '#39413C',
+        'background' => '#0A1711',   // the page
+        'card' => '#11211A',         // raised surfaces
+        'muted' => '#1C3027',        // wells, table headers, inactive
+        'popover' => '#152820',
+        'border' => '#243A2F',
+        'input' => '#2F4A3C',
 
-        'foreground' => '#F7F8F6',
-        'muted_foreground' => '#B9C0BA',
-        'card_foreground' => '#F7F8F6',
-        'popover_foreground' => '#F7F8F6',
+        'foreground' => '#EEF4E6',
+        'muted_foreground' => '#AEC3B0',
+        'card_foreground' => '#EEF4E6',
+        'popover_foreground' => '#EEF4E6',
 
         /*
          * PRIMARY INVERTS, and leaving it out was a real bug rather than a
          * near miss.
          *
          * primary is the interactive colour - link text, active nav, the focus
-         * ring - and #8B2626 measures 1.98:1 against the dark card. Not
-         * "slightly low": a link nobody can see. It shipped that way in the
-         * first dark build and looked like a styling nicety until measured.
+         * ring - and pine #375534 measures 1.97:1 against the dark card. Not
+         * "slightly low": a link nobody can see.
          *
-         * primary_200 is the same hue, four steps lighter, and it is doing two
-         * jobs at once:
+         * #A9D49B is the same green family lifted and given more chroma than
+         * the mist muted_foreground, so a link still reads as a link next to
+         * secondary text. It is doing two jobs at once:
          *
-         *   as link text on the dark card    9.33:1
-         *   as a button fill, with dark ink  9.33:1
+         *   as link text on the dark card    10.01:1
+         *   as a button fill, with forest    9.19:1
          *
          * Which is why primary_foreground inverts with it. A light fill
-         * keeping white text would have measured 1.85:1 - the same bug moved
-         * from the link to the button.
+         * keeping white text would fail - the same bug moved from the link to
+         * the button.
          */
-        'primary' => '#E0B4B0',
-        'primary_foreground' => '#161C19',
+        'primary' => '#A9D49B',
+        'primary_foreground' => '#0F2A1D',
 
         /*
          * THE SEMANTIC PAIRS INVERT TOO, and leaving them out was the same bug
@@ -288,7 +283,7 @@ return [
          * only wrong on four tokens rather than on every link.
          *
          * The light values are ink-on-paper: dark inks on pale tints. Carried
-         * unchanged onto a #0D110F page they become dark-on-dark. The worst was
+         * unchanged onto a #0A1711 page they become dark-on-dark. The worst was
          * warning, #755006, an olive that measures 2.57:1 on the dark card: the
          * dashboard's vaccination-compliance figure was rendering in a colour
          * nobody could read, on the one screen a keeper opens every morning.
@@ -298,21 +293,18 @@ return [
          * them. The floor is the Console 7:1 on background, card AND muted,
          * because these are dashboard text, not decoration.
          *
-         * DESTRUCTIVE IS DELIBERATELY WARMER THAN PRIMARY. In light the two are
-         * separated by luminance (1.76:1, so Delete does not look like Save).
-         * In dark that axis is spent: anything dark enough to differ from
-         * #E0B4B0 in luminance drops under 7:1. So the separation moves to hue
-         * and chroma instead - #FFA88F is hue 13 at 0.44 saturation against
-         * primary's hue 5 at 0.21, which is coral against dusty rose.
+         * DESTRUCTIVE IS SEPARATED FROM PRIMARY BY HUE. In dark both are light
+         * fills under dark ink, so luminance cannot tell Delete from Save; coral
+         * #FFA88F against leaf #A9D49B can.
          */
-        'success' => '#6FD39B',          //  9.44:1 on card, 7.67:1 on muted
+        'success' => '#6FD39B',          //  9.13:1 on card, 7.64:1 on muted
         'success_bg' => '#182B21',       //  8.15:1 under its own ink
-        'warning' => '#E9C46A',          // 10.35:1 on card, 8.41:1 on muted
+        'warning' => '#E9C46A',          // 10.00:1 on card, 8.37:1 on muted
         'warning_bg' => '#2E2716',       //  8.86:1 under its own ink
-        'destructive' => '#FFA88F',      //  9.26:1 on card, 7.52:1 on muted
+        'destructive' => '#FFA88F',      //  8.95:1 on card, 7.49:1 on muted
         'destructive_bg' => '#301B1A',   //  8.67:1 under its own ink
-        'destructive_foreground' => '#161C19',  // 9.26:1 on the destructive fill
-        'info' => '#AEBBEF',             //  9.19:1 on card, 7.46:1 on muted
+        'destructive_foreground' => '#0F2A1D',  // on the destructive fill
+        'info' => '#AEBBEF',             //  8.88:1 on card, 7.43:1 on muted
         'info_bg' => '#1E2336',          //  8.27:1 under its own ink
     ],
 

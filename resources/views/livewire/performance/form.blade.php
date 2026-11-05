@@ -3,7 +3,7 @@
      sits outside the column so it can run the full width of the canvas. --}}
 <div>
     <a href="{{ route('performance.index') }}" wire:navigate
-       class="-mt-2 inline-flex min-h-11 items-center gap-1.5 text-[14px] font-medium text-primary hover:underline">
+       class="d-link d-link-hover d-link-primary -mt-2 inline-flex min-h-11 items-center gap-1.5 text-[14px] font-medium">
         <span aria-hidden="true">&larr;</span> Back to performance records
     </a>
 
@@ -28,14 +28,14 @@
                     </x-form-select>
 
                     <div>
-                        <label for="event_date" class="label">Date of the Event <span class="text-destructive">*</span></label>
+                        <label for="event_date" class="d-fieldset-legend">Date of the Event <span class="text-destructive">*</span></label>
                         <input id="event_date" type="date" wire:model.live.blur="event_date"
                                max="{{ now()->toDateString() }}"
                                aria-describedby="event_date-help @error('event_date') event_date-error @enderror"
                                @error('event_date') aria-invalid="true" @enderror
-                               class="input datum @error('event_date') input-error @enderror">
-                        <p id="event_date-help" class="help">The day the event actually took place. It cannot be a future date.</p>
-                        @error('event_date') <p id="event_date-error" class="error" role="alert">{{ $message }}</p> @enderror
+                               class="d-input w-full datum @error('event_date') d-input-error @enderror">
+                        <p id="event_date-help" class="d-label mt-1">The day the event actually took place. It cannot be a future date.</p>
+                        @error('event_date') <p id="event_date-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <x-form-select id="event_type" label="Type of Event" required wire:model.live="event_type">
@@ -72,29 +72,29 @@
                     @endif
 
                     <div>
-                        <label for="weight" class="label">Weight (kg)</label>
+                        <label for="weight" class="d-fieldset-legend">Weight (kg)</label>
                         <input id="weight" type="number" step="0.01" min="0" inputmode="decimal"
                                wire:model.live.blur="weight" placeholder="e.g. 2.10"
                                aria-describedby="weight-help @error('weight') weight-error @enderror"
                                @error('weight') aria-invalid="true" @enderror
-                               class="input datum @error('weight') input-error @enderror">
-                        <p id="weight-help" class="help">Leave empty if the bird was not weighed at this event.</p>
-                        @error('weight') <p id="weight-error" class="error" role="alert">{{ $message }}</p> @enderror
+                               class="d-input w-full datum @error('weight') d-input-error @enderror">
+                        <p id="weight-help" class="d-label mt-1">Leave empty if the bird was not weighed at this event.</p>
+                        @error('weight') <p id="weight-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label for="duration_seconds" class="label">Duration (seconds)</label>
+                        <label for="duration_seconds" class="d-fieldset-legend">Duration (seconds)</label>
                         <input id="duration_seconds" type="number" step="1" min="0" inputmode="numeric"
                                wire:model.live.blur="duration_seconds" placeholder="e.g. 180"
                                aria-describedby="duration_seconds-help @error('duration_seconds') duration_seconds-error @enderror"
                                @error('duration_seconds') aria-invalid="true" @enderror
-                               class="input datum @error('duration_seconds') input-error @enderror">
-                        <p id="duration_seconds-help" class="help">How long it lasted, in seconds. 180 seconds is 3 minutes.</p>
-                        @error('duration_seconds') <p id="duration_seconds-error" class="error" role="alert">{{ $message }}</p> @enderror
+                               class="d-input w-full datum @error('duration_seconds') d-input-error @enderror">
+                        <p id="duration_seconds-help" class="d-label mt-1">How long it lasted, in seconds. 180 seconds is 3 minutes.</p>
+                        @error('duration_seconds') <p id="duration_seconds-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <span class="label" id="rating-label">Rating</span>
+                        <span class="d-fieldset-legend" id="rating-label">Rating</span>
 
                         {{-- Ink stars, not amber. Colour in this system means
                              bloodline, so "chosen" is drawn as a filled shape
@@ -125,11 +125,11 @@
                             </span>
                         </div>
 
-                        <p id="rating-help" class="help">
+                        <p id="rating-help" class="d-label mt-1">
                             How well the bird performed, from 1 star (poor) to 5 stars (excellent).
                             Tap a star again to clear the rating.
                         </p>
-                        @error('rating') <p class="error" role="alert">{{ $message }}</p> @enderror
+                        @error('rating') <p class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </section>
@@ -144,21 +144,21 @@
                     </p>
 
                     <div class="mt-5 border-t border-border pt-6">
-                        <label for="remarks" class="label">Remarks</label>
+                        <label for="remarks" class="d-fieldset-legend">Remarks</label>
                         <textarea id="remarks" rows="4" wire:model.live.blur="remarks"
                                   placeholder="e.g. Tired in the last minute, needs more conditioning."
                                   @error('remarks') aria-invalid="true" aria-describedby="remarks-error" @enderror
-                                  class="input @error('remarks') input-error @enderror"></textarea>
-                        @error('remarks') <p id="remarks-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                  class="d-textarea w-full @error('remarks') d-textarea-error @enderror"></textarea>
+                        @error('remarks') <p id="remarks-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </section>
             @endif
         </div>
 
         <div class="sticky bottom-0 z-20 -mx-4 mt-12 flex justify-end gap-3 border-t border-border bg-background/95 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-            <a href="{{ route('performance.index') }}" wire:navigate class="btn-secondary">Cancel</a>
-            <button type="submit" class="btn-primary" wire:loading.attr="disabled" wire:target="save">
-                <span class="btn-spinner" wire:loading wire:target="save"></span>
+            <a href="{{ route('performance.index') }}" wire:navigate class="d-btn d-btn-outline">Cancel</a>
+            <button type="submit" class="d-btn d-btn-primary" wire:loading.attr="disabled" wire:target="save">
+                <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="save"></span>
                 {{ $this->isEditing() ? 'Save Changes' : 'Save Performance Record' }}
             </button>
         </div>

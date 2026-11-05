@@ -38,11 +38,11 @@ enum HealthRecordType: string
     public function badgeClasses(): string
     {
         return match ($this) {
-            self::Vaccination => 'badge-ok',
-            self::Medication => 'badge-info',
-            self::Checkup => 'badge-neutral',
-            self::Treatment => 'badge-warn',
-            self::Deworming => 'badge-info',
+            self::Vaccination => 'd-badge-success',
+            self::Medication => 'd-badge-info',
+            self::Checkup => 'd-badge-neutral',
+            self::Treatment => 'd-badge-warning',
+            self::Deworming => 'd-badge-info',
         };
     }
 

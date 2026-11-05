@@ -4,7 +4,9 @@
     $pageTargets = 'gotoPage,nextPage,previousPage';
 
     $th = 'px-4 py-3 text-left text-[13px] font-semibold text-muted-foreground';
-    $td = 'block md:table-cell md:border-b md:border-border md:px-4 md:py-3 md:align-top';
+    // d-table pads every cell and rules every row; below md each row stacks as
+    // a block, so both are reset there and restored from md up.
+    $td = 'block border-b-0 px-0 py-0 md:table-cell md:border-b md:border-border md:px-4 md:py-3 md:align-top';
     $headingClass = 'font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground';
 @endphp
 
@@ -31,21 +33,21 @@
 
         <div class="mt-5 space-y-5">
             <div>
-                <label for="from" class="label">From</label>
-                <input id="from" type="date" wire:model.live="from" class="input mt-1" aria-describedby="range-help">
+                <label for="from" class="d-fieldset-legend">From</label>
+                <input id="from" type="date" wire:model.live="from" class="d-input w-full" aria-describedby="range-help">
             </div>
             <div>
-                <label for="to" class="label">To</label>
-                <input id="to" type="date" wire:model.live="to" class="input mt-1" aria-describedby="range-help">
-                <p id="range-help" class="help">
+                <label for="to" class="d-fieldset-legend">To</label>
+                <input id="to" type="date" wire:model.live="to" class="d-input w-full" aria-describedby="range-help">
+                <p id="range-help" class="d-label mt-1">
                     Leave both dates empty to cover all records. The range you choose is saved with
                     the report, so anyone can see exactly what was included.
                 </p>
             </div>
             <div class="flex flex-wrap gap-3">
-                <button type="button" wire:click="useLastYear" class="btn-secondary">Last 12 months</button>
+                <button type="button" wire:click="useLastYear" class="d-btn d-btn-outline">Last 12 months</button>
                 @if ($from !== '' || $to !== '')
-                    <button type="button" wire:click="clearRange" class="btn-quiet">Clear</button>
+                    <button type="button" wire:click="clearRange" class="d-btn d-btn-ghost">Clear</button>
                 @endif
             </div>
         </div>
@@ -75,11 +77,11 @@
                     </div>
                     <div class="flex flex-wrap gap-3">
                         <a href="{{ route('reports.csv', $report->key()).($query ? '?'.$query : '') }}"
-                           class="btn-secondary">
+                           class="d-btn d-btn-outline">
                             Download CSV<span class="sr-only">, {{ $report->title() }}</span>
                         </a>
                         <a href="{{ route('reports.pdf', $report->key()).($query ? '?'.$query : '') }}"
-                           class="btn-secondary">
+                           class="d-btn d-btn-outline">
                             Download PDF<span class="sr-only">, {{ $report->title() }}</span>
                         </a>
                     </div>
@@ -104,7 +106,7 @@
             {{-- No overflow wrapper: the header sticks to <main>, the shell's
                  one scroll container. Below md each row stacks as a block
                  instead of scrolling sideways. --}}
-            <table class="mt-6 block w-full border-t border-border md:table md:border-separate md:border-spacing-0 md:border-t-0">
+            <table class="d-table mt-6 block w-full rounded-none border-t border-border md:table md:border-separate md:border-spacing-0 md:border-t-0">
                 <thead class="hidden md:table-header-group">
                     <tr>
                         <th scope="col" class="sticky top-0 z-10 border-b border-border bg-background {{ $th }}">Report</th>
@@ -121,18 +123,18 @@
                             <td class="{{ $td }} text-[15px] font-semibold text-foreground">
                                 {{ Str::headline($entry->report_type) }}
                             </td>
-                            {{-- badge-neutral rather than the utilities it resolves
+                            {{-- d-badge-neutral rather than the utilities it resolves
                                  to: the class vocabulary is a contract.
 
                                  strtoupper is applied to the format and NOT to the
                                  fallback, so a missing format reads "Not recorded"
                                  rather than shouting NOT RECORDED. --}}
-                            <td class="mt-2 inline-block md:mt-0 md:table-cell md:border-b md:border-border md:px-4 md:py-3 md:align-top">
-                                <span class="badge badge-neutral">
+                            <td class="mt-2 inline-block border-b-0 px-0 py-0 md:mt-0 md:table-cell md:border-b md:border-border md:px-4 md:py-3 md:align-top">
+                                <span class="d-badge d-badge-soft d-badge-neutral">
                                     {{ $entry->format ? strtoupper($entry->format) : 'Not recorded' }}
                                 </span>
                             </td>
-                            <td class="ml-3 inline-block text-[14px] text-muted-foreground md:ml-0 md:table-cell md:border-b md:border-border md:px-4 md:py-3 md:text-right md:align-top">
+                            <td class="ml-3 inline-block border-b-0 px-0 py-0 text-[14px] text-muted-foreground md:ml-0 md:table-cell md:border-b md:border-border md:px-4 md:py-3 md:text-right md:align-top">
                                 <span class="datum text-foreground">{{ number_format((int) $entry->row_count) }}</span><span class="md:hidden"> rows</span>
                             </td>
                             <td class="mt-2 {{ $td }} text-[13px] text-muted-foreground">

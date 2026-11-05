@@ -22,7 +22,7 @@
 
         <x-slot:actions>
             @can('create', App\Models\BreedingRecord::class)
-                <a href="{{ route('breeding.create') }}" wire:navigate class="btn-primary w-full sm:w-auto">
+                <a href="{{ route('breeding.create') }}" wire:navigate class="d-btn d-btn-primary w-full sm:w-auto">
                     Record a Mating
                 </a>
             @endcan
@@ -51,19 +51,19 @@
         <x-slot:search>
             <label for="search" class="sr-only">Search by bird</label>
             <input id="search" type="search" wire:model.live.debounce.300ms="search"
-                   placeholder="Sire or dam name / band" class="input">
+                   placeholder="Sire or dam name / band" class="d-input w-full">
         </x-slot:search>
 
         {{-- The two dates are one control in two halves, so they stay together
              on a wrap and read as a range rather than as two unrelated fields. --}}
         <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="from" class="label shrink-0">Mated from</label>
-            <input id="from" type="date" wire:model.live="from" class="input datum w-full sm:w-auto">
+            <label for="from" class="d-fieldset-legend mb-0 shrink-0 py-0">Mated from</label>
+            <input id="from" type="date" wire:model.live="from" class="d-input datum w-full sm:w-auto">
         </div>
 
         <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="to" class="label shrink-0">Mated up to</label>
-            <input id="to" type="date" wire:model.live="to" class="input datum w-full sm:w-auto">
+            <label for="to" class="d-fieldset-legend mb-0 shrink-0 py-0">Mated up to</label>
+            <input id="to" type="date" wire:model.live="to" class="d-input datum w-full sm:w-auto">
         </div>
 
         <x-filter-select id="bloodline" label="Bloodline (sire)" wire:model.live="bloodline">
@@ -86,14 +86,14 @@
             <x-empty-state title="No matings match your filters"
                            description="Try widening the date range or clearing the filters."
                            icon="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z">
-                <button type="button" wire:click="clearFilters" class="btn-secondary">Clear filters</button>
+                <button type="button" wire:click="clearFilters" class="d-btn d-btn-outline">Clear filters</button>
             </x-empty-state>
         @else
             <x-empty-state title="No breeding records yet"
                            description="Record a mating to start tracking fertility and hatch rates."
                            icon="M12 3c-3.3 0-6 4.6-6 9.2A6 6 0 0 0 12 18.5a6 6 0 0 0 6-6.3C18 7.6 15.3 3 12 3Z">
                 @can('create', App\Models\BreedingRecord::class)
-                    <a href="{{ route('breeding.create') }}" wire:navigate class="btn-primary">Record your first mating</a>
+                    <a href="{{ route('breeding.create') }}" wire:navigate class="d-btn d-btn-primary">Record your first mating</a>
                 @endcan
             </x-empty-state>
         @endif
@@ -142,7 +142,7 @@
 
                     @if ($record->hasUnregisteredOffspring())
                         <p class="mt-2">
-                            <span class="badge badge-warn">
+                            <span class="d-badge d-badge-soft d-badge-warning">
                                 <span class="datum">{{ $record->unregisteredOffspring() }}</span>&nbsp;to register
                             </span>
                         </p>
@@ -155,8 +155,8 @@
              wire:loading.block wire:target="{{ $loadingTargets }}">
             @for ($i = 0; $i < 4; $i++)
                 <div>
-                    <div class="skeleton h-3 {{ ['w-3/4', 'w-2/3', 'w-4/5', 'w-1/2'][$i] }}"></div>
-                    <div class="skeleton mt-3 h-3 w-2/5"></div>
+                    <div class="d-skeleton h-3 {{ ['w-3/4', 'w-2/3', 'w-4/5', 'w-1/2'][$i] }}"></div>
+                    <div class="d-skeleton mt-3 h-3 w-2/5"></div>
                 </div>
             @endfor
         </div>
@@ -167,7 +167,7 @@
              topbar. The table is separate-bordered so the header's hairline
              travels with it when it sticks; a collapsed border stays behind.
         --------------------------------------------------------------- --}}
-        <table class="hidden w-full border-separate border-spacing-0 text-[15px] md:table">
+        <table class="d-table hidden w-full border-separate border-spacing-0 text-[15px] md:table">
             <thead class="sticky top-0 z-10 bg-background">
                 <tr>
                     {{-- The date and the three egg counts sort. Fertility and
@@ -187,14 +187,14 @@
 
                     <th scope="col" class="hidden border-b border-border px-4 py-3 text-right text-[13px] font-semibold text-muted-foreground lg:table-cell">Fertility</th>
                     <th scope="col" class="border-b border-border px-4 py-3 text-right text-[13px] font-semibold text-muted-foreground">Hatch rate</th>
-                    <th scope="col" class="border-b border-border py-3 pl-4"><span class="sr-only">Open</span></th>
+                    <th scope="col" class="border-b border-border py-3 pl-4 pr-0"><span class="sr-only">Open</span></th>
                 </tr>
             </thead>
 
             <tbody wire:loading.remove wire:target="{{ $loadingTargets }}">
                 @foreach ($records as $record)
-                    <tr class="row-hover align-top" wire:key="r-{{ $record->id }}">
-                        <td class="datum whitespace-nowrap border-b border-border py-3 pr-4 text-foreground">
+                    <tr class="row-hover align-top *:align-top" wire:key="r-{{ $record->id }}">
+                        <td class="datum whitespace-nowrap border-b border-border py-3 pl-0 pr-4 text-foreground">
                             <span class="inline-flex min-h-11 items-center">{{ $record->mating_date->format('j M Y') }}</span>
                         </td>
 
@@ -234,17 +234,17 @@
                             <span class="inline-flex min-h-11 items-center">{{ $record->hatchRate() !== null ? $record->hatchRate().'%' : 'No data' }}</span>
                         </td>
 
-                        <td class="whitespace-nowrap border-b border-border py-3 pl-4 text-right">
+                        <td class="whitespace-nowrap border-b border-border py-3 pl-4 pr-0 text-right">
                             <span class="inline-flex min-h-11 items-center justify-end gap-3">
                                 @if ($record->hasUnregisteredOffspring())
-                                    {{-- badge-warn, not the utilities it resolves to: the
+                                    {{-- d-badge-warning, not the utilities it resolves to: the
                                          class vocabulary is a contract with the enums. --}}
-                                    <span class="badge badge-warn">
+                                    <span class="d-badge d-badge-soft d-badge-warning">
                                         <span class="datum">{{ $record->unregisteredOffspring() }}</span>&nbsp;to register
                                     </span>
                                 @endif
                                 <a href="{{ route('breeding.show', $record) }}" wire:navigate
-                                   class="inline-flex min-h-11 items-center font-semibold text-primary hover:underline hover:underline-offset-4">
+                                   class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center font-semibold underline-offset-4">
                                     View<span class="sr-only"> {{ $record->sire->name }} &times; {{ $record->dam->name }}</span>
                                 </a>
                             </span>

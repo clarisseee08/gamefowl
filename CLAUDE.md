@@ -235,8 +235,13 @@ The short version:
   Nothing lifts on its own — a shadow means interactive or layered. (This rule
   used to read "no shadows"; the direction changed and the scale is now in
   active use. Don't reintroduce ad-hoc `box-shadow` outside the three tokens.)
-- The CSS class vocabulary (`.badge-ok`, `.btn-primary`, `.input`) is a contract
-  shared with five PHP enums. Restyle what a class resolves to; do not rename it.
+- **Components are daisyUI 5, prefixed `d-`** (`d-btn d-btn-primary`, `d-input`,
+  `d-badge d-badge-soft`, `d-modal`). The old GFMS vocabulary (`.btn-primary`,
+  `.input`, `.badge-ok`, `.card`, `.label`) is gone from app.css, and
+  `BadgeVocabularyTest` fails on a leftover. Five PHP enums return badge colours
+  (`d-badge-success` …) from `badgeClasses()` — full literal strings only, or the
+  production build drops them. Field label = `d-fieldset-legend`, help =
+  `d-label`, field error = `text-error` utilities (not `d-label`).
 
 ## Things that changed recently and are easy to get wrong from memory
 
@@ -276,6 +281,17 @@ The short version:
 - **`migrate:fresh` is refused on every machine**, not just production — the
   dev and production databases are the same Supabase project. Set
   `GFMS_ALLOW_DESTRUCTIVE_DB=true` deliberately if you really mean it.
+- **daisyUI 5 is installed, prefixed `d-`** (`d-btn`, `d-input`, `d-modal`).
+  Its docs and the `daisyui` skill write unprefixed names; always add the
+  prefix (its internal CSS variables are prefixed too: `--d-menu-active-bg`).
+  Built-in daisyUI themes are off; its colour names (`base-100`, `error`, …)
+  are aliased to GFMS tokens in `app.css`. Never add a daisyUI theme or a
+  `data-theme` value — that attribute belongs to the light/dark toggle.
+  Console-floor overrides (16px fields, 7:1 ink on `d-label`/`d-stat-*`/
+  `d-menu-title`) are unlayered in `app.css`; `elev-1/2/3` are `@utility` so
+  they beat daisyUI's own shadows. A modal kept in the DOM with `x-show` must
+  bind `d-modal-open`, never hard-code it — daisyUI locks page scroll while
+  any `.d-modal-open` exists.
 - `docs/` predates all of this and still describes the pen screens. Treat it as
   historical unless it agrees with the code.
 

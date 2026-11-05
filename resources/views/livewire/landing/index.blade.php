@@ -75,8 +75,8 @@
                      two buttons sat touching. --}}
                 <div class="sb-line mt-8" style="--line: 340ms">
                     <div class="flex flex-wrap gap-3">
-                        <a href="{{ route('catalog.index') }}" wire:navigate class="btn-primary">See the birds</a>
-                        <a href="{{ route('public.visit') }}" wire:navigate class="btn-secondary">Arrange a visit</a>
+                        <a href="{{ route('catalog.index') }}" wire:navigate class="d-btn d-btn-primary">See the birds</a>
+                        <a href="{{ route('public.visit') }}" wire:navigate class="d-btn d-btn-outline">Arrange a visit</a>
                     </div>
                 </div>
 
@@ -325,7 +325,7 @@
                         <div class="grid gap-1 border-b border-border py-4 sm:grid-cols-[140px_1fr] sm:gap-6">
                             <dt class="text-[14px] font-medium text-muted-foreground">Phone</dt>
                             <dd class="text-[16px]">
-                                <a href="tel:{{ $telHref }}" class="datum font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary">{{ $farm['phone'] }}</a>
+                                <a href="tel:{{ $telHref }}" class="d-link d-link-primary datum font-semibold underline-offset-4">{{ $farm['phone'] }}</a>
                             </dd>
                         </div>
                     @endif
@@ -333,13 +333,13 @@
                         <div class="grid gap-1 border-b border-border py-4 sm:grid-cols-[140px_1fr] sm:gap-6">
                             <dt class="text-[14px] font-medium text-muted-foreground">Email</dt>
                             <dd class="break-words text-[16px]">
-                                <a href="mailto:{{ $farm['email'] }}" class="font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary">{{ $farm['email'] }}</a>
+                                <a href="mailto:{{ $farm['email'] }}" class="d-link d-link-primary font-semibold underline-offset-4">{{ $farm['email'] }}</a>
                             </dd>
                         </div>
                     @endif
                 </dl>
 
-                <a href="{{ route('public.visit') }}" wire:navigate class="btn-primary mt-8">Plan a visit</a>
+                <a href="{{ route('public.visit') }}" wire:navigate class="d-btn d-btn-primary mt-8">Plan a visit</a>
             </div>
         </div>
     </section>

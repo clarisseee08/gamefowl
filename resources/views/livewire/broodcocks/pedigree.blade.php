@@ -38,7 +38,7 @@
 --}}
 <div @class(['sb-wrap pb-16 pt-8 lg:pb-24 lg:pt-10' => ! $internal])>
     <a href="{{ route('broodcocks.show', $broodcock) }}" wire:navigate
-       class="inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-primary hover:underline hover:underline-offset-4">
+       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold underline-offset-4">
         <span aria-hidden="true">&larr;</span> Back to {{ $title }}
     </a>
 
@@ -68,14 +68,13 @@
                     (<span class="datum">{{ $completeness['percent'] }}%</span>)
                 </span>
             </div>
-            <div class="meter mt-2.5" role="img" aria-label="{{ $completeness['percent'] }}% of the pedigree recorded">
-                <span class="bg-foreground" style="width: {{ $completeness['percent'] }}%"></span>
-            </div>
+            <progress class="d-progress d-progress-primary mt-2.5 w-full" value="{{ $completeness['percent'] }}" max="100"
+                      role="img" aria-label="{{ $completeness['percent'] }}% of the pedigree recorded"></progress>
             @if ($completeness['known'] === 0)
                 <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
                     No parents have been recorded for this bird yet.
                     @can('update', $broodcock)
-                        <a href="{{ route('broodcocks.edit', $broodcock) }}" wire:navigate class="font-semibold text-primary underline underline-offset-4">Edit this bird</a>
+                        <a href="{{ route('broodcocks.edit', $broodcock) }}" wire:navigate class="d-link d-link-primary font-semibold underline-offset-4">Edit this bird</a>
                         to add its sire and dam.
                     @endcan
                 </p>

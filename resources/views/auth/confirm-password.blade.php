@@ -9,15 +9,15 @@
         @csrf
 
         <div class="rise-in" style="--rise-delay: 300ms">
-            <label for="password" class="label">Password</label>
+            <label for="password" class="d-fieldset-legend">Password</label>
             <input id="password" type="password" name="password" required autofocus autocomplete="current-password"
                    @error('password') aria-invalid="true" aria-describedby="password-error" @enderror
-                   class="input @error('password') input-error @enderror">
+                   class="d-input w-full @error('password') d-input-error @enderror">
             @error('password')
-                <p id="password-error" class="error" role="alert">{{ $message }}</p>
+                <p id="password-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
             @enderror
         </div>
 
-        <button type="submit" class="btn-primary rise-in w-full" style="--rise-delay: 360ms">Confirm</button>
+        <button type="submit" class="d-btn d-btn-primary rise-in w-full" style="--rise-delay: 360ms">Confirm</button>
     </form>
 </x-layouts::guest>

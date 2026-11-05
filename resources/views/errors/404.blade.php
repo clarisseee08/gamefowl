@@ -11,6 +11,6 @@
     </p>
 
     <x-slot:actions>
-        <a href="{{ route('catalog.index') }}" class="btn-secondary">Browse the catalogue</a>
+        <a href="{{ route('catalog.index') }}" class="d-btn d-btn-outline">Browse the catalogue</a>
     </x-slot:actions>
 </x-error-page>

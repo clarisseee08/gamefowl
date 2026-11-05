@@ -22,7 +22,7 @@
 --}}
 <div>
     <a href="{{ route('breeding.index') }}" wire:navigate
-       class="inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-primary hover:underline hover:underline-offset-4">
+       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold underline-offset-4">
         <span aria-hidden="true">&larr;</span> Back to breeding records
     </a>
 
@@ -42,7 +42,7 @@
 
         @can('update', $breeding)
             <div class="sb-line flex flex-wrap items-center gap-3" style="--line: 180ms">
-                <a href="{{ route('breeding.edit', $breeding) }}" wire:navigate class="btn-secondary">Edit</a>
+                <a href="{{ route('breeding.edit', $breeding) }}" wire:navigate class="d-btn d-btn-outline">Edit</a>
             </div>
         @endcan
     </header>
@@ -142,7 +142,7 @@
 
             @if ($breeding->hasUnregisteredOffspring() && ! $generating)
                 @can('generateOffspring', $breeding)
-                    <button type="button" wire:click="startGenerating" class="btn-primary">
+                    <button type="button" wire:click="startGenerating" class="d-btn d-btn-primary">
                         Register {{ $unregistered }} {{ Str::plural('chick', $unregistered) }}
                     </button>
                 @endcan
@@ -161,12 +161,12 @@
 
                 <div class="mt-5 grid gap-5 sm:grid-cols-2">
                     <div>
-                        <label for="generateCount" class="label">How many</label>
+                        <label for="generateCount" class="d-fieldset-legend">How many</label>
                         <input id="generateCount" type="number" min="1" max="{{ max(1, $unregistered) }}" inputmode="numeric"
                                wire:model="generateCount"
                                @error('generateCount') aria-invalid="true" aria-describedby="generateCount-error" @enderror
-                               class="input datum mt-1 @error('generateCount') input-error @enderror">
-                        @error('generateCount') <p id="generateCount-error" class="error" role="alert">{{ $message }}</p> @enderror
+                               class="d-input w-full datum mt-1 @error('generateCount') d-input-error @enderror">
+                        @error('generateCount') <p id="generateCount-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -179,12 +179,12 @@
                     </div>
 
                     <div>
-                        <label for="generateDateHatched" class="label">Date hatched</label>
+                        <label for="generateDateHatched" class="d-fieldset-legend">Date hatched</label>
                         <input id="generateDateHatched" type="date" wire:model="generateDateHatched"
                                max="{{ today()->toDateString() }}"
                                @error('generateDateHatched') aria-invalid="true" aria-describedby="generateDateHatched-error" @enderror
-                               class="input datum mt-1 @error('generateDateHatched') input-error @enderror">
-                        @error('generateDateHatched') <p id="generateDateHatched-error" class="error" role="alert">{{ $message }}</p> @enderror
+                               class="d-input w-full datum mt-1 @error('generateDateHatched') d-input-error @enderror">
+                        @error('generateDateHatched') <p id="generateDateHatched-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -198,9 +198,9 @@
                 </div>
 
                 <div class="mt-6 flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end">
-                    <button type="button" wire:click="$set('generating', false)" class="btn-secondary">Cancel</button>
-                    <button type="button" wire:click="generate" class="btn-primary" wire:loading.attr="disabled" wire:target="generate">
-                        <span class="btn-spinner" wire:loading wire:target="generate"></span>
+                    <button type="button" wire:click="$set('generating', false)" class="d-btn d-btn-outline">Cancel</button>
+                    <button type="button" wire:click="generate" class="d-btn d-btn-primary" wire:loading.attr="disabled" wire:target="generate">
+                        <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="generate"></span>
                         <span wire:loading.remove wire:target="generate">Register chicks</span>
                         <span wire:loading wire:target="generate">Registering&hellip;</span>
                     </button>
@@ -221,7 +221,7 @@
                             <a href="{{ route('broodcocks.show', $child) }}" wire:navigate class="block py-3">
                                 <span class="flex min-h-11 items-center justify-between gap-3">
                                     <span class="min-w-0 truncate text-[16px] font-medium text-foreground">{{ $child->name }}</span>
-                                    <span class="badge {{ $child->status->badgeClasses() }}">{{ $child->status->label() }}</span>
+                                    <span class="d-badge d-badge-soft {{ $child->status->badgeClasses() }}">{{ $child->status->label() }}</span>
                                 </span>
                                 <span class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px] text-muted-foreground">
                                     <span class="inline-flex items-center gap-1.5">
@@ -247,13 +247,13 @@
                 </ul>
 
                 {{-- Wider screens: a ledger. --}}
-                <table class="hidden w-full border-separate border-spacing-0 text-[15px] md:table">
+                <table class="d-table hidden w-full border-separate border-spacing-0 text-[15px] md:table">
                     <thead class="sticky top-0 z-10 bg-background">
                         <tr>
                             @foreach (['Name', 'Band', 'Sex', 'Hatched', 'Status'] as $heading)
                                 <th scope="col" @class([
                                     'border-b border-border py-3 text-left text-[13px] font-semibold text-muted-foreground',
-                                    'pr-4' => $loop->first,
+                                    'pl-0 pr-4' => $loop->first,
                                     'px-4' => ! $loop->first,
                                 ])>{{ $heading }}</th>
                             @endforeach
@@ -262,9 +262,9 @@
                     <tbody>
                         @foreach ($offspring as $child)
                             <tr class="row-hover" wire:key="c-{{ $child->id }}">
-                                <td class="border-b border-border py-2 pr-4">
+                                <td class="border-b border-border py-2 pl-0 pr-4">
                                     <a href="{{ route('broodcocks.show', $child) }}" wire:navigate
-                                       class="inline-flex min-h-11 items-center font-medium text-foreground hover:underline hover:underline-offset-4">
+                                       class="d-link d-link-hover inline-flex min-h-11 items-center font-medium text-foreground underline-offset-4">
                                         {{ $child->name }}
                                     </a>
                                 </td>
@@ -287,7 +287,7 @@
                                     @endif
                                 </td>
                                 <td class="border-b border-border px-4 py-2">
-                                    <span class="badge {{ $child->status->badgeClasses() }}">{{ $child->status->label() }}</span>
+                                    <span class="d-badge d-badge-soft {{ $child->status->badgeClasses() }}">{{ $child->status->label() }}</span>
                                 </td>
                             </tr>
                         @endforeach

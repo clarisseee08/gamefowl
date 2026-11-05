@@ -20,9 +20,9 @@
         {{-- Phone: previous / next only. Numbered pages do not fit at 390px. --}}
         <div class="flex flex-1 items-center justify-between sm:hidden">
             @if ($paginator->onFirstPage())
-                <span class="btn-secondary cursor-default opacity-40">{!! __('pagination.previous') !!}</span>
+                <span class="d-btn d-btn-outline d-btn-disabled">{!! __('pagination.previous') !!}</span>
             @else
-                <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="btn-secondary">{!! __('pagination.previous') !!}</a>
+                <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="d-btn d-btn-outline">{!! __('pagination.previous') !!}</a>
             @endif
 
             <span class="datum text-[13px] text-muted-foreground">
@@ -30,9 +30,9 @@
             </span>
 
             @if ($paginator->hasMorePages())
-                <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="btn-secondary">{!! __('pagination.next') !!}</a>
+                <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="d-btn d-btn-outline">{!! __('pagination.next') !!}</a>
             @else
-                <span class="btn-secondary cursor-default opacity-40">{!! __('pagination.next') !!}</span>
+                <span class="d-btn d-btn-outline d-btn-disabled">{!! __('pagination.next') !!}</span>
             @endif
         </div>
 
@@ -47,15 +47,15 @@
                 {!! __('results') !!}
             </p>
 
-            <span class="inline-flex items-center gap-1">
+            <span class="d-join">
                 @if ($paginator->onFirstPage())
                     <span aria-disabled="true" aria-label="{{ __('pagination.previous') }}"
-                          class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[4px] border border-border text-muted-foreground opacity-40">
+                          class="d-join-item d-btn d-btn-disabled min-w-11">
                         <span aria-hidden="true">&lsaquo;</span>
                     </span>
                 @else
                     <a href="{{ $paginator->previousPageUrl() }}" rel="prev" aria-label="{{ __('pagination.previous') }}"
-                       class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[4px] border border-border text-foreground hover:bg-muted">
+                       class="d-join-item d-btn min-w-11">
                         <span aria-hidden="true">&lsaquo;</span>
                     </a>
                 @endif
@@ -63,17 +63,17 @@
                 @foreach ($elements as $element)
                     @if (is_string($element))
                         <span aria-disabled="true"
-                              class="datum inline-flex min-h-11 min-w-11 items-center justify-center text-[13px] text-muted-foreground">{{ $element }}</span>
+                              class="d-join-item d-btn d-btn-disabled datum min-w-11">{{ $element }}</span>
                     @endif
 
                     @if (is_array($element))
                         @foreach ($element as $page => $url)
                             @if ($page == $paginator->currentPage())
                                 <span aria-current="page"
-                                      class="datum inline-flex min-h-11 min-w-11 items-center justify-center rounded-[4px] border border-foreground bg-foreground text-[13px] font-medium text-card">{{ $page }}</span>
+                                      class="d-join-item d-btn d-btn-neutral d-btn-active datum min-w-11">{{ $page }}</span>
                             @else
                                 <a href="{{ $url }}" aria-label="{{ __('Go to page :page', ['page' => $page]) }}"
-                                   class="datum inline-flex min-h-11 min-w-11 items-center justify-center rounded-[4px] border border-border text-[13px] text-foreground hover:bg-muted">{{ $page }}</a>
+                                   class="d-join-item d-btn datum min-w-11">{{ $page }}</a>
                             @endif
                         @endforeach
                     @endif
@@ -81,12 +81,12 @@
 
                 @if ($paginator->hasMorePages())
                     <a href="{{ $paginator->nextPageUrl() }}" rel="next" aria-label="{{ __('pagination.next') }}"
-                       class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[4px] border border-border text-foreground hover:bg-muted">
+                       class="d-join-item d-btn min-w-11">
                         <span aria-hidden="true">&rsaquo;</span>
                     </a>
                 @else
                     <span aria-disabled="true" aria-label="{{ __('pagination.next') }}"
-                          class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[4px] border border-border text-muted-foreground opacity-40">
+                          class="d-join-item d-btn d-btn-disabled min-w-11">
                         <span aria-hidden="true">&rsaquo;</span>
                     </span>
                 @endif

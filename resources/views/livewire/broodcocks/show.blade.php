@@ -48,8 +48,8 @@
 --}}
 <div @class(['sb-wrap pb-16 pt-8 lg:pb-24 lg:pt-10' => ! $internal])>
     <a href="{{ $internal ? route('broodcocks.index') : route('catalog.index') }}" wire:navigate
-       class="inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-primary hover:underline hover:underline-offset-4">
-        <span aria-hidden="true">&larr;</span> {{ $internal ? 'Back to broodcocks' : 'Back to the catalogue' }}
+       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold underline-offset-4">
+        <span aria-hidden="true">&larr;</span> {{ $internal ? 'Back to gamefowl' : 'Back to the catalogue' }}
     </a>
 
     <div class="mt-4 grid gap-10 lg:grid-cols-[7fr_5fr] lg:gap-16">
@@ -107,7 +107,7 @@
             @endif
 
             <p class="sb-line mt-4 flex flex-wrap items-center gap-2" style="--line: 140ms">
-                <span class="badge {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
+                <span class="d-badge d-badge-soft {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
                 @if ($bird->for_sale)
                     <span class="text-[14px] font-semibold text-primary">For sale</span>
                 @endif
@@ -138,18 +138,18 @@
             <div class="sb-line mt-8 flex flex-wrap gap-3" style="--line: 260ms">
                 @if ($internal)
                     @can('update', $bird)
-                        <a href="{{ route('broodcocks.edit', $bird) }}" wire:navigate class="btn-primary">Edit bird</a>
+                        <a href="{{ route('broodcocks.edit', $bird) }}" wire:navigate class="d-btn d-btn-primary">Edit bird</a>
                     @endcan
-                    <a href="{{ route('broodcocks.pedigree', $bird) }}" wire:navigate class="btn-secondary">Family Tree</a>
+                    <a href="{{ route('broodcocks.pedigree', $bird) }}" wire:navigate class="d-btn d-btn-outline">Family Tree</a>
                     @can('delete', $bird)
-                        <button type="button" wire:click="confirmDeletion" class="btn-secondary text-destructive">Delete</button>
+                        <button type="button" wire:click="confirmDeletion" class="d-btn d-btn-outline text-destructive">Delete</button>
                     @endcan
                 @else
                     @if ($ask)
-                        <a href="{{ $ask }}" class="btn-primary">Ask about this bird</a>
+                        <a href="{{ $ask }}" class="d-btn d-btn-primary">Ask about this bird</a>
                     @endif
-                    <a href="{{ route('public.visit') }}" wire:navigate class="btn-secondary">Arrange a visit</a>
-                    <a href="{{ route('broodcocks.pedigree', $bird) }}" wire:navigate class="btn-quiet">Family Tree</a>
+                    <a href="{{ route('public.visit') }}" wire:navigate class="d-btn d-btn-outline">Arrange a visit</a>
+                    <a href="{{ route('broodcocks.pedigree', $bird) }}" wire:navigate class="d-btn d-btn-ghost">Family Tree</a>
                 @endif
             </div>
         </div>
@@ -157,7 +157,7 @@
 
     {{-- Deceased: stated once, plainly. The cause is internal. --}}
     @if ($bird->isDeceased() && $bird->mortalityRecord)
-        <div class="mt-10 rounded-[8px] bg-destructive-bg px-5 py-4" role="note">
+        <div class="d-alert d-alert-soft d-alert-error mt-10 flex flex-col items-start gap-0 text-base-content" role="note">
             <p class="text-[15px] font-semibold text-foreground">
                 This bird died on <span class="datum">{{ $bird->mortalityRecord->date_of_death->format('j F Y') }}</span>.
             </p>
@@ -279,32 +279,32 @@
                     </p>
                 </div>
             @else
-                <table class="min-w-full divide-y divide-border">
-                    <thead class="border-b border-border">
+                <table class="d-table">
+                    <thead>
                         <tr>
                             @foreach (['Band Number', 'Name', 'Sex', 'Bloodline', 'Hatched', 'Status'] as $heading)
-                                <th scope="col" class="px-4 py-3 text-left text-[13px] font-semibold text-muted-foreground">
+                                <th scope="col" class="text-[13px] font-semibold text-muted-foreground">
                                     {{ $heading }}
                                 </th>
                             @endforeach
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-border">
+                    <tbody>
                         @foreach ($this->offspring as $child)
                             <tr class="group row-hover">
-                                <td class="px-4 py-3 text-sm font-medium">
-                                    <a href="{{ route('broodcocks.show', $child) }}" wire:navigate class="text-primary hover:underline">
+                                <td class="text-sm font-medium">
+                                    <a href="{{ route('broodcocks.show', $child) }}" wire:navigate class="d-link d-link-hover d-link-primary">
                                         {{ $child->displayBand() }}
                                     </a>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-foreground">{{ $child->name }}</td>
-                                <td class="px-4 py-3 text-sm text-muted-foreground">{{ $child->sex->label() }}</td>
-                                <td class="px-4 py-3 text-sm text-muted-foreground">{{ $child->bloodline ?? 'Not recorded' }}</td>
-                                <td class="px-4 py-3 text-sm text-muted-foreground">
+                                <td class="text-sm text-foreground">{{ $child->name }}</td>
+                                <td class="text-sm text-muted-foreground">{{ $child->sex->label() }}</td>
+                                <td class="text-sm text-muted-foreground">{{ $child->bloodline ?? 'Not recorded' }}</td>
+                                <td class="text-sm text-muted-foreground">
                                     {{ $child->date_hatched?->format('j M Y') ?? 'Not recorded' }}
                                 </td>
-                                <td class="px-4 py-3">
-                                    <span class="badge {{ $child->status->badgeClasses() }}">{{ $child->status->label() }}</span>
+                                <td>
+                                    <span class="d-badge d-badge-soft {{ $child->status->badgeClasses() }}">{{ $child->status->label() }}</span>
                                 </td>
                             </tr>
                         @endforeach
@@ -323,8 +323,8 @@
              is invalid JS, so Escape silently did nothing on this dialog. It needs
              $el. Nothing caught it because a broken key handler throws in the browser,
              not in the test suite. --}}
-        <div class="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 p-4" x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()" role="dialog" aria-modal="true" aria-labelledby="delete-bird-title">
-            <div class="dialog-panel elev-3 w-full max-w-md rounded-[12px] bg-card p-6">
+        <div class="d-modal d-modal-open" x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.d-btn-outline')?.click()" role="dialog" aria-modal="true" aria-labelledby="delete-bird-title">
+            <div class="d-modal-box elev-3 w-full max-w-md">
                 <h2 id="delete-bird-title" class="font-display text-[22px] font-semibold tracking-[-0.015em] text-foreground">Delete {{ $bird->name }}?</h2>
                 <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
                     This will remove <strong>{{ $bird->name }} ({{ $bird->displayBand() }})</strong>
@@ -332,11 +332,11 @@
                     and the deletion is recorded in the activity log, so this can be undone by
                     the system administrator.
                 </p>
-                <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                    <button type="button" wire:click="$set('confirmingDeletion', false)" class="btn-secondary">
+                <div class="d-modal-action flex-col-reverse gap-3 sm:flex-row">
+                    <button type="button" wire:click="$set('confirmingDeletion', false)" class="d-btn d-btn-outline">
                         Cancel
                     </button>
-                    <button type="button" wire:click="delete" class="btn-danger" wire:loading.attr="disabled">
+                    <button type="button" wire:click="delete" class="d-btn d-btn-error" wire:loading.attr="disabled">
                         Yes, delete this bird
                     </button>
                 </div>

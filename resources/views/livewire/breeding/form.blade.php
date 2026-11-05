@@ -14,7 +14,7 @@
 --}}
 <div>
     <a href="{{ route('breeding.index') }}" wire:navigate
-       class="inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-primary hover:underline hover:underline-offset-4">
+       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold underline-offset-4">
         <span aria-hidden="true">&larr;</span> Back to breeding records
     </a>
 
@@ -56,20 +56,20 @@
                                  belonging to the choice above. --}}
                             <div class="mt-4 space-y-4 border-l-2 border-border pl-4">
                                 <div>
-                                    <label for="sire_external_name" class="label">Name of the outside cock</label>
+                                    <label for="sire_external_name" class="d-fieldset-legend">Name of the outside cock</label>
                                     <input id="sire_external_name" type="text" wire:model.blur="sire_external_name"
                                            @error('sire_external_name') aria-invalid="true" aria-describedby="sire_external_name-error" @enderror
-                                           class="input mt-1 @error('sire_external_name') input-error @enderror">
-                                    @error('sire_external_name') <p id="sire_external_name-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                           class="d-input w-full mt-1 @error('sire_external_name') d-input-error @enderror">
+                                    @error('sire_external_name') <p id="sire_external_name-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
 
                                 <div>
-                                    <label for="sire_external_bloodline" class="label">Bloodline</label>
+                                    <label for="sire_external_bloodline" class="d-fieldset-legend">Bloodline</label>
                                     <input id="sire_external_bloodline" type="text" wire:model.blur="sire_external_bloodline"
                                            aria-describedby="sire_external_bloodline-help @error('sire_external_bloodline') sire_external_bloodline-error @enderror"
-                                           class="input mt-1 @error('sire_external_bloodline') input-error @enderror">
-                                    <p id="sire_external_bloodline-help" class="help">Optional. Recorded so the bird carries its bloodline tag.</p>
-                                    @error('sire_external_bloodline') <p id="sire_external_bloodline-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                           class="d-input w-full mt-1 @error('sire_external_bloodline') d-input-error @enderror">
+                                    <p id="sire_external_bloodline-help" class="d-label mt-1">Optional. Recorded so the bird carries its bloodline tag.</p>
+                                    @error('sire_external_bloodline') <p id="sire_external_bloodline-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
                             </div>
                         @endif
@@ -91,31 +91,31 @@
                         @if ($dam_is_external)
                             <div class="mt-4 space-y-4 border-l-2 border-border pl-4">
                                 <div>
-                                    <label for="dam_external_name" class="label">Name of the outside hen</label>
+                                    <label for="dam_external_name" class="d-fieldset-legend">Name of the outside hen</label>
                                     <input id="dam_external_name" type="text" wire:model.blur="dam_external_name"
                                            @error('dam_external_name') aria-invalid="true" aria-describedby="dam_external_name-error" @enderror
-                                           class="input mt-1 @error('dam_external_name') input-error @enderror">
-                                    @error('dam_external_name') <p id="dam_external_name-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                           class="d-input w-full mt-1 @error('dam_external_name') d-input-error @enderror">
+                                    @error('dam_external_name') <p id="dam_external_name-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
 
                                 <div>
-                                    <label for="dam_external_bloodline" class="label">Bloodline</label>
+                                    <label for="dam_external_bloodline" class="d-fieldset-legend">Bloodline</label>
                                     <input id="dam_external_bloodline" type="text" wire:model.blur="dam_external_bloodline"
                                            aria-describedby="dam_external_bloodline-help @error('dam_external_bloodline') dam_external_bloodline-error @enderror"
-                                           class="input mt-1 @error('dam_external_bloodline') input-error @enderror">
-                                    <p id="dam_external_bloodline-help" class="help">Optional. Recorded so the bird carries its bloodline tag.</p>
-                                    @error('dam_external_bloodline') <p id="dam_external_bloodline-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                           class="d-input w-full mt-1 @error('dam_external_bloodline') d-input-error @enderror">
+                                    <p id="dam_external_bloodline-help" class="d-label mt-1">Optional. Recorded so the bird carries its bloodline tag.</p>
+                                    @error('dam_external_bloodline') <p id="dam_external_bloodline-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
                             </div>
                         @endif
                     </div>
 
                     <div>
-                        <label for="mating_date" class="label">Mating Date <span class="text-destructive">*</span></label>
+                        <label for="mating_date" class="d-fieldset-legend">Mating Date <span class="text-destructive">*</span></label>
                         <input id="mating_date" type="date" wire:model.blur="mating_date" max="{{ today()->toDateString() }}"
                                @error('mating_date') aria-invalid="true" aria-describedby="mating_date-error" @enderror
-                               class="input datum mt-1 sm:max-w-[16rem] @error('mating_date') input-error @enderror">
-                        @error('mating_date') <p id="mating_date-error" class="error" role="alert">{{ $message }}</p> @enderror
+                               class="d-input w-full datum mt-1 sm:max-w-[16rem] @error('mating_date') d-input-error @enderror">
+                        @error('mating_date') <p id="mating_date-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </section>
@@ -142,14 +142,14 @@
                         ['offspring_count', 'Offspring Registered', 'Leave at 0 — you can add the chicks as bird records afterwards.'],
                     ] as [$field, $label, $help])
                         <div>
-                            <label for="{{ $field }}" class="label">{{ $label }}</label>
+                            <label for="{{ $field }}" class="d-fieldset-legend">{{ $label }}</label>
                             <input id="{{ $field }}" type="number" min="0" inputmode="numeric"
                                    wire:model.live.debounce.400ms="{{ $field }}"
                                    aria-describedby="{{ $field }}-help @error($field) {{ $field }}-error @enderror"
                                    @error($field) aria-invalid="true" @enderror
-                                   class="input datum mt-1 sm:max-w-[12rem] @error($field) input-error @enderror">
-                            <p id="{{ $field }}-help" class="help">{{ $help }}</p>
-                            @error($field) <p id="{{ $field }}-error" class="error" role="alert">{{ $message }}</p> @enderror
+                                   class="d-input w-full datum mt-1 sm:max-w-[12rem] @error($field) d-input-error @enderror">
+                            <p id="{{ $field }}-help" class="d-label mt-1">{{ $help }}</p>
+                            @error($field) <p id="{{ $field }}-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                         </div>
                     @endforeach
                 </div>
@@ -177,20 +177,20 @@
                  Notes
             ------------------------------------------------------- --}}
             <div class="border-t border-border pt-6">
-                <label for="notes" class="label">Notes</label>
+                <label for="notes" class="d-fieldset-legend">Notes</label>
                 <textarea id="notes" rows="4" wire:model.blur="notes"
                           @error('notes') aria-invalid="true" aria-describedby="notes-error" @enderror
-                          class="input mt-1 @error('notes') input-error @enderror"></textarea>
-                @error('notes') <p id="notes-error" class="error" role="alert">{{ $message }}</p> @enderror
+                          class="d-textarea w-full mt-1 @error('notes') d-textarea-error @enderror"></textarea>
+                @error('notes') <p id="notes-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
             </div>
         </div>
 
         {{-- The Save bar stays in reach at the bottom of the screen, so a
              keeper on a phone never scrolls back up to find it. --}}
         <div class="sticky bottom-0 z-10 -mx-4 flex justify-end gap-3 border-t border-border bg-background/95 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-            <a href="{{ route('breeding.index') }}" wire:navigate class="btn-secondary">Cancel</a>
-            <button type="submit" class="btn-primary" wire:loading.attr="disabled" wire:target="save">
-                <span class="btn-spinner" wire:loading wire:target="save"></span>
+            <a href="{{ route('breeding.index') }}" wire:navigate class="d-btn d-btn-outline">Cancel</a>
+            <button type="submit" class="d-btn d-btn-primary" wire:loading.attr="disabled" wire:target="save">
+                <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="save"></span>
                 <span wire:loading.remove wire:target="save">{{ $editing ? 'Save Changes' : 'Save Breeding Record' }}</span>
                 <span wire:loading wire:target="save">Saving&hellip;</span>
             </button>

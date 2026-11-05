@@ -37,7 +37,7 @@
 
         @can('create', App\Models\PerformanceRecord::class)
             <x-slot:actions>
-                <a href="{{ route('performance.create') }}" wire:navigate class="btn-primary">
+                <a href="{{ route('performance.create') }}" wire:navigate class="d-btn d-btn-primary">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                     </svg>
@@ -50,10 +50,10 @@
     {{-- Livewire re-renders only this component, so the confirmation of a
          delete lives here rather than in the layout's session flash. --}}
     @if ($statusMessage !== '')
-        <div class="mt-6 flex items-start justify-between gap-4 rounded-[8px] bg-success-bg px-4 py-3" role="status">
+        <div class="d-alert d-alert-soft d-alert-success mt-6 flex items-start justify-between gap-4 text-base-content" role="status">
             <p class="text-[15px] leading-snug text-foreground">{{ $statusMessage }}</p>
             <button type="button" wire:click="dismissStatus"
-                    class="-my-2 inline-flex min-h-11 shrink-0 items-center px-1 text-[14px] font-medium text-foreground underline-offset-4 hover:underline">
+                    class="d-link d-link-hover -my-2 inline-flex min-h-11 shrink-0 items-center px-1 text-[14px] font-medium text-foreground underline-offset-4">
                 Dismiss
             </button>
         </div>
@@ -71,7 +71,7 @@
         <x-slot:search>
             <label for="search" class="sr-only">Search by Bird</label>
             <input id="search" type="search" wire:model.live.debounce.300ms="search"
-                   placeholder="Bird name, band number, breed or bloodline" class="input">
+                   placeholder="Bird name, band number, breed or bloodline" class="d-input w-full">
         </x-slot:search>
 
         <x-filter-select id="result" label="Result" wire:model.live="result">
@@ -84,13 +84,13 @@
         {{-- The two dates are one control in two halves, so they stay together
              on a wrap and read as a range rather than two unrelated fields. --}}
         <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="from" class="label mb-0 shrink-0">From Date</label>
-            <input id="from" type="date" wire:model.live="from" class="input datum w-full sm:w-auto">
+            <label for="from" class="d-fieldset-legend mb-0 shrink-0 py-0">From Date</label>
+            <input id="from" type="date" wire:model.live="from" class="d-input datum w-full sm:w-auto">
         </div>
 
         <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="to" class="label mb-0 shrink-0">To Date</label>
-            <input id="to" type="date" wire:model.live="to" class="input datum w-full sm:w-auto">
+            <label for="to" class="d-fieldset-legend mb-0 shrink-0 py-0">To Date</label>
+            <input id="to" type="date" wire:model.live="to" class="d-input datum w-full sm:w-auto">
         </div>
 
         <x-slot:loading>
@@ -103,14 +103,14 @@
             <x-empty-state title="No records match your filters"
                            description="Try a different date range, or clear the filters to see everything."
                            icon="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z">
-                <button type="button" wire:click="clearFilters" class="btn-secondary">Clear filters</button>
+                <button type="button" wire:click="clearFilters" class="d-btn d-btn-outline">Clear filters</button>
             </x-empty-state>
         @else
             <x-empty-state title="No performance records yet"
                            description="Record a sparring session, derby, conditioning session or weigh-in and it will appear here and on the bird's own timeline."
                            icon="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z">
                 @can('create', App\Models\PerformanceRecord::class)
-                    <a href="{{ route('performance.create') }}" wire:navigate class="btn-primary">
+                    <a href="{{ route('performance.create') }}" wire:navigate class="d-btn d-btn-primary">
                         Add your first performance record
                     </a>
                 @endcan
@@ -141,9 +141,9 @@
                     </div>
 
                     <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-2 text-[14px] text-muted-foreground">
-                        <span class="badge {{ $record->event_type->badgeClasses() }}">{{ $record->event_type->label() }}</span>
+                        <span class="d-badge d-badge-soft {{ $record->event_type->badgeClasses() }}">{{ $record->event_type->label() }}</span>
                         @if ($record->result->countsTowardRecord())
-                            <span class="badge {{ $record->result->badgeClasses() }}">{{ $record->result->label() }}</span>
+                            <span class="d-badge d-badge-soft {{ $record->result->badgeClasses() }}">{{ $record->result->label() }}</span>
                         @endif
                         <span @class(['datum' => $record->weight !== null])>{{ $record->weight !== null ? $record->weight.' kg' : 'Not recorded' }}</span>
                         <span aria-hidden="true">&middot;</span>
@@ -156,13 +156,13 @@
                         <div class="mt-2 flex flex-wrap items-center gap-x-6">
                             @can('update', $record)
                                 <a href="{{ route('performance.edit', $record) }}" wire:navigate
-                                   class="inline-flex min-h-11 items-center text-[15px] font-medium text-primary hover:underline">
+                                   class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center text-[15px] font-medium">
                                     Edit<span class="sr-only">, {{ $record->event_type->label() }} record</span>
                                 </a>
                             @endcan
                             @can('delete', $record)
                                 <button type="button" wire:click="confirmDelete({{ $record->id }})"
-                                        class="inline-flex min-h-11 items-center text-[15px] font-medium text-destructive hover:underline">
+                                        class="d-link d-link-hover d-link-error inline-flex min-h-11 items-center text-[15px] font-medium">
                                     Delete<span class="sr-only">, {{ $record->event_type->label() }} record</span>
                                 </button>
                             @endcan
@@ -175,9 +175,9 @@
         {{-- Wider screens: the ledger. No horizontal scroll wrapper - that would
              make its own scroll box and stop the header sticking - so the
              least load-bearing columns drop out below xl and 2xl instead. --}}
-        <table class="hidden w-full md:table">
+        <table class="d-table hidden w-full md:table [&_td]:border-border [&_th]:border-border">
             <thead>
-                <tr class="border-b border-border">
+                <tr>
                     @foreach ($columns as $column)
                         @php
                             $isSorted = $column['sort'] !== null && $sortBy === $column['sort'];
@@ -217,7 +217,7 @@
                 </tr>
             </thead>
 
-            <tbody class="divide-y divide-border" wire:loading.remove wire:target="{{ $loadingTargets }}">
+            <tbody wire:loading.remove wire:target="{{ $loadingTargets }}">
                 @foreach ($records as $record)
                     <tr wire:key="perf-tr-{{ $record->id }}" class="hover:bg-muted/60">
                         <td class="whitespace-nowrap px-3 py-2 text-[15px] font-medium text-foreground">
@@ -238,10 +238,10 @@
                             {{ $record->event_date->format('d M Y') }}
                         </td>
                         <td class="whitespace-nowrap px-3 py-2">
-                            <span class="badge {{ $record->event_type->badgeClasses() }}">{{ $record->event_type->label() }}</span>
+                            <span class="d-badge d-badge-soft {{ $record->event_type->badgeClasses() }}">{{ $record->event_type->label() }}</span>
                         </td>
                         <td class="whitespace-nowrap px-3 py-2">
-                            <span class="badge {{ $record->result->badgeClasses() }}">{{ $record->result->label() }}</span>
+                            <span class="d-badge d-badge-soft {{ $record->result->badgeClasses() }}">{{ $record->result->label() }}</span>
                         </td>
                         <td @class([
                             'whitespace-nowrap px-3 py-2 text-right text-[15px]',
@@ -286,13 +286,13 @@
                             <div class="flex items-center justify-end gap-5">
                                 @can('update', $record)
                                     <a href="{{ route('performance.edit', $record) }}" wire:navigate
-                                       class="inline-flex min-h-11 items-center text-[15px] font-medium text-primary hover:underline">
+                                       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center text-[15px] font-medium">
                                         Edit<span class="sr-only">, {{ $record->event_type->label() }} record</span>
                                     </a>
                                 @endcan
                                 @can('delete', $record)
                                     <button type="button" wire:click="confirmDelete({{ $record->id }})"
-                                            class="inline-flex min-h-11 items-center text-[15px] font-medium text-destructive hover:underline">
+                                            class="d-link d-link-hover d-link-error inline-flex min-h-11 items-center text-[15px] font-medium">
                                         Delete<span class="sr-only">, {{ $record->event_type->label() }} record</span>
                                     </button>
                                 @endcan
@@ -314,10 +314,10 @@
          event and the date - so nobody deletes the wrong one by muscle memory. --}}
     @if ($this->recordPendingDeletion !== null)
         @php($pending = $this->recordPendingDeletion)
-        <div class="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 p-4"
-             x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()"
+        <div class="d-modal d-modal-open"
+             x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.d-btn-outline')?.click()"
              role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title" aria-describedby="delete-dialog-body">
-            <div class="dialog-panel elev-3 w-full max-w-md rounded-[12px] bg-card p-6">
+            <div class="d-modal-box elev-3 max-w-md">
                 <h2 id="delete-dialog-title" class="font-display text-[22px] font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
                     Delete the {{ $pending->event_type->label() }} record for {{ $pending->broodcock?->displayName() ?? 'this bird' }}?
                 </h2>
@@ -332,10 +332,10 @@
                     </p>
                 </div>
 
-                <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                    <button type="button" wire:click="cancelDelete" class="btn-secondary">Cancel</button>
-                    <button type="button" wire:click="delete" class="btn-danger" wire:loading.attr="disabled" wire:target="delete">
-                        <span class="btn-spinner" wire:loading wire:target="delete"></span>
+                <div class="d-modal-action flex-col-reverse gap-3 sm:flex-row">
+                    <button type="button" wire:click="cancelDelete" class="d-btn d-btn-outline">Cancel</button>
+                    <button type="button" wire:click="delete" class="d-btn d-btn-error" wire:loading.attr="disabled" wire:target="delete">
+                        <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="delete"></span>
                         Yes, delete this record
                     </button>
                 </div>

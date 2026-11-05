@@ -24,10 +24,10 @@
     skeleton does not reshuffle on every keystroke - which is its own kind of
     flicker.
 
-    .skeleton itself was already in app.css and used by nothing but the design
-    gallery. Its own comment says "skeletons match real layout, so the page does
-    not reflow when data lands", which is exactly the promise this keeps by
-    taking the column count from the caller.
+    The bars are daisyUI's d-skeleton. The rule this keeps is the one app.css
+    stated for skeletons from the start - "skeletons match real layout, so the
+    page does not reflow when data lands" - by taking the column count from the
+    caller.
 
     NOTHING IS ANNOUNCED FROM HERE. The obvious move is an sr-only "Loading" in
     a live region, but a <caption> is only valid as a table's FIRST child and
@@ -47,7 +47,7 @@
         <tr class="border-t border-border">
             @for ($col = 0; $col < $cols; $col++)
                 <td class="px-4 py-4">
-                    <div class="skeleton h-3 {{ $widths[($row + $col) % count($widths)] }}"></div>
+                    <div class="d-skeleton h-3 {{ $widths[($row + $col) % count($widths)] }}"></div>
                 </td>
             @endfor
         </tr>

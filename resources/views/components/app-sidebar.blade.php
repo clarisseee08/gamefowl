@@ -16,7 +16,7 @@
         'Manage' => [
             ['label' => 'Dashboard',   'route' => 'dashboard',         'internal' => true,
              'icon' => 'M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 6A2.25 2.25 0 0 1 15.75 3.75H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z'],
-            ['label' => 'Broodcocks',  'route' => 'broodcocks.index',  'internal' => true,
+            ['label' => 'Gamefowl',    'route' => 'broodcocks.index',  'internal' => true,
              'icon' => 'M7.5 20.5v-5.2a5.2 5.2 0 0 1 5.2-5.2M9.4 8.6c.4-1.3 1.5-1.4 2-.3.4-1.3 1.6-1.4 2.1-.3.4-1.1 1.5-1.1 1.9.1M12.7 10.1a4.6 4.6 0 0 1 4.2 2.6l3.4 1-3.4 1.2M14.6 16.4a1.5 1.5 0 0 1-1.4 1.9M14.9 12.2h.01'],
             ['label' => 'Catalogue',   'route' => 'catalog.index',     'internal' => false,
              'icon' => 'M2.25 15.75l5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M18 10.5h.008v.008H18V10.5Zm2.25 6.75V6.75A2.25 2.25 0 0 0 18 4.5H6a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 6 19.5h12a2.25 2.25 0 0 0 2.25-2.25Z'],
@@ -151,27 +151,38 @@
 
     {{-- The nav scrolls between the two pinned blocks, so a long list never
          pushes the account menu off the bottom of the viewport. --}}
+    {{-- d-menu with its active pair pointed back at the card ground and ink:
+         daisyUI's default active fill is the neutral (solid ink), which on a
+         --muted rail reads as a selected button rather than "you are here". --}}
     <nav class="scroll-slim min-h-0 flex-1 overflow-y-auto px-2 py-2">
-        @foreach ($visible as $groupName => $items)
-            <p class="nav-section" x-show="! collapsed" x-cloak>{{ $groupName }}</p>
-            @if (! $loop->first)
-                <div class="my-2" style="border-top: 1px solid var(--color-border)" x-show="collapsed" x-cloak></div>
-            @endif
+        <ul class="d-menu w-full p-0 [--d-menu-active-bg:var(--color-card)] [--d-menu-active-fg:var(--color-foreground)]">
+            @foreach ($visible as $groupName => $items)
+                <li class="d-menu-title px-3 pb-1 pt-5 text-[13px] text-muted-foreground" x-show="! collapsed" x-cloak>{{ $groupName }}</li>
+                @if (! $loop->first)
+                    <li class="mx-0 my-2 h-px bg-border opacity-100" x-show="collapsed" x-cloak aria-hidden="true"></li>
+                @endif
 
-            @foreach ($items as $item)
-                <a href="{{ route($item['route']) }}" wire:navigate
-                   @class(['nav-item mb-0.5', 'nav-item-active' => $isActive($item['route'])])
-                   :class="collapsed ? 'justify-center px-0' : ''"
-                   title="{{ $item['label'] }}"
-                   @if ($isActive($item['route'])) aria-current="page" @endif>
-                    <svg class="h-[18px] w-[18px] shrink-0" fill="none" stroke="currentColor"
-                         stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}"/>
-                    </svg>
-                    <span x-show="! collapsed" x-cloak class="truncate">{{ $item['label'] }}</span>
-                </a>
+                @foreach ($items as $item)
+                    <li class="mb-0.5">
+                        <a href="{{ route($item['route']) }}" wire:navigate
+                           @class([
+                               'relative min-h-11 gap-3 text-[15px] font-medium',
+                               'd-menu-active before:absolute before:left-0 before:top-1/2 before:h-5 before:w-[3px] before:-translate-y-1/2 before:rounded-full before:bg-primary' => $isActive($item['route']),
+                               'text-muted-foreground hover:text-foreground' => ! $isActive($item['route']),
+                           ])
+                           :class="collapsed ? 'justify-center px-0' : ''"
+                           title="{{ $item['label'] }}"
+                           @if ($isActive($item['route'])) aria-current="page" @endif>
+                            <svg class="h-[18px] w-[18px] shrink-0" fill="none" stroke="currentColor"
+                                 stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}"/>
+                            </svg>
+                            <span x-show="! collapsed" x-cloak class="truncate">{{ $item['label'] }}</span>
+                        </a>
+                    </li>
+                @endforeach
             @endforeach
-        @endforeach
+        </ul>
     </nav>
 
     {{-- Pinned bottom: who you are and how to leave. --}}

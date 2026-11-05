@@ -23,7 +23,9 @@
 
     THE FIELD NAME SITS INSIDE THE BORDER. The label and the control share one
     bordered group, so the pair reads as a single object rather than two stacked
-    elements, and the bar is one row high instead of two.
+    elements, and the bar is one row high instead of two. The group is a
+    daisyUI d-input with a d-label prefix - daisyUI's own shape for a field with
+    a leading label - and the open list is a d-menu.
 
     ACCESSIBILITY is the listbox pattern rather than a hidden native control: a
     combobox button announcing its expanded state, a listbox of options with
@@ -116,10 +118,12 @@
         {{ $slot }}
     </select>
 
-    <div class="flex min-h-11 w-full items-center rounded-[var(--radius-sm)] border border-input bg-card
-                focus-within:border-primary sm:w-auto">
+    {{-- d-input rather than d-select: d-select paints its own chevron, and
+         this one has to rotate. The d-label as first child is what gives the
+         prefix its divider. --}}
+    <div class="d-input w-full cursor-pointer gap-0 sm:w-auto">
         <span id="{{ $id }}-label"
-              class="shrink-0 whitespace-nowrap border-r border-input py-2.5 pl-3 pr-3 text-[13px] font-medium text-muted-foreground">
+              class="d-label shrink-0 text-[13px] font-medium">
             {{ $label }}
         </span>
 
@@ -139,8 +143,8 @@
                 x-on:keydown.space.prevent="open ? choose(active) : (open = true)"
                 x-on:keydown.escape.stop="open = false"
                 x-on:keydown="if ($event.key.length === 1 && /\S/.test($event.key)) search($event.key)"
-                class="flex min-h-11 w-full items-center justify-between gap-2 rounded-r-[var(--radius-sm)]
-                       py-2.5 pl-3 pr-3 text-left text-[16px] text-foreground focus:outline-none">
+                class="flex h-full w-full min-w-0 cursor-pointer items-center justify-between gap-2 text-left
+                       text-[16px] text-base-content focus:outline-none">
             <span id="{{ $id }}-value" class="truncate" x-text="label"></span>
 
             {{-- Rotating the chevron is a transform, which is composited. --}}
@@ -156,7 +160,14 @@
     {{-- The list. Motion is the whitelist's dropdown row: opacity plus a 4px
          rise at --dur-base, leaving one step faster. No zoom - scale is
          reserved for the tooltip and the modal panel, and a menu that zooms
-         reads as a dialog. --}}
+         reads as a dialog.
+
+         It is a d-menu, held to a listbox: w-auto undoes d-menu's fit-content
+         so the absolute left/right still stretch it, and flex-nowrap stops a
+         long list wrapping into a second column at max-h-72. Each option's
+         visible row is the element INSIDE the <li>, because that is what
+         d-menu styles; the <li> keeps the role, the id the active descendant
+         points at, and the handlers. --}}
     <ul x-show="open"
         x-cloak
         x-ref="list"
@@ -169,27 +180,29 @@
         x-transition:leave="transition-[opacity,transform] ease-in duration-150"
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-1"
-        class="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-72 overflow-y-auto rounded-[var(--radius-md)]
-               border border-border bg-popover p-1 sm:left-auto sm:right-0 sm:min-w-full"
-        style="box-shadow: var(--shadow-e2)">
+        class="d-menu absolute left-0 right-0 top-full z-50 mt-1.5 max-h-72 w-auto flex-nowrap overflow-y-auto
+               rounded-box border border-base-300 bg-base-100 p-1 text-[15px] elev-2
+               sm:left-auto sm:right-0 sm:min-w-full">
         <template x-for="option in options" x-bind:key="option.index">
             <li x-bind:id="'{{ $id }}-opt-' + option.index"
                 role="option"
                 x-bind:aria-selected="option.index === selected ? 'true' : 'false'"
                 x-on:click="choose(option.index)"
                 x-on:mouseenter="active = option.index"
-                {{-- bg-muted, NOT bg-accent. shadcn's accent is a neutral; this
-                     project's --color-accent is a strong orange, and colour
-                     here means bloodline and nothing else. --}}
-                x-bind:class="option.index === active ? 'bg-muted' : ''"
-                class="flex min-h-11 cursor-pointer items-center justify-between gap-2 rounded-[var(--radius-sm)]
-                       px-2.5 text-[15px] text-foreground">
-                <span class="truncate" x-text="option.label"></span>
-                <svg x-show="option.index === selected" x-cloak
-                     class="h-4 w-4 shrink-0 text-primary" fill="none" stroke="currentColor"
-                     stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
-                </svg>
+                class="cursor-pointer">
+                {{-- d-menu-focus, NOT bg-accent: d-menu's own neutral tint,
+                     the same one a hovered row gets. shadcn's accent is a
+                     neutral; this project's --color-accent is a brand green,
+                     and colour here means bloodline and nothing else. --}}
+                <div x-bind:class="option.index === active ? 'd-menu-focus' : ''"
+                     class="flex min-h-11 items-center justify-between gap-2 px-2.5 text-[15px]">
+                    <span class="truncate" x-text="option.label"></span>
+                    <svg x-show="option.index === selected" x-cloak
+                         class="h-4 w-4 shrink-0 text-primary" fill="none" stroke="currentColor"
+                         stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+                    </svg>
+                </div>
             </li>
         </template>
     </ul>

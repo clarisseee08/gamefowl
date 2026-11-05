@@ -25,6 +25,29 @@
 @source '../js/**/*.js';
 @source '../../app/**/*.php';
 
+/* daisyUI - component classes on top of the GFMS tokens, never instead of them.
+
+   PREFIXED `d-`. daisyUI's own names (.btn-primary, .input, .badge, .alert,
+   .menu) are the exact class vocabulary this stylesheet already owns and five
+   PHP enums depend on. Unprefixed, every existing button and input would pick
+   up daisyUI's styling on top of its own. So a daisyUI button is `d-btn`.
+
+   NO BUILT-IN THEMES. daisyUI's light/dark themes select on
+   [data-theme=light|dark] - the same attribute the theme toggle already sets -
+   and would replace --color-primary with daisyUI's purple. Instead its colour
+   names are pointed at the GFMS tokens below, so the palette stays defined
+   once, in config/gfms-brand.php.
+
+   THREE BASE MODULES EXCLUDED. rootcolor would paint the page base-100 (card
+   white) over --color-background; scrollbar would override .scroll-slim;
+   rootscrollgutter draws a linear-gradient, and there are no gradients. */
+@plugin 'daisyui' {
+    themes: false;
+    prefix: d-;
+    exclude: rootcolor, scrollbar, rootscrollgutter;
+    logs: false;
+}
+
 /*
  * ---------------------------------------------------------------------------
  * GFMS — "Registry, running as software"
@@ -64,23 +87,25 @@
        face now: see the note at the top of this file. */
     --font-mono: 'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-    /* Surfaces — tinted neutrals. Never pure white for the page, never pure
-       black for text: a #FFF page under a #FFF card leaves no elevation to
-       work with, which is what made the previous direction read as paper. */
-    --color-background: #f7f6f3;
+    /* Surfaces — tinted with the forest palette's lightest step. Never pure
+       white for the page, never pure black for text: a #FFF page under a #FFF
+       card leaves no elevation to work with. The page is a lighter cut of the
+       celery #e3eed4 so primary links hold 7:1 on it; the celery itself is
+       muted - the sidebar, wells and table headers. */
+    --color-background: #f1f6ea;
     --color-card: #ffffff;
-    --color-muted: #efece7;
+    --color-muted: #e3eed4;
     --color-popover: #ffffff;
-    --color-border: #e2ded7;
-    --color-input: #d6d1c9;
+    --color-border: #d3e0c6;
+    --color-input: #aec3b0;
 
-    --color-foreground: #1c1a17;
-    --color-muted-foreground: #4f4b46;   /* 7.9:1 on background, 7.4:1 on muted - the Console 7:1 floor */
-    --color-card-foreground: #1c1a17;
-    --color-popover-foreground: #1c1a17;
+    --color-foreground: #0f2a1d;
+    --color-muted-foreground: #34503a;   /* 8.1:1 on background, 7.4:1 on muted - the Console 7:1 floor */
+    --color-card-foreground: #0f2a1d;
+    --color-popover-foreground: #0f2a1d;
 
     /* ------------------------------------------------------------------
-       THE INK RAMP. Neutrals only - no hue is introduced here.
+       THE INK RAMP. Green-tinted neutrals, drawn from the forest palette.
 
        Every step is a value this stylesheet already held, given a position on
        a scale so that a surface, a rule and a caption stop being three
@@ -89,71 +114,70 @@
        exists for the in-between steps that had no name at all.
 
        50/100 = the two paper grounds. 200/300 = rule and input border.
-       400 = the strong rule. 700 = muted-foreground, measured at 7.40:1 and
+       400 = the strong rule. 700 = muted-foreground, measured at 7.41:1 and
        therefore the LIGHTEST text the console surface may use. 900 = ink.
 
        500 and 600 are mid-greys: legal on a caption over paper, never on the
        console's 7:1 floor. ------------------------------------------------ */
-    --color-ink-50: #faf9f7;
-    --color-ink-100: #efece7;
-    --color-ink-200: #e2ded7;
-    --color-ink-300: #d6d1c9;
-    --color-ink-400: #c2bcb3;
-    --color-ink-500: #9a948c;
-    --color-ink-600: #6e6963;
-    --color-ink-700: #4f4b46;
-    --color-ink-800: #312e2a;
-    --color-ink-900: #1c1a17;
-    --color-ink-950: #100f0d;
+    --color-ink-50: #f7faf3;
+    --color-ink-100: #e3eed4;
+    --color-ink-200: #d3e0c6;
+    --color-ink-300: #aec3b0;
+    --color-ink-400: #95ad98;
+    --color-ink-500: #7a9480;
+    --color-ink-600: #5b7462;
+    --color-ink-700: #34503a;
+    --color-ink-800: #1f3a2a;
+    --color-ink-900: #0f2a1d;
+    --color-ink-950: #08170f;
 
-    /* Primary — the farm's deep red, as a full scale rather than a single
-       accent. THE INTERACTIVE COLOUR: buttons, links, active nav, focus rings.
-       Red carries this role rather than the green because it measures 8.74:1 on
-       card against the green's 6.07:1, and link text must clear the Console
-       7:1 floor.
+    /* Primary — pine #375534, as a full scale rather than a single accent.
+       THE INTERACTIVE COLOUR: buttons, links, active nav, focus rings. 8.36:1
+       on card and 7.61:1 on the page, so link text clears the Console 7:1
+       floor.
 
-       Completed to a full 50-950 ramp. Same hue throughout - these are tints
-       and shades of the existing #8b2626, not new colours. 500 is an explicit
-       alias for the base so a call site can say primary-500 and mean it. */
-    --color-primary-50: #faf0ef;
-    --color-primary-100: #f1dad8;
-    --color-primary-200: #e0b4b0;
-    --color-primary-300: #cd7b76;
-    --color-primary-400: #b5453f;
-    --color-primary: #8b2626;
-    --color-primary-500: #8b2626;
-    --color-primary-600: #74201f;
-    --color-primary-700: #5c1a19;
-    --color-primary-800: #471414;
-    --color-primary-900: #331010;
-    --color-primary-950: #1e0909;
+       The five palette steps sit at 100/200/400/500/900; the rest fill the
+       gaps between them. 500 is an explicit alias for the base so a call site
+       can say primary-500 and mean it. */
+    --color-primary-50: #eef4e6;
+    --color-primary-100: #e3eed4;
+    --color-primary-200: #aec3b0;
+    --color-primary-300: #8daa91;
+    --color-primary-400: #6b9071;
+    --color-primary: #375534;
+    --color-primary-500: #375534;
+    --color-primary-600: #2c4a2d;
+    --color-primary-700: #1f3d25;
+    --color-primary-800: #173322;
+    --color-primary-900: #0f2a1d;
+    --color-primary-950: #081a11;
     --color-primary-foreground: #ffffff;
 
-    /* Brand — the farm's green. CHROME ONLY: sidebar, mark, top rail, auth
+    /* Brand — the forest green. CHROME ONLY: sidebar, mark, top rail, auth
        panel, PDF. Never a button, link or status pill; DesignSystemGuardTest
        enforces that separation. */
-    --color-brand: #486c2f;              /*  6.07:1 on card - chrome, not text */
-    --color-brand-deep: #243619;
-    --color-brand-deeper: #1a2711;
-    --color-brand-foreground: #edf3ea;   /* 11.51:1 on brand-deep */
-    --color-brand-muted-fg: #bfcfbb;     /*  7.95:1 on brand-deep */
+    --color-brand: #375534;
+    --color-brand-deep: #0f2a1d;
+    --color-brand-deeper: #0a1e14;
+    --color-brand-foreground: #e3eed4;   /* 12.74:1 on brand-deep */
+    --color-brand-muted-fg: #aec3b0;     /*  8.20:1 on brand-deep */
 
     /* Semantic — full pairs. The tinted grounds are the point; this is where
        "one accent only" is deliberately abandoned. */
     --color-success: #1f7a4d;
     --color-success-bg: #e8f4ee;
     --color-warning: #755006;            /* 5.66:1 on the cream ground */
-    --color-warning-bg: #f1e5a1;         /* the farm cream */
-    --color-destructive: #d32f2f;        /* 1.76:1 from primary, so Delete != Save */
+    --color-warning-bg: #f1e5a1;         /* the cream - status, not brand */
+    --color-destructive: #d32f2f;        /* red against green primary, so Delete != Save */
     --color-destructive-bg: #fef5f4;
     --color-destructive-foreground: #ffffff;
     --color-info: #3c4a8a;
     --color-info-bg: #eceef8;
 
-    /* Accent — the farm's orange. FILL ONLY: 3.14:1 on white is below the AA
-       floor, so it never carries text. It grounds dark ink at 5.51:1. */
-    --color-accent: #ef6905;
-    --color-accent-foreground: #161c19;
+    /* Accent — mist. FILL ONLY: 1.87:1 on white, so it never carries text.
+       It grounds forest ink at 8.20:1. */
+    --color-accent: #aec3b0;
+    --color-accent-foreground: #0f2a1d;
 
     /* Band palette — the identity. The ONLY chroma that means bloodline.
        Bright on purpose; the tag resolves its own foreground per band because
@@ -172,9 +196,9 @@
     --color-band-fg-dark: #10201b;
 
     /* Print-only rules, mirrored so the guard test sees them. */
-    --color-print-rule: #e4e6e2;
-    --color-print-rule-strong: #c7cbc5;
-    --color-print-zebra: #f7f8f6;
+    --color-print-rule: #dce6d3;
+    --color-print-rule-strong: #aec3b0;
+    --color-print-zebra: #f3f7ee;
 
     --radius-sm: 6px;
     --radius-md: 10px;
@@ -182,9 +206,9 @@
 
     /* Elevation. Three steps, and they mean something: elevation indicates
        interactivity or layering, never decoration. Nothing lifts on its own. */
-    --shadow-e1: 0 1px 2px rgb(22 28 25 / 0.04), 0 1px 3px rgb(22 28 25 / 0.06);
-    --shadow-e2: 0 4px 12px rgb(22 28 25 / 0.08), 0 2px 4px rgb(22 28 25 / 0.04);
-    --shadow-e3: 0 16px 40px rgb(22 28 25 / 0.14);
+    --shadow-e1: 0 1px 2px rgb(15 42 29 / 0.04), 0 1px 3px rgb(15 42 29 / 0.06);
+    --shadow-e2: 0 4px 12px rgb(15 42 29 / 0.08), 0 2px 4px rgb(15 42 29 / 0.04);
+    --shadow-e3: 0 16px 40px rgb(15 42 29 / 0.14);
 
     /* ------------------------------------------------------------------
        MOTION. This is the complete set. Nothing outside it may be used, and
@@ -218,7 +242,7 @@
 }
 
 :root {
-    --ring-color: rgb(139 38 38 / 0.35);          /* primary @ 35% */
+    --ring-color: rgb(55 85 52 / 0.35);           /* primary @ 35% */
     --ring-color-destructive: rgb(211 47 47 / 0.25); /* destructive @ 25% */
 
     /* Legacy aliases. Same reason as the easings above: these resolve to the
@@ -228,6 +252,109 @@
     --t-enter: var(--dur-base);
 }
 
+/* daisyUI's colour names, resolved to GFMS tokens.
+
+   primary, accent, success, warning and info need no line here: daisyUI reads
+   the same custom properties @theme already defines. Everything else is an
+   alias rather than a value, so the dark theme - which re-points the GFMS
+   tokens on :root - re-points these with it, and no hex is written twice.
+
+   The *-content inks for the status fills borrow --color-card: white over the
+   light fills (success 5.3:1, warning 7.2:1, info 8.8:1), and the dark card
+   over the dark theme's light fills.
+
+   size-field is 0.28125rem rather than daisyUI's 0.25rem, so a d-btn or
+   d-input renders 45px tall: the console's 44px touch-target floor. depth and
+   noise are off - no ornamental shading, no grain. */
+:root {
+    --color-base-100: var(--color-card);
+    --color-base-200: var(--color-background);
+    --color-base-300: var(--color-muted);
+    --color-base-content: var(--color-foreground);
+
+    --color-primary-content: var(--color-primary-foreground);
+    --color-secondary: var(--color-primary-700);
+    --color-secondary-content: var(--color-brand-foreground);   /* primary-700 does not re-theme, so neither may its ink */
+    --color-accent-content: var(--color-accent-foreground);
+    --color-neutral: var(--color-foreground);
+    --color-neutral-content: var(--color-background);
+
+    --color-info-content: var(--color-card);
+    --color-success-content: var(--color-card);
+    --color-warning-content: var(--color-card);
+    --color-error: var(--color-destructive);
+    --color-error-content: var(--color-destructive-foreground);
+
+    --radius-selector: var(--radius-sm);
+    --radius-field: var(--radius-sm);
+    --radius-box: var(--radius-md);
+    --size-selector: 0.25rem;
+    --size-field: 0.28125rem;
+    --border: 1px;
+    --depth: 0;
+    --noise: 0;
+}
+
+/* daisyUI held to the console floors.
+
+   Unlayered on purpose: daisyUI sits in a nested layer inside `utilities`, so
+   these win without `!`, and they apply to every instance rather than relying
+   on each view to remember a utility.
+
+   16px fields - below that iOS Safari zooms the page on focus and throws the
+   keeper out of the form. daisyUI's md field is 14px.
+
+   d-label is help text under a field. daisyUI draws it at 60% of currentColor,
+   which on the page measures under the 7:1 console floor; muted-foreground is
+   8.1:1. It also stops it from refusing to wrap a sentence onto two lines. */
+.d-input,
+.d-select,
+.d-textarea,
+.d-file-input {
+    font-size: 16px;
+}
+.d-label {
+    color: var(--color-muted-foreground);
+    white-space: normal;
+}
+
+/* daisyUI draws these parts at 40-60% of the ink. On the console that is
+   under 7:1, and they carry real information: menu group names, stat captions. */
+.d-menu-title,
+.d-stat-title,
+.d-stat-desc {
+    color: var(--color-muted-foreground);
+}
+
+/* d-stat is a grid. In a row of tiles stretched to one height, the default
+   align-content shares the spare height between its rows, so a tile with a
+   shorter caption pushed its figure lower than its neighbour's. Packed to the
+   top, every figure in a row sits on the same line. */
+.d-stat { align-content: start; }
+
+/* A field label reads left to right with its "*" or "(optional)" beside it;
+   daisyUI's legend is space-between, which flings the marker to the far edge. */
+.d-fieldset-legend { justify-content: flex-start; }
+
+/* Rules. d-card-border draws in base-200, which is the page colour, so a card
+   on the page had no visible edge; d-table rules rows at 5% of the ink. Both
+   use the one rule colour everything else uses. */
+.d-card-border { border-color: var(--color-border); }
+.d-table :where(th, td, tr) { border-color: var(--color-border); }
+
+/* A button whose Livewire action is in flight: Livewire sets data-loading. */
+.d-btn[data-loading] { pointer-events: none; opacity: 0.75; }
+
+/* ELEVATION - the three steps, as utilities.
+
+   They were in @layer components, and daisyUI lives in a layer nested inside
+   `utilities`, so a d-modal-box or d-dropdown-content kept daisyUI's own shadow
+   and `elev-3` beside it did nothing. As @utility they sit in `utilities`
+   itself, which outranks daisyUI's nested layer: the token wins, and
+   `hover:elev-2` works as a variant. */
+@utility elev-1 { box-shadow: var(--shadow-e1); }
+@utility elev-2 { box-shadow: var(--shadow-e2); }
+@utility elev-3 { box-shadow: var(--shadow-e3); }
 
 @layer base {
     html {
@@ -353,80 +480,7 @@
     letter-spacing: -0.01em;
 }
 
-@utility btn {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap
-           rounded-[8px] px-5 py-2.5 text-[15px] font-semibold leading-none
-           focus:outline-none disabled:cursor-not-allowed disabled:opacity-50;
-
-    /* Whitelist rows: "Button hover - bg colour, --dur-instant" and
-       "Button press - scale(0.98), --dur-instant".
-
-       box-shadow is NOT in this list and used to be. Animating it forces a
-       repaint of the element's whole shadow region on every frame, which is
-       the reason the rule exists; the focus ring below gets the same effect
-       from opacity on a layer that is already painted. */
-    transition: background-color var(--dur-instant) var(--ease-in-out),
-                border-color var(--dur-instant) var(--ease-in-out),
-                color var(--dur-instant) var(--ease-in-out),
-                transform var(--dur-instant) var(--ease-in-out);
-}
-
-/* The press. scale rather than translate, so the button compresses toward its
-   own centre instead of sliding - and 0.98 rather than anything deeper,
-   because a button that visibly moves reads as a bug at this size. */
-.btn:active:not(:disabled) {
-    transform: scale(0.97);
-}
-
 @layer components {
-    /* Press feedback. 2% is enough to register as a physical control and small
-       enough not to read as a bounce. */
-    .btn:active:not(:disabled) { transform: scale(0.97); }
-
-    /* THE BUTTON SET - one family for the public site and the console.
-
-       Flat fills, 8px corners, semibold labels, and a press to 0.97. No
-       shadows at rest: elevation is for things that float, and a button
-       sitting on a page does not. The secondary is an OUTLINE drawn with an
-       inset shadow rather than a border, so primary and secondary are the
-       same height to the pixel when they sit side by side. */
-    .btn-primary   { @apply btn bg-primary text-primary-foreground hover:bg-primary-600; }
-    .btn-secondary { @apply btn bg-transparent text-foreground; box-shadow: inset 0 0 0 1px var(--color-input); }
-    .btn-secondary:hover { box-shadow: inset 0 0 0 1px var(--color-foreground); }
-    .btn-danger    { @apply btn bg-destructive text-destructive-foreground hover:opacity-90; }
-    .btn-quiet     { @apply btn bg-transparent text-primary hover:bg-primary-50; }
-
-    /* The spinner a button shows while its action runs. Livewire adds
-       data-loading to the element while the request is in flight. */
-    .btn[data-loading] { pointer-events: none; opacity: 0.75; }
-    .btn-spinner {
-        width: 16px;
-        height: 16px;
-        border-radius: 999px;
-        border: 2px solid currentColor;
-        border-right-color: transparent;
-        animation: btn-spin 700ms linear infinite;
-    }
-    @keyframes btn-spin { to { transform: rotate(360deg); } }
-
-    /* 16px floor - below that iOS zooms the page on focus and one-handed entry
-       falls apart. */
-    /* 16px is not a preference. Anything smaller and iOS Safari zooms the
-       viewport on focus, which throws the user out of the form they were
-       filling in. */
-    .input {
-        @apply block w-full rounded-[8px] border border-input bg-card
-               px-3.5 py-2.5 text-[16px] text-foreground
-               placeholder:text-muted-foreground focus:border-primary focus:outline-none;
-
-        /* Whitelist row: "Input focus - border colour, --dur-fast". Border
-           only; the shadow transition that used to sit here animated a
-           property the brief bans. */
-        transition: border-color var(--dur-fast) var(--ease-in-out);
-    }
-    .input:focus { box-shadow: 0 0 0 3px var(--ring-color); }
-    .input-error { @apply border-destructive; }
-    .input-error:focus { box-shadow: 0 0 0 3px var(--ring-color-destructive); }
 
     /*
      * Show / hide on a password field.
@@ -472,26 +526,6 @@
     :root[data-theme='dark'] [data-theme-icon='light'] { display: none; }
     :root[data-theme='dark'] [data-theme-icon='dark'] { display: block; }
 
-    /* Labels sit ABOVE their field; help and errors sit under it. The error
-       rises in so it reads as a response to what was just done. */
-    .label { @apply mb-1.5 block text-[14px] font-semibold text-foreground; }
-    .help  { @apply mt-1.5 text-[13px] leading-snug text-muted-foreground; }
-    .error { @apply mt-1.5 text-[13px] font-medium text-destructive; animation: field-error 260ms var(--ease-out) both; }
-    @keyframes field-error {
-        from { opacity: 0; transform: translateY(-4px); }
-        to   { opacity: 1; transform: none; }
-    }
-
-    /*
-     * Cards now have elevation. This is the single biggest lever in the
-     * direction change: the previous world forbade shadows entirely, which is
-     * exactly what made it read as a printed document.
-     */
-    .card {
-        @apply rounded-[var(--radius-md)] border border-border bg-card text-card-foreground;
-        box-shadow: var(--shadow-e1);
-    }
-
     /* Only interactive cards lift, and only on hover. Nothing lifts on its own. */
     .card-interactive {
         transition: box-shadow var(--t-base) var(--ease-out-quart),
@@ -502,25 +536,6 @@
         box-shadow: var(--shadow-e2);
         transform: translateY(-1px);
     }
-
-    .elev-1 { box-shadow: var(--shadow-e1); }
-    .elev-2 { box-shadow: var(--shadow-e2); }
-    .elev-3 { box-shadow: var(--shadow-e3); }
-
-    /*
-     * Status badges. Tinted pill using the semantic pair, not a bare dot.
-     * The class NAMES are a contract: five PHP enums return them from
-     * badgeClasses() across ~22 call sites, so they are restyled, never renamed.
-     */
-    .badge {
-        @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
-               text-[12px] font-medium leading-none;
-    }
-    .badge-ok      { @apply bg-success-bg text-success; }
-    .badge-warn    { @apply bg-warning-bg text-warning; }
-    .badge-alert   { @apply bg-destructive-bg text-destructive; }
-    .badge-info    { @apply bg-info-bg text-info; }
-    .badge-neutral { @apply bg-muted text-muted-foreground; }
 
     /*
      * THE BAND TAG. Carried through the direction change unchanged in concept,
@@ -555,8 +570,6 @@
                border-border px-2.5 py-1 text-[12px] leading-none text-muted-foreground;
     }
 
-    .table-hairline tbody tr + tr { border-top: 1px solid var(--color-border); }
-
     /* Row hover tint + inline actions revealed on hover. */
     .row-hover { transition: background-color var(--t-fast) var(--ease-out-quart); }
     .row-hover:hover { background-color: var(--color-muted); }
@@ -569,22 +582,11 @@
     .row-hover:hover .row-actions,
     .row-hover:focus-within .row-actions { @apply opacity-100; }
 
-    /* Skeletons match real layout, so the page does not reflow when data lands. */
-    .skeleton {
-        @apply rounded-[var(--radius-sm)] bg-muted;
-        animation: gfms-pulse 1.6s var(--ease-out-quart) infinite;
-    }
-
     @keyframes gfms-pulse {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.55; }
     }
 
-    /* Popovers, dropdowns, command palette, sheets. */
-    .popover {
-        @apply rounded-[var(--radius-md)] border border-border bg-popover text-popover-foreground;
-        box-shadow: var(--shadow-e3);
-    }
     .enter-pop { animation: gfms-pop var(--t-enter) var(--ease-enter) both; }
     @keyframes gfms-pop {
         from { opacity: 0; transform: translateY(4px); }
@@ -592,39 +594,11 @@
     }
 
     /*
-     * The console sidebar, on the deep comb red.
-     *
-     * A dark saturated navigation rail is a current pattern; a bright saturated
-     * bar across the top is a 2014 one. This puts brand colour on every console
-     * screen, full height, without ever touching a control - the rail is chrome,
-     * and chrome is the only place brand red is allowed to live.
-     *
-     * No border against the content region: the value jump does the separating.
-     */
-    .nav-item {
-        @apply relative flex min-h-11 items-center gap-3 rounded-[var(--radius-sm)]
-               px-3 text-[15px] font-medium text-muted-foreground;
-        transition: background-color var(--t-fast) var(--ease-out-quart),
-                    color var(--t-fast) var(--ease-out-quart);
-    }
-    .nav-item:hover { color: var(--color-foreground); background-color: var(--color-background); }
-    .nav-item:active { transform: scale(0.98); }
-    .nav-item-active { @apply bg-card text-foreground; box-shadow: var(--shadow-e1); }
-    .nav-item-active::before {
-        content: '';
-        @apply absolute left-0 top-1/2 h-5 -translate-y-1/2 rounded-full bg-primary;
-        width: 3px;
-    }
-    .nav-section {
-        @apply px-3 pb-1 pt-5 text-[13px] font-semibold text-muted-foreground;
-    }
-
-    /*
      * SCROLLBARS.
      *
      * The console has two scroll regions on two different grounds and the OS
      * default suits neither: on Windows it arrives with stepper arrows and a
-     * grey track, which sits on the dark red rail looking like a rendering
+     * grey track, which sits on a dark rail looking like a rendering
      * fault, and on the content region it is heavier than any border in the
      * design system.
      *
@@ -658,7 +632,7 @@
         background-clip: content-box;
     }
 
-    /* The same, tuned for the red rail. */
+    /* The same, tuned for the dark brand rail. */
     /* A LIGHT thumb on the dark rail, not a darker red. brand-deeper on
        brand-deep is only a few values apart, which made the bar technically
        present and practically invisible - and the whole reason for keeping a
@@ -715,13 +689,6 @@
         @apply absolute left-0 top-1 bottom-1 rounded-full bg-brand;
         width: 3px;
     }
-
-    /* Thin progress bars for compliance and hatch rates. */
-    .meter { @apply h-1.5 w-full overflow-hidden rounded-full bg-muted; }
-    /* No width transition. Animating width is layout thrash, and scaleX -
-       the usual substitute - squashes the bar's rounded caps. The meter is
-       set once per render, so the animation was buying nothing. */
-    .meter > span { @apply block h-full rounded-full; }
 
     /*
      * Pedigree bracket. A chart whose cards float in unconnected columns is not
@@ -921,11 +888,6 @@
     transition: color var(--dur-instant) var(--ease-in-out);
 }
 .tab-active { @apply text-foreground; }
-.tab-indicator {
-    @apply absolute bottom-0 h-0.5 bg-primary;
-    transition: transform var(--dur-base) var(--ease-in-out),
-                width var(--dur-base) var(--ease-in-out);
-}
 
 /* Accordion. grid-template-rows 0fr -> 1fr, the second whitelist exception.
    It is how a collapse animates to CONTENT height without measuring it in
@@ -938,52 +900,23 @@
 .accordion-content > * { overflow: hidden; }
 .accordion-open { grid-template-rows: 1fr; }
 
-/* Empty state. No motion: it is the resting state of a screen, and a thing
-   that animates in every time a filter returns nothing is a thing that
-   punishes the user for filtering. */
-.empty-state {
-    @apply flex flex-col items-center justify-center rounded-[var(--radius-md)]
-           border border-border bg-card px-6 py-12 text-center;
-}
-.empty-state-title { @apply text-[17px] text-foreground; }
-.empty-state-body { @apply mt-2 max-w-[46ch] text-[15px] text-muted-foreground; }
-
 /* Avatar. */
 .avatar {
     @apply inline-flex shrink-0 items-center justify-center overflow-hidden
            rounded-full bg-ink-200 text-ink-700;
 }
 
-/* Breadcrumb. */
-.breadcrumb { @apply flex flex-wrap items-center gap-1.5 text-[14px]; }
-.breadcrumb-link {
-    @apply text-muted-foreground;
-    transition: color var(--dur-instant) var(--ease-in-out);
-}
-.breadcrumb-link:hover { @apply text-foreground; }
-.breadcrumb-current { @apply text-foreground; }
-
-/* Pagination. */
-.page-link {
-    @apply inline-flex min-h-11 min-w-11 items-center justify-center
-           rounded-[var(--radius-sm)] px-3 text-[15px] text-muted-foreground;
-    transition: background-color var(--dur-instant) var(--ease-in-out),
-                color var(--dur-instant) var(--ease-in-out);
-}
-.page-link:hover { @apply bg-muted text-foreground; }
-.page-link-current { @apply bg-muted text-foreground; }
-
 /* =====================================================================
    THE STUD BOOK - the public site.
 
-   Warm paper, near-black ink, one red. The way a respected breeder presents
+   Pale celery paper, forest ink, one green. The way a respected breeder presents
    its animals: photographs large and clean, the pedigree as the proof, and
    space doing the separating that boxes used to do. Hairlines are allowed,
    sparingly; tiles and cards are not.
 
-   ONE ACCENT, from the logo: the comb red #8b2626 the console already uses as
-   its interactive colour. White on it is 8.7:1; as text on this paper it is
-   about 8:1. Every other colour on the public site is a neutral, and the
+   ONE ACCENT: pine #375534, the colour the console already uses as its
+   interactive colour. White on it is 8.4:1; as text on this paper it is
+   7.6:1. Every other colour on the public site is a neutral, and the
    bloodline band colours appear only as a small dot or a thin line - they
    mean something, so they stay, but never as a fill.
 
@@ -994,7 +927,7 @@
    pagination - takes this look on the public site and its own in the
    console, with one markup.
 
-   Muted text is #5c5853 on #f7f6f3: 6.6:1, past AA for body text and for
+   Muted text is #34503a on #f1f6ea: 8.1:1, past AA for body text and for
    the 13px captions that use it.
    ===================================================================== */
 /* Long-form prose: headings spaced off the text above them, paragraphs at
@@ -1018,98 +951,20 @@
 .auth-photo { animation: sb-settle 600ms var(--ease-out) both; }
 @media (prefers-reduced-motion: reduce) { .auth-photo { animation: none; } }
 
-/* ---------------------------------------------------------------------------
-   THE SEGMENTED CONTROL - in-page sections instead of a long scroll.
-
-   A muted pill track with 4px of inset; the selected segment is a white
-   raised pill with a dark semibold label and a dark count badge, and it
-   SLIDES between segments rather than blinking. Unselected segments have no
-   fill, a grey label and a light badge. The thumb is a sibling element that
-   Alpine positions (see x-segmented); transform and width are the only
-   animated properties, and reduced motion stops the slide.
-
-   The track scrolls sideways inside itself on a phone when the labels do not
-   fit; the page never does.
---------------------------------------------------------------------------- */
-.segmented {
-    position: relative;
-    display: flex;
-    width: fit-content;
-    max-width: 100%;
-    gap: 0;
-    padding: 4px;
-    border-radius: 999px;
-    background-color: var(--color-muted);
-    overflow-x: auto;
-    scrollbar-width: none;
-}
-.segmented::-webkit-scrollbar { display: none; }
-.segmented-thumb {
-    position: absolute;
-    top: 4px;
-    bottom: 4px;
-    left: 0;
-    width: var(--seg-w, 0px);
-    transform: translateX(var(--seg-x, 0px));
-    border-radius: 999px;
-    background-color: var(--color-card);
-    box-shadow: var(--shadow-e1);
-    transition: transform 280ms var(--ease-out), width 280ms var(--ease-out);
-    pointer-events: none;
-}
-.segmented-item {
-    position: relative;
-    z-index: 1;
-    display: inline-flex;
-    flex: 1 0 auto;
-    min-height: 44px;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding-inline: 16px;
-    border-radius: 999px;
-    white-space: nowrap;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--color-muted-foreground);
-    transition: color 200ms var(--ease-out);
-}
-.segmented-item:hover { color: var(--color-foreground); }
-.segmented-item-active { color: var(--color-foreground); font-weight: 600; }
-.segmented-count {
-    display: inline-flex;
-    min-width: 22px;
-    justify-content: center;
-    padding: 2px 7px;
-    border-radius: 999px;
-    background-color: var(--color-ink-200);
-    color: var(--color-muted-foreground);
-    font-size: 12px;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-}
-.segmented-item-active .segmented-count { background-color: var(--color-foreground); color: var(--color-card); }
-@media (prefers-reduced-motion: reduce) { .segmented-thumb { transition: none; } }
 
 /* Page transition: the content column fades up; the chrome around it stays. */
 .page-enter { animation: page-enter 320ms var(--ease-out) both; }
 @keyframes page-enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .page-enter { animation: none; } }
 
-/* Dialogs: the backdrop fades; the panel rises and fades in. */
-.dialog-backdrop { animation: dialog-fade 220ms var(--ease-out) both; }
-.dialog-panel { animation: dialog-rise 280ms var(--ease-out) both; }
-@keyframes dialog-fade { from { opacity: 0; } to { opacity: 1; } }
-@keyframes dialog-rise { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .dialog-backdrop, .dialog-panel { animation: none; } }
 
 /* The one dark block a page may have - the public pedigree, the console's
    anchor block. Paper-coloured type on near-black ink. */
 :root {
-    --sb-dark: #1c1a17;
-    --sb-dark-ink: #f7f6f3;
-    --sb-dark-muted: #b9b3aa;   /* 8.1:1 on the dark block */
-    --sb-dark-line: #3a3631;
+    --sb-dark: #0f2a1d;
+    --sb-dark-ink: #e3eed4;     /* 12.7:1 on the dark block */
+    --sb-dark-muted: #aec3b0;   /*  8.2:1 on the dark block */
+    --sb-dark-line: #375534;
 }
 
 /* The page measure. Wide enough for a four-across grid of birds, narrow
@@ -1283,7 +1138,7 @@
     padding: 8px 14px;
     border-radius: 999px;
     background-color: rgb(255 255 255 / 0.94);
-    color: #1c1a17;
+    color: #0f2a1d;
     font-size: 13px;
     font-weight: 600;
 }
@@ -1380,26 +1235,26 @@
     :root:not([data-theme='light']) {
         color-scheme: dark;
 
-        --color-background: #0D110F;
-        --color-card: #161C19;
-        --color-muted: #272D2A;
-        --color-popover: #1B2220;
-        --color-border: #2E3531;
-        --color-input: #39413C;
+        --color-background: #0A1711;
+        --color-card: #11211A;
+        --color-muted: #1C3027;
+        --color-popover: #152820;
+        --color-border: #243A2F;
+        --color-input: #2F4A3C;
 
-        --color-foreground: #F7F8F6;
-        --color-muted-foreground: #B9C0BA;
-        --color-card-foreground: #F7F8F6;
-        --color-popover-foreground: #F7F8F6;
+        --color-foreground: #EEF4E6;
+        --color-muted-foreground: #AEC3B0;
+        --color-card-foreground: #EEF4E6;
+        --color-popover-foreground: #EEF4E6;
 
-        /* Inverted. #8B2626 measures 1.98:1 on the dark card - an invisible
-           link. Same hue, four steps lighter: 9.33:1 as text AND as a fill
-           with dark ink on it. */
-        --color-primary: #E0B4B0;
-        --color-primary-foreground: #161C19;
+        /* Inverted. Pine #375534 measures 1.97:1 on the dark card - an
+           invisible link. Leaf #A9D49B: 10.0:1 as text, 9.2:1 as a fill with
+           forest ink on it. */
+        --color-primary: #A9D49B;
+        --color-primary-foreground: #0F2A1D;
 
         /* The semantic pairs invert for the same reason primary does. Carried
-           over unchanged they are dark inks on pale tints sitting on a #0D110F
+           over unchanged they are dark inks on pale tints sitting on a #0A1711
            page: warning #755006 measures 2.57:1 on the dark card, which is what
            the dashboard's compliance figure was being drawn in. Measured, not
            picked - BrandTokensAreMirroredTest re-measures every one of them. */
@@ -1409,22 +1264,22 @@
         --color-warning-bg: #2E2716;
         --color-destructive: #FFA88F;
         --color-destructive-bg: #301B1A;
-        --color-destructive-foreground: #161C19;
+        --color-destructive-foreground: #0F2A1D;
         --color-info: #AEBBEF;
         --color-info-bg: #1E2336;
 
         /* The ink ramp inverts with the surfaces it describes, or every step
            that meant "paper" would still mean paper on a dark ground. */
-        --color-ink-50: #0D110F;
-        --color-ink-100: #161C19;
-        --color-ink-200: #272D2A;
-        --color-ink-300: #2E3531;
-        --color-ink-400: #39413C;
-        --color-ink-500: #6E756F;
-        --color-ink-600: #8A918B;
-        --color-ink-700: #B9C0BA;
-        --color-ink-800: #D7DCD8;
-        --color-ink-900: #F7F8F6;
+        --color-ink-50: #0A1711;
+        --color-ink-100: #11211A;
+        --color-ink-200: #1C3027;
+        --color-ink-300: #243A2F;
+        --color-ink-400: #2F4A3C;
+        --color-ink-500: #5E7A68;
+        --color-ink-600: #7F9A87;
+        --color-ink-700: #AEC3B0;
+        --color-ink-800: #D3E0C6;
+        --color-ink-900: #EEF4E6;
         --color-ink-950: #FFFFFF;
     }
 }
@@ -1432,21 +1287,21 @@
 :root[data-theme='dark'] {
     color-scheme: dark;
 
-    --color-background: #0D110F;
-    --color-card: #161C19;
-    --color-muted: #272D2A;
-    --color-popover: #1B2220;
-    --color-border: #2E3531;
-    --color-input: #39413C;
+    --color-background: #0A1711;
+    --color-card: #11211A;
+    --color-muted: #1C3027;
+    --color-popover: #152820;
+    --color-border: #243A2F;
+    --color-input: #2F4A3C;
 
-    --color-foreground: #F7F8F6;
-    --color-muted-foreground: #B9C0BA;
-    --color-card-foreground: #F7F8F6;
-    --color-popover-foreground: #F7F8F6;
+    --color-foreground: #EEF4E6;
+    --color-muted-foreground: #AEC3B0;
+    --color-card-foreground: #EEF4E6;
+    --color-popover-foreground: #EEF4E6;
 
     /* Inverted - see the note in the media query above. */
-    --color-primary: #E0B4B0;
-    --color-primary-foreground: #161C19;
+    --color-primary: #A9D49B;
+    --color-primary-foreground: #0F2A1D;
 
     /* Inverted - see the note in the media query above. */
     --color-success: #6FD39B;
@@ -1455,20 +1310,20 @@
     --color-warning-bg: #2E2716;
     --color-destructive: #FFA88F;
     --color-destructive-bg: #301B1A;
-    --color-destructive-foreground: #161C19;
+    --color-destructive-foreground: #0F2A1D;
     --color-info: #AEBBEF;
     --color-info-bg: #1E2336;
 
-    --color-ink-50: #0D110F;
-    --color-ink-100: #161C19;
-    --color-ink-200: #272D2A;
-    --color-ink-300: #2E3531;
-    --color-ink-400: #39413C;
-    --color-ink-500: #6E756F;
-    --color-ink-600: #8A918B;
-    --color-ink-700: #B9C0BA;
-    --color-ink-800: #D7DCD8;
-    --color-ink-900: #F7F8F6;
+    --color-ink-50: #0A1711;
+    --color-ink-100: #11211A;
+    --color-ink-200: #1C3027;
+    --color-ink-300: #243A2F;
+    --color-ink-400: #2F4A3C;
+    --color-ink-500: #5E7A68;
+    --color-ink-600: #7F9A87;
+    --color-ink-700: #AEC3B0;
+    --color-ink-800: #D3E0C6;
+    --color-ink-900: #EEF4E6;
     --color-ink-950: #FFFFFF;
 }
 

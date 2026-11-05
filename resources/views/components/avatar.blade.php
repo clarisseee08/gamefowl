@@ -20,8 +20,8 @@
     THE INITIALS ARE NEUTRAL INK, NEVER A GENERATED COLOUR. Hashing a name to a
     hue is the standard move and it is the one thing this system cannot do:
     colour means bloodline, and a coloured circle beside a keeper's name spends
-    that meaning on decoration. `.avatar` resolves to ink-200 on ink-700 for
-    exactly this reason.
+    that meaning on decoration. The circle inside d-avatar is ink-700 on ink-200
+    for exactly this reason.
 
     IT IS aria-hidden, AND THE NAME MUST APPEAR AS TEXT BESIDE IT. The same rule
     the band tag follows: the visual is never the only channel. Two letters in a
@@ -57,15 +57,21 @@
     };
 @endphp
 
-<span {{ $attributes->merge(['class' => 'avatar relative '.$frame]) }} aria-hidden="true">
-    <span class="font-medium leading-none tracking-[0.02em]">{{ $initials }}</span>
+{{-- self-auto undoes d-avatar's align-self:center, so the circle follows its
+     row's own alignment - several call sites hang it from the top of a
+     two-line name. The inner circle is a span, not daisyUI's div, so this can
+     still sit inside a button or a paragraph; it carries the frame itself. --}}
+<span {{ $attributes->merge(['class' => 'd-avatar d-avatar-placeholder self-auto']) }} aria-hidden="true">
+    <span class="relative flex items-center justify-center overflow-hidden rounded-full bg-ink-200 text-ink-700 {{ $frame }}">
+        <span class="font-medium leading-none tracking-[0.02em]">{{ $initials }}</span>
 
-    @if ($src)
-        {{-- Absolute, so it covers the initials rather than displacing them:
-             if the file is missing the letters are already in place behind it.
-             object-cover because a portrait cropped to a circle by the browser
-             beats one squashed into it. --}}
-        <img src="{{ $src }}" alt="" loading="lazy" decoding="async"
-             class="absolute inset-0 h-full w-full object-cover">
-    @endif
+        @if ($src)
+            {{-- Absolute, so it covers the initials rather than displacing them:
+                 if the file is missing the letters are already in place behind it.
+                 object-cover because a portrait cropped to a circle by the browser
+                 beats one squashed into it. --}}
+            <img src="{{ $src }}" alt="" loading="lazy" decoding="async"
+                 class="absolute inset-0 h-full w-full object-cover">
+        @endif
+    </span>
 </span>

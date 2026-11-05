@@ -35,10 +35,10 @@
                     @if ($farm['phone'] || $farm['email'])
                         <x-slot:actions>
                             @if ($farm['phone'])
-                                <a href="tel:{{ $telHref }}" class="btn-primary">Ring the farm</a>
+                                <a href="tel:{{ $telHref }}" class="d-btn d-btn-primary">Ring the farm</a>
                             @endif
                             @if ($farm['email'])
-                                <a href="mailto:{{ $farm['email'] }}?subject={{ rawurlencode('Visiting '.$farm['name']) }}" class="btn-secondary">Send an email</a>
+                                <a href="mailto:{{ $farm['email'] }}?subject={{ rawurlencode('Visiting '.$farm['name']) }}" class="d-btn d-btn-outline">Send an email</a>
                             @endif
                         </x-slot:actions>
                     @endif
@@ -53,7 +53,7 @@
                             <x-field-row label="Address">
                                 {{ $farm['address'] }}
                                 <a href="{{ $mapHref }}" target="_blank" rel="noopener"
-                                   class="mt-1 flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary">
+                                   class="d-link d-link-primary mt-1 flex min-h-11 items-center gap-1.5 text-[15px] font-semibold underline-offset-4">
                                     Open in Google Maps <span aria-hidden="true">&nearr;</span>
                                 </a>
                             </x-field-row>
@@ -63,12 +63,12 @@
                         @endif
                         @if ($farm['phone'])
                             <x-field-row label="Phone">
-                                <a href="tel:{{ $telHref }}" class="datum font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary">{{ $farm['phone'] }}</a>
+                                <a href="tel:{{ $telHref }}" class="d-link d-link-primary datum font-semibold underline-offset-4">{{ $farm['phone'] }}</a>
                             </x-field-row>
                         @endif
                         @if ($farm['email'])
                             <x-field-row label="Email">
-                                <a href="mailto:{{ $farm['email'] }}" class="break-words font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary">{{ $farm['email'] }}</a>
+                                <a href="mailto:{{ $farm['email'] }}" class="d-link d-link-primary break-words font-semibold underline-offset-4">{{ $farm['email'] }}</a>
                             </x-field-row>
                         @endif
                     </dl>

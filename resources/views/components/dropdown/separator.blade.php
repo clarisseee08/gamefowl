@@ -1,4 +1,4 @@
-{{-- A hairline between groups of rows. The negative margin lets it span the
-     panel's full width despite the panel's 1-unit padding, which is how
-     shadcn's DropdownMenuSeparator does it too. --}}
-<div role="separator" class="-mx-1 my-1 h-px bg-border"></div>
+{{-- A hairline between groups of rows. An EMPTY <li> inside d-menu is
+     daisyUI's own divider, so this must stay empty - not even whitespace, or
+     :empty stops matching and the rule disappears. --}}
+<li role="separator"></li>
