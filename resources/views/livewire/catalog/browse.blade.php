@@ -1,5 +1,8 @@
 @php
     $total = $this->birds->total();
+    // Staff see the catalogue inside the console, which opens every page on
+    // the compact EMS header; visitors see the stud-book page.
+    $inConsole = auth()->user()?->isInternal() ?? false;
 @endphp
 
 {{--
@@ -11,15 +14,20 @@
     No card background and no box: the photograph is the card.
 --}}
 <div>
-    <div class="max-w-[60ch]">
-        {{-- h1 when this IS the page (/catalog), h2 if it is ever embedded
-             under another page's heading. See the note on $headingLevel. --}}
-        <{{ $headingLevel }} class="sb-h2 lg:text-[2.4rem]">Our gamefowl</{{ $headingLevel }}>
-        <p class="mt-3 text-[16px] text-muted-foreground">
-            Every bird on the farm today. Open one to see its photographs, health record,
-            family tree and performance history.
-        </p>
-    </div>
+    @if ($inConsole)
+        <x-ui.page-header title="Our gamefowl"
+                          description="Every bird on the farm today. Open one to see its photographs, health record, family tree and performance history." />
+    @else
+        <div class="max-w-[60ch]">
+            {{-- h1 when this IS the page (/catalog), h2 if it is ever embedded
+                 under another page's heading. See the note on $headingLevel. --}}
+            <{{ $headingLevel }} class="sb-h2 lg:text-[2.4rem]">Our gamefowl</{{ $headingLevel }}>
+            <p class="mt-3 text-[16px] text-muted-foreground">
+                Every bird on the farm today. Open one to see its photographs, health record,
+                family tree and performance history.
+            </p>
+        </div>
+    @endif
 
     {{-- ---------------------------------------------------------------
          FILTERS — one row of real controls, not a box.
@@ -28,7 +36,7 @@
          edges, so the panel drew a second border around things already
          edged. A hairline underneath ends the row instead.
     --------------------------------------------------------------- --}}
-    <div class="mt-8 flex flex-col gap-3 border-b border-border pb-6 lg:flex-row lg:flex-wrap lg:items-center">
+    <div @class(['flex flex-col gap-3 border-b border-border lg:flex-row lg:flex-wrap lg:items-center', 'mt-6 pb-4' => $inConsole, 'mt-8 pb-6' => ! $inConsole])>
         <div class="min-w-0 flex-1 lg:max-w-md">
             <label for="search" class="sr-only">Search</label>
             <input id="search" type="search" wire:model.live.debounce.300ms="search"
@@ -66,7 +74,7 @@
              reason attached - disabled rather than hidden, because a control
              that comes and goes with the stock is a page that moves under you. --}}
         <label @class([
-                   'inline-flex min-h-11 shrink-0 items-center gap-2.5 text-[15px]',
+                   'inline-flex min-h-11 shrink-0 items-center gap-2.5 text-[15px] lg:min-h-7 lg:text-xs',
                    'cursor-pointer text-foreground' => $this->anyForSale,
                    'cursor-not-allowed text-muted-foreground' => ! $this->anyForSale,
                ])
@@ -76,7 +84,7 @@
             Available birds only
         </label>
 
-        <div class="flex items-center gap-4 text-[14px] text-muted-foreground lg:ml-auto">
+        <div class="flex items-center gap-4 text-[14px] text-muted-foreground lg:ml-auto lg:text-xs">
             <span wire:loading.remove wire:target="search,bloodline,sex,class,forSaleOnly,sort">
                 <span class="datum font-semibold text-foreground">{{ number_format($total) }}</span> {{ \Illuminate\Support\Str::plural('bird', $total) }} found.
             </span>
@@ -129,12 +137,16 @@
             @endif
         </div>
     @else
-        <ul class="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-12">
+        <ul @class([
+            'grid grid-cols-2',
+            'mt-6 gap-x-3 gap-y-6 md:grid-cols-4 xl:grid-cols-6' => $inConsole,
+            'mt-10 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-12' => ! $inConsole,
+        ])>
             @foreach ($this->birds as $bird)
                 {{-- Keyed so a new search swaps cards whole instead of reusing a
                      card's element for a different bird. --}}
                 <li wire:key="bird-{{ $bird->id }}">
-                    <x-bird-card :bird="$bird" heading="h2" :details="true" :delay="($loop->index % 4) * 60" />
+                    <x-bird-card :bird="$bird" heading="h2" :details="true" :compact="$inConsole" :delay="($loop->index % 4) * 60" />
                 </li>
             @endforeach
         </ul>

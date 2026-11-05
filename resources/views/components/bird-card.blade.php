@@ -1,4 +1,6 @@
 @props([
+    /** The console's denser grid: smaller type under the photograph. */
+    'compact' => false,
     'bird',
     /** h2 on the catalogue, where it sits under the page's h1; h3 under a section h2. */
     'heading' => 'h3',
@@ -40,16 +42,16 @@
         @endif
     </div>
 
-    <div class="mt-3.5 flex items-baseline justify-between gap-3">
-        <{{ $heading }} class="min-w-0 truncate font-display text-[17px] font-semibold tracking-[-0.015em] text-foreground group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4">
-            {{ $title }}@if ($realName && $bird->band_number)<span class="font-sans text-[15px] font-medium text-muted-foreground"> &nbsp;{{ $realName }}</span>@endif
+    <div @class(["flex items-baseline justify-between gap-3", $compact ? "mt-2" : "mt-3.5"])>
+        <{{ $heading }} class="min-w-0 truncate font-display {{ $compact ? 'text-[13px]' : 'text-[17px]' }} font-semibold tracking-[-0.015em] text-foreground group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4">
+            {{ $title }}@if ($realName && $bird->band_number)<span class="font-sans {{ $compact ? 'text-xs' : 'text-[15px]' }} font-medium text-muted-foreground"> &nbsp;{{ $realName }}</span>@endif
         </{{ $heading }}>
         @if ($bird->ageLabel())
-            <span class="datum shrink-0 text-[14px] text-muted-foreground">{{ $bird->ageLabel() }}</span>
+            <span class="datum shrink-0 {{ $compact ? 'text-[11px]' : 'text-[14px]' }} text-muted-foreground">{{ $bird->ageLabel() }}</span>
         @endif
     </div>
 
-    <p class="mt-1 flex flex-wrap items-center gap-x-2 text-[14px] text-muted-foreground">
+    <p class="mt-1 flex flex-wrap items-center gap-x-2 {{ $compact ? 'text-[11px]' : 'text-[14px]' }} text-muted-foreground">
         <span class="inline-flex items-center gap-2">
             <x-band-dot :bloodline="$bird->bloodline" />
             {{ $bird->bloodline ?: 'Bloodline not recorded' }}
