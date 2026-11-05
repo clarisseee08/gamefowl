@@ -99,7 +99,7 @@
             <p class="sb-line flex items-center gap-2 text-[15px] font-semibold text-foreground" style="--line: 0ms">
                 <x-band-dot :bloodline="$bird->bloodline" />{{ $bird->bloodline ?: 'Bloodline not recorded' }}
             </p>
-            <h1 class="sb-line mt-3 font-display text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.03em] text-foreground sm:text-[3.4rem]" style="--line: 60ms">
+            <h1 class="{{ (auth()->user()?->isInternal() ?? false) ? 'mt-2 text-base font-bold text-foreground' : 'sb-line mt-3 font-display text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.03em] text-foreground sm:text-[3.4rem]' }}" style="--line: 60ms">
                 {{ $title }}
             </h1>
             @if ($realName)

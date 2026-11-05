@@ -29,20 +29,18 @@
         </x-slot:actions>
     </x-anchor-block>
 
-    {{-- The farm-wide funnel, as type on paper. Summed in SQL across every
+    {{-- The farm-wide funnel as EMS KPI tiles. Summed in SQL across every
          matching record, not just the page on screen. --}}
-    <dl class="sb-line mt-6 grid grid-cols-3 gap-4 sm:max-w-[34rem] sm:gap-8" style="--line: 220ms">
-        @foreach ([
-            ['Eggs set', number_format($summary['eggs_set'])],
-            ['Fertility rate', $summary['fertility'] !== null ? $summary['fertility'].'%' : 'No data'],
-            ['Hatch rate', $summary['hatch'] !== null ? $summary['hatch'].'%' : 'No data'],
-        ] as [$label, $value])
-            <div class="min-w-0">
-                <dt class="text-[13px] font-semibold text-muted-foreground">{{ $label }}</dt>
-                <dd class="datum mt-1 font-display text-[22px] font-semibold leading-tight tracking-[-0.015em] text-foreground sm:text-[26px]">{{ $value }}</dd>
-            </div>
-        @endforeach
-    </dl>
+    <x-ui.kpi-row class="mt-6" role="group" aria-label="Breeding figures">
+        <x-ui.kpi-tile label="Eggs set" icon="clipboard-list" :value="number_format($summary['eggs_set'])"
+                       caption="Across the matings listed" />
+        <x-ui.kpi-tile label="Fertility rate" icon="circle-check"
+                       :value="$summary['fertility'] !== null ? $summary['fertility'].'%' : null"
+                       caption="Fertile eggs of eggs set" />
+        <x-ui.kpi-tile label="Hatch rate" icon="arrow-up-right"
+                       :value="$summary['hatch'] !== null ? $summary['hatch'].'%' : null"
+                       caption="Chicks hatched of fertile eggs" />
+    </x-ui.kpi-row>
 
     {{-- Filters. One row: search takes the space that is left, the date range
          and the bloodline shrink to their own width and wrap when they run out
@@ -57,12 +55,12 @@
         {{-- The two dates are one control in two halves, so they stay together
              on a wrap and read as a range rather than as two unrelated fields. --}}
         <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="from" class="d-fieldset-legend mb-0 shrink-0 py-0">Mated from</label>
+            <label for="from" class="d-fieldset-legend mb-0 shrink-0 py-0 lg:text-xs">Mated from</label>
             <input id="from" type="date" wire:model.live="from" class="d-input datum w-full sm:w-auto">
         </div>
 
         <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="to" class="d-fieldset-legend mb-0 shrink-0 py-0">Mated up to</label>
+            <label for="to" class="d-fieldset-legend mb-0 shrink-0 py-0 lg:text-xs">Mated up to</label>
             <input id="to" type="date" wire:model.live="to" class="d-input datum w-full sm:w-auto">
         </div>
 

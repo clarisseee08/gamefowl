@@ -29,7 +29,7 @@
     <header class="mt-2 flex flex-wrap items-end justify-between gap-x-10 gap-y-5 border-b border-border pb-6 sm:pb-8">
         <div class="min-w-0">
             <p class="sb-line sb-eyebrow" style="--line: 0ms">Breeding record</p>
-            <h1 class="sb-line mt-2 font-display text-[1.9rem] font-semibold leading-[1.08] tracking-[-0.025em] text-foreground sm:text-[2.3rem]" style="--line: 60ms">
+            <h1 class="mt-2 text-base font-bold text-foreground" style="--line: 60ms">
                 {{ $breeding->sire?->name ?? 'Bird removed' }} &times; {{ $breeding->dam?->name ?? 'Bird removed' }}
             </h1>
             <p class="sb-line mt-3 text-[15px] text-muted-foreground" style="--line: 120ms">

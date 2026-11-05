@@ -36,7 +36,7 @@
 
         <header class="mt-3 border-b border-border pb-6">
             <p class="sb-line sb-eyebrow" style="--line: 0ms">{{ $editing ? 'Edit bird' : 'Register a bird' }}</p>
-            <h1 class="sb-line mt-2 font-display text-[1.9rem] font-semibold leading-[1.08] tracking-[-0.025em] text-foreground sm:text-[2.3rem]" style="--line: 60ms">
+            <h1 class="mt-2 text-base font-bold text-foreground" style="--line: 60ms">
                 {{ $editing ? 'Edit '.$broodcock->name : 'Add a Gamefowl' }}
             </h1>
             <p class="sb-line mt-3 text-[16px] leading-relaxed text-muted-foreground" style="--line: 120ms">

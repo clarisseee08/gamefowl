@@ -46,7 +46,7 @@
         <p class="sb-line flex items-center gap-2 text-[15px] font-semibold text-foreground" style="--line: 0ms">
             <x-band-dot :bloodline="$root->bloodline" />{{ $root->bloodline ?: 'Bloodline not recorded' }}
         </p>
-        <h1 class="sb-line mt-3 font-display text-[2.2rem] font-semibold leading-[1.04] tracking-[-0.03em] text-foreground sm:text-[2.8rem]" style="--line: 60ms">
+        <h1 class="{{ (auth()->user()?->isInternal() ?? false) ? 'mt-2 text-base font-bold text-foreground' : 'sb-line mt-3 font-display text-[2.2rem] font-semibold leading-[1.04] tracking-[-0.03em] text-foreground sm:text-[2.8rem]' }}" style="--line: 60ms">
             <span class="sr-only">Family tree of </span>{{ $title }}
         </h1>
         <p class="sb-line mt-1 font-display text-[1.25rem] font-medium tracking-[-0.015em] text-muted-foreground" style="--line: 100ms">
