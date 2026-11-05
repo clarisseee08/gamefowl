@@ -149,6 +149,22 @@ final class DashboardTest extends TestCase
             ->assertSee(route('broodcocks.create'), escape: false);
     }
 
+    /**
+     * The first tile counts every bird on record, sold and deceased included,
+     * so it says so. "Total broodcocks" read as the flock on the farm, which
+     * is the smaller number in the heading above it.
+     */
+    public function test_the_first_tile_counts_every_bird_on_record(): void
+    {
+        Broodcock::factory()->count(3)->create(['status' => 'active']);
+        Broodcock::factory()->create(['status' => 'sold']);
+
+        $this->actingAs(User::factory()->staff()->create())
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSeeInOrder(['Birds on record', '>4</p>'], escape: false)
+            ->assertDontSee('Total broodcocks');
+    }
 
     public function test_an_up_to_date_flock_says_so_rather_than_showing_an_empty_list(): void
     {

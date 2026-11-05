@@ -21,8 +21,10 @@
     /*
      * THE FIGURE is the paginator's own total - the number of birds this view
      * is actually showing across all its pages. No extra query. Its label says
-     * what was counted, because the same number means "on the farm" in the
-     * default view and "matching" once a filter narrows it.
+     * what was counted, because the same number means "on record" in the
+     * default view and "matching" once a filter narrows it. "On record", not
+     * "on the farm": the default view lists every status, sold and deceased
+     * included, so it is the dashboard's on-farm count plus the birds that left.
      */
     $narrowed = $search !== '' || $status !== '' || $class !== '' || $sex !== '' || $bloodline !== '';
     $figureLabel = $narrowed
@@ -30,7 +32,7 @@
         : match ($ownership) {
             'outside' => Str::plural('outside bird', $total),
             'all' => Str::plural('bird', $total).', farm and outside',
-            default => Str::plural('bird', $total).' on the farm',
+            default => Str::plural('bird', $total).' on record',
         };
 
     /*

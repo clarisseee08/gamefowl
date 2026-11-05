@@ -83,14 +83,15 @@ final class BulkDeleteConfirmationTest extends TestCase
         $this->assertNotSoftDeleted($bird);
     }
 
-    public function test_the_list_opens_with_the_count_of_birds_on_the_farm(): void
+    public function test_the_list_opens_with_the_count_of_birds_on_record(): void
     {
         Broodcock::factory()->count(3)->create();
         Broodcock::factory()->external()->create();
 
         Livewire::actingAs(User::factory()->staff()->create())
             ->test(Index::class)
-            ->assertSee('birds on the farm')
+            ->assertSee('birds on record')
+            ->assertDontSee('birds on the farm')
             ->assertSeeHtml('>3</span>');
     }
 }

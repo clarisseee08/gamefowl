@@ -64,7 +64,7 @@
     {{-- Headline figures --}}
     <dl class="mt-10 grid gap-x-10 gap-y-8 sm:grid-cols-2 xl:grid-cols-4" aria-label="Headline figures">
         <div class="{{ $statClass }}">
-            <dt class="{{ $statTitleClass }}">Total broodcocks</dt>
+            <dt class="{{ $statTitleClass }}">Birds on record</dt>
             <dd>
                 <p class="{{ $statValueClass }} text-foreground">{{ number_format($flock['total']) }}</p>
                 @if ($onFarmShare !== null)
