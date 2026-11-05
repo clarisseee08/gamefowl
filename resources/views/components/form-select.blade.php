@@ -183,7 +183,7 @@
             <span id="{{ $id }}-value" class="truncate" x-text="label"></span>
 
             {{-- Rotating the chevron is a transform, which is composited. --}}
-            <svg class="h-4 w-4 shrink-0 text-muted-foreground"
+            <svg class="size-4 shrink-0 text-muted-foreground lg:size-3.5"
                  x-bind:class="open ? 'rotate-180' : ''"
                  style="transition: transform var(--dur-base) var(--ease-in-out)"
                  fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
@@ -215,7 +215,7 @@
             x-transition:leave-start="opacity-100 translate-y-0"
             x-transition:leave-end="opacity-0 -translate-y-1"
             class="d-menu absolute left-0 right-0 top-full z-50 mt-1.5 max-h-72 w-auto flex-nowrap overflow-y-auto
-                   rounded-box border border-base-300 bg-base-100 p-1 text-[15px] elev-2">
+                   rounded-box border border-base-300 bg-base-100 p-1 text-[15px] shadow-md lg:text-xs">
             <template x-for="option in options" x-bind:key="option.index">
                 <li x-bind:id="'{{ $id }}-opt-' + option.index"
                     role="option"
@@ -229,7 +229,7 @@
                          green, and colour here means bloodline and nothing
                          else. --}}
                     <div x-bind:class="option.index === active ? 'd-menu-focus' : ''"
-                         class="flex min-h-11 items-center justify-between gap-2 px-2.5 py-2 text-[15px] leading-snug">
+                         class="flex min-h-11 items-center justify-between gap-2 px-2.5 py-2 text-[15px] leading-snug lg:min-h-7 lg:px-2 lg:py-1.5 lg:text-xs">
                         <span x-text="option.label"></span>
                         <svg x-show="option.index === selected" x-cloak
                              class="h-4 w-4 shrink-0 text-primary" fill="none" stroke="currentColor"
@@ -243,5 +243,5 @@
     </div>
 
     @if ($help) <p class="d-label mt-1">{{ $help }}</p> @endif
-    @error($errorField) <p class="mt-1.5 text-[13px] font-medium text-error">{{ $message }}</p> @enderror
+    @error($errorField) <p class="mt-1.5 text-[13px] font-medium text-error lg:text-[11px]">{{ $message }}</p> @enderror
 </div>

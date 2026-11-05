@@ -123,7 +123,7 @@
          prefix its divider. --}}
     <div class="d-input w-full cursor-pointer gap-0 sm:w-auto">
         <span id="{{ $id }}-label"
-              class="d-label shrink-0 text-[13px] font-medium">
+              class="d-label shrink-0 text-[13px] font-medium lg:text-[11px]">
             {{ $label }}
         </span>
 
@@ -144,11 +144,11 @@
                 x-on:keydown.escape.stop="open = false"
                 x-on:keydown="if ($event.key.length === 1 && /\S/.test($event.key)) search($event.key)"
                 class="flex h-full w-full min-w-0 cursor-pointer items-center justify-between gap-2 text-left
-                       text-[16px] text-base-content focus:outline-none">
+                       text-[15px] text-base-content focus:outline-none lg:text-xs">
             <span id="{{ $id }}-value" class="truncate" x-text="label"></span>
 
             {{-- Rotating the chevron is a transform, which is composited. --}}
-            <svg class="h-4 w-4 shrink-0 text-muted-foreground"
+            <svg class="size-4 shrink-0 text-muted-foreground lg:size-3.5"
                  x-bind:class="open ? 'rotate-180' : ''"
                  style="transition: transform var(--dur-base) var(--ease-in-out)"
                  fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
@@ -181,7 +181,7 @@
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-1"
         class="d-menu absolute left-0 right-0 top-full z-50 mt-1.5 max-h-72 w-auto flex-nowrap overflow-y-auto
-               rounded-box border border-base-300 bg-base-100 p-1 text-[15px] elev-2
+               rounded-box border border-base-300 bg-base-100 p-1 text-[15px] shadow-md lg:text-xs
                sm:left-auto sm:right-0 sm:min-w-full">
         <template x-for="option in options" x-bind:key="option.index">
             <li x-bind:id="'{{ $id }}-opt-' + option.index"
@@ -195,7 +195,7 @@
                      neutral; this project's --color-accent is a brand green,
                      and colour here means bloodline and nothing else. --}}
                 <div x-bind:class="option.index === active ? 'd-menu-focus' : ''"
-                     class="flex min-h-11 items-center justify-between gap-2 px-2.5 text-[15px]">
+                     class="flex min-h-11 items-center justify-between gap-2 px-2.5 text-[15px] lg:min-h-7 lg:px-2 lg:text-xs">
                     <span class="truncate" x-text="option.label"></span>
                     <svg x-show="option.index === selected" x-cloak
                          class="h-4 w-4 shrink-0 text-primary" fill="none" stroke="currentColor"
