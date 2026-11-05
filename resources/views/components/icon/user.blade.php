@@ -17,13 +17,14 @@
     $ink = $tone === 'onDark' ? 'var(--color-brand-muted-fg)' : 'var(--color-muted-foreground)';
 @endphp
 
-<span {{ $attributes->merge(['class' => 'inline-flex h-8 w-8 items-center justify-center rounded-full']) }}
-      style="background-color: {{ $fill }}; box-shadow: inset 0 0 0 1px {{ $ring }}"
-      aria-hidden="true">
-    {{-- Lucide `user`, matching the stroke weight of the nav icons already in use. --}}
-    <svg viewBox="0 0 24 24" fill="none" stroke="{{ $ink }}" stroke-width="1.7"
-         stroke-linecap="round" stroke-linejoin="round" class="h-[18px] w-[18px]">
-        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-        <circle cx="12" cy="7" r="4"/>
-    </svg>
-</span>
+<div {{ $attributes->merge(['class' => 'd-avatar d-avatar-placeholder h-8 w-8']) }} aria-hidden="true">
+    <div class="h-full w-full rounded-full"
+         style="background-color: {{ $fill }}; box-shadow: inset 0 0 0 1px {{ $ring }}">
+        {{-- Lucide `user`, matching the stroke weight of the nav icons already in use. --}}
+        <svg viewBox="0 0 24 24" fill="none" stroke="{{ $ink }}" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" class="h-[18px] w-[18px]">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+        </svg>
+    </div>
+</div>

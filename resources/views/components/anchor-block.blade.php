@@ -16,7 +16,7 @@
     Nothing boxed: the block is type on paper with a hairline beneath, so the
     first thing the eye lands on is the number the screen exists to move.
 
-    Actions go in the `actions` slot (a btn-primary first). Anything that
+    Actions go in the `actions` slot (a d-btn d-btn-primary first). Anything that
     qualifies the number - "3 due this week" - goes in the default slot.
 --}}
 <header {{ $attributes->merge(['class' => 'border-b border-border pb-6 sm:pb-8']) }}>

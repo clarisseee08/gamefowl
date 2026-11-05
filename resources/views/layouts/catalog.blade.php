@@ -61,10 +61,10 @@
             @auth
                 <form method="POST" action="{{ route('logout') }}" class="shrink-0">
                     @csrf
-                    <button type="submit" class="btn-secondary min-h-11 px-4 text-[14px]">Sign out</button>
+                    <button type="submit" class="d-btn d-btn-outline">Sign out</button>
                 </form>
             @else
-                <a href="{{ route('login') }}" wire:navigate class="btn-secondary min-h-11 shrink-0 px-4 text-[14px]">Sign in</a>
+                <a href="{{ route('login') }}" wire:navigate class="d-btn d-btn-outline shrink-0">Sign in</a>
             @endauth
         </div>
 
@@ -83,7 +83,7 @@
     <main class="flex-1">
         @if (session('success'))
             <div class="sb-wrap pt-6">
-                <div class="rounded-lg bg-success-bg px-4 py-3 text-[15px] text-foreground" role="status">
+                <div class="d-alert d-alert-soft d-alert-success text-[15px] text-base-content" role="status">
                     {{ session('success') }}
                 </div>
             </div>

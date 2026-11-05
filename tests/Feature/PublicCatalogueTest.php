@@ -291,7 +291,7 @@ final class PublicCatalogueTest extends TestCase
         $this->get(route('broodcocks.show', $bird))
             ->assertOk()
             ->assertSee('Back to the catalogue')
-            ->assertDontSee('Back to broodcocks');
+            ->assertDontSee('Back to gamefowl');
     }
 
     /** And following it actually works, rather than landing on the login. */
@@ -308,7 +308,7 @@ final class PublicCatalogueTest extends TestCase
         $this->actingAs(User::factory()->staff()->create())
             ->get(route('broodcocks.show', $bird))
             ->assertOk()
-            ->assertSee('Back to broodcocks')
+            ->assertSee('Back to gamefowl')
             ->assertDontSee('Back to the catalogue');
     }
 }

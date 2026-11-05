@@ -255,7 +255,7 @@ final class CatalogTest extends TestCase
             ->get(route('catalog.index'))
             ->assertOk()
             // The sidebar, by the screens only it links to.
-            ->assertSee('Broodcocks')
+            ->assertSee('Gamefowl')
             ->assertSee('Reports');
     }
 
@@ -266,7 +266,7 @@ final class CatalogTest extends TestCase
         $this->actingAs(User::factory()->owner()->create())
             ->get(route('catalog.index'))
             ->assertOk()
-            ->assertSee('Broodcocks')
+            ->assertSee('Gamefowl')
             // Owner-only nav, so this also proves the rail is role-aware here.
             ->assertSee('Users');
     }

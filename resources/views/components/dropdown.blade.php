@@ -10,14 +10,18 @@
 
     Structure follows D:/ems/employee-management-system's ui/dropdown-menu -
     a bordered popover surface holding compact rows, a label row, and hairline
-    separators. Three things were deliberately NOT carried across, and each one
+    separators. The panel is a daisyUI d-menu, so the rows are <li>s
+    (x-dropdown.item, .label and .separator render their own). It is NOT a
+    d-dropdown: that one opens on focus-within, and this one is opened and
+    closed by Alpine - two mechanisms on one panel would disagree about whether
+    it is open. Three things were deliberately NOT carried across, and each one
     would have been a bug here rather than a difference of taste:
 
       shadcn's item hover is `focus:bg-accent`. In that system `accent` is a
-      subtle neutral. In THIS system --color-accent is #ef6905, a strong
-      orange, so porting it literally would have put a colour behind every menu
+      subtle neutral. In THIS system --color-accent is the mist green, a
+      brand fill, so porting it literally would have put a colour behind every menu
       row - and colour here means bloodline and nothing else. The hover surface
-      is bg-muted.
+      is d-menu's own neutral tint.
 
       shadcn's rows are text-xs, 12px. The console floor is 15px body and 44px
       touch targets, because this is read outdoors on a phone. Rows are 15px
@@ -40,17 +44,18 @@
         {{ $trigger }}
     </div>
 
-    <div x-show="open"
-         x-cloak
-         x-transition:enter="transition-[opacity,transform] ease-out duration-200"
-         x-transition:enter-start="opacity-0 -translate-y-1"
-         x-transition:enter-end="opacity-100 translate-y-0"
-         x-transition:leave="transition-[opacity,transform] ease-in duration-150"
-         x-transition:leave-start="opacity-100 translate-y-0"
-         x-transition:leave-end="opacity-0 -translate-y-1"
-         role="menu"
-         class="absolute top-full z-50 mt-1.5 {{ $width }} overflow-hidden rounded-[var(--radius-md)] border border-border bg-popover p-1 {{ $align === 'left' ? 'left-0' : 'right-0' }}"
-         style="box-shadow: var(--shadow-e2)">
+    {{-- flex-nowrap: d-menu wraps its rows into a second column when it runs
+         out of height, which a menu should never do. --}}
+    <ul x-show="open"
+        x-cloak
+        x-transition:enter="transition-[opacity,transform] ease-out duration-200"
+        x-transition:enter-start="opacity-0 -translate-y-1"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition-[opacity,transform] ease-in duration-150"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 -translate-y-1"
+        role="menu"
+        class="d-menu absolute top-full z-50 mt-1.5 {{ $width }} flex-nowrap overflow-hidden rounded-box border border-base-300 bg-base-100 p-1 text-[15px] elev-2 {{ $align === 'left' ? 'left-0' : 'right-0' }}">
         {{ $slot }}
-    </div>
+    </ul>
 </div>

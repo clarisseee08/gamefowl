@@ -63,7 +63,7 @@
         </div>
 
         <div class="mt-9 flex flex-wrap items-center gap-3">
-            <a href="{{ $home }}" class="btn-primary">{{ $homeLabel }}</a>
+            <a href="{{ $home }}" class="d-btn d-btn-primary">{{ $homeLabel }}</a>
 
             {{-- A second way out, when the page has one worth offering. --}}
             @isset($actions)

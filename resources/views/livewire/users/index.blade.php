@@ -31,7 +31,7 @@
 
         @can('create', App\Models\User::class)
             <x-slot:actions>
-                <a href="{{ route('users.create') }}" wire:navigate class="btn-primary">
+                <a href="{{ route('users.create') }}" wire:navigate class="d-btn d-btn-primary">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                     </svg>
@@ -49,7 +49,7 @@
         <x-slot:search>
             <label for="search" class="sr-only">Search</label>
             <input id="search" type="search" wire:model.live.debounce.300ms="search"
-                   placeholder="Name, email or position" class="input">
+                   placeholder="Name, email or position" class="d-input w-full">
         </x-slot:search>
 
         <x-filter-select id="role" label="Role" wire:model.live="role">
@@ -68,7 +68,7 @@
         <x-empty-state title="No accounts match your filters"
                        description="Try clearing the filters to see everyone."
                        icon="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z">
-            <button type="button" wire:click="clearFilters" class="btn-secondary">Clear filters</button>
+            <button type="button" wire:click="clearFilters" class="d-btn d-btn-outline">Clear filters</button>
         </x-empty-state>
     @else
         {{-- Phones: one block per person - name and email, then role and
@@ -90,11 +90,11 @@
                             <p class="mt-0.5 break-all text-[14px] text-muted-foreground">{{ $person->email }}</p>
 
                             <div class="mt-2 flex flex-wrap items-center gap-2">
-                                <span class="badge badge-neutral">{{ $person->role->label() }}</span>
+                                <span class="d-badge d-badge-soft d-badge-neutral">{{ $person->role->label() }}</span>
                                 @if ($person->is_active)
-                                    <span class="badge badge-ok">Active</span>
+                                    <span class="d-badge d-badge-soft d-badge-success">Active</span>
                                 @else
-                                    <span class="badge badge-neutral">Deactivated</span>
+                                    <span class="d-badge d-badge-soft d-badge-neutral">Deactivated</span>
                                 @endif
                                 <span class="text-[14px] text-muted-foreground">{{ $person->position ?? 'No position recorded' }}</span>
                             </div>
@@ -103,13 +103,13 @@
                                 <div class="mt-1 flex flex-wrap items-center gap-x-6">
                                     @can('update', $person)
                                         <a href="{{ route('users.edit', $person) }}" wire:navigate
-                                           class="inline-flex min-h-11 items-center text-[15px] font-medium text-primary hover:underline">
+                                           class="d-link d-link-primary d-link-hover inline-flex min-h-11 items-center text-[15px] font-medium">
                                             Edit<span class="sr-only">, {{ $person->full_name }}</span>
                                         </a>
                                     @endcan
                                     @can('deactivate', $person)
                                         <button type="button" wire:click="confirmToggle({{ $person->id }})"
-                                                class="inline-flex min-h-11 items-center text-[15px] font-medium {{ $person->is_active ? 'text-destructive' : 'text-primary' }} hover:underline">
+                                                class="d-link d-link-hover inline-flex min-h-11 items-center text-[15px] font-medium {{ $person->is_active ? 'd-link-error' : 'd-link-primary' }}">
                                             {{ $person->is_active ? 'Deactivate' : 'Reactivate' }}<span class="sr-only">, {{ $person->full_name }}</span>
                                         </button>
                                     @endcan
@@ -124,7 +124,7 @@
         {{-- Wider screens: the ledger. No horizontal scroll wrapper, so the
              header can stick; Position and Contact drop out where there is no
              room for them. --}}
-        <table class="hidden w-full md:table">
+        <table class="d-table hidden w-full rounded-none md:table [&_td]:border-border [&_th]:border-border">
             <thead>
                 <tr class="border-b border-border">
                     @foreach ($columns as $column)
@@ -175,7 +175,7 @@
                             </div>
                         </td>
                         <td class="whitespace-nowrap px-3 py-3">
-                            <span class="badge badge-neutral">{{ $person->role->label() }}</span>
+                            <span class="d-badge d-badge-soft d-badge-neutral">{{ $person->role->label() }}</span>
                         </td>
                         <td class="hidden whitespace-nowrap px-3 py-3 text-[15px] text-muted-foreground lg:table-cell">{{ $person->position ?? 'Not recorded' }}</td>
                         <td @class([
@@ -184,22 +184,22 @@
                         ])>{{ $person->contact_number ?? 'Not recorded' }}</td>
                         <td class="whitespace-nowrap px-3 py-3">
                             @if ($person->is_active)
-                                <span class="badge badge-ok">Active</span>
+                                <span class="d-badge d-badge-soft d-badge-success">Active</span>
                             @else
-                                <span class="badge badge-neutral">Deactivated</span>
+                                <span class="d-badge d-badge-soft d-badge-neutral">Deactivated</span>
                             @endif
                         </td>
                         <td class="whitespace-nowrap px-3 py-3 text-right">
                             <div class="flex items-center justify-end gap-5">
                                 @can('update', $person)
                                     <a href="{{ route('users.edit', $person) }}" wire:navigate
-                                       class="inline-flex min-h-11 items-center text-[15px] font-medium text-primary hover:underline">
+                                       class="d-link d-link-primary d-link-hover inline-flex min-h-11 items-center text-[15px] font-medium">
                                         Edit<span class="sr-only">, {{ $person->full_name }}</span>
                                     </a>
                                 @endcan
                                 @can('deactivate', $person)
                                     <button type="button" wire:click="confirmToggle({{ $person->id }})"
-                                            class="inline-flex min-h-11 items-center text-[15px] font-medium {{ $person->is_active ? 'text-destructive' : 'text-primary' }} hover:underline">
+                                            class="d-link d-link-hover inline-flex min-h-11 items-center text-[15px] font-medium {{ $person->is_active ? 'd-link-error' : 'd-link-primary' }}">
                                         {{ $person->is_active ? 'Deactivate' : 'Reactivate' }}<span class="sr-only">, {{ $person->full_name }}</span>
                                     </button>
                                 @endcan
@@ -219,10 +219,10 @@
          and to their records, because "Are you sure?" answers nothing. --}}
     @if ($this->pendingUser)
         @php($pending = $this->pendingUser)
-        <div class="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 p-4"
-             x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()"
+        <div class="d-modal d-modal-open z-50 bg-foreground/60 p-4"
+             x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.d-btn-outline')?.click()"
              role="dialog" aria-modal="true" aria-labelledby="toggle-user-title" aria-describedby="toggle-user-body">
-            <div class="dialog-panel elev-3 w-full max-w-md rounded-[12px] bg-card p-6">
+            <div class="d-modal-box elev-3 w-full max-w-md">
                 <div class="flex items-center gap-3">
                     <x-avatar :name="$pending->full_name" size="md" class="shrink-0" />
                     <p class="min-w-0 truncate text-[14px] text-muted-foreground">{{ $pending->email }}</p>
@@ -240,11 +240,11 @@
                         They will be able to sign in again with their existing password.
                     @endif
                 </p>
-                <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                    <button type="button" wire:click="cancel" class="btn-secondary">Cancel</button>
+                <div class="d-modal-action flex-col-reverse gap-3 sm:flex-row">
+                    <button type="button" wire:click="cancel" class="d-btn d-btn-outline">Cancel</button>
                     <button type="button" wire:click="toggleActive" wire:loading.attr="disabled" wire:target="toggleActive"
-                            class="{{ $pending->is_active ? 'btn-danger' : 'btn-primary' }}">
-                        <span class="btn-spinner" wire:loading wire:target="toggleActive"></span>
+                            class="{{ $pending->is_active ? 'd-btn d-btn-error' : 'd-btn d-btn-primary' }}">
+                        <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="toggleActive"></span>
                         Yes, {{ $pending->is_active ? 'deactivate' : 'reactivate' }} {{ Str::before($pending->full_name, ' ') ?: $pending->full_name }}
                     </button>
                 </div>

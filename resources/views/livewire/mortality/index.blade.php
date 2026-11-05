@@ -49,7 +49,7 @@
 
         <x-slot:actions>
             @if ($this->canCreate)
-                <a href="{{ route('mortality.create') }}" wire:navigate class="btn-primary w-full sm:w-auto">
+                <a href="{{ route('mortality.create') }}" wire:navigate class="d-btn d-btn-primary w-full sm:w-auto">
                     Record a Death
                 </a>
             @endif
@@ -59,7 +59,7 @@
     {{-- A Livewire update does not re-render the layout, so the confirmation
          of a delete is shown from inside the component. --}}
     @if ($status)
-        <div class="mt-6 rounded-[8px] bg-success-bg px-4 py-3 text-[15px] text-foreground" role="status">
+        <div class="d-alert d-alert-soft d-alert-success mt-6 block text-[15px] text-base-content" role="status">
             {{ $status }}
         </div>
     @endif
@@ -89,9 +89,7 @@
                                 <span class="datum">{{ $line['total'] }}</span> {{ Str::plural('bird', $line['total']) }} (<span class="datum">{{ $share }}%</span>)
                             </span>
                         </div>
-                        <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-[1px] bg-muted">
-                            <div class="h-1.5 bg-muted-foreground" style="width: {{ $share }}%"></div>
-                        </div>
+                        <progress class="d-progress mt-1.5 block h-1.5 w-full" value="{{ $share }}" max="100" aria-hidden="true"></progress>
                     </li>
                 @endforeach
             </ul>
@@ -103,13 +101,13 @@
     ---------------------------------------------------------------- --}}
     <x-filter-bar class="mt-8" :active="$filtering" clear="clearFilters">
         <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="filter-from" class="label shrink-0">Died on or after</label>
-            <input id="filter-from" type="date" wire:model.live="from" class="input datum w-full sm:w-auto">
+            <label for="filter-from" class="d-fieldset-legend mb-0 shrink-0 py-0">Died on or after</label>
+            <input id="filter-from" type="date" wire:model.live="from" class="d-input datum w-full sm:w-auto">
         </div>
 
         <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="filter-to" class="label shrink-0">Died on or before</label>
-            <input id="filter-to" type="date" wire:model.live="to" class="input datum w-full sm:w-auto">
+            <label for="filter-to" class="d-fieldset-legend mb-0 shrink-0 py-0">Died on or before</label>
+            <input id="filter-to" type="date" wire:model.live="to" class="d-input datum w-full sm:w-auto">
         </div>
 
         <x-filter-select id="filter-cause" label="Cause" wire:model.live="cause">
@@ -132,14 +130,14 @@
             <x-empty-state title="No deaths match these filters."
                            description="Try widening the dates, or choose “All causes”."
                            icon="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z">
-                <button type="button" wire:click="clearFilters" class="btn-secondary">Clear filters</button>
+                <button type="button" wire:click="clearFilters" class="d-btn d-btn-outline">Clear filters</button>
             </x-empty-state>
         @else
             <x-empty-state title="No deaths have been recorded yet."
                            :description="$this->canCreate ? 'When a bird dies, record it here so the farm keeps a complete history for that bird.' : null"
                            icon="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z">
                 @if ($this->canCreate)
-                    <a href="{{ route('mortality.create') }}" wire:navigate class="btn-primary">Record a Death</a>
+                    <a href="{{ route('mortality.create') }}" wire:navigate class="d-btn d-btn-primary">Record a Death</a>
                 @endif
             </x-empty-state>
         @endif
@@ -187,7 +185,7 @@
                     @if ($canDelete)
                         <button type="button"
                                 wire:click="confirmDelete({{ $record->id }})"
-                                class="btn-quiet mt-3 -ml-3 text-destructive">
+                                class="d-btn d-btn-ghost mt-3 -ml-3 text-destructive">
                             Delete Record
                         </button>
                     @endif
@@ -199,15 +197,15 @@
              wire:loading.block wire:target="{{ $loadingTargets }}">
             @for ($i = 0; $i < 4; $i++)
                 <div>
-                    <div class="skeleton h-3 {{ ['w-3/4', 'w-2/3', 'w-4/5', 'w-1/2'][$i] }}"></div>
-                    <div class="skeleton mt-3 h-3 w-2/5"></div>
+                    <div class="d-skeleton h-3 {{ ['w-3/4', 'w-2/3', 'w-4/5', 'w-1/2'][$i] }}"></div>
+                    <div class="d-skeleton mt-3 h-3 w-2/5"></div>
                 </div>
             @endfor
         </div>
 
         {{-- Wider screens: a ledger with a header that stays in view. No
              overflow wrapper - a scrolling ancestor would stop it sticking. --}}
-        <table class="hidden w-full border-separate border-spacing-0 text-[15px] md:table">
+        <table class="d-table hidden w-full border-separate border-spacing-0 text-[15px] md:table">
             <thead class="sticky top-0 z-10 bg-background">
                 <tr>
                     <x-sort-control field="date_of_death" label="Date of Death"
@@ -221,15 +219,15 @@
                     <th scope="col" class="border-b border-border px-4 py-3 text-left text-[13px] font-semibold text-muted-foreground">Age at death</th>
                     <th scope="col" class="hidden border-b border-border px-4 py-3 text-left text-[13px] font-semibold text-muted-foreground lg:table-cell">Recorded by</th>
                     @if ($canDelete)
-                        <th scope="col" class="border-b border-border py-3 pl-4"><span class="sr-only">Actions</span></th>
+                        <th scope="col" class="border-b border-border py-3 pl-4 pr-0"><span class="sr-only">Actions</span></th>
                     @endif
                 </tr>
             </thead>
 
             <tbody wire:loading.remove wire:target="{{ $loadingTargets }}">
                 @foreach ($rows as $record)
-                    <tr wire:key="row-{{ $record->id }}" class="row-hover align-top">
-                        <td class="datum whitespace-nowrap border-b border-border py-3 pr-4 text-foreground">
+                    <tr wire:key="row-{{ $record->id }}" class="row-hover align-top *:align-top">
+                        <td class="datum whitespace-nowrap border-b border-border py-3 pl-0 pr-4 text-foreground">
                             {{ $record->date_of_death->format('d M Y') }}
                         </td>
                         <td class="border-b border-border px-4 py-3">
@@ -254,10 +252,10 @@
                         </td>
                         <td class="hidden border-b border-border px-4 py-3 text-muted-foreground lg:table-cell">{{ $record->recordedBy?->full_name ?? 'Not recorded' }}</td>
                         @if ($canDelete)
-                            <td class="border-b border-border py-1.5 pl-4 text-right">
+                            <td class="border-b border-border py-1.5 pl-4 pr-0 text-right">
                                 <button type="button"
                                         wire:click="confirmDelete({{ $record->id }})"
-                                        class="btn-quiet -mr-3 text-destructive">
+                                        class="d-btn d-btn-ghost -mr-3 text-destructive">
                                     Delete<span class="sr-only"> the death record for {{ $record->broodcock?->name ?? 'this bird' }}</span>
                                 </button>
                             </td>
@@ -280,11 +278,11 @@
     ---------------------------------------------------------------- --}}
     @if ($this->confirmingRecord)
         @php $confirming = $this->confirmingRecord; @endphp
-        <div class="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 p-4"
+        <div class="d-modal d-modal-open"
              x-data x-trap.noscroll="true"
              x-on:keydown.escape.window="$wire.cancelDelete()"
              role="dialog" aria-modal="true" aria-labelledby="delete-mortality-title">
-            <div class="dialog-panel elev-3 w-full max-w-md rounded-[12px] bg-card p-6">
+            <div class="d-modal-box elev-3 max-w-md">
                 <h2 id="delete-mortality-title" class="font-display text-[22px] font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
                     Delete the death record for
                     {{ $confirming->broodcock?->displayName() ?? 'this bird' }}?
@@ -296,19 +294,19 @@
                         <strong class="datum font-semibold text-foreground">{{ $confirming->date_of_death->format('d M Y') }}</strong>
                         ({{ $confirming->cause_of_death }}) will be removed from the register.
                     </p>
-                    <p class="rounded-[8px] bg-destructive-bg px-3 py-2.5 text-foreground">
+                    <p class="d-alert d-alert-soft d-alert-error block px-3 py-2.5 text-[15px] leading-relaxed text-base-content">
                         {{ $confirming->broodcock?->name ?? 'The bird' }}
                         will be put back on the <strong class="font-semibold">active</strong> list, as if the death had never
                         been recorded. Do this only if the death was entered by mistake.
                     </p>
                 </div>
 
-                <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                    <button type="button" wire:click="cancelDelete" class="btn-secondary">
+                <div class="d-modal-action flex-col-reverse gap-3 sm:flex-row">
+                    <button type="button" wire:click="cancelDelete" class="d-btn d-btn-outline">
                         No, Keep the Record
                     </button>
-                    <button type="button" wire:click="delete" class="btn-danger" wire:loading.attr="disabled" wire:target="delete">
-                        <span class="btn-spinner" wire:loading wire:target="delete"></span>
+                    <button type="button" wire:click="delete" class="d-btn d-btn-error" wire:loading.attr="disabled" wire:target="delete">
+                        <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="delete"></span>
                         Yes, Delete This Record
                     </button>
                 </div>

@@ -32,7 +32,7 @@
         data-theme-toggle
         title="Switch between light and dark"
         aria-label="Switch between light and dark"
-        {{ $attributes->merge(['class' => 'btn-quiet h-11 min-h-0 w-11 px-0']) }}>
+        {{ $attributes->merge(['class' => 'd-btn d-btn-ghost d-btn-square']) }}>
 
     {{-- Light is in effect. --}}
     <svg data-theme-icon="light" class="h-[18px] w-[18px]" fill="currentColor"

@@ -94,7 +94,7 @@
             @endif
 
             @if ($clear)
-                <button type="button" wire:click="{{ $clear }}" class="btn-secondary">
+                <button type="button" wire:click="{{ $clear }}" class="d-btn d-btn-outline">
                     Clear filters
                 </button>
             @endif

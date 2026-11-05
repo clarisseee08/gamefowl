@@ -20,25 +20,21 @@
     from. The appearance does not follow it, and the difference is deliberate:
 
       RADIX RENDERS A SEGMENTED CONTROL — a bg-muted pill holding triggers that
-      turn white and gain a shadow when active. This system has no shadows and
-      spends no colour on chrome, so tabs are the underlined kind that app.css
-      already defines: `.tab`, `.tab-active`, `.tab-indicator`. Using the
-      existing classes is the whole point; a second tab style would be a second
-      product.
+      turn white and gain a shadow when active. This system spends no colour on
+      chrome, so tabs are the underlined kind: daisyUI's d-tabs d-tabs-border.
+      (The pill kind exists too, as x-segmented; a third tab style would be a
+      third product.)
 
-      shadcn's triggers are text-sm with an h-10 strip. `.tab` is 15px and
-      min-h-11, because the console floor is a 44px touch target used outdoors.
+      shadcn's triggers are text-sm with an h-10 strip. A d-tab here is 15px
+      and 45px tall, because the console floor is a 44px touch target used
+      outdoors.
 
-    THE INDICATOR IS THE ONE PLACE WIDTH IS ANIMATED, and app.css says so: an
-    underline that slides without resizing cannot track tabs of different
-    lengths. Everything else about it is a transform.
-
-    IT IS MEASURED, NOT GUESSED. Tab widths depend on rendered text, so there is
-    no server-side geometry to emit; `move()` reads offsetLeft/offsetWidth off
-    the real buttons. It runs SYNCHRONOUSLY in init() rather than in $nextTick
-    so the indicator's first style binding already has its position — deferring
-    it would leave the bar at width 0 for a frame and then animate it out from
-    the left edge, which is a page-load animation and reads as a glitch.
+    THE UNDERLINE IS DRAWN PER TAB by d-tabs-border, under whichever tab is
+    d-tab-active. There used to be one sliding indicator, positioned by
+    measuring the buttons' offsetLeft/offsetWidth; with each tab carrying its
+    own underline there is nothing left to measure, so that measuring and its
+    resize handler are gone. Inactive tabs take text-muted-foreground because
+    d-tab draws them at 50% ink, under the console's 7:1 floor.
 
     AUTOMATIC ACTIVATION (arrow key both moves focus and switches panel) is the
     WAI-ARIA pattern for tabs whose panels are already in the DOM. Manual
@@ -63,14 +59,8 @@
 
 <div x-data="{
         active: @js($active),
-        ind: { x: 0, w: 0 },
-        init() { this.move() },
         buttons() { return this.$refs.list ? Array.from(this.$refs.list.querySelectorAll('[role=tab]')) : [] },
-        move() {
-            const el = this.buttons().find((n) => n.dataset.tab === this.active);
-            if (el) { this.ind = { x: el.offsetLeft, w: el.offsetWidth } }
-        },
-        select(value) { this.active = value; this.$nextTick(() => this.move()) },
+        select(value) { this.active = value },
         focusTab(el) { if (el) { this.select(el.dataset.tab); el.focus() } },
         step(delta) {
             const items = this.buttons();
@@ -79,17 +69,15 @@
         },
         jump(last) { const items = this.buttons(); this.focusTab(last ? items[items.length - 1] : items[0]); }
      }"
-     x-on:resize.window="move()"
      {{ $attributes }}>
 
-    {{-- The scroll box is the positioned ancestor, so offsetLeft and the
-         indicator share one origin and the bar keeps up when a narrow phone
-         scrolls the strip sideways. --}}
-    <div class="relative overflow-x-auto border-b border-border">
+    {{-- The scroll box lets a narrow phone scroll the strip sideways rather
+         than the page; flex-nowrap overrides d-tabs' wrapping so it can. --}}
+    <div class="overflow-x-auto border-b border-border">
         <div x-ref="list"
              role="tablist"
              @if ($label) aria-label="{{ $label }}" @endif
-             class="flex w-max min-w-full gap-1"
+             class="d-tabs d-tabs-border w-max min-w-full flex-nowrap gap-1"
              x-on:keydown.arrow-right.prevent="step(1)"
              x-on:keydown.arrow-left.prevent="step(-1)"
              x-on:keydown.home.prevent="jump(false)"
@@ -116,14 +104,14 @@
                         aria-controls="{{ $name }}-panel-{{ $slug }}"
                         x-bind:aria-selected="active === {{ $value }} ? 'true' : 'false'"
                         x-bind:tabindex="active === {{ $value }} ? 0 : -1"
-                        x-bind:class="{ 'tab-active': active === {{ $value }} }"
+                        x-bind:class="{
+                            'd-tab-active text-base-content': active === {{ $value }},
+                            'text-muted-foreground hover:text-base-content': active !== {{ $value }},
+                        }"
                         x-on:click="select({{ $value }})"
-                        class="tab shrink-0">{{ $item['label'] }}</button>
+                        class="d-tab shrink-0 text-[15px]">{{ $item['label'] }}</button>
             @endforeach
         </div>
-
-        <span class="tab-indicator left-0" aria-hidden="true"
-              x-bind:style="'transform: translateX(' + ind.x + 'px); width: ' + ind.w + 'px'"></span>
     </div>
 
     <div class="mt-4">{{ $slot }}</div>

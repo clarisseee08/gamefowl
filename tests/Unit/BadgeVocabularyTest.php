@@ -20,12 +20,34 @@ use PHPUnit\Framework\TestCase;
  * copy and data rather than on class names.
  *
  * That is an invisible failure mode. This converts it into a red test.
+ *
+ * The badges are daisyUI now (`d-badge-success`, …), so "defined" means present
+ * in the COMPILED bundle rather than in app.css: daisyUI only emits a class
+ * Tailwind found in a scanned source, and a class it never emitted renders
+ * unstyled exactly as a misspelt one used to.
  */
 final class BadgeVocabularyTest extends TestCase
 {
     private function appCss(): string
     {
         return file_get_contents(__DIR__.'/../../resources/css/app.css');
+    }
+
+    private function compiledCss(): string
+    {
+        $bundles = glob(__DIR__.'/../../public/build/assets/*.css') ?: [];
+
+        if ($bundles === []) {
+            $this->markTestSkipped('No compiled bundle. Run `npm run build` first.');
+        }
+
+        return implode('', array_map('file_get_contents', $bundles));
+    }
+
+    /** Emitted means a selector for it exists, bare or behind a variant (`.lg\:d-drawer-open`). */
+    private function bundleDefines(string $css, string $class): bool
+    {
+        return preg_match('/[.:]'.preg_quote($class, '/').'(?![\w-])/', $css) === 1;
     }
 
     public static function enums(): array
@@ -42,7 +64,7 @@ final class BadgeVocabularyTest extends TestCase
     #[DataProvider('enums')]
     public function test_every_badge_class_an_enum_emits_is_defined_in_the_stylesheet(string $enum): void
     {
-        $css = $this->appCss();
+        $css = $this->compiledCss();
 
         foreach ($enum::cases() as $case) {
             foreach (preg_split('/\s+/', trim($case->badgeClasses())) as $class) {
@@ -50,8 +72,8 @@ final class BadgeVocabularyTest extends TestCase
                     continue;
                 }
 
-                $this->assertStringContainsString(".{$class}", $css,
-                    "{$enum}::{$case->name} emits '{$class}', which app.css does not define. "
+                $this->assertTrue($this->bundleDefines($css, $class),
+                    "{$enum}::{$case->name} emits '{$class}', which the compiled bundle does not define. "
                     .'The enum and the stylesheet have drifted apart and this badge renders unstyled.');
             }
         }
@@ -83,18 +105,32 @@ final class BadgeVocabularyTest extends TestCase
     public function test_every_component_class_used_in_a_view_actually_exists(): void
     {
         $css = $this->appCss();
+        $compiled = $this->compiledCss();
         $views = $this->bladeFiles();
         $unknown = [];
 
         // Only the closed vocabularies. Tailwind's own utilities are open-ended
         // and generated on demand, so they cannot be checked this way.
+        //
+        // The (?<![\w-]) guard stops `d-badge-soft` being read as a retired GFMS
+        // class `badge-soft`. The retired prefixes stay listed, so a leftover
+        // `btn-primary` fails here now that app.css no longer defines it.
         $prefixes = ['badge-', 'btn-', 'input-', 'band-tag', 'ped-', 'table-hairline', 'datum'];
 
         foreach ($views as $file) {
             $body = file_get_contents($file);
 
+            // daisyUI is prefixed `d-`; every such class must have been emitted.
+            preg_match_all('/(?<![\w-])(d-[a-z][a-z0-9-]*)\b/', $body, $daisy);
+
+            foreach (array_unique($daisy[1]) as $class) {
+                if (! $this->bundleDefines($compiled, $class)) {
+                    $unknown[] = basename(dirname($file)).'/'.basename($file).": {$class}";
+                }
+            }
+
             foreach ($prefixes as $prefix) {
-                preg_match_all('/\b('.preg_quote($prefix, '/').'[a-z0-9-]*)\b/i', $body, $m);
+                preg_match_all('/(?<![\w-])('.preg_quote($prefix, '/').'[a-z0-9-]*)\b/i', $body, $m);
 
                 foreach (array_unique($m[1]) as $class) {
                     // Blade interpolation such as {{ $enum->badgeClasses() }} is
@@ -108,7 +144,7 @@ final class BadgeVocabularyTest extends TestCase
         }
 
         $this->assertSame([], array_values(array_unique($unknown)),
-            'Blade views reference component classes that app.css does not define. '
+            'Blade views reference component classes that neither app.css nor the compiled bundle define. '
             ."Tailwind emits no CSS and no warning for these, so they render unstyled:\n"
             .implode("\n", array_unique($unknown)));
     }

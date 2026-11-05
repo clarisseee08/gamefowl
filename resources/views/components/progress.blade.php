@@ -10,19 +10,13 @@
 
     Structure follows D:/ems/employee-management-system's ui/progress: a rounded
     track, a flat bar clipped by it, and the figure stated in text beside the
-    label. The track is this project's existing `.meter`, not a new primitive.
+    label.
 
-    THE BAR IS DRIVEN BY transform: scaleX, NOT width. Width is a layout
-    property: changing it reflows the bar's subtree and repaints on every frame,
-    on the low-end Android phones this runs on. A transform is composited and
-    costs neither. `origin-left` is what makes it grow from the left edge rather
-    than out of the middle.
-
-    THE BAR IS SQUARE-ENDED ON PURPOSE. app.css warns that scaleX distorts a
-    rounded cap into an ellipse — true, and the reason the bar carries
-    `rounded-none` to override `.meter > span`. The track is already
-    `overflow-hidden rounded-full`, so it supplies the left cap by clipping,
-    which is exactly how the shadcn original gets its shape too.
+    THE BAR IS A NATIVE <progress>, styled by daisyUI's d-progress. The browser
+    draws the fill from `value` itself, so there is no inner element to size or
+    scale and nothing for this file to animate - which settles the old
+    width-versus-scaleX question by not asking it. h-1.5 keeps the thin 6px
+    track the meters always had.
 
     THE FIGURE IS .datum. It is a percentage, so it is monospaced with tabular
     figures like every other number here: a column of these has to align on the
@@ -33,14 +27,12 @@
 
     THE VALUE IS FORWARDED TO ARIA, which is the bug EMS's own file documents
     fixing — a bar whose value drove only the visual left every assistive
-    technology told that a measurement existed but never what it was.
+    technology told that a measurement existed but never what it was. A native
+    <progress> exposes its value already; the explicit aria-value* attributes
+    stay so that holds even where a reader ignores the element's own value.
 --}}
 @php
     $percent = (int) round(min(100, max(0, (float) $value)));
-
-    /* 4dp: at a 320px-wide bar one percent is ~3px, and rounding the scale to
-       two places visibly quantises the last few percent of a long bar. */
-    $scale = number_format($percent / 100, 4, '.', '');
 
     $labelId = $label !== null ? 'progress-'.\Illuminate\Support\Str::slug($label).'-label' : null;
 @endphp
@@ -53,16 +45,12 @@
         </div>
     @endif
 
-    <div class="meter {{ $label !== null ? 'mt-2' : '' }}"
-         role="progressbar"
-         aria-valuenow="{{ $percent }}"
-         aria-valuemin="0"
-         aria-valuemax="100"
-         @if ($labelId) aria-labelledby="{{ $labelId }}" @endif>
-
-        {{-- w-full then scaled down, rather than a percentage width, so the
-             browser lays the bar out once and only ever recomposites it. --}}
-        <span class="block h-full w-full origin-left rounded-none bg-primary"
-              style="transform: scaleX({{ $scale }}); transition: transform var(--dur-base) var(--ease-in-out)"></span>
-    </div>
+    <progress class="d-progress d-progress-primary block h-1.5 {{ $label !== null ? 'mt-2' : '' }}"
+              value="{{ $percent }}"
+              max="100"
+              role="progressbar"
+              aria-valuenow="{{ $percent }}"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              @if ($labelId) aria-labelledby="{{ $labelId }}" @endif></progress>
 </div>

@@ -145,7 +145,7 @@ final class DashboardTest extends TestCase
             ->assertOk()
             ->assertSee('Today on the farm')
             ->assertSeeInOrder(['3', 'birds on the farm'])
-            ->assertSee('Add broodcock')
+            ->assertSee('Add gamefowl')
             ->assertSee(route('broodcocks.create'), escape: false);
     }
 

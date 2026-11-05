@@ -13,9 +13,10 @@
     Required wherever a list can come back with nothing. A table that renders
     its header and then stops looks broken; this looks finished.
 
-    It wraps the `.empty-state` classes app.css already defines rather than
-    restyling them, so every empty region in the console is the same object.
-    The slot is for ONE action — the thing that would fill the list.
+    daisyUI has no empty-state component, so this is plain utilities on the
+    same tokens a d-card uses - and every empty region in the console is still
+    the same object because they all come through here. The slot is for ONE
+    action — the thing that would fill the list.
 
     Structure follows D:/ems/employee-management-system's empty-state: glyph in
     a circle, title, description. Everything decorative about it was dropped,
@@ -40,15 +41,15 @@
       that flags mortality, tinting "no results" as a warning is a real
       misreading, not a stylistic one.
 
-      EMS's title is 14px at weight 700 and its body is 12px.
-      `.empty-state-title` is 17px and `.empty-state-body` is 15px, because this
-      text is the only thing on the screen at the moment it appears.
+      EMS's title is 14px at weight 700 and its body is 12px. The title here
+      is 17px and the body 15px, because this text is the only thing on the
+      screen at the moment it appears.
 --}}
-<div {{ $attributes->merge(['class' => 'empty-state']) }}>
+<div {{ $attributes->merge(['class' => 'flex flex-col items-center justify-center rounded-box border border-border bg-base-100 px-6 py-12 text-center']) }}>
     @if ($icon)
         {{-- The circle is a background step, which is how this system draws
              elevation. A shadow would be the other way, and it is banned. --}}
-        <span class="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-muted">
+        <span class="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-base-300">
             <svg class="h-5 w-5 text-muted-foreground" fill="none" stroke="currentColor"
                  stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="{{ $icon }}"/>
@@ -56,10 +57,10 @@
         </span>
     @endif
 
-    <p class="empty-state-title">{{ $title }}</p>
+    <p class="text-[17px] text-base-content">{{ $title }}</p>
 
     @if ($description)
-        <p class="empty-state-body">{{ $description }}</p>
+        <p class="mt-2 max-w-[46ch] text-[15px] text-muted-foreground">{{ $description }}</p>
     @endif
 
     @if (trim($slot) !== '')

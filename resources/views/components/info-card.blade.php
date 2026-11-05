@@ -35,10 +35,10 @@
       an array is how numbers lose .datum — the call site can see that a weight
       is a weight and a generic renderer cannot.
 
-    NO SHADOW BEYOND .card's OWN. Elevation means interactive or layered;
-    a panel sitting still on the page is neither.
+    NO SHADOW BEYOND THE CARD'S OWN elev-1. Elevation means interactive or
+    layered; a panel sitting still on the page is neither.
 --}}
-<div {{ $attributes->merge(['class' => 'card p-5']) }}>
+<div {{ $attributes->merge(['class' => 'd-card d-card-border bg-base-100 elev-1 p-5']) }}>
     <div class="flex flex-col gap-2 border-b border-border pb-3 sm:flex-row sm:items-start sm:justify-between">
         <div class="flex min-w-0 items-start gap-2.5">
             @if ($icon)
@@ -51,7 +51,7 @@
             @endif
 
             <div class="min-w-0">
-                <h3 class="text-[15px] leading-snug text-foreground">{{ $title }}</h3>
+                <h3 class="text-[15px] leading-snug text-base-content">{{ $title }}</h3>
 
                 @if ($description)
                     <p class="mt-0.5 text-[13px] leading-snug text-muted-foreground">{{ $description }}</p>

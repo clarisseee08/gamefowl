@@ -99,7 +99,7 @@
         Livewire `toast` event for saves that do not redirect:
         $this->dispatch('toast', message: 'Saved.', tone: 'ok').
     --}}
-    <div class="toast-stack" aria-live="polite"
+    <div class="d-toast d-toast-bottom d-toast-center z-[60] sm:d-toast-end" aria-live="polite"
          x-data="{
              toasts: [],
              push(message, tone = 'ok') {
@@ -112,19 +112,19 @@
          }"
          x-on:toast.window="push($event.detail.message ?? $event.detail[0]?.message, $event.detail.tone ?? $event.detail[0]?.tone ?? 'ok')">
         @if (session('success'))
-            <div class="toast toast-ok" role="status" x-data="{ open: true }" x-show="open"
+            <div class="d-alert d-alert-soft d-alert-success text-base-content" role="status" x-data="{ open: true }" x-show="open"
                  x-init="setTimeout(() => open = false, 5000)"
                  x-transition:enter="toast-enter-active" x-transition:enter-start="toast-enter"
                  x-transition:leave="toast-leave-active">{{ session('success') }}</div>
         @endif
         @if (session('error'))
-            <div class="toast toast-bad" role="alert" x-data="{ open: true }" x-show="open"
+            <div class="d-alert d-alert-soft d-alert-error text-base-content" role="alert" x-data="{ open: true }" x-show="open"
                  x-init="setTimeout(() => open = false, 8000)"
                  x-transition:enter="toast-enter-active" x-transition:enter-start="toast-enter"
                  x-transition:leave="toast-leave-active">{{ session('error') }}</div>
         @endif
         <template x-for="t in toasts" :key="t.id">
-            <div class="toast" :class="t.tone === 'bad' ? 'toast-bad' : 'toast-ok'" role="status"
+            <div class="d-alert d-alert-soft text-base-content" :class="t.tone === 'bad' ? 'd-alert-error' : 'd-alert-success'" role="status"
                  x-transition:enter="toast-enter-active" x-transition:enter-start="toast-enter"
                  x-transition:leave="toast-leave-active" x-text="t.message"></div>
         </template>

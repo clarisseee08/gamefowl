@@ -64,7 +64,7 @@
                         {{-- Inline caption editing. --}}
                         @if ($canManage && $editingCaptionFor === $photo->id)
                             <div>
-                                <label for="caption-{{ $photo->id }}" class="label">Description</label>
+                                <label for="caption-{{ $photo->id }}" class="d-fieldset-legend">Description</label>
                                 <input id="caption-{{ $photo->id }}"
                                        type="text"
                                        wire:model="captionDraft"
@@ -73,18 +73,18 @@
                                        maxlength="255"
                                        placeholder="e.g. Side view"
                                        @error('captionDraft') aria-describedby="caption-{{ $photo->id }}-error" aria-invalid="true" @enderror
-                                       @class(['input', 'mt-1', 'input-error' => $errors->has('captionDraft')])>
+                                       @class(['d-input w-full', 'mt-1', 'd-input-error' => $errors->has('captionDraft')])>
                                 @error('captionDraft')
-                                    <p id="caption-{{ $photo->id }}-error" class="error" role="alert">{{ $message }}</p>
+                                    <p id="caption-{{ $photo->id }}-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
                                 @enderror
 
                                 <div class="mt-3 flex gap-2">
                                     <button type="button" wire:click="saveCaption" wire:loading.attr="disabled" wire:target="saveCaption"
-                                            class="btn-primary flex-1 px-3 text-[14px]">
-                                        <span class="btn-spinner" wire:loading wire:target="saveCaption"></span>
+                                            class="d-btn d-btn-primary flex-1">
+                                        <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="saveCaption"></span>
                                         Save
                                     </button>
-                                    <button type="button" wire:click="cancelEditingCaption" class="btn-secondary flex-1 px-3 text-[14px]">
+                                    <button type="button" wire:click="cancelEditingCaption" class="d-btn d-btn-outline flex-1">
                                         Cancel
                                     </button>
                                 </div>
@@ -110,21 +110,21 @@
                                             wire:click="setPrimary({{ $photo->id }})"
                                             wire:loading.attr="disabled"
                                             wire:target="setPrimary({{ $photo->id }})"
-                                            class="btn-quiet w-full justify-start px-2 text-[14px]">
-                                        <span class="btn-spinner" wire:loading wire:target="setPrimary({{ $photo->id }})"></span>
+                                            class="d-btn d-btn-ghost w-full justify-start px-2">
+                                        <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="setPrimary({{ $photo->id }})"></span>
                                         Make this the main photo
                                     </button>
                                 @endunless
 
                                 <button type="button"
                                         wire:click="startEditingCaption({{ $photo->id }})"
-                                        class="btn-quiet w-full justify-start px-2 text-[14px]">
+                                        class="d-btn d-btn-ghost w-full justify-start px-2">
                                     {{ $photo->caption ? 'Edit description' : 'Add description' }}
                                 </button>
 
                                 <button type="button"
                                         wire:click="confirmDelete({{ $photo->id }})"
-                                        class="btn-quiet w-full justify-start px-2 text-[14px] text-destructive hover:bg-destructive-bg">
+                                        class="d-btn d-btn-ghost w-full justify-start px-2 text-destructive hover:bg-destructive-bg">
                                     Delete photo
                                 </button>
                             </div>
@@ -139,10 +139,10 @@
          plainly that the file is gone for good - "Are you sure?" tells a
          worried keeper nothing. --}}
     @if ($confirming)
-        <div class="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 p-4"
+        <div class="d-modal d-modal-open"
              x-data x-trap.noscroll="true" x-on:keydown.escape.window="$wire.cancelDelete()"
              role="dialog" aria-modal="true" aria-labelledby="delete-photo-title" aria-describedby="delete-photo-body">
-            <div class="dialog-panel elev-3 w-full max-w-md rounded-[12px] bg-card p-6">
+            <div class="d-modal-box elev-3 w-full max-w-md">
                 <div class="flex items-start gap-4">
                     <span class="block w-16 shrink-0 overflow-hidden rounded-[8px] bg-muted aspect-[4/5]">
                         <img src="{{ route('photos.show', ['photo' => $confirming, 'size' => 'thumb']) }}" alt=""
@@ -165,12 +165,12 @@
                         </p>
                     </div>
                 </div>
-                <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                    <button type="button" wire:click="cancelDelete" class="btn-secondary">Cancel</button>
+                <div class="d-modal-action flex-col-reverse gap-3 sm:flex-row">
+                    <button type="button" wire:click="cancelDelete" class="d-btn d-btn-outline">Cancel</button>
                     <button type="button" wire:click="delete({{ $confirming->id }})"
                             wire:loading.attr="disabled" wire:target="delete({{ $confirming->id }})"
-                            class="btn-danger">
-                        <span class="btn-spinner" wire:loading wire:target="delete({{ $confirming->id }})"></span>
+                            class="d-btn d-btn-error">
+                        <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="delete({{ $confirming->id }})"></span>
                         Delete photo
                     </button>
                 </div>
@@ -192,7 +192,7 @@
          aria-label="Enlarged photo">
 
         <button type="button" x-on:click="open = false"
-                class="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-card text-foreground hover:bg-muted"
+                class="d-btn d-btn-circle absolute right-4 top-4"
                 aria-label="Close" title="Close">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>

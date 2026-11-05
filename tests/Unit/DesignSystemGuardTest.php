@@ -199,7 +199,8 @@ final class DesignSystemGuardTest extends TestCase
         $offenders = [];
 
         // Utilities that only ever appear on something you click or focus.
-        $interactive = ['btn-primary', 'btn-secondary', 'btn-danger', 'btn-quiet', 'input', 'badge'];
+        $interactive = ['d-btn', 'd-input', 'd-select', 'd-textarea', 'd-file-input', 'd-checkbox',
+            'd-radio', 'd-toggle', 'd-badge', 'd-link', 'd-tab', 'd-menu'];
 
         foreach ($this->files('resources/views', '.blade.php') as $file) {
             $body = preg_replace('/\{\{--.*?--\}\}/s', '', file_get_contents($file)) ?? '';

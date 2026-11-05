@@ -4,7 +4,7 @@
      * something broken, so every row is label + value and the only colour is
      * the pass/fail state.
      */
-    $state = fn (bool $ok) => $ok ? 'badge badge-ok' : 'badge badge-alert';
+    $state = fn (bool $ok) => $ok ? 'd-badge d-badge-soft d-badge-success' : 'd-badge d-badge-soft d-badge-error';
 
     // The headline is counted from the same arrays the rows below render -
     // nothing is probed twice and nothing is invented.
@@ -92,7 +92,7 @@
                         <dt class="datum text-[15px] text-foreground">{{ $name }}</dt>
                         <dd class="text-right">
                             @if ($result === 'reachable')
-                                <span class="badge badge-ok">{{ $result }}</span>
+                                <span class="d-badge d-badge-soft d-badge-success">{{ $result }}</span>
                             @else
                                 <span class="text-[14px] text-destructive">{{ $result }}</span>
                             @endif
@@ -110,7 +110,7 @@
                         <dt class="text-[15px] text-muted-foreground">{{ $label }}</dt>
                         <dd class="text-right">
                             @if ($value === 'MISSING')
-                                <span class="badge badge-alert">{{ $value }}</span>
+                                <span class="d-badge d-badge-soft d-badge-error">{{ $value }}</span>
                             @else
                                 <span class="datum text-[15px] text-foreground">{{ $value }}</span>
                             @endif

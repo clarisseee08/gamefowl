@@ -12,7 +12,7 @@
 
     {{-- Status message, e.g. after a successful password reset. --}}
     @if (session('status'))
-        <div class="rise-in mt-4 rounded-lg bg-success-bg p-3 text-sm text-foreground ring-1 ring-success/20"
+        <div class="d-alert d-alert-soft d-alert-success rise-in mt-4 text-sm text-base-content"
              style="--rise-delay: 140ms">
             {{ session('status') }}
         </div>
@@ -51,7 +51,7 @@
              now where you are; a red label is what is wrong.
         --------------------------------------------------------------- --}}
         <div class="rise-in" style="--rise-delay: 420ms">
-            <label for="email" class="label">Email address</label>
+            <label for="email" class="d-fieldset-legend">Email address</label>
             <input
                 id="email"
                 type="email"
@@ -62,10 +62,10 @@
                 autocomplete="username"
                 inputmode="email"
                 @if ($errors->has('email')) aria-invalid="true" aria-describedby="email-error" @endif
-                class="input @error('email') input-error @enderror"
+                class="d-input w-full @error('email') d-input-error @enderror"
             >
             @error('email')
-                <p id="email-error" class="error" role="alert">{{ $message }}</p>
+                <p id="email-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
             @enderror
         </div>
 
@@ -85,7 +85,7 @@
              someone else can see the screen.
         --------------------------------------------------------------- --}}
         <div class="rise-in" style="--rise-delay: 480ms">
-            <label for="password" class="label">Password</label>
+            <label for="password" class="d-fieldset-legend">Password</label>
 
             <div class="relative">
                 <input
@@ -95,7 +95,7 @@
                     required
                     autocomplete="current-password"
                     @if ($errors->has('password')) aria-invalid="true" aria-describedby="password-error" @endif
-                    class="input pr-12 @error('password') input-error @enderror"
+                    class="d-input w-full pr-12 @error('password') d-input-error @enderror"
                 >
 
                 <button
@@ -119,7 +119,7 @@
                 </button>
             </div>
             @error('password')
-                <p id="password-error" class="error" role="alert">{{ $message }}</p>
+                <p id="password-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
             @enderror
 
             {{-- Caps Lock. A masked field is the one place a stuck Caps Lock
@@ -146,18 +146,18 @@
                     id="remember"
                     type="checkbox"
                     name="remember"
-                    class="h-5 w-5 rounded accent-primary"
+                    class="d-checkbox d-checkbox-primary"
                 >
                 Keep me signed in
             </label>
 
             @if (Route::has('password.request'))
-                <a href="{{ route('password.request') }}" wire:navigate class="inline-flex min-h-11 items-center text-[15px] font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary">
+                <a href="{{ route('password.request') }}" wire:navigate class="d-link d-link-primary inline-flex min-h-11 items-center text-[15px] font-semibold underline-offset-4">
                     Forgot password?
                 </a>
             @endif
         </div>
 
-        <button type="submit" class="btn-primary rise-in w-full" style="--rise-delay: 600ms">Sign in</button>
+        <button type="submit" class="d-btn d-btn-primary rise-in w-full" style="--rise-delay: 600ms">Sign in</button>
     </form>
 </x-layouts::guest>

@@ -71,12 +71,12 @@ enum BroodcockStatus: string
     public function badgeClasses(): string
     {
         return match ($this) {
-            self::Active => 'badge-ok',
-            self::Breeding => 'badge-info',
-            self::Resting => 'badge-neutral',
-            self::Retired => 'badge-neutral',
-            self::Sold => 'badge-warn',
-            self::Deceased => 'badge-alert',
+            self::Active => 'd-badge-success',
+            self::Breeding => 'd-badge-info',
+            self::Resting => 'd-badge-neutral',
+            self::Retired => 'd-badge-neutral',
+            self::Sold => 'd-badge-warning',
+            self::Deceased => 'd-badge-error',
         };
     }
 

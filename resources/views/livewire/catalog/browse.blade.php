@@ -32,7 +32,7 @@
         <div class="min-w-0 flex-1 lg:max-w-md">
             <label for="search" class="sr-only">Search</label>
             <input id="search" type="search" wire:model.live.debounce.300ms="search"
-                   placeholder="Name, band number or bloodline" class="input">
+                   placeholder="Name, band number or bloodline" class="d-input w-full">
         </div>
 
         <div class="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center">
@@ -71,7 +71,7 @@
                    'cursor-not-allowed text-muted-foreground' => ! $this->anyForSale,
                ])
                @if (! $this->anyForSale) title="No birds are marked for sale just now." @endif>
-            <input type="checkbox" wire:model.live="forSaleOnly" class="h-5 w-5 accent-primary"
+            <input type="checkbox" wire:model.live="forSaleOnly" class="d-checkbox d-checkbox-primary"
                    @disabled(! $this->anyForSale)>
             Available birds only
         </label>
@@ -84,7 +84,7 @@
 
             @if ($this->hasActiveFilters())
                 <button type="button" wire:click="clearFilters"
-                        class="inline-flex min-h-11 items-center font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary">
+                        class="d-link d-link-primary inline-flex min-h-11 items-center font-semibold underline-offset-4">
                     Clear filters
                 </button>
             @endif
@@ -123,7 +123,7 @@
                 @endif
             </p>
             @if ($this->hasActiveFilters())
-                <button type="button" wire:click="clearFilters" class="btn-secondary mt-7">
+                <button type="button" wire:click="clearFilters" class="d-btn d-btn-outline mt-7">
                     {{ $onlyForSale ? 'Show every bird on the farm' : 'Clear filters' }}
                 </button>
             @endif

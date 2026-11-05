@@ -12,10 +12,10 @@
 --}}
 @php
     $stateBadge = fn (string $state): string => match ($state) {
-        'Overdue' => 'badge-alert',
-        'Due soon' => 'badge-warn',
-        'Scheduled' => 'badge-info',
-        default => 'badge-neutral',
+        'Overdue' => 'd-badge-error',
+        'Due soon' => 'd-badge-warning',
+        'Scheduled' => 'd-badge-info',
+        default => 'd-badge-neutral',
     };
 @endphp
 <div>
@@ -28,7 +28,7 @@
         </div>
 
         @can('create', \App\Models\HealthRecord::class)
-            <a href="{{ route('health.create', ['broodcock' => $broodcock->id]) }}" wire:navigate class="btn-primary shrink-0">
+            <a href="{{ route('health.create', ['broodcock' => $broodcock->id]) }}" wire:navigate class="d-btn d-btn-primary shrink-0">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                 </svg>
@@ -54,7 +54,7 @@
 
         <div class="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-y border-border py-3"
              role="{{ $followUpState === 'Overdue' ? 'alert' : 'status' }}">
-            <span class="badge {{ $stateBadge($followUpState) }}">{{ $followUpTitle }}</span>
+            <span class="d-badge d-badge-soft {{ $stateBadge($followUpState) }}">{{ $followUpTitle }}</span>
             <p class="text-[15px] leading-snug text-foreground">
                 {{ $followUp->record_type->label() }}@if ($followUp->product_name) ({{ $followUp->product_name }})@endif
                 on <span class="datum">{{ $followUp->next_due_date->format('d M Y') }}</span>.
@@ -72,7 +72,7 @@
                             : 'Nothing has been recorded for '.$broodcock->name.' so far.'"
                        icon="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z">
             @if ($canAddRecord)
-                <a href="{{ route('health.create', ['broodcock' => $broodcock->id]) }}" wire:navigate class="btn-primary">
+                <a href="{{ route('health.create', ['broodcock' => $broodcock->id]) }}" wire:navigate class="d-btn d-btn-primary">
                     Add Health Record
                 </a>
             @endif
@@ -93,7 +93,7 @@
                     {{-- What was done --}}
                     <div class="mt-2 min-w-0 sm:mt-0">
                         <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                            <span class="badge {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
+                            <span class="d-badge d-badge-soft {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
                             <span class="text-[15px] leading-snug text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
                         </div>
 
@@ -112,7 +112,7 @@
                             Next due:
                             @if ($record->next_due_date)
                                 <span class="datum text-[15px] text-foreground">{{ $record->next_due_date->format('d M Y') }}</span>
-                                <span class="badge {{ $stateBadge($state) }}">{{ $state }}</span>
+                                <span class="d-badge d-badge-soft {{ $stateBadge($state) }}">{{ $state }}</span>
                             @else
                                 <span>None</span>
                             @endif
@@ -129,7 +129,7 @@
 
                     @can('update', $record)
                         <div class="-ml-3 mt-1 sm:-mr-3 sm:-mt-2.5 sm:ml-0">
-                            <a href="{{ route('health.edit', $record) }}" wire:navigate class="btn-quiet">
+                            <a href="{{ route('health.edit', $record) }}" wire:navigate class="d-btn d-btn-ghost">
                                 Edit<span class="sr-only">, {{ $record->record_type->label() }} on {{ $record->checkup_date->format('d M Y') }}</span>
                             </a>
                         </div>

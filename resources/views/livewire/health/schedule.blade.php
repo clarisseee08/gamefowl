@@ -28,7 +28,7 @@
         <span class="datum">{{ $this->warningDays() }}</span> days.
 
         <x-slot:actions>
-            <a href="{{ route('health.index') }}" wire:navigate class="btn-secondary">All Health Records</a>
+            <a href="{{ route('health.index') }}" wire:navigate class="d-btn d-btn-outline">All Health Records</a>
         </x-slot:actions>
     </x-anchor-block>
 
@@ -38,7 +38,7 @@
     <section class="mt-10" aria-labelledby="overdue-heading" data-reveal>
         <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <h2 id="overdue-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Overdue</h2>
-            <span class="badge badge-alert datum">{{ number_format($this->overdueCount) }}</span>
+            <span class="d-badge d-badge-soft d-badge-error datum">{{ number_format($this->overdueCount) }}</span>
             <p class="w-full text-[15px] text-muted-foreground sm:w-auto">Most overdue first, because the bird waiting longest is at most risk.</p>
         </div>
 
@@ -56,10 +56,10 @@
                     <li wire:key="overdue-day-{{ $date }}" class="grid gap-x-8 gap-y-2 border-b border-border py-4 md:grid-cols-[13rem_1fr]">
                         <div class="flex flex-wrap items-center gap-2 md:block md:pt-2.5">
                             <p class="datum text-[15px] font-medium text-foreground">{{ $dueOn->format('d M Y') }}</p>
-                            {{-- One flex child, not two: `.badge` carries a gap, and a
+                            {{-- One flex child, not two: `.d-badge` carries a gap, and a
                                  bare text node beside the datum span would pick it up
                                  on top of the word space. --}}
-                            <span class="badge badge-alert md:mt-1.5">
+                            <span class="d-badge d-badge-soft d-badge-error md:mt-1.5">
                                 <span class="whitespace-nowrap"><span class="datum">{{ $daysLate }}</span> {{ Str::plural('day', $daysLate) }} late</span>
                             </span>
                         </div>
@@ -77,14 +77,14 @@
                                     </a>
 
                                     <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 md:mt-0">
-                                        <span class="badge {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
+                                        <span class="d-badge d-badge-soft {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
                                         <span class="text-[15px] text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
                                     </div>
 
                                     @can('create', \App\Models\HealthRecord::class)
                                         <a href="{{ route('health.create', ['broodcock' => $record->broodcock_id]) }}"
                                            wire:navigate
-                                           class="btn-quiet -ml-3 mt-1 md:ml-0 md:mt-0">
+                                           class="d-btn d-btn-ghost -ml-3 mt-1 md:ml-0 md:mt-0">
                                             Record Follow-up<span class="sr-only"> for {{ $record->broodcock->name }}</span>
                                         </a>
                                     @endcan
@@ -109,7 +109,7 @@
     <section class="mt-14" aria-labelledby="upcoming-heading" data-reveal>
         <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <h2 id="upcoming-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Due in the next {{ $this->warningDays() }} days</h2>
-            <span class="badge badge-warn datum">{{ number_format($this->dueSoonCount) }}</span>
+            <span class="d-badge d-badge-soft d-badge-warning datum">{{ number_format($this->dueSoonCount) }}</span>
             <p class="w-full text-[15px] text-muted-foreground sm:w-auto">Soonest first, the order they will be done in.</p>
         </div>
 
@@ -127,7 +127,7 @@
                     <li wire:key="upcoming-day-{{ $date }}" class="grid gap-x-8 gap-y-2 border-b border-border py-4 md:grid-cols-[13rem_1fr]">
                         <div class="flex flex-wrap items-center gap-2 md:block md:pt-2.5">
                             <p class="datum text-[15px] font-medium text-foreground">{{ $dueOn->format('d M Y') }}</p>
-                            <span class="badge badge-warn md:mt-1.5">
+                            <span class="d-badge d-badge-soft d-badge-warning md:mt-1.5">
                                 @if ($daysLeft === 0)
                                     Today
                                 @else
@@ -149,14 +149,14 @@
                                     </a>
 
                                     <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 md:mt-0">
-                                        <span class="badge {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
+                                        <span class="d-badge d-badge-soft {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
                                         <span class="text-[15px] text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
                                     </div>
 
                                     @can('create', \App\Models\HealthRecord::class)
                                         <a href="{{ route('health.create', ['broodcock' => $record->broodcock_id]) }}"
                                            wire:navigate
-                                           class="btn-quiet -ml-3 mt-1 md:ml-0 md:mt-0">
+                                           class="d-btn d-btn-ghost -ml-3 mt-1 md:ml-0 md:mt-0">
                                             Record Follow-up<span class="sr-only"> for {{ $record->broodcock->name }}</span>
                                         </a>
                                     @endcan

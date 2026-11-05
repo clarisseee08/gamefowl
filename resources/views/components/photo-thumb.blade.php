@@ -34,7 +34,7 @@
     @elseif ($photo && method_exists($photo, 'url') && $photo->url())
         <img src="{{ $photo->url() }}" alt="{{ $alt }}" loading="lazy" class="h-full w-full object-cover">
     @else
-        <div class="flex h-full w-full items-center justify-center px-1 text-center text-[10px] leading-tight text-muted-foreground">
+        <div class="flex h-full w-full items-center justify-center px-1 text-center text-[11px] leading-tight text-muted-foreground">
             {{ $placeholder }}
         </div>
     @endif

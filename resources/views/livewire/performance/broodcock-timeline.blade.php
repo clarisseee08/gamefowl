@@ -22,10 +22,10 @@
 
 <div>
     @if ($statusMessage !== '')
-        <div class="mb-6 flex items-start justify-between gap-4 rounded-[8px] bg-success-bg px-4 py-3" role="status">
+        <div class="d-alert d-alert-soft d-alert-success mb-6 flex items-start justify-between gap-4 text-base-content" role="status">
             <p class="text-[15px] leading-snug text-foreground">{{ $statusMessage }}</p>
             <button type="button" wire:click="dismissStatus"
-                    class="-my-2 inline-flex min-h-11 shrink-0 items-center px-1 text-[14px] font-medium text-foreground underline-offset-4 hover:underline">
+                    class="d-link d-link-hover -my-2 inline-flex min-h-11 shrink-0 items-center px-1 text-[14px] font-medium text-foreground underline-offset-4">
                 Dismiss
             </button>
         </div>
@@ -40,7 +40,7 @@
         </div>
 
         @can('create', App\Models\PerformanceRecord::class)
-            <a href="{{ route('performance.create', ['broodcock' => $broodcock->id]) }}" wire:navigate class="btn-primary shrink-0">
+            <a href="{{ route('performance.create', ['broodcock' => $broodcock->id]) }}" wire:navigate class="d-btn d-btn-primary shrink-0">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                 </svg>
@@ -103,14 +103,14 @@
             <x-empty-state class="mt-6" title="Nothing of that kind recorded yet"
                            description="{{ $broodcock->displayName() }} has other events on file. Choose “All events” to see them."
                            icon="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z">
-                <button type="button" wire:click="$set('eventType', '')" class="btn-secondary">Show all events</button>
+                <button type="button" wire:click="$set('eventType', '')" class="d-btn d-btn-outline">Show all events</button>
             </x-empty-state>
         @else
             <x-empty-state class="mt-6" title="No performance recorded yet"
                            description="Nothing has been recorded for {{ $broodcock->displayName() }} so far. Add a sparring session, derby, conditioning session or weigh-in and it will appear here."
                            icon="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z">
                 @can('create', App\Models\PerformanceRecord::class)
-                    <a href="{{ route('performance.create', ['broodcock' => $broodcock->id]) }}" wire:navigate class="btn-primary">
+                    <a href="{{ route('performance.create', ['broodcock' => $broodcock->id]) }}" wire:navigate class="d-btn d-btn-primary">
                         Add the first record
                     </a>
                 @endcan
@@ -135,8 +135,8 @@
                     {{-- What happened. --}}
                     <div class="mt-3 min-w-0 sm:mt-0">
                         <div class="flex flex-wrap items-center gap-1.5">
-                            <span class="badge {{ $event->event_type->badgeClasses() }}">{{ $event->event_type->label() }}</span>
-                            <span class="badge {{ $event->result->badgeClasses() }}">{{ $event->result->label() }}</span>
+                            <span class="d-badge d-badge-soft {{ $event->event_type->badgeClasses() }}">{{ $event->event_type->label() }}</span>
+                            <span class="d-badge d-badge-soft {{ $event->result->badgeClasses() }}">{{ $event->result->label() }}</span>
                         </div>
 
                         <dl class="mt-3 flex flex-wrap gap-x-8 gap-y-2 text-[15px]">
@@ -199,13 +199,13 @@
                                 <div class="flex items-center gap-5">
                                     @can('update', $event)
                                         <a href="{{ route('performance.edit', $event) }}" wire:navigate
-                                           class="inline-flex min-h-11 items-center text-[15px] font-medium text-primary hover:underline">
+                                           class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center text-[15px] font-medium">
                                             Edit<span class="sr-only">, {{ $event->event_type->label() }} on {{ $event->event_date->format('d M Y') }}</span>
                                         </a>
                                     @endcan
                                     @can('delete', $event)
                                         <button type="button" wire:click="confirmDelete({{ $event->id }})"
-                                                class="inline-flex min-h-11 items-center text-[15px] font-medium text-destructive hover:underline">
+                                                class="d-link d-link-hover d-link-error inline-flex min-h-11 items-center text-[15px] font-medium">
                                             Delete<span class="sr-only">, {{ $event->event_type->label() }} on {{ $event->event_date->format('d M Y') }}</span>
                                         </button>
                                     @endcan
@@ -227,10 +227,10 @@
     {{-- Delete confirmation, naming the exact record. --}}
     @if ($this->recordPendingDeletion !== null)
         @php($pending = $this->recordPendingDeletion)
-        <div class="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 p-4"
-             x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.btn-secondary')?.click()"
+        <div class="d-modal d-modal-open"
+             x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.d-btn-outline')?.click()"
              role="dialog" aria-modal="true" aria-labelledby="timeline-delete-title" aria-describedby="timeline-delete-body">
-            <div class="dialog-panel elev-3 w-full max-w-md rounded-[12px] bg-card p-6">
+            <div class="d-modal-box elev-3 max-w-md">
                 <h2 id="timeline-delete-title" class="font-display text-[22px] font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
                     Delete the {{ $pending->event_type->label() }} record for {{ $broodcock->displayName() }}?
                 </h2>
@@ -245,10 +245,10 @@
                     </p>
                 </div>
 
-                <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                    <button type="button" wire:click="cancelDelete" class="btn-secondary">Cancel</button>
-                    <button type="button" wire:click="delete" class="btn-danger" wire:loading.attr="disabled" wire:target="delete">
-                        <span class="btn-spinner" wire:loading wire:target="delete"></span>
+                <div class="d-modal-action flex-col-reverse gap-3 sm:flex-row">
+                    <button type="button" wire:click="cancelDelete" class="d-btn d-btn-outline">Cancel</button>
+                    <button type="button" wire:click="delete" class="d-btn d-btn-error" wire:loading.attr="disabled" wire:target="delete">
+                        <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="delete"></span>
                         Yes, delete this record
                     </button>
                 </div>

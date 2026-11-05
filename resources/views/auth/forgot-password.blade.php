@@ -6,7 +6,7 @@
     </p>
 
     @if (session('status'))
-        <p class="rise-in mt-6 rounded-lg bg-success-bg px-4 py-3 text-[15px] text-foreground" role="status">
+        <p class="d-alert d-alert-soft d-alert-success rise-in mt-6 text-[15px] text-base-content" role="status">
             {{ session('status') }}
         </p>
     @endif
@@ -15,21 +15,21 @@
         @csrf
 
         <div class="rise-in" style="--rise-delay: 300ms">
-            <label for="email" class="label">Email address</label>
+            <label for="email" class="d-fieldset-legend">Email address</label>
             <input id="email" type="email" name="email" value="{{ old('email') }}"
                    required autofocus autocomplete="username" inputmode="email"
                    @error('email') aria-invalid="true" aria-describedby="email-error" @enderror
-                   class="input @error('email') input-error @enderror">
+                   class="d-input w-full @error('email') d-input-error @enderror">
             @error('email')
-                <p id="email-error" class="error" role="alert">{{ $message }}</p>
+                <p id="email-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
             @enderror
         </div>
 
-        <button type="submit" class="btn-primary rise-in w-full" style="--rise-delay: 360ms">Email password reset link</button>
+        <button type="submit" class="d-btn d-btn-primary rise-in w-full" style="--rise-delay: 360ms">Email password reset link</button>
     </form>
 
     <a href="{{ route('login') }}" wire:navigate
-       class="rise-in mt-6 inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary"
+       class="d-link d-link-primary rise-in mt-6 inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold underline-offset-4"
        style="--rise-delay: 420ms">
         <span aria-hidden="true">&larr;</span> Back to sign in
     </a>

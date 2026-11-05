@@ -124,8 +124,8 @@
         @endif
 
         <div class="mt-16 flex flex-wrap gap-3 lg:mt-20">
-            <a href="{{ route('catalog.index') }}" wire:navigate class="btn-primary">See the {{ $stockCount > 0 ? $stockCount.' birds' : 'birds' }}</a>
-            <a href="{{ route('public.visit') }}" wire:navigate class="btn-secondary">Arrange a visit</a>
+            <a href="{{ route('catalog.index') }}" wire:navigate class="d-btn d-btn-primary">See the {{ $stockCount > 0 ? $stockCount.' birds' : 'birds' }}</a>
+            <a href="{{ route('public.visit') }}" wire:navigate class="d-btn d-btn-outline">Arrange a visit</a>
         </div>
     </div>
 </x-layouts::catalog>

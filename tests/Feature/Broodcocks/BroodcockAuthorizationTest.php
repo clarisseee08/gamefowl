@@ -45,6 +45,28 @@ final class BroodcockAuthorizationTest extends TestCase
         $this->actingAs($user)->get(route('broodcocks.index'))->assertOk();
     }
 
+    /** The list is named "Gamefowl" to match its sidebar entry, in the heading and the tab title. */
+    public function test_the_list_is_titled_gamefowl(): void
+    {
+        $this->actingAs(User::factory()->staff()->create())
+            ->get(route('broodcocks.index'))
+            ->assertOk()
+            ->assertSee('<title>Gamefowl', escape: false)
+            ->assertSee('Gamefowl')
+            ->assertSee('Add gamefowl');
+    }
+
+    /** The add form follows the same name: its heading, submit button and way back. */
+    public function test_the_add_form_is_titled_gamefowl(): void
+    {
+        $this->actingAs(User::factory()->staff()->create())
+            ->get(route('broodcocks.create'))
+            ->assertOk()
+            ->assertSee('Add a Gamefowl')
+            ->assertSee('Add Gamefowl')
+            ->assertSee('Back to gamefowl');
+    }
+
     #[DataProvider('allRoles')]
     public function test_every_role_can_view_a_broodcock(string $role): void
     {

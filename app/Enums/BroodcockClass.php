@@ -35,9 +35,9 @@ enum BroodcockClass: string
     public function badgeClasses(): string
     {
         return match ($this) {
-            self::ClassA => 'badge-ok',
-            self::ClassB => 'badge-info',
-            self::Ordinary => 'badge-neutral',
+            self::ClassA => 'd-badge-success',
+            self::ClassB => 'd-badge-info',
+            self::Ordinary => 'd-badge-neutral',
         };
     }
 

@@ -30,10 +30,10 @@ enum PerformanceResult: string
     public function badgeClasses(): string
     {
         return match ($this) {
-            self::Win => 'badge-ok',
-            self::Loss => 'badge-alert',
-            self::Draw => 'badge-warn',
-            self::NotApplicable => 'badge-neutral',
+            self::Win => 'd-badge-success',
+            self::Loss => 'd-badge-error',
+            self::Draw => 'd-badge-warning',
+            self::NotApplicable => 'd-badge-neutral',
         };
     }
 

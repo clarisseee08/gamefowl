@@ -63,14 +63,14 @@
         save() { try { localStorage.setItem('gfms-bc-cols', JSON.stringify(this.cols)); } catch (e) {} },
     }"
 >
-    <x-anchor-block eyebrow="Manage" title="Broodcocks" :figure="number_format($total)" :figure-label="$figureLabel">
+    <x-anchor-block eyebrow="Manage" title="Gamefowl" :figure="number_format($total)" :figure-label="$figureLabel">
         @can('create', App\Models\Broodcock::class)
             <x-slot:actions>
-                <a href="{{ route('broodcocks.create') }}" wire:navigate class="btn-primary">
+                <a href="{{ route('broodcocks.create') }}" wire:navigate class="d-btn d-btn-primary">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                     </svg>
-                    Add broodcock
+                    Add gamefowl
                 </a>
             </x-slot:actions>
         @endcan
@@ -83,7 +83,7 @@
     <div class="mt-6 flex flex-wrap items-center gap-3" role="search" aria-label="Find a broodcock">
         <div class="relative min-w-0 flex-1 basis-64">
             <label for="search" class="sr-only">Search</label>
-            <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+            <svg class="pointer-events-none absolute left-3 top-1/2 z-[1] h-4 w-4 -translate-y-1/2 text-muted-foreground" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
             </svg>
             <input
@@ -91,7 +91,7 @@
                 type="search"
                 wire:model.live.debounce.300ms="search"
                 placeholder="Name, band number or bloodline"
-                class="input pl-9"
+                class="d-input w-full pl-9"
             >
         </div>
 
@@ -138,7 +138,7 @@
              here to do, and a laptop has room for fewer than a monitor. --}}
         <div class="relative hidden sm:block">
             <button type="button" @click="colsOpen = ! colsOpen"
-                    class="btn-secondary"
+                    class="d-btn d-btn-outline"
                     :aria-expanded="colsOpen ? 'true' : 'false'"
                     aria-controls="bc-columns">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
@@ -148,11 +148,11 @@
             </button>
 
             <div id="bc-columns" x-show="colsOpen" x-cloak @click.outside="colsOpen = false" @keydown.escape.window="colsOpen = false"
-                 class="popover enter-pop absolute right-0 z-30 mt-2 w-56 p-2">
+                 class="bg-base-100 rounded-box border border-base-300 elev-2 enter-pop absolute right-0 z-30 mt-2 w-56 p-2">
                 <p class="px-2 pb-1.5 pt-1 text-[13px] font-semibold text-muted-foreground">Show columns</p>
                 @foreach ($optionalColumns as $key => $label)
                     <label class="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[var(--radius-sm)] px-2 text-[15px] text-foreground hover:bg-muted">
-                        <input type="checkbox" class="h-4 w-4 accent-primary"
+                        <input type="checkbox" class="d-checkbox d-checkbox-primary"
                                x-model="cols['{{ $key }}']" @change="save()">
                         {{ $label }}
                     </label>
@@ -177,7 +177,7 @@
         <span wire:loading wire:target="{{ $filterTargets }}">Searching&hellip;</span>
 
         @if ($this->hasActiveFilters())
-            <button type="button" wire:click="clearFilters" class="btn-quiet">Clear filters</button>
+            <button type="button" wire:click="clearFilters" class="d-btn d-btn-ghost">Clear filters</button>
         @endif
     </div>
 
@@ -188,7 +188,7 @@
                            title="No birds match your filters"
                            description="Try removing a filter or searching for something else."
                            icon="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z">
-                <button type="button" wire:click="clearFilters" class="btn-secondary">Clear filters</button>
+                <button type="button" wire:click="clearFilters" class="d-btn d-btn-outline">Clear filters</button>
             </x-empty-state>
         @else
             <x-empty-state class="mt-4"
@@ -196,7 +196,7 @@
                            description="Start by adding your first bird. You will be able to record its health, breeding and performance afterwards."
                            icon="M12 4.5v15m7.5-7.5h-15">
                 @can('create', App\Models\Broodcock::class)
-                    <a href="{{ route('broodcocks.create') }}" wire:navigate class="btn-primary">Add your first broodcock</a>
+                    <a href="{{ route('broodcocks.create') }}" wire:navigate class="d-btn d-btn-primary">Add your first broodcock</a>
                 @endcan
             </x-empty-state>
         @endif
@@ -236,9 +236,9 @@
                         </span>
 
                         <span class="flex shrink-0 flex-col items-end gap-1">
-                            <span class="badge {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
+                            <span class="d-badge d-badge-soft {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
                             @if ($bird->is_external && $ownership !== 'outside')
-                                <span class="badge badge-neutral">Outside</span>
+                                <span class="d-badge d-badge-soft d-badge-neutral">Outside</span>
                             @endif
                         </span>
                     </a>
@@ -250,10 +250,10 @@
         <div class="sm:hidden" wire:loading.block wire:target="{{ $filterTargets }}" aria-hidden="true">
             @for ($i = 0; $i < 5; $i++)
                 <div class="flex items-center gap-3 border-b border-border py-3">
-                    <div class="skeleton aspect-[4/5] w-11 shrink-0"></div>
+                    <div class="d-skeleton aspect-[4/5] w-11 shrink-0"></div>
                     <div class="flex-1 space-y-2">
-                        <div class="skeleton h-3 {{ ['w-1/2', 'w-2/3', 'w-2/5'][$i % 3] }}"></div>
-                        <div class="skeleton h-3 {{ ['w-3/4', 'w-1/2', 'w-3/5'][$i % 3] }}"></div>
+                        <div class="d-skeleton h-3 {{ ['w-1/2', 'w-2/3', 'w-2/5'][$i % 3] }}"></div>
+                        <div class="d-skeleton h-3 {{ ['w-3/4', 'w-1/2', 'w-3/5'][$i % 3] }}"></div>
                     </div>
                 </div>
             @endfor
@@ -264,12 +264,12 @@
              and the column names stay put through a long list. An overflow
              wrapper would become the sticky container and quietly break that;
              secondary columns drop at narrower widths instead. --}}
-        <table class="hidden w-full border-b border-border sm:table">
+        <table class="d-table hidden w-full border-b border-border sm:table">
             <thead class="sticky top-0 z-10 bg-background">
                 <tr class="border-b border-border">
                     <th scope="col" class="w-12 py-0 pl-0 pr-1 text-left">
                         <label class="flex h-11 w-11 cursor-pointer items-center justify-center">
-                            <input type="checkbox" class="h-4 w-4 accent-primary"
+                            <input type="checkbox" class="d-checkbox d-checkbox-primary"
                                    wire:click="toggleSelectPage"
                                    @checked($allOnPageSelected)
                                    aria-label="Select all birds on this page">
@@ -314,7 +314,7 @@
                 </tr>
             </thead>
 
-            <tbody class="divide-y divide-border" wire:loading.remove wire:target="{{ $filterTargets }}">
+            <tbody wire:loading.remove wire:target="{{ $filterTargets }}">
                 @foreach ($birds as $bird)
                     {{-- .row-hover tints the row and reveals its actions together;
                          focus-within means keyboard users get them too. --}}
@@ -323,7 +323,7 @@
                         <td class="w-12 py-1 pl-0 pr-1">
                             <label class="flex h-11 w-11 cursor-pointer items-center justify-center">
                                 <input type="checkbox" value="{{ $bird->id }}" wire:model.live="selected"
-                                       class="h-4 w-4 accent-primary"
+                                       class="d-checkbox d-checkbox-primary"
                                        aria-label="Select {{ $bird->name }}">
                             </label>
                         </td>
@@ -355,7 +355,7 @@
                             {{-- Only when the list can contain both. Badging every row
                                  in the default view would label the ordinary case. --}}
                             @if ($bird->is_external && $ownership !== 'outside')
-                                <span class="badge badge-neutral ml-1.5" title="Belongs to another farm; recorded so the pedigree stays complete">Outside</span>
+                                <span class="d-badge d-badge-soft d-badge-neutral ml-1.5" title="Belongs to another farm; recorded so the pedigree stays complete">Outside</span>
                             @endif
                         </td>
                         <td x-show="cols.bloodline" class="whitespace-nowrap px-3 py-1.5 text-[15px] text-foreground">
@@ -377,18 +377,18 @@
                             @endif
                         </td>
                         <td x-show="cols.class" class="hidden whitespace-nowrap px-3 py-1.5 lg:table-cell">
-                            <span class="badge {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
+                            <span class="d-badge d-badge-soft {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
                         </td>
                         <td x-show="cols.status" class="whitespace-nowrap px-3 py-1.5">
-                            <span class="badge {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
+                            <span class="d-badge d-badge-soft {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
                         </td>
                         <td class="whitespace-nowrap px-3 py-1 text-right">
                             <span class="row-actions inline-flex items-center gap-1">
-                                <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate class="btn-quiet px-3 text-[14px]">
+                                <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate class="d-btn d-btn-ghost">
                                     View<span class="sr-only">, {{ $bird->name }}</span>
                                 </a>
                                 @can('update', $bird)
-                                    <a href="{{ route('broodcocks.edit', $bird) }}" wire:navigate class="btn-quiet px-3 text-[14px]">
+                                    <a href="{{ route('broodcocks.edit', $bird) }}" wire:navigate class="d-btn d-btn-ghost">
                                         Edit<span class="sr-only">, {{ $bird->name }}</span>
                                     </a>
                                 @endcan
@@ -422,13 +422,13 @@
                 </span>
 
                 @if ($this->canDeleteSelection)
-                    <button type="button" wire:click="confirmDeleteSelected" class="btn-secondary text-destructive">
+                    <button type="button" wire:click="confirmDeleteSelected" class="d-btn d-btn-outline text-destructive">
                         Delete selected
                     </button>
                 @endif
 
                 <button type="button" wire:click="clearSelection"
-                        class="inline-flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                        class="d-btn d-btn-ghost d-btn-circle text-muted-foreground hover:text-foreground"
                         aria-label="Clear selection" title="Clear selection">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
@@ -446,10 +446,10 @@
             $named = $doomed->take(5)->map(fn ($b) => $b->band_number ?: $b->name)->all();
             $more = $doomed->count() - count($named);
         @endphp
-        <div class="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 p-4"
+        <div class="d-modal d-modal-open"
              x-data x-trap.noscroll="true" x-on:keydown.escape.window="$wire.cancelDeleteSelected()"
              role="dialog" aria-modal="true" aria-labelledby="bulk-delete-title" aria-describedby="bulk-delete-body">
-            <div class="dialog-panel elev-3 w-full max-w-md rounded-[12px] bg-card p-6">
+            <div class="d-modal-box elev-3 w-full max-w-md">
                 <h2 id="bulk-delete-title" class="font-display text-[22px] font-semibold tracking-[-0.015em] text-foreground">
                     Delete <span class="datum">{{ count($selected) }}</span> {{ Str::plural('bird', count($selected)) }}?
                 </h2>
@@ -458,10 +458,10 @@
                     from the active records. Their health, breeding and performance history is kept and the
                     deletion is recorded in the activity log. Birds your role cannot delete are left as they are.
                 </p>
-                <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                    <button type="button" wire:click="cancelDeleteSelected" class="btn-secondary">Cancel</button>
-                    <button type="button" wire:click="deleteSelected" wire:loading.attr="disabled" wire:target="deleteSelected" class="btn-danger">
-                        <span class="btn-spinner" wire:loading wire:target="deleteSelected"></span>
+                <div class="d-modal-action flex-col-reverse gap-3 sm:flex-row">
+                    <button type="button" wire:click="cancelDeleteSelected" class="d-btn d-btn-outline">Cancel</button>
+                    <button type="button" wire:click="deleteSelected" wire:loading.attr="disabled" wire:target="deleteSelected" class="d-btn d-btn-error">
+                        <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="deleteSelected"></span>
                         Yes, delete {{ count($selected) === 1 ? 'this bird' : 'these birds' }}
                     </button>
                 </div>

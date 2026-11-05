@@ -17,7 +17,7 @@
     /*
      * THE ERROR STATE IS DERIVED HERE RATHER THAN PASSED IN.
      *
-     * The forms used to write `class="@error('sex') input-error @enderror"` on
+     * The forms used to write `class="@error('sex') d-select-error @enderror"` on
      * the native select. That cannot survive the move to a component: Blade
      * compiles component tags before directives, so an @error inside an
      * attribute value ends up inside a PHP array literal and the view dies
@@ -41,11 +41,13 @@
     change its <option> children.
 
     WHAT IS DIFFERENT FROM x-filter-select. The label sits ABOVE the control in
-    normal form layout rather than inside its border, and .help and the @error
-    message follow the control - the shape every form in this application
-    already uses. The trigger carries .input itself, so `@error('x') input-error
-    @enderror` on the call site still turns the border destructive exactly as
-    it did on the native select.
+    normal form layout rather than inside its border, and the help line and the
+    @error message follow the control - the shape every form in this
+    application already uses. The trigger carries d-select itself (with its
+    painted chevron switched off by bg-none, because the SVG one below
+    rotates), so a d-select-error passed in `class` still turns the border
+    destructive exactly as it did on the native select. The open list is a
+    d-menu.
 
     THE HTML `required` ATTRIBUTE IS DELIBERATELY NOT FORWARDED. On a control
     the browser can no longer show, constraint validation blocks the submit and
@@ -139,7 +141,9 @@
      }"
      x-on:click.outside="open = false">
 
-    <label for="{{ $id }}-trigger" id="{{ $id }}-label" @class(['label', 'sr-only' => $labelHidden])>
+    {{-- justify-start: d-fieldset-legend spreads its children apart, which
+         would push the asterisk to the far edge of the form. --}}
+    <label for="{{ $id }}-trigger" id="{{ $id }}-label" @class(['d-fieldset-legend justify-start gap-1', 'sr-only' => $labelHidden])>
         {{ $label }}@if ($required) <span class="text-destructive">*</span>@endif
     </label>
 
@@ -172,8 +176,8 @@
                 x-on:keydown.escape.stop="open = false"
                 x-on:keydown="if ($event.key.length === 1 && /\S/.test($event.key)) search($event.key)"
                 @class([
-                    'input flex items-center justify-between gap-2 text-left',
-                    'input-error' => $errors->has($errorField),
+                    'd-select w-full cursor-pointer justify-between gap-2 bg-none pe-3 text-left',
+                    'd-select-error' => $errors->has($errorField),
                     trim((string) $attributes->get('class', '')),
                 ])>
             <span id="{{ $id }}-value" class="truncate" x-text="label"></span>
@@ -191,7 +195,12 @@
              --dur-base, leaving one step faster at --dur-fast. No zoom - scale
              belongs to the tooltip and the modal panel, and a menu that zooms
              reads as a dialog. The same four transition classes x-dropdown and
-             x-filter-select already use, so all three move identically. --}}
+             x-filter-select already use, so all three move identically.
+
+             d-menu, held to a listbox exactly as in x-filter-select: w-auto
+             undoes d-menu's fit-content, flex-nowrap stops a long list
+             wrapping into columns, and each option's visible row is the
+             element inside its <li>, because that is what d-menu styles. --}}
         <ul x-show="open"
             x-cloak
             x-ref="list"
@@ -205,32 +214,34 @@
             x-transition:leave="transition-[opacity,transform] ease-in duration-150"
             x-transition:leave-start="opacity-100 translate-y-0"
             x-transition:leave-end="opacity-0 -translate-y-1"
-            class="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-72 overflow-y-auto rounded-[var(--radius-md)]
-                   border border-border bg-popover p-1"
-            style="box-shadow: var(--shadow-e2)">
+            class="d-menu absolute left-0 right-0 top-full z-50 mt-1.5 max-h-72 w-auto flex-nowrap overflow-y-auto
+                   rounded-box border border-base-300 bg-base-100 p-1 text-[15px] elev-2">
             <template x-for="option in options" x-bind:key="option.index">
                 <li x-bind:id="'{{ $id }}-opt-' + option.index"
                     role="option"
                     x-bind:aria-selected="option.index === selected ? 'true' : 'false'"
                     x-on:click="choose(option.index)"
                     x-on:mouseenter="active = option.index"
-                    {{-- bg-muted, NOT bg-accent. shadcn's accent is a neutral;
-                         this project's --color-accent is a strong orange, and
-                         colour here means bloodline and nothing else. --}}
-                    x-bind:class="option.index === active ? 'bg-muted' : ''"
-                    class="flex min-h-11 cursor-pointer items-center justify-between gap-2 rounded-[var(--radius-sm)]
-                           px-2.5 py-2 text-[15px] leading-snug text-foreground">
-                    <span x-text="option.label"></span>
-                    <svg x-show="option.index === selected" x-cloak
-                         class="h-4 w-4 shrink-0 text-primary" fill="none" stroke="currentColor"
-                         stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
-                    </svg>
+                    class="cursor-pointer">
+                    {{-- d-menu-focus, NOT bg-accent: d-menu's own neutral
+                         tint, the same one a hovered row gets. shadcn's accent
+                         is a neutral; this project's --color-accent is a brand
+                         green, and colour here means bloodline and nothing
+                         else. --}}
+                    <div x-bind:class="option.index === active ? 'd-menu-focus' : ''"
+                         class="flex min-h-11 items-center justify-between gap-2 px-2.5 py-2 text-[15px] leading-snug">
+                        <span x-text="option.label"></span>
+                        <svg x-show="option.index === selected" x-cloak
+                             class="h-4 w-4 shrink-0 text-primary" fill="none" stroke="currentColor"
+                             stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+                        </svg>
+                    </div>
                 </li>
             </template>
         </ul>
     </div>
 
-    @if ($help) <p class="help">{{ $help }}</p> @endif
-    @error($errorField) <p class="error">{{ $message }}</p> @enderror
+    @if ($help) <p class="d-label mt-1">{{ $help }}</p> @endif
+    @error($errorField) <p class="mt-1.5 text-[13px] font-medium text-error">{{ $message }}</p> @enderror
 </div>
