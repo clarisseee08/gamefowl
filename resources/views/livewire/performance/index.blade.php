@@ -211,9 +211,7 @@
                             @endif
                         </th>
                     @endforeach
-                    <th scope="col" class="sticky top-0 z-10 bg-background px-3 py-2 text-right">
-                        <span class="sr-only">Actions</span>
-                    </th>
+                    <th scope="col" class="sticky top-0 z-10 bg-background px-3 py-2 text-right text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Actions</th>
                 </tr>
             </thead>
 
@@ -283,20 +281,14 @@
                             {{ $record->recordedBy?->full_name ?? 'Not recorded' }}
                         </td>
                         <td class="whitespace-nowrap px-3 py-2 text-right">
-                            <div class="flex items-center justify-end gap-5">
+                            <span class="inline-flex items-center justify-end gap-0.5">
                                 @can('update', $record)
-                                    <a href="{{ route('performance.edit', $record) }}" wire:navigate
-                                       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
-                                        Edit<span class="sr-only">, {{ $record->event_type->label() }} record</span>
-                                    </a>
+                                    <x-ui.row-action icon="pencil" :label="'Edit the '.$record->event_type->label().' record'" :href="route('performance.edit', $record)" wire:navigate />
                                 @endcan
                                 @can('delete', $record)
-                                    <button type="button" wire:click="confirmDelete({{ $record->id }})"
-                                            class="d-link d-link-hover d-link-error inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
-                                        Delete<span class="sr-only">, {{ $record->event_type->label() }} record</span>
-                                    </button>
+                                    <x-ui.row-action icon="trash-2" :label="'Delete the '.$record->event_type->label().' record'" :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
                                 @endcan
-                            </div>
+                            </span>
                         </td>
                     </tr>
                 @endforeach

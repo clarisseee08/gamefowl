@@ -152,7 +152,7 @@
                         </th>
                     @endforeach
                     <th scope="col" class="sticky top-0 z-10 bg-background px-3 py-2 text-right">
-                        <span class="sr-only">Actions</span>
+                        Actions
                     </th>
                 </tr>
             </thead>
@@ -190,18 +190,14 @@
                             @endif
                         </td>
                         <td class="whitespace-nowrap px-3 py-3 text-right">
-                            <div class="flex items-center justify-end gap-5">
+                            <div class="flex items-center justify-end gap-0.5">
                                 @can('update', $person)
-                                    <a href="{{ route('users.edit', $person) }}" wire:navigate
-                                       class="d-link d-link-primary d-link-hover inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
-                                        Edit<span class="sr-only">, {{ $person->full_name }}</span>
-                                    </a>
+                                    <x-ui.row-action icon="pencil" :label="'Edit '.$person->full_name" :href="route('users.edit', $person)" wire:navigate />
                                 @endcan
                                 @can('deactivate', $person)
-                                    <button type="button" wire:click="confirmToggle({{ $person->id }})"
-                                            class="d-link d-link-hover inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium {{ $person->is_active ? 'd-link-error' : 'd-link-primary' }}">
-                                        {{ $person->is_active ? 'Deactivate' : 'Reactivate' }}<span class="sr-only">, {{ $person->full_name }}</span>
-                                    </button>
+                                    <x-ui.row-action :icon="$person->is_active ? 'user-x' : 'user-check'"
+                                                     :label="($person->is_active ? 'Deactivate ' : 'Reactivate ').$person->full_name"
+                                                     :destructive="$person->is_active" wire:click="confirmToggle({{ $person->id }})" />
                                 @endcan
                             </div>
                         </td>

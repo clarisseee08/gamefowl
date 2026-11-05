@@ -312,7 +312,7 @@
                             @endif
                         </th>
                     @endforeach
-                    <th scope="col" class="px-3 py-0"><span class="sr-only">Actions</span></th>
+                    <th scope="col" class="px-3 py-0 text-right text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Actions</th>
                 </tr>
             </thead>
 
@@ -385,14 +385,14 @@
                             <span class="d-badge d-badge-soft {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
                         </td>
                         <td class="whitespace-nowrap px-3 py-1 text-right">
-                            <span class="row-actions inline-flex items-center gap-1">
-                                <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate class="d-btn d-btn-ghost">
-                                    View<span class="sr-only">, {{ $bird->name }}</span>
-                                </a>
+                            <span class="inline-flex items-center justify-end gap-0.5">
+                                <x-ui.row-action icon="eye" :label="'View '.$bird->name" :href="route('broodcocks.show', $bird)" wire:navigate />
                                 @can('update', $bird)
-                                    <a href="{{ route('broodcocks.edit', $bird) }}" wire:navigate class="d-btn d-btn-ghost">
-                                        Edit<span class="sr-only">, {{ $bird->name }}</span>
-                                    </a>
+                                    <x-ui.row-action icon="pencil" :label="'Edit '.$bird->name" :href="route('broodcocks.edit', $bird)" wire:navigate />
+                                @endcan
+                                @can('delete', $bird)
+                                    <x-ui.row-action icon="trash-2" :label="'Delete '.$bird->name" :destructive="true"
+                                                     x-on:click="const w = $wire; w.$set('selected', [{{ \Illuminate\Support\Js::from((string) $bird->id) }}]).then(() => w.confirmDeleteSelected())" />
                                 @endcan
                             </span>
                         </td>

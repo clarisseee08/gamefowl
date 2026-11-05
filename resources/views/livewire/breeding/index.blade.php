@@ -185,7 +185,7 @@
 
                     <th scope="col" class="hidden border-b border-border px-4 py-3 text-right text-[13px] lg:text-[11px] font-semibold text-muted-foreground lg:table-cell">Fertility</th>
                     <th scope="col" class="border-b border-border px-4 py-3 text-right text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Hatch rate</th>
-                    <th scope="col" class="border-b border-border py-3 pl-4 pr-0"><span class="sr-only">Open</span></th>
+                    <th scope="col" class="border-b border-border py-3 pl-4 pr-0 text-right text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Actions</th>
                 </tr>
             </thead>
 
@@ -251,10 +251,8 @@
                                         <span class="datum">{{ $record->unregisteredOffspring() }}</span>&nbsp;to register
                                     </span>
                                 @endif
-                                <a href="{{ route('breeding.show', $record) }}" wire:navigate
-                                   class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center font-semibold underline-offset-4">
-                                    View<span class="sr-only"> {{ $record->sire?->name ?? 'Bird removed' }} &times; {{ $record->dam?->name ?? 'Bird removed' }}</span>
-                                </a>
+                                <x-ui.row-action icon="eye" :label="'View '.($record->sire?->name ?? 'Bird removed').' × '.($record->dam?->name ?? 'Bird removed')"
+                                                 :href="route('breeding.show', $record)" wire:navigate />
                             </span>
                         </td>
                     </tr>

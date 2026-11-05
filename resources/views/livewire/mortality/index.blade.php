@@ -200,7 +200,7 @@
                     <th scope="col" class="border-b border-border px-4 py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Age at death</th>
                     <th scope="col" class="hidden border-b border-border px-4 py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground lg:table-cell">Recorded by</th>
                     @if ($canDelete)
-                        <th scope="col" class="border-b border-border py-3 pl-4 pr-0"><span class="sr-only">Actions</span></th>
+                        <th scope="col" class="border-b border-border py-3 pl-4 pr-0 text-right text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Actions</th>
                     @endif
                 </tr>
             </thead>
@@ -234,11 +234,8 @@
                         <td class="hidden border-b border-border px-4 py-3 text-muted-foreground lg:table-cell">{{ $record->recordedBy?->full_name ?? 'Not recorded' }}</td>
                         @if ($canDelete)
                             <td class="border-b border-border py-1.5 pl-4 pr-0 text-right">
-                                <button type="button"
-                                        wire:click="confirmDelete({{ $record->id }})"
-                                        class="d-btn d-btn-ghost -mr-3 text-destructive">
-                                    Delete<span class="sr-only"> the death record for {{ $record->broodcock?->name ?? 'this bird' }}</span>
-                                </button>
+                                <x-ui.row-action icon="trash-2" :label="'Delete the death record for '.($record->broodcock?->name ?? 'this bird')"
+                                                 :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
                             </td>
                         @endif
                     </tr>

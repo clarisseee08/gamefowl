@@ -309,6 +309,17 @@ final class EmsComponentsTest extends TestCase
             ->assertDontSee('Manage');
     }
 
+    public function test_a_row_action_is_a_named_icon_with_a_tooltip(): void
+    {
+        $this->blade('<x-ui.row-action icon="pencil" label="Edit Tandang" href="/broodcocks/1/edit" />')
+            ->assertSee('<a href="/broodcocks/1/edit" aria-label="Edit Tandang"', escape: false)
+            ->assertSee('role="tooltip"', escape: false);
+
+        $this->blade('<x-ui.row-action icon="trash-2" label="Delete Tandang" :destructive="true" wire:click="confirmDelete(1)" />')
+            ->assertSee('<button type="button" aria-label="Delete Tandang"', escape: false)
+            ->assertSee('wire:click="confirmDelete(1)"', escape: false);
+    }
+
     public function test_the_design_page_shows_the_ems_components_to_staff(): void
     {
         $this->actingAs(User::factory()->owner()->create())

@@ -94,4 +94,28 @@ final class BulkDeleteConfirmationTest extends TestCase
             ->assertDontSee('birds on the farm')
             ->assertSeeHtml('>3</span>');
     }
+
+    /**
+     * Each row carries its actions as icons in a visible Actions column (the
+     * owner's choice): view and edit for staff, and delete for the owner,
+     * which opens the same confirmation as a bulk delete, for that one bird.
+     */
+    public function test_each_row_offers_view_edit_and_for_the_owner_delete(): void
+    {
+        $bird = Broodcock::factory()->create(['name' => 'Kingpin']);
+
+        $this->actingAs(User::factory()->owner()->create())
+            ->get(route('broodcocks.index'))
+            ->assertOk()
+            ->assertSee('Actions')
+            ->assertSee('aria-label="View Kingpin"', escape: false)
+            ->assertSee('aria-label="Edit Kingpin"', escape: false)
+            ->assertSee('aria-label="Delete Kingpin"', escape: false)
+            ->assertSee('confirmDeleteSelected()', escape: false);
+
+        $this->actingAs(User::factory()->staff()->create())
+            ->get(route('broodcocks.index'))
+            ->assertSee('aria-label="Edit Kingpin"', escape: false)
+            ->assertDontSee('aria-label="Delete Kingpin"', escape: false);
+    }
 }

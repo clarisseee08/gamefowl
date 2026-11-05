@@ -139,7 +139,7 @@
                         </th>
                     @endforeach
 
-                    <th scope="col" class="{{ $th }} text-right"><span class="sr-only">Actions</span></th>
+                    <th scope="col" class="{{ $th }} text-right">Actions</th>
                 </tr>
             </thead>
 
@@ -224,21 +224,13 @@
                         </td>
 
                         <td class="mt-3 block border-b-0 p-0 md:mt-0 md:table-cell md:border-b md:border-border md:px-4 md:py-2 md:text-right md:align-top md:whitespace-nowrap">
-                            <div class="-ml-3 flex gap-1 md:ml-0 md:justify-end">
+                            <div class="-ml-3 flex gap-0.5 md:ml-0 md:justify-end">
+                                @php $what = $record->record_type->label().' for '.$birdName.' on '.$record->checkup_date->format('d M Y'); @endphp
                                 @can('update', $record)
-                                    <a href="{{ route('health.edit', $record) }}" wire:navigate class="d-btn d-btn-ghost">
-                                        Edit<span class="sr-only">, {{ $record->record_type->label() }} for {{ $birdName }} on {{ $record->checkup_date->format('d M Y') }}</span>
-                                    </a>
+                                    <x-ui.row-action icon="pencil" :label="'Edit the '.$what" :href="route('health.edit', $record)" wire:navigate />
                                 @endcan
-                                {{-- Ghost, not the filled .d-btn-error: a solid crimson
-                                     control repeated down every row out-shouts the band
-                                     colours. The filled variant is kept for the dialog,
-                                     where destroying the record IS the primary action. --}}
                                 @can('delete', $record)
-                                    <button type="button" wire:click="confirmDelete({{ $record->id }})"
-                                            class="d-btn d-btn-ghost text-destructive hover:bg-destructive-bg">
-                                        Delete<span class="sr-only">, {{ $record->record_type->label() }} for {{ $birdName }} on {{ $record->checkup_date->format('d M Y') }}</span>
-                                    </button>
+                                    <x-ui.row-action icon="trash-2" :label="'Delete the '.$what" :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
                                 @endcan
                             </div>
                         </td>
