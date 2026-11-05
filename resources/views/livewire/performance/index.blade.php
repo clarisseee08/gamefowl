@@ -26,7 +26,31 @@
         ['label' => 'Recorded by', 'sort' => null, 'align' => 'left', 'cell' => 'hidden 2xl:table-cell'],
     ];
 
-    $loadingTargets = 'search,eventType,result,from,to,sort,gotoPage,nextPage,previousPage';
+    $loadingTargets = 'search,eventType,result,from,to,sort,perPage,gotoPage,nextPage,previousPage';
+
+    // Everything the View dialog shows, from the row already on the page: the
+    // dialog opens with no request. Remarks only for those allowed to read them.
+    $viewPayload = fn (\App\Models\PerformanceRecord $record): array => [
+        'id' => $record->id,
+        'bird' => $record->broodcock?->name ?? 'Bird removed',
+        'band' => $record->broodcock?->band_number,
+        'bloodline' => $record->broodcock?->bloodline ?? 'Bloodline not recorded',
+        'tag' => \App\Support\BandTag::hex($record->broodcock?->bloodline),
+        'photo' => $record->broodcock?->primaryPhoto ? route('photos.show', ['photo' => $record->broodcock->primaryPhoto, 'size' => 'thumb']) : null,
+        'birdUrl' => $record->broodcock ? route('broodcocks.show', $record->broodcock) : null,
+        'date' => $record->event_date->format('j F Y'),
+        'ago' => $record->event_date->diffForHumans(),
+        'type' => $record->event_type->label(),
+        'typeBadge' => $record->event_type->badgeClasses(),
+        'result' => $record->result->label(),
+        'resultBadge' => $record->result->badgeClasses(),
+        'weight' => $record->weight !== null ? number_format((float) $record->weight, 2).' kg' : 'Not weighed',
+        'duration' => $record->durationLabel() ?? 'Not recorded',
+        'rating' => $record->rating,
+        'remarks' => auth()->user()?->can('viewRemarks', $record) ? $record->remarks : null,
+        'recordedBy' => $record->recordedBy?->full_name ?? 'a former staff member',
+        'canEdit' => auth()->user()?->can('update', $record) ?? false,
+    ];
 @endphp
 
 <div>
@@ -37,7 +61,7 @@
 
         @can('create', App\Models\PerformanceRecord::class)
             <x-slot:actions>
-                <a href="{{ route('performance.create') }}" wire:navigate class="d-btn d-btn-primary">
+                <a href="{{ route('performance.create') }}" x-on:click.prevent="$dispatch('ems-dialog', 'performance-form')" class="d-btn d-btn-primary">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                     </svg>
@@ -51,9 +75,9 @@
          delete lives here rather than in the layout's session flash. --}}
     @if ($statusMessage !== '')
         <div class="d-alert d-alert-soft d-alert-success mt-6 flex items-start justify-between gap-4 text-base-content" role="status">
-            <p class="text-[15px] leading-snug text-foreground">{{ $statusMessage }}</p>
+            <p class="text-[15px] lg:text-xs leading-snug text-foreground">{{ $statusMessage }}</p>
             <button type="button" wire:click="dismissStatus"
-                    class="d-link d-link-hover -my-2 inline-flex min-h-11 shrink-0 items-center px-1 text-[14px] font-medium text-foreground underline-offset-4">
+                    class="d-link d-link-hover -my-2 inline-flex min-h-11 shrink-0 items-center px-1 text-[14px] lg:text-xs font-medium text-foreground underline-offset-4">
                 Dismiss
             </button>
         </div>
@@ -110,7 +134,7 @@
                            description="Record a sparring session, derby, conditioning session or weigh-in and it will appear here and on the bird's own timeline."
                            icon="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z">
                 @can('create', App\Models\PerformanceRecord::class)
-                    <a href="{{ route('performance.create') }}" wire:navigate class="d-btn d-btn-primary">
+                    <a href="{{ route('performance.create') }}" x-on:click.prevent="$dispatch('ems-dialog', 'performance-form')" class="d-btn d-btn-primary">
                         Add your first performance record
                     </a>
                 @endcan
@@ -128,19 +152,19 @@
                         <div class="min-w-0">
                             @if ($record->broodcock !== null)
                                 <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate
-                                   class="inline-flex min-h-11 max-w-full items-center gap-2 text-[16px] font-medium text-foreground hover:underline">
+                                   class="inline-flex min-h-11 max-w-full items-center gap-2 text-[16px] lg:text-xs font-medium text-foreground">
                                     <x-band-tag :bloodline="$record->broodcock->bloodline"
                                                 :band="$record->broodcock->band_number" size="xs" />
                                     <span class="truncate">{{ $record->broodcock->name }}</span>
                                 </a>
                             @else
-                                <p class="flex min-h-11 items-center text-[16px] text-muted-foreground">Bird removed</p>
+                                <p class="flex min-h-11 items-center text-[16px] lg:text-xs text-muted-foreground">Bird removed</p>
                             @endif
                         </div>
-                        <p class="datum shrink-0 pt-3 text-[14px] text-muted-foreground">{{ $record->event_date->format('d M Y') }}</p>
+                        <p class="datum shrink-0 pt-3 text-[14px] lg:text-xs text-muted-foreground">{{ $record->event_date->format('d M Y') }}</p>
                     </div>
 
-                    <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-2 text-[14px] text-muted-foreground">
+                    <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-2 text-[14px] lg:text-xs text-muted-foreground">
                         <span class="d-badge d-badge-soft {{ $record->event_type->badgeClasses() }}">{{ $record->event_type->label() }}</span>
                         @if ($record->result->countsTowardRecord())
                             <span class="d-badge d-badge-soft {{ $record->result->badgeClasses() }}">{{ $record->result->label() }}</span>
@@ -152,22 +176,28 @@
                         <span class="datum">{{ $record->rating !== null ? $record->rating.' of 5' : 'Not rated' }}</span>
                     </div>
 
+                    <div class="mt-2 flex flex-wrap items-center gap-x-6">
+                        <button type="button" x-on:click="$dispatch('performance-view', {{ Js::from($viewPayload($record)) }}); $dispatch('ems-dialog', 'performance-view')"
+                                class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
+                            View<span class="sr-only">, {{ $record->event_type->label() }} record</span>
+                        </button>
                     @canany(['update', 'delete'], $record)
-                        <div class="mt-2 flex flex-wrap items-center gap-x-6">
+                        <div class="contents">
                             @can('update', $record)
-                                <a href="{{ route('performance.edit', $record) }}" wire:navigate
-                                   class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center text-[15px] font-medium">
+                                <a href="{{ route('performance.edit', $record) }}" wire:click.prevent="openForm({{ $record->id }})" x-on:click="$dispatch('ems-dialog', { id: 'performance-form', wait: true })"
+                                   class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
                                     Edit<span class="sr-only">, {{ $record->event_type->label() }} record</span>
                                 </a>
                             @endcan
                             @can('delete', $record)
                                 <button type="button" wire:click="confirmDelete({{ $record->id }})"
-                                        class="d-link d-link-hover d-link-error inline-flex min-h-11 items-center text-[15px] font-medium">
+                                        class="d-link d-link-hover d-link-error inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
                                     Delete<span class="sr-only">, {{ $record->event_type->label() }} record</span>
                                 </button>
                             @endcan
                         </div>
                     @endcanany
+                    </div>
                 </li>
             @endforeach
         </ul>
@@ -175,139 +205,140 @@
         {{-- Wider screens: the ledger. No horizontal scroll wrapper - that would
              make its own scroll box and stop the header sticking - so the
              least load-bearing columns drop out below xl and 2xl instead. --}}
-        <table class="d-table hidden w-full md:table [&_td]:border-border [&_th]:border-border">
-            <thead>
-                <tr>
-                    @foreach ($columns as $column)
-                        @php
-                            $isSorted = $column['sort'] !== null && $sortBy === $column['sort'];
-                            $ariaSort = $isSorted ? ($sortDirection === 'asc' ? 'ascending' : 'descending') : 'none';
-                        @endphp
-                        <th scope="col"
-                            @if ($column['sort'] !== null) aria-sort="{{ $ariaSort }}" @endif
-                            @class([
-                                'sticky top-0 z-10 bg-background px-3 py-2 text-[13px] font-semibold text-muted-foreground whitespace-nowrap',
-                                'text-right' => $column['align'] === 'right',
-                                'text-left' => $column['align'] !== 'right',
-                                $column['cell'],
-                            ])>
-                            @if ($column['sort'] !== null)
-                                <button type="button" wire:click="sort('{{ $column['sort'] }}')"
-                                        @class([
-                                            'inline-flex items-center gap-1 hover:text-foreground',
-                                            'flex-row-reverse' => $column['align'] === 'right',
-                                            'text-foreground' => $isSorted,
-                                        ])>
-                                    {{ $column['label'] }}
-                                    @if ($isSorted)
-                                        <svg class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="{{ $sortDirection === 'asc' ? 'm4.5 15.75 7.5-7.5 7.5 7.5' : 'm19.5 8.25-7.5 7.5-7.5-7.5' }}"/>
-                                        </svg>
-                                        <span class="sr-only">sorted {{ $sortDirection === 'asc' ? 'ascending' : 'descending' }}</span>
-                                    @endif
-                                </button>
-                            @else
-                                {{ $column['label'] }}
-                            @endif
-                        </th>
-                    @endforeach
-                    <th scope="col" class="sticky top-0 z-10 bg-background px-3 py-2 text-right">
-                        <span class="sr-only">Actions</span>
-                    </th>
-                </tr>
-            </thead>
-
-            <tbody wire:loading.remove wire:target="{{ $loadingTargets }}">
-                @foreach ($records as $record)
-                    <tr wire:key="perf-tr-{{ $record->id }}" class="hover:bg-muted/60">
-                        <td class="whitespace-nowrap px-3 py-2 text-[15px] font-medium text-foreground">
-                            @if ($record->broodcock !== null)
-                                {{-- Name only: displayName() appends the band in
-                                     parentheses, which the tag already shows. --}}
-                                <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate
-                                   class="inline-flex min-h-11 items-center gap-2 hover:underline">
-                                    <x-band-tag :bloodline="$record->broodcock->bloodline"
-                                                :band="$record->broodcock->band_number" size="xs" />
-                                    {{ $record->broodcock->name }}
-                                </a>
-                            @else
-                                <span class="font-normal text-muted-foreground">Bird removed</span>
-                            @endif
-                        </td>
-                        <td class="datum whitespace-nowrap px-3 py-2 text-[15px] text-foreground">
-                            {{ $record->event_date->format('d M Y') }}
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-2">
-                            <span class="d-badge d-badge-soft {{ $record->event_type->badgeClasses() }}">{{ $record->event_type->label() }}</span>
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-2">
-                            <span class="d-badge d-badge-soft {{ $record->result->badgeClasses() }}">{{ $record->result->label() }}</span>
-                        </td>
-                        <td @class([
-                            'whitespace-nowrap px-3 py-2 text-right text-[15px]',
-                            'datum text-foreground' => $record->weight !== null,
-                            'text-muted-foreground' => $record->weight === null,
-                        ])>
-                            {{ $record->weight !== null ? $record->weight.' kg' : 'Not recorded' }}
-                        </td>
-                        <td @class([
-                            'hidden whitespace-nowrap px-3 py-2 text-right text-[15px] xl:table-cell',
-                            'datum text-foreground' => $record->durationLabel() !== null,
-                            'text-muted-foreground' => $record->durationLabel() === null,
-                        ])>
-                            {{ $record->durationLabel() ?? 'Not recorded' }}
-                        </td>
-                        <td class="hidden whitespace-nowrap px-3 py-2 xl:table-cell">
-                            @if ($record->rating === null)
-                                <span class="text-[14px] text-muted-foreground">Not rated</span>
-                            @else
-                                {{-- Ink stars, not amber: colour in this system means
-                                     bloodline, so a rating is drawn with fill and
-                                     outline instead of hue. --}}
-                                <span class="inline-flex items-center gap-0.5" role="img"
-                                      aria-label="{{ $record->rating }} out of 5 stars">
-                                    @for ($star = 1; $star <= 5; $star++)
-                                        <svg class="h-4 w-4 {{ $star <= $record->rating ? 'text-foreground' : 'text-muted-foreground' }}"
-                                             viewBox="0 0 20 20" aria-hidden="true"
-                                             fill="{{ $star <= $record->rating ? 'currentColor' : 'none' }}"
-                                             stroke="currentColor"
-                                             stroke-width="{{ $star <= $record->rating ? '0' : '1.25' }}">
-                                            <path stroke-linejoin="round" d="M10 1.5l2.6 5.27 5.82.85-4.21 4.1.99 5.79L10 14.78l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85L10 1.5z"/>
-                                        </svg>
-                                    @endfor
-                                </span>
-                            @endif
-                        </td>
-                        <td class="hidden max-w-[11rem] truncate px-3 py-2 text-[15px] text-muted-foreground 2xl:table-cell"
-                            title="{{ $record->recordedBy?->full_name }}">
-                            {{ $record->recordedBy?->full_name ?? 'Not recorded' }}
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-2 text-right">
-                            <div class="flex items-center justify-end gap-5">
-                                @can('update', $record)
-                                    <a href="{{ route('performance.edit', $record) }}" wire:navigate
-                                       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center text-[15px] font-medium">
-                                        Edit<span class="sr-only">, {{ $record->event_type->label() }} record</span>
-                                    </a>
-                                @endcan
-                                @can('delete', $record)
-                                    <button type="button" wire:click="confirmDelete({{ $record->id }})"
-                                            class="d-link d-link-hover d-link-error inline-flex min-h-11 items-center text-[15px] font-medium">
-                                        Delete<span class="sr-only">, {{ $record->event_type->label() }} record</span>
+        {{-- EMS: a wide table scrolls inside its own container; the page never does. --}}
+        <div class="overflow-x-auto">
+            <table class="d-table hidden w-full md:table [&_td]:border-border [&_th]:border-border">
+                <thead>
+                    <tr>
+                        @foreach ($columns as $column)
+                            @php
+                                $isSorted = $column['sort'] !== null && $sortBy === $column['sort'];
+                                $ariaSort = $isSorted ? ($sortDirection === 'asc' ? 'ascending' : 'descending') : 'none';
+                            @endphp
+                            <th scope="col"
+                                @if ($column['sort'] !== null) aria-sort="{{ $ariaSort }}" @endif
+                                @class([
+                                    'sticky top-0 z-10 bg-background px-3 py-2 text-[13px] lg:text-[11px] font-semibold text-muted-foreground whitespace-nowrap',
+                                    'text-right' => $column['align'] === 'right',
+                                    'text-left' => $column['align'] !== 'right',
+                                    $column['cell'],
+                                ])>
+                                @if ($column['sort'] !== null)
+                                    <button type="button" wire:click="sort('{{ $column['sort'] }}')"
+                                            @class([
+                                                'inline-flex items-center gap-1 hover:text-foreground',
+                                                'flex-row-reverse' => $column['align'] === 'right',
+                                                'text-foreground' => $isSorted,
+                                            ])>
+                                        {{ $column['label'] }}
+                                        @if ($isSorted)
+                                            <svg class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $sortDirection === 'asc' ? 'm4.5 15.75 7.5-7.5 7.5 7.5' : 'm19.5 8.25-7.5 7.5-7.5-7.5' }}"/>
+                                            </svg>
+                                            <span class="sr-only">sorted {{ $sortDirection === 'asc' ? 'ascending' : 'descending' }}</span>
+                                        @endif
                                     </button>
-                                @endcan
-                            </div>
-                        </td>
+                                @else
+                                    {{ $column['label'] }}
+                                @endif
+                            </th>
+                        @endforeach
+                        <th scope="col" class="sticky top-0 z-10 bg-background px-3 py-2 text-right text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Actions</th>
                     </tr>
-                @endforeach
-            </tbody>
+                </thead>
 
-            <x-table-skeleton :cols="6" wire:loading wire:target="{{ $loadingTargets }}" />
-        </table>
+                <tbody wire:loading.remove wire:target="{{ $loadingTargets }}">
+                    @foreach ($records as $record)
+                        <tr wire:key="perf-tr-{{ $record->id }}" class="hover:bg-muted/60"
+                            x-data="{ preview: false, timer: null }"
+                            x-on:mouseenter="if (matchMedia('(hover: hover)').matches) { timer = setTimeout(() => preview = true, 350) }"
+                            x-on:mouseleave="clearTimeout(timer); preview = false">
+                            <td class="whitespace-nowrap px-3 py-2 text-[15px] lg:text-xs font-medium text-foreground">
+                                @if ($record->broodcock !== null)
+                                    {{-- Name only: displayName() appends the band in
+                                         parentheses, which the tag already shows. --}}
+                                    <span class="relative inline-flex">
+                                        <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate
+                                           class="inline-flex min-h-11 items-center gap-2">
+                                            <x-band-tag :bloodline="$record->broodcock->bloodline"
+                                                        :band="$record->broodcock->band_number" size="xs" />
+                                            {{ $record->broodcock->name }}
+                                        </a>
+                                        <x-bird-hover-card :bird="$record->broodcock" />
+                                    </span>
+                                @else
+                                    <span class="font-normal text-muted-foreground">Bird removed</span>
+                                @endif
+                            </td>
+                            <td class="datum whitespace-nowrap px-3 py-2 text-[15px] lg:text-xs text-foreground">
+                                {{ $record->event_date->format('d M Y') }}
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-2">
+                                <span class="d-badge d-badge-soft {{ $record->event_type->badgeClasses() }}">{{ $record->event_type->label() }}</span>
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-2">
+                                <span class="d-badge d-badge-soft {{ $record->result->badgeClasses() }}">{{ $record->result->label() }}</span>
+                            </td>
+                            <td @class([
+                                'whitespace-nowrap px-3 py-2 text-right text-[15px] lg:text-xs',
+                                'datum text-foreground' => $record->weight !== null,
+                                'text-muted-foreground' => $record->weight === null,
+                            ])>
+                                {{ $record->weight !== null ? $record->weight.' kg' : 'Not recorded' }}
+                            </td>
+                            <td @class([
+                                'hidden whitespace-nowrap px-3 py-2 text-right text-[15px] lg:text-xs xl:table-cell',
+                                'datum text-foreground' => $record->durationLabel() !== null,
+                                'text-muted-foreground' => $record->durationLabel() === null,
+                            ])>
+                                {{ $record->durationLabel() ?? 'Not recorded' }}
+                            </td>
+                            <td class="hidden whitespace-nowrap px-3 py-2 xl:table-cell">
+                                @if ($record->rating === null)
+                                    <span class="text-[14px] lg:text-xs text-muted-foreground">Not rated</span>
+                                @else
+                                    {{-- Ink stars, not amber: colour in this system means
+                                         bloodline, so a rating is drawn with fill and
+                                         outline instead of hue. --}}
+                                    <span class="inline-flex items-center gap-0.5" role="img"
+                                          aria-label="{{ $record->rating }} out of 5 stars">
+                                        @for ($star = 1; $star <= 5; $star++)
+                                            <svg class="h-4 w-4 {{ $star <= $record->rating ? 'text-foreground' : 'text-muted-foreground' }}"
+                                                 viewBox="0 0 20 20" aria-hidden="true"
+                                                 fill="{{ $star <= $record->rating ? 'currentColor' : 'none' }}"
+                                                 stroke="currentColor"
+                                                 stroke-width="{{ $star <= $record->rating ? '0' : '1.25' }}">
+                                                <path stroke-linejoin="round" d="M10 1.5l2.6 5.27 5.82.85-4.21 4.1.99 5.79L10 14.78l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85L10 1.5z"/>
+                                            </svg>
+                                        @endfor
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="hidden max-w-[11rem] truncate px-3 py-2 text-[15px] lg:text-xs text-muted-foreground 2xl:table-cell"
+                                title="{{ $record->recordedBy?->full_name }}">
+                                {{ $record->recordedBy?->full_name ?? 'Not recorded' }}
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-2 text-right">
+                                <span class="inline-flex items-center justify-end gap-0.5">
+                                    <x-ui.row-action icon="eye" :label="'View the '.$record->event_type->label().' record'"
+                                                     x-on:click="$dispatch('performance-view', {{ Js::from($viewPayload($record)) }}); $dispatch('ems-dialog', 'performance-view')" />
+                                    @can('update', $record)
+                                        <x-ui.row-action icon="pencil" :label="'Edit the '.$record->event_type->label().' record'" :href="route('performance.edit', $record)" wire:click.prevent="openForm({{ $record->id }})" x-on:click="$dispatch('ems-dialog', { id: 'performance-form', wait: true })" />
+                                    @endcan
+                                    @can('delete', $record)
+                                        <x-ui.row-action icon="trash-2" :label="'Delete the '.$record->event_type->label().' record'" :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
+                                    @endcan
+                                </span>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
 
-        <div class="mt-6 border-t border-border pt-4">
-            {{ $records->links() }}
+                <x-table-skeleton :cols="6" wire:loading wire:target="{{ $loadingTargets }}" />
+            </table>
         </div>
+
+        <x-ui.table-pagination :paginator="$records" class="mt-4" />
     @endif
 
     {{-- Delete confirmation. Names the exact record - the bird, the kind of
@@ -318,16 +349,16 @@
              x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.d-btn-outline')?.click()"
              role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title" aria-describedby="delete-dialog-body">
             <div class="d-modal-box elev-3 max-w-md">
-                <h2 id="delete-dialog-title" class="font-display text-[22px] font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
+                <h2 id="delete-dialog-title" class="font-display text-[22px] lg:text-base font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
                     Delete the {{ $pending->event_type->label() }} record for {{ $pending->broodcock?->displayName() ?? 'this bird' }}?
                 </h2>
 
                 <div id="delete-dialog-body">
-                    <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                    <p class="mt-3 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                         The record dated <strong class="datum font-medium text-foreground">{{ $pending->event_date->format('d M Y') }}</strong>
                         will be removed from the bird's timeline and will stop counting towards its win rate.
                     </p>
-                    <p class="mt-2 text-[15px] leading-relaxed text-muted-foreground">
+                    <p class="mt-2 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                         The farm owner can restore it later if this was a mistake.
                     </p>
                 </div>
@@ -342,4 +373,110 @@
             </div>
         </div>
     @endif
+
+    {{-- Add and edit open here, in a dialog over the list, never on a page of their own. --}}
+    {{-- The new-record form is built with the page, and it authorizes on
+         mount, so it is only built for someone who may create one. --}}
+    @can('create', \App\Models\PerformanceRecord::class)
+        <x-ui.form-dialog id="performance-form" model="showForm" size="lg" :wrap="false" :title="$formRecordId ? 'Edit Performance Record' : 'Add a Performance Record'">
+            @if ($formRecordId || $formBroodcockId)
+                {{-- An edit, or a form for one bird: filled by the server when opened. --}}
+                @if ($showForm)
+                    <livewire:performance.form :record="$formRecordId ? \App\Models\PerformanceRecord::find($formRecordId) : null" :broodcock="$formBroodcockId ? \App\Models\Broodcock::find($formBroodcockId) : null"
+                                               :in-dialog="true" :key="'performance-form-'.($formRecordId ?? 'new').'-'.($formBroodcockId ?? '')" />
+                @else
+                    <x-ui.form-skeleton :fields="5" />
+                @endif
+            @else
+                {{-- A new record: built with the page, so Add opens at once with no request. --}}
+                <livewire:performance.form :record="$formRecordId ? \App\Models\PerformanceRecord::find($formRecordId) : null" :broodcock="$formBroodcockId ? \App\Models\Broodcock::find($formBroodcockId) : null"
+                                      :in-dialog="true" :key="'performance-form-new-'.$formNonce" />
+            @endif
+        </x-ui.form-dialog>
+    @endcan
+
+    {{-- VIEW: one record, read-only, filled from the row that opened it - no
+         request. Edit goes straight into the edit form from here. --}}
+    <div x-data="{ r: null }" x-on:performance-view.window="r = $event.detail">
+        <x-ui.dialog id="performance-view" size="md" title="Performance Record">
+            <template x-if="r">
+                <div class="space-y-4">
+                    {{-- The bird --}}
+                    <div class="flex items-center gap-3 rounded-md border border-border bg-muted/40 p-2.5">
+                        <span class="relative block h-20 w-16 shrink-0 overflow-hidden rounded-sm bg-muted" x-bind:style="{ boxShadow: 'inset 0 3px 0 ' + r.tag }">
+                            <template x-if="r.photo">
+                                <span x-data="{ loaded: false }" class="block h-full w-full">
+                                    <span x-show="! loaded" class="absolute inset-0 animate-pulse bg-muted-foreground/15"></span>
+                                    <img x-bind:src="r.photo" alt="" x-on:load="loaded = true" class="h-full w-full object-cover transition-opacity duration-300" x-bind:class="loaded ? 'opacity-100' : 'opacity-0'">
+                                </span>
+                            </template>
+                            <template x-if="! r.photo">
+                                <span class="flex h-full w-full items-center justify-center text-[11px] text-muted-foreground">No photo</span>
+                            </template>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block truncate text-sm font-semibold text-foreground lg:text-xs">
+                                <span x-text="r.bird"></span><span x-show="r.band" class="datum font-normal text-muted-foreground"> &middot; <span x-text="r.band"></span></span>
+                            </span>
+                            <span class="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground lg:text-[11px]">
+                                <span class="inline-block size-2 rounded-full" x-bind:style="{ backgroundColor: r.tag }"></span>
+                                <span x-text="r.bloodline"></span>
+                            </span>
+                            <a x-show="r.birdUrl" x-bind:href="r.birdUrl" wire:navigate class="mt-1 inline-flex text-xs font-medium text-primary lg:text-[11px]">Open the bird&rsquo;s page</a>
+                        </span>
+                    </div>
+
+                    {{-- The event --}}
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="d-badge d-badge-soft" x-bind:class="r.typeBadge" x-text="r.type"></span>
+                        <span class="d-badge d-badge-soft" x-bind:class="r.resultBadge" x-text="r.result"></span>
+                        <span class="ml-auto text-xs text-muted-foreground lg:text-[11px]"><span class="datum font-semibold text-foreground" x-text="r.date"></span> &middot; <span x-text="r.ago"></span></span>
+                    </div>
+
+                    <dl class="grid grid-cols-3 gap-2">
+                        <div class="rounded-md bg-muted/60 px-3 py-2.5">
+                            <dt class="text-[11px] text-muted-foreground">Weight</dt>
+                            <dd class="datum mt-0.5 text-sm font-semibold text-foreground lg:text-xs" x-text="r.weight"></dd>
+                        </div>
+                        <div class="rounded-md bg-muted/60 px-3 py-2.5">
+                            <dt class="text-[11px] text-muted-foreground">Duration</dt>
+                            <dd class="datum mt-0.5 text-sm font-semibold text-foreground lg:text-xs" x-text="r.duration"></dd>
+                        </div>
+                        <div class="rounded-md bg-muted/60 px-3 py-2.5">
+                            <dt class="text-[11px] text-muted-foreground">Rating</dt>
+                            <dd class="mt-1 flex items-center gap-0.5" x-bind:aria-label="r.rating ? r.rating + ' out of 5 stars' : 'Not rated'">
+                                <template x-if="r.rating">
+                                    <span class="inline-flex gap-0.5">
+                                        <template x-for="star in 5">
+                                            <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" aria-hidden="true" stroke="currentColor"
+                                                 x-bind:class="star <= r.rating ? 'text-foreground' : 'text-muted-foreground'"
+                                                 x-bind:fill="star <= r.rating ? 'currentColor' : 'none'"
+                                                 x-bind:stroke-width="star <= r.rating ? 0 : 1.25">
+                                                <path stroke-linejoin="round" d="M10 1.5l2.6 5.27 5.82.85-4.21 4.1.99 5.79L10 14.78l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85L10 1.5z"/>
+                                            </svg>
+                                        </template>
+                                    </span>
+                                </template>
+                                <template x-if="! r.rating"><span class="text-xs text-muted-foreground">Not rated</span></template>
+                            </dd>
+                        </div>
+                    </dl>
+
+                    <div x-show="r.remarks" class="border-l-2 border-border pl-3">
+                        <p class="text-[11px] font-semibold text-muted-foreground">Remarks (staff only)</p>
+                        <p class="mt-1 whitespace-pre-line text-sm leading-relaxed text-foreground lg:text-xs" x-text="r.remarks"></p>
+                    </div>
+
+                    <p class="text-xs text-muted-foreground lg:text-[11px]">Recorded by <span x-text="r.recordedBy"></span></p>
+                </div>
+            </template>
+
+            <x-slot:actions>
+                <x-ui.button variant="outline" x-show="r && r.canEdit"
+                             x-on:click="const id = r.id; requestClose(); $dispatch('ems-dialog', { id: 'performance-form', wait: true }); $wire.openForm(id)">
+                    <x-ui.icon name="pencil" /> Edit
+                </x-ui.button>
+            </x-slot:actions>
+        </x-ui.dialog>
+    </div>
 </div>

@@ -400,7 +400,9 @@ final class HealthComplianceReportTest extends TestCase
         // filter statement and the page footer are all part of the contract.
         $this->assertStringContainsString(config('gfms.farm.name'), $html);
         $this->assertStringContainsString('Filters applied:', $html);
-        $this->assertStringContainsString('page-number', $html);
+        // The footer; its "Page X of Y" is stamped on by the controller after
+        // rendering, so the template carries only the place for it.
+        $this->assertStringContainsString('page-footer', $html);
 
         // Overdue shading is inline so it outranks the layout's zebra stripe.
         // Asserted against the config rather than a literal: the point of the

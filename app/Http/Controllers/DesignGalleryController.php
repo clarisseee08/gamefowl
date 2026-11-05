@@ -6,6 +6,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View as ViewFactory;
+use Illuminate\Support\MessageBag;
+use Illuminate\Support\ViewErrorBag;
 
 /**
  * The component gallery at /design.
@@ -30,6 +33,15 @@ class DesignGalleryController extends Controller
         abort_unless($request->user()?->isInternal() ?? false, 403);
 
         $brand = config('gfms-brand');
+
+        // The field wrappers read their errors from the shared bag, exactly as
+        // they do on a form after validation, so the gallery's error states
+        // are real renders of that path rather than hand-written copies.
+        ViewFactory::share('errors', (new ViewErrorBag)->put('default', new MessageBag([
+            'gallery_weight' => 'Weight cannot be a negative number.',
+            'gallery_sex' => "Choose the bird's sex.",
+            'gallery_notes' => 'Keep notes under 500 characters.',
+        ])));
 
         return view('design.gallery', [
             'brand' => $brand,

@@ -9,10 +9,11 @@ use Tests\TestCase;
 /**
  * The font setup, guarded - because the failure modes are silent.
  *
- * The application uses exactly two faces, Lexend for display and Public Sans
- * for text, loaded from Google Fonts with preconnect in the shared head
- * partial. That replaced a self-hosted @fontsource stack (Poppins, Inter,
- * JetBrains Mono) whose guard this file used to be.
+ * The application uses exactly one face, Inter (the EMS design system),
+ * loaded from Google Fonts with preconnect in the shared head partial. It
+ * replaced Lexend and Public Sans, which in turn replaced a self-hosted
+ *
+ * @fontsource stack whose guard this file used to be.
  *
  * Three things go wrong quietly and nothing else reports them:
  *
@@ -48,14 +49,25 @@ final class FontPayloadTest extends TestCase
             'A hand-declared @font-face survives from the old self-hosted stack.');
     }
 
-    public function test_the_two_faces_are_loaded_with_preconnect(): void
+    public function test_inter_is_loaded_with_preconnect(): void
     {
         $head = $this->headPartial();
 
         $this->assertStringContainsString('rel="preconnect" href="https://fonts.googleapis.com"', $head);
         $this->assertStringContainsString('rel="preconnect" href="https://fonts.gstatic.com" crossorigin', $head);
-        $this->assertStringContainsString('family=Lexend:', $head);
-        $this->assertStringContainsString('family=Public+Sans:', $head);
+        $this->assertStringContainsString('family=Inter:', $head);
+    }
+
+    /**
+     * Lexend and Public Sans were replaced by Inter. A link left behind would
+     * download two faces that no element is set in.
+     */
+    public function test_the_retired_faces_are_no_longer_loaded_or_named(): void
+    {
+        foreach (['Lexend', 'Public+Sans', 'Public Sans'] as $retired) {
+            $this->assertStringNotContainsString($retired, $this->headPartial(), "The head still loads {$retired}.");
+            $this->assertStringNotContainsString($retired, $this->stylesheet(), "The stylesheet still names {$retired}.");
+        }
     }
 
     /**

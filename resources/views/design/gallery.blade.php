@@ -20,6 +20,8 @@
             </p>
         </header>
 
+        @include('design.ems')
+
         {{-- 1 ─ ELEVATION. The biggest single lever in the direction change. --}}
         <section>
             <h2 class="text-[19px] font-semibold text-foreground">Elevation</h2>
@@ -212,22 +214,17 @@
                         <input id="g-b" type="text" class="d-input d-input-error datum w-full" value="-2" aria-invalid="true" aria-describedby="g-b-error">
                         <p id="g-b-error" class="mt-1.5 text-[13px] font-medium text-error">Weight cannot be a negative number.</p>
                     </div>
+                    <x-form-select id="g-c" label="Bloodline" help="The EMS select: the open list is ours, not the browser's.">
+                        <option>Sweater</option>
+                        <option>Hatch</option>
+                        <option>Kelso</option>
+                    </x-form-select>
                     <div>
-                        <label for="g-c" class="d-fieldset-legend">Bloodline</label>
-                        <select id="g-c" class="d-select w-full">
-                            <option>Sweater</option>
-                            <option>Hatch</option>
-                            <option>Kelso</option>
-                        </select>
-                        <p class="d-label mt-1">A native select, for the rare field that needs no search.</p>
-                    </div>
-                    <div>
-                        <label for="g-d" class="d-fieldset-legend">Sex</label>
-                        <select id="g-d" class="d-select d-select-error w-full" aria-invalid="true" aria-describedby="g-d-error">
+                        <x-form-select id="g-d" label="Sex" class="d-select-error">
                             <option value="">Choose one</option>
                             <option>Cock</option>
                             <option>Hen</option>
-                        </select>
+                        </x-form-select>
                         <p id="g-d-error" class="mt-1.5 text-[13px] font-medium text-error">Choose the bird's sex.</p>
                     </div>
                     <div class="sm:col-span-2">

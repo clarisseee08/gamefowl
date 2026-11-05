@@ -30,6 +30,35 @@
     $realName = fn ($bird): ?string => preg_match('/\p{L}/u', (string) $bird->name) ? $bird->name : null;
 
     $pedigree = $this->pedigreeBird;
+
+    $farmSlide = fn (string $file, string $alt, ?string $position = null): array => [
+        'src' => asset('photos/'.$file),
+        'alt' => $alt,
+        'position' => $position,
+        'caption' => $place,
+        'icon' => 'map-pin',
+    ];
+
+    $heroSlides = array_values(array_filter([
+        $hero ? [
+            'src' => $photoUrl($hero->primaryPhoto, true),
+            'alt' => ($realName($hero) ?? 'Broodcock '.($hero->band_number ?: $hero->name)).', '.($hero->bloodline ?: 'gamefowl'),
+            'href' => route('broodcocks.show', $hero),
+            'caption' => $hero->band_number ?: $hero->name,
+            'meta' => $hero->bloodline,
+            'dot' => \App\Support\BandTag::hex($hero->bloodline),
+        ] : null,
+        $farmSlide('hero-farm.webp', 'Gamefowl on grass beside a shed in evening light', '40% 50%'),
+        $farmSlide('rooster-walking.webp', 'A red rooster with green tail feathers walking on bare ground'),
+        $farmSlide('hens-fence.webp', 'Free-range hens on grass behind a wire fence'),
+        $farmSlide('rooster-crowing.webp', 'A rooster crowing against a green background', '60% 40%'),
+    ]));
+
+    $visitSlides = [
+        ['src' => asset('photos/visit-field.webp'), 'alt' => 'Pasture at first light'],
+        ['src' => asset('photos/rooster-profile.webp'), 'alt' => 'A speckled rooster in profile', 'position' => '50% 30%'],
+        ['src' => asset('photos/rooster-portrait.webp'), 'alt' => 'A rooster in low light, close up', 'position' => '50% 35%'],
+    ];
 @endphp
 
 {{--
@@ -52,8 +81,8 @@
          block - the breaks are written, not left to the browser, and every
          line is short enough to hold at 390px.
     --------------------------------------------------------------- --}}
-    <section class="sb-wrap pb-16 pt-10 lg:pb-28 lg:pt-16">
-        <div class="grid items-center gap-10 lg:grid-cols-[45fr_55fr] lg:gap-16">
+    <section class="sb-wrap pb-14 pt-10 lg:pb-20 lg:pt-14">
+        <div class="grid items-center gap-10 lg:grid-cols-[1fr_1fr] lg:gap-14">
             <div>
                 @if ($place)
                     <p class="sb-eyebrow sb-line" style="--line: 0ms">{{ $place }}</p>
@@ -80,40 +109,35 @@
                     </div>
                 </div>
 
-                {{-- The proof line. Every figure is counted, not claimed: the
-                     brief's draft said "sire and dam recorded for each", and
-                     the records do not support that, so it says how many. --}}
-                <p class="sb-line mt-7 text-[14px] text-muted-foreground" style="--line: 400ms">
-                    <span class="datum font-semibold text-foreground">{{ $total }}</span> {{ \Illuminate\Support\Str::plural('bird', $total) }}
-                    <span aria-hidden="true">&middot;</span>
-                    <span class="datum font-semibold text-foreground">{{ $lines }}</span> {{ \Illuminate\Support\Str::plural('bloodline', $lines) }}
-                    @if ($this->parentageCount > 0)
-                        <span aria-hidden="true">&middot;</span>
-                        parentage on record for <span class="datum font-semibold text-foreground">{{ $this->parentageCount }}</span>
-                    @endif
-                </p>
+                {{-- The proof. Every figure is counted, not claimed: the brief's
+                     draft said "sire and dam recorded for each", and the
+                     records do not support that, so it says how many. --}}
+                <div class="sb-line mt-8" style="--line: 400ms">
+                <dl class="grid max-w-md grid-cols-3 gap-2">
+                    <div class="rounded-md border border-border bg-card px-3 py-2.5">
+                        <dt class="text-[11px] font-medium text-muted-foreground">{{ ucfirst(\Illuminate\Support\Str::plural('bird', $total)) }}</dt>
+                        <dd class="datum mt-0.5 text-xl font-bold text-foreground">{{ $total }}</dd>
+                    </div>
+                    <div class="rounded-md border border-border bg-card px-3 py-2.5">
+                        <dt class="text-[11px] font-medium text-muted-foreground">{{ ucfirst(\Illuminate\Support\Str::plural('bloodline', $lines)) }}</dt>
+                        <dd class="datum mt-0.5 text-xl font-bold text-foreground">{{ $lines }}</dd>
+                    </div>
+                    <div class="rounded-md border border-border bg-card px-3 py-2.5">
+                        <dt class="text-[11px] font-medium text-muted-foreground">Parentage on record</dt>
+                        <dd class="datum mt-0.5 text-xl font-bold text-foreground">{{ $this->parentageCount }}</dd>
+                    </div>
+                </dl>
+                </div>
             </div>
 
-            @if ($hero)
-                {{-- One bird, large. 4:5 on a phone and tablet; on a wide
-                     screen the height is capped so the photograph never pushes
-                     the rest of the page entirely below the fold, and the crop
-                     gives a little at the sides rather than the bird's feet. --}}
-                <a href="{{ route('broodcocks.show', $hero) }}" wire:navigate class="group block">
-                    <figure class="sb-photo sb-photo-in aspect-[4/5] lg:aspect-auto lg:h-[min(82svh,860px)]">
-                        <img src="{{ $photoUrl($hero->primaryPhoto, true) }}"
-                             alt="{{ $realName($hero) ?? 'Broodcock '.($hero->band_number ?: $hero->name) }}, {{ $hero->bloodline ?: 'gamefowl' }}"
-                             width="800" height="1000" fetchpriority="high" decoding="async">
-                        <figcaption class="sb-chip">
-                            <span class="band-dot" style="background-color: {{ \App\Support\BandTag::hex($hero->bloodline) }}" aria-hidden="true"></span>
-                            <span class="datum">{{ $hero->band_number ?: $hero->name }}</span>
-                            @if ($hero->bloodline)
-                                <span class="font-medium text-muted-foreground">{{ $hero->bloodline }}</span>
-                            @endif
-                        </figcaption>
-                    </figure>
-                </a>
-            @endif
+            {{-- A slideshow: the hero bird first, when it has a photograph,
+                 then the farm. A bird's slide links to its page and carries
+                 its band; a stock slide carries only the place, never
+                 anything that could be read as naming a bird. --}}
+            <div class="sb-photo-in">
+                <x-ui.slideshow :slides="$heroSlides" :interval="5500" priority label="Photographs from the farm"
+                                class="aspect-[4/3] rounded-xl bg-muted shadow-sm lg:aspect-[5/4]" />
+            </div>
         </div>
     </section>
 
@@ -145,14 +169,14 @@
             <div>
                 <div data-reveal>
                     <h2 id="farm-now" class="sb-h2">On the farm now</h2>
-                    <p class="mt-2 text-[16px] text-muted-foreground">
+                    <p class="mt-2 text-[15px] text-muted-foreground">
                         Banded, photographed and recorded. Choose a bloodline to narrow the list.
                     </p>
                 </div>
 
                 {{-- One row under the heading, not beside it: beside it the
                      eight pills wrapped and left one stranded on a second line. --}}
-                <ul class="pill-row mt-7" aria-label="Filter by bloodline" data-reveal style="--reveal-delay: 80ms">
+                <ul class="pill-row mt-6" aria-label="Filter by bloodline" data-reveal style="--reveal-delay: 80ms">
                     <li>
                         <a href="{{ route('catalog.index') }}" class="pill"
                            x-on:click.prevent="pick(null)"
@@ -171,7 +195,7 @@
                 </ul>
             </div>
 
-            <ul class="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:mt-12 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-12">
+            <ul class="mt-8 grid grid-cols-2 gap-3 md:grid-cols-3 lg:mt-10 lg:grid-cols-4 lg:gap-4">
                 @foreach ($birds as $bird)
                     <li x-show="line === null || line === @js($bird->bloodline)"
                         style="view-transition-name: bird-{{ $bird->id }}">
@@ -180,8 +204,8 @@
                 @endforeach
             </ul>
 
-            <div class="mt-12 lg:mt-14">
-                <a href="{{ route('catalog.index') }}" wire:navigate class="sb-link text-[16px]">
+            <div class="mt-8">
+                <a href="{{ route('catalog.index') }}" wire:navigate class="d-btn d-btn-outline">
                     See all {{ $total }} {{ \Illuminate\Support\Str::plural('bird', $total) }} <span aria-hidden="true">&rarr;</span>
                 </a>
             </div>
@@ -235,7 +259,7 @@
                         <div class="mt-8 grid grid-cols-[auto_auto_1fr] items-center gap-x-3 sm:gap-x-5">
                             <a href="{{ route('broodcocks.pedigree', $pedigree) }}" wire:navigate class="group block min-w-0 border-l-2 py-1 pl-4 pr-1"
                                style="border-color: {{ \App\Support\BandTag::hex($pedigree->bloodline) }}">
-                                <span class="block truncate font-display text-[22px] font-semibold tracking-[-0.015em] text-[color:var(--sb-dark-ink)] group-hover:underline group-hover:underline-offset-4 sm:text-[26px]">
+                                <span class="block truncate font-display text-[22px] font-semibold tracking-[-0.015em] text-[color:var(--sb-dark-ink)] sm:text-[26px]">
                                     {{ $pedigree->band_number ?: $pedigree->name }}
                                 </span>
                                 <span class="mt-1 block text-[14px] text-[color:var(--sb-dark-muted)]">{{ $pedigree->bloodline ?: 'Bloodline not recorded' }}</span>
@@ -296,10 +320,9 @@
          conditional - the farm can clear any of them at /settings.
     --------------------------------------------------------------- --}}
     <section class="sb-wrap sb-section" aria-labelledby="visit-heading">
-        <div class="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
-            <div class="sb-photo aspect-[4/5] lg:order-2" data-reveal>
-                <img src="{{ asset('photos/visit-field.webp') }}" alt="Pasture at first light"
-                     width="1240" height="1550" loading="lazy" decoding="async">
+        <div class="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+            <div class="lg:order-2" data-reveal>
+                <x-ui.slideshow :slides="$visitSlides" label="The farm" class="aspect-[4/3] rounded-xl bg-muted shadow-sm" />
             </div>
 
             <div class="lg:order-1" data-reveal style="--reveal-delay: 100ms">
@@ -308,36 +331,32 @@
                     Visitors are welcome by arrangement. Ring or write first, and the farm will settle a time with you.
                 </p>
 
-                <dl class="mt-8 border-t border-border">
+                <ul class="mt-6 divide-y divide-border rounded-md border border-border bg-card">
                     @if ($farm['address'])
-                        <div class="grid gap-1 border-b border-border py-4 sm:grid-cols-[140px_1fr] sm:gap-6">
-                            <dt class="text-[14px] font-medium text-muted-foreground">Address</dt>
-                            <dd class="text-[16px] text-foreground">{{ $farm['address'] }}</dd>
-                        </div>
+                        <li class="flex items-start gap-3 px-4 py-3.5">
+                            <span class="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground"><x-ui.icon name="map-pin" class="size-4" /></span>
+                            <span><span class="block text-xs font-medium text-muted-foreground">Address</span><span class="text-[15px] text-foreground">{{ $farm['address'] }}</span></span>
+                        </li>
                     @endif
                     @if ($farm['hours'])
-                        <div class="grid gap-1 border-b border-border py-4 sm:grid-cols-[140px_1fr] sm:gap-6">
-                            <dt class="text-[14px] font-medium text-muted-foreground">Visiting hours</dt>
-                            <dd class="text-[16px] text-foreground">{{ $farm['hours'] }}</dd>
-                        </div>
+                        <li class="flex items-start gap-3 px-4 py-3.5">
+                            <span class="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground"><x-ui.icon name="clock" class="size-4" /></span>
+                            <span><span class="block text-xs font-medium text-muted-foreground">Visiting hours</span><span class="text-[15px] text-foreground">{{ $farm['hours'] }}</span></span>
+                        </li>
                     @endif
                     @if ($farm['phone'])
-                        <div class="grid gap-1 border-b border-border py-4 sm:grid-cols-[140px_1fr] sm:gap-6">
-                            <dt class="text-[14px] font-medium text-muted-foreground">Phone</dt>
-                            <dd class="text-[16px]">
-                                <a href="tel:{{ $telHref }}" class="d-link d-link-primary datum font-semibold underline-offset-4">{{ $farm['phone'] }}</a>
-                            </dd>
-                        </div>
+                        <li class="flex items-start gap-3 px-4 py-3.5">
+                            <span class="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground"><x-ui.icon name="phone" class="size-4" /></span>
+                            <span><span class="block text-xs font-medium text-muted-foreground">Phone</span><a href="tel:{{ $telHref }}" class="d-link d-link-primary datum text-[15px] font-semibold">{{ $farm['phone'] }}</a></span>
+                        </li>
                     @endif
                     @if ($farm['email'])
-                        <div class="grid gap-1 border-b border-border py-4 sm:grid-cols-[140px_1fr] sm:gap-6">
-                            <dt class="text-[14px] font-medium text-muted-foreground">Email</dt>
-                            <dd class="break-words text-[16px]">
-                                <a href="mailto:{{ $farm['email'] }}" class="d-link d-link-primary font-semibold underline-offset-4">{{ $farm['email'] }}</a>
-                            </dd>
-                        </div>
+                        <li class="flex items-start gap-3 px-4 py-3.5">
+                            <span class="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground"><x-ui.icon name="mail" class="size-4" /></span>
+                            <span class="min-w-0"><span class="block text-xs font-medium text-muted-foreground">Email</span><a href="mailto:{{ $farm['email'] }}" class="d-link d-link-primary break-words text-[15px] font-semibold">{{ $farm['email'] }}</a></span>
+                        </li>
                     @endif
-                </dl>
+                </ul>
 
                 <a href="{{ route('public.visit') }}" wire:navigate class="d-btn d-btn-primary mt-8">Plan a visit</a>
             </div>

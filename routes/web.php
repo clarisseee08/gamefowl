@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\BroodcockPhotoController;
+use App\Http\Controllers\CommandSearchController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DesignGalleryController;
 use App\Http\Controllers\DiagnosticsController;
@@ -97,33 +98,36 @@ Route::middleware('active')->group(function (): void {
 Route::middleware(['auth', 'active'])->group(function (): void {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
+    /* Records for the command palette (Ctrl+K). */
+    Route::get('/search', CommandSearchController::class)->middleware('throttle:120,1')->name('search');
+
     /* Broodcocks - the central entity. */
     Route::prefix('broodcocks')->name('broodcocks.')->group(function (): void {
         Route::livewire('/', Broodcocks\Index::class)->name('index');
-        Route::livewire('/create', Broodcocks\Form::class)->name('create');
-        Route::livewire('/{broodcock}/edit', Broodcocks\Form::class)->name('edit');
+        Route::livewire('/create', Broodcocks\Index::class)->name('create');
+        Route::livewire('/{broodcock}/edit', Broodcocks\Index::class)->name('edit');
     });
 
     /* Health records - customers may view, only staff may write. */
     Route::prefix('health')->name('health.')->group(function (): void {
         Route::livewire('/', Health\Index::class)->name('index');
         Route::livewire('/schedule', Health\Schedule::class)->name('schedule');
-        Route::livewire('/create', Health\Form::class)->name('create');
-        Route::livewire('/{record}/edit', Health\Form::class)->name('edit');
+        Route::livewire('/create', Health\Index::class)->name('create');
+        Route::livewire('/{record}/edit', Health\Index::class)->name('edit');
     });
 
     /* Performance records - customers may view, only staff may write. */
     Route::prefix('performance')->name('performance.')->group(function (): void {
         Route::livewire('/', Performance\Index::class)->name('index');
-        Route::livewire('/create', Performance\Form::class)->name('create');
-        Route::livewire('/{record}/edit', Performance\Form::class)->name('edit');
+        Route::livewire('/create', Performance\Index::class)->name('create');
+        Route::livewire('/{record}/edit', Performance\Index::class)->name('edit');
     });
 
     /* Breeding records - internal only. */
     Route::prefix('breeding')->name('breeding.')->group(function (): void {
         Route::livewire('/', Breeding\Index::class)->name('index');
-        Route::livewire('/create', Breeding\Form::class)->name('create');
-        Route::livewire('/{record}/edit', Breeding\Form::class)->name('edit');
+        Route::livewire('/create', Breeding\Index::class)->name('create');
+        Route::livewire('/{record}/edit', Breeding\Index::class)->name('edit');
         Route::livewire('/{record}', Breeding\Show::class)->name('show');
     });
 
@@ -132,7 +136,7 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         Route::livewire('/', Mortality\Index::class)->name('index');
         // The broodcock is optional so the form can be reached either from the
         // mortality list or straight from a bird's page.
-        Route::livewire('/create/{broodcock?}', Mortality\Form::class)->name('create');
+        Route::livewire('/create/{broodcock?}', Mortality\Index::class)->name('create');
     });
 
     /*
@@ -179,8 +183,8 @@ Route::middleware(['auth', 'active'])->group(function (): void {
      */
     Route::prefix('users')->name('users.')->group(function (): void {
         Route::livewire('/', Users\Index::class)->name('index');
-        Route::livewire('/create', Users\Form::class)->name('create');
-        Route::livewire('/{user}/edit', Users\Form::class)->name('edit');
+        Route::livewire('/create', Users\Index::class)->name('create');
+        Route::livewire('/{user}/edit', Users\Index::class)->name('edit');
     });
 
     /*

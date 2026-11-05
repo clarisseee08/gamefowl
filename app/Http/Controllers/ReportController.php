@@ -83,7 +83,36 @@ class ReportController extends Controller
             'generatedBy' => $request->user()?->full_name,
         ])->setPaper('a4', 'landscape');
 
+        $this->stampPageNumbers($pdf);
+
         return $pdf->download($definition->key().'-'.now()->format('Y-m-d-His').'.pdf');
+    }
+
+    /**
+     * "Page 3 of 5" in the footer's right corner, on every page.
+     *
+     * dompdf cannot fill CSS's counter(pages) - every report used to print
+     * "Page 1 of 0" - so the numbers are stamped onto the finished pages,
+     * where the total is finally known. Set in the footer's own face, size
+     * and colour.
+     */
+    private function stampPageNumbers(\Barryvdh\DomPDF\PDF $pdf): void
+    {
+        $pdf->render();
+
+        $dompdf = $pdf->getDomPDF();
+        $canvas = $dompdf->getCanvas();
+        $font = $dompdf->getFontMetrics()->getFont('Inter') ?? $dompdf->getFontMetrics()->getFont('sans-serif');
+        $size = 7;
+        $text = 'Page {PAGE_NUM} of {PAGE_COUNT}';
+
+        // The right edge of the 16mm page margin, on the footer's baseline.
+        $width = $dompdf->getFontMetrics()->getTextWidth('Page 00 of 00', $font, $size);
+        $x = $canvas->get_width() - (16 / 25.4 * 72) - $width;
+        $y = $canvas->get_height() - (14.6 / 25.4 * 72);
+
+        [$r, $g, $b] = sscanf((string) config('gfms-brand.muted_foreground'), '#%02x%02x%02x');
+        $canvas->page_text($x, $y, $text, $font, $size, [$r / 255, $g / 255, $b / 255]);
     }
 
     /**

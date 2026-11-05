@@ -181,7 +181,9 @@ final class PerformanceHistoryReportTest extends TestCase
 
         PerformanceRecord::factory()->weighIn()->for($bird)->create();
 
-        $this->assertSame('-', $this->report()->rows()->sole()['result']);
+        // Said in words, as every empty cell in the reports now is: a dash
+        // read as a missing value, which a weigh-in's result is not.
+        $this->assertSame('No contest', $this->report()->rows()->sole()['result']);
     }
 
     public function test_an_unrated_row_says_so_instead_of_printing_zero(): void

@@ -50,12 +50,12 @@
             </div>
         @endif
 
-        <p class="d-stat-title text-[13px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{{ $label }}</p>
+        <p class="d-stat-title text-[13px] lg:text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{{ $label }}</p>
 
-        <p class="d-stat-value datum mt-3 text-[32px] font-semibold leading-none text-base-content">{{ $value }}</p>
+        <p class="d-stat-value datum mt-3 text-[32px] lg:text-base font-semibold leading-none text-base-content">{{ $value }}</p>
 
         @if ($caption)
-            <p class="d-stat-desc mt-2 whitespace-normal text-[14px] leading-snug text-muted-foreground">{{ $caption }}</p>
+            <p class="d-stat-desc mt-2 whitespace-normal text-[14px] lg:text-xs leading-snug text-muted-foreground">{{ $caption }}</p>
         @endif
 
         {{ $slot }}

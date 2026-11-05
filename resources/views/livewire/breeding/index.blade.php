@@ -22,27 +22,25 @@
 
         <x-slot:actions>
             @can('create', App\Models\BreedingRecord::class)
-                <a href="{{ route('breeding.create') }}" wire:navigate class="d-btn d-btn-primary w-full sm:w-auto">
+                <a href="{{ route('breeding.create') }}" x-on:click.prevent="$dispatch('ems-dialog', 'breeding-form')" class="d-btn d-btn-primary w-full sm:w-auto">
                     Record a Mating
                 </a>
             @endcan
         </x-slot:actions>
     </x-anchor-block>
 
-    {{-- The farm-wide funnel, as type on paper. Summed in SQL across every
+    {{-- The farm-wide funnel as EMS KPI tiles. Summed in SQL across every
          matching record, not just the page on screen. --}}
-    <dl class="sb-line mt-6 grid grid-cols-3 gap-4 sm:max-w-[34rem] sm:gap-8" style="--line: 220ms">
-        @foreach ([
-            ['Eggs set', number_format($summary['eggs_set'])],
-            ['Fertility rate', $summary['fertility'] !== null ? $summary['fertility'].'%' : 'No data'],
-            ['Hatch rate', $summary['hatch'] !== null ? $summary['hatch'].'%' : 'No data'],
-        ] as [$label, $value])
-            <div class="min-w-0">
-                <dt class="text-[13px] font-semibold text-muted-foreground">{{ $label }}</dt>
-                <dd class="datum mt-1 font-display text-[22px] font-semibold leading-tight tracking-[-0.015em] text-foreground sm:text-[26px]">{{ $value }}</dd>
-            </div>
-        @endforeach
-    </dl>
+    <x-ui.kpi-row class="mt-6" role="group" aria-label="Breeding figures">
+        <x-ui.kpi-tile label="Eggs set" icon="clipboard-list" :value="number_format($summary['eggs_set'])"
+                       caption="Across the matings listed" />
+        <x-ui.kpi-tile label="Fertility rate" icon="circle-check"
+                       :value="$summary['fertility'] !== null ? $summary['fertility'].'%' : null"
+                       caption="Fertile eggs of eggs set" />
+        <x-ui.kpi-tile label="Hatch rate" icon="arrow-up-right"
+                       :value="$summary['hatch'] !== null ? $summary['hatch'].'%' : null"
+                       caption="Chicks hatched of fertile eggs" />
+    </x-ui.kpi-row>
 
     {{-- Filters. One row: search takes the space that is left, the date range
          and the bloodline shrink to their own width and wrap when they run out
@@ -57,12 +55,12 @@
         {{-- The two dates are one control in two halves, so they stay together
              on a wrap and read as a range rather than as two unrelated fields. --}}
         <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="from" class="d-fieldset-legend mb-0 shrink-0 py-0">Mated from</label>
+            <label for="from" class="d-fieldset-legend mb-0 shrink-0 py-0 lg:text-xs">Mated from</label>
             <input id="from" type="date" wire:model.live="from" class="d-input datum w-full sm:w-auto">
         </div>
 
         <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="to" class="d-fieldset-legend mb-0 shrink-0 py-0">Mated up to</label>
+            <label for="to" class="d-fieldset-legend mb-0 shrink-0 py-0 lg:text-xs">Mated up to</label>
             <input id="to" type="date" wire:model.live="to" class="d-input datum w-full sm:w-auto">
         </div>
 
@@ -93,7 +91,7 @@
                            description="Record a mating to start tracking fertility and hatch rates."
                            icon="M12 3c-3.3 0-6 4.6-6 9.2A6 6 0 0 0 12 18.5a6 6 0 0 0 6-6.3C18 7.6 15.3 3 12 3Z">
                 @can('create', App\Models\BreedingRecord::class)
-                    <a href="{{ route('breeding.create') }}" wire:navigate class="d-btn d-btn-primary">Record your first mating</a>
+                    <a href="{{ route('breeding.create') }}" x-on:click.prevent="$dispatch('ems-dialog', 'breeding-form')" class="d-btn d-btn-primary">Record your first mating</a>
                 @endcan
             </x-empty-state>
         @endif
@@ -109,17 +107,17 @@
                 <li class="py-4" wire:key="m-{{ $record->id }}">
                     <a href="{{ route('breeding.show', $record) }}" wire:navigate
                        class="flex min-h-11 items-start justify-between gap-3">
-                        <span class="min-w-0 text-[16px] font-medium text-foreground">
-                            {{ $record->sire->name }}
+                        <span class="min-w-0 text-[16px] lg:text-xs font-medium text-foreground">
+                            {{ $record->sire?->name ?? 'Bird removed' }}@if ($record->sire?->trashed()) <span class="text-muted-foreground">(removed)</span>@endif
                             <span class="text-muted-foreground" aria-hidden="true">&times;</span>
                             <span class="sr-only">with</span>
-                            {{ $record->dam->name }}
+                            {{ $record->dam?->name ?? 'Bird removed' }}@if ($record->dam?->trashed()) <span class="text-muted-foreground">(removed)</span>@endif
                         </span>
-                        <span class="datum shrink-0 pt-0.5 text-[14px] text-muted-foreground">{{ $record->mating_date->format('j M Y') }}</span>
+                        <span class="datum shrink-0 pt-0.5 text-[14px] lg:text-xs text-muted-foreground">{{ $record->mating_date->format('j M Y') }}</span>
                     </a>
 
-                    <p class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px] text-muted-foreground">
-                        @foreach ([$record->sire, $record->dam] as $parent)
+                    <p class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px] lg:text-xs text-muted-foreground">
+                        @foreach (array_filter([$record->sire, $record->dam]) as $parent)
                             <span class="inline-flex items-center gap-1.5">
                                 <x-band-dot :bloodline="$parent->bloodline" />
                                 @if ($parent->band_number)
@@ -131,7 +129,7 @@
                         @endforeach
                     </p>
 
-                    <p class="mt-2 text-[14px] text-muted-foreground">
+                    <p class="mt-2 text-[14px] lg:text-xs text-muted-foreground">
                         <span class="datum text-foreground">{{ $record->eggs_set }}</span> set
                         &middot; <span class="datum text-foreground">{{ $record->eggs_fertile }}</span> fertile
                         &middot; <span class="datum text-foreground">{{ $record->eggs_hatched }}</span> hatched
@@ -167,95 +165,129 @@
              topbar. The table is separate-bordered so the header's hairline
              travels with it when it sticks; a collapsed border stays behind.
         --------------------------------------------------------------- --}}
-        <table class="d-table hidden w-full border-separate border-spacing-0 text-[15px] md:table">
-            <thead class="sticky top-0 z-10 bg-background">
-                <tr>
-                    {{-- The date and the three egg counts sort. Fertility and
-                         hatch rate are computed at read time from the counts,
-                         not stored, so there is no column to order by. --}}
-                    <x-sort-control field="mating_date" label="Mating Date"
-                                    :current="$sortBy" :direction="$sortDirection"
-                                    cell="border-b border-border pl-0" wire:click="sort('mating_date')" />
-
-                    <th scope="col" class="border-b border-border px-4 py-3 text-left text-[13px] font-semibold text-muted-foreground">Pair</th>
-
-                    @foreach ([['eggs_set', 'Eggs Set'], ['eggs_fertile', 'Fertile'], ['eggs_hatched', 'Hatched']] as [$field, $heading])
-                        <x-sort-control :field="$field" :label="$heading" align="right"
+        {{-- EMS: a wide table scrolls inside its own container; the page never does. --}}
+        <div class="overflow-x-auto">
+            <table class="d-table hidden w-full border-separate border-spacing-0 text-[15px] lg:text-xs md:table">
+                <thead class="sticky top-0 z-10 bg-background">
+                    <tr>
+                        {{-- The date and the three egg counts sort. Fertility and
+                             hatch rate are computed at read time from the counts,
+                             not stored, so there is no column to order by. --}}
+                        <x-sort-control field="mating_date" label="Mating Date"
                                         :current="$sortBy" :direction="$sortDirection"
-                                        cell="border-b border-border" wire:click="sort('{{ $field }}')" />
-                    @endforeach
+                                        cell="border-b border-border pl-0" wire:click="sort('mating_date')" />
 
-                    <th scope="col" class="hidden border-b border-border px-4 py-3 text-right text-[13px] font-semibold text-muted-foreground lg:table-cell">Fertility</th>
-                    <th scope="col" class="border-b border-border px-4 py-3 text-right text-[13px] font-semibold text-muted-foreground">Hatch rate</th>
-                    <th scope="col" class="border-b border-border py-3 pl-4 pr-0"><span class="sr-only">Open</span></th>
-                </tr>
-            </thead>
+                        <th scope="col" class="border-b border-border px-4 py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Pair</th>
 
-            <tbody wire:loading.remove wire:target="{{ $loadingTargets }}">
-                @foreach ($records as $record)
-                    <tr class="row-hover align-top *:align-top" wire:key="r-{{ $record->id }}">
-                        <td class="datum whitespace-nowrap border-b border-border py-3 pl-0 pr-4 text-foreground">
-                            <span class="inline-flex min-h-11 items-center">{{ $record->mating_date->format('j M Y') }}</span>
-                        </td>
-
-                        {{-- Sire × dam, each with its band dot and band number,
-                             each opening its own bird page. --}}
-                        <td class="border-b border-border px-4 py-3">
-                            <div class="flex flex-wrap items-center gap-x-2">
-                                @foreach ([$record->sire, $record->dam] as $parent)
-                                    @if (! $loop->first)
-                                        <span class="text-muted-foreground" aria-hidden="true">&times;</span>
-                                        <span class="sr-only">with</span>
-                                    @endif
-                                    <a href="{{ route('broodcocks.show', $parent) }}" wire:navigate
-                                       class="group inline-flex min-h-11 items-center gap-2">
-                                        <x-band-dot :bloodline="$parent->bloodline" />
-                                        <span class="text-foreground group-hover:underline group-hover:underline-offset-4">{{ $parent->name }}</span>
-                                        @if ($parent->band_number)
-                                            <span class="datum text-[13px] text-muted-foreground">{{ $parent->band_number }}</span>
-                                        @else
-                                            <span class="text-[13px] text-muted-foreground">Not yet banded</span>
-                                        @endif
-                                    </a>
-                                @endforeach
-                            </div>
-                        </td>
-
-                        @foreach ([$record->eggs_set, $record->eggs_fertile, $record->eggs_hatched] as $count)
-                            <td class="datum border-b border-border px-4 py-3 text-right text-foreground">
-                                <span class="inline-flex min-h-11 items-center">{{ $count }}</span>
-                            </td>
+                        @foreach ([['eggs_set', 'Eggs Set'], ['eggs_fertile', 'Fertile'], ['eggs_hatched', 'Hatched']] as [$field, $heading])
+                            <x-sort-control :field="$field" :label="$heading" align="right"
+                                            :current="$sortBy" :direction="$sortDirection"
+                                            cell="border-b border-border" wire:click="sort('{{ $field }}')" />
                         @endforeach
 
-                        <td class="datum hidden border-b border-border px-4 py-3 text-right text-muted-foreground lg:table-cell">
-                            <span class="inline-flex min-h-11 items-center">{{ $record->fertilityRate() !== null ? $record->fertilityRate().'%' : 'No data' }}</span>
-                        </td>
-                        <td class="datum border-b border-border px-4 py-3 text-right text-muted-foreground">
-                            <span class="inline-flex min-h-11 items-center">{{ $record->hatchRate() !== null ? $record->hatchRate().'%' : 'No data' }}</span>
-                        </td>
-
-                        <td class="whitespace-nowrap border-b border-border py-3 pl-4 pr-0 text-right">
-                            <span class="inline-flex min-h-11 items-center justify-end gap-3">
-                                @if ($record->hasUnregisteredOffspring())
-                                    {{-- d-badge-warning, not the utilities it resolves to: the
-                                         class vocabulary is a contract with the enums. --}}
-                                    <span class="d-badge d-badge-soft d-badge-warning">
-                                        <span class="datum">{{ $record->unregisteredOffspring() }}</span>&nbsp;to register
-                                    </span>
-                                @endif
-                                <a href="{{ route('breeding.show', $record) }}" wire:navigate
-                                   class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center font-semibold underline-offset-4">
-                                    View<span class="sr-only"> {{ $record->sire->name }} &times; {{ $record->dam->name }}</span>
-                                </a>
-                            </span>
-                        </td>
+                        <th scope="col" class="hidden border-b border-border px-4 py-3 text-right text-[13px] lg:text-[11px] font-semibold text-muted-foreground lg:table-cell">Fertility</th>
+                        <th scope="col" class="border-b border-border px-4 py-3 text-right text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Hatch rate</th>
+                        <th scope="col" class="border-b border-border py-3 pl-4 pr-0 text-right text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Actions</th>
                     </tr>
-                @endforeach
-            </tbody>
+                </thead>
 
-            <x-table-skeleton :cols="8" wire:loading wire:target="{{ $loadingTargets }}" />
-        </table>
+                <tbody wire:loading.remove wire:target="{{ $loadingTargets }}">
+                    @foreach ($records as $record)
+                        <tr class="row-hover align-top *:align-top" wire:key="r-{{ $record->id }}">
+                            <td class="datum whitespace-nowrap border-b border-border py-3 pl-0 pr-4 text-foreground">
+                                <span class="inline-flex min-h-11 items-center">{{ $record->mating_date->format('j M Y') }}</span>
+                            </td>
 
-        <div class="mt-6">{{ $records->links() }}</div>
+                            {{-- Sire × dam, each with its band dot and band number,
+                                 each opening its own bird page. --}}
+                            <td class="border-b border-border px-4 py-3">
+                                <div class="flex flex-wrap items-center gap-x-2">
+                                    @foreach ([$record->sire, $record->dam] as $parent)
+                                        @if (! $loop->first)
+                                            <span class="text-muted-foreground" aria-hidden="true">&times;</span>
+                                            <span class="sr-only">with</span>
+                                        @endif
+                                        @if ($parent === null)
+                                            <span class="inline-flex min-h-11 items-center text-muted-foreground">Bird removed</span>
+                                        @elseif ($parent->trashed())
+                                            <span class="inline-flex min-h-11 items-center gap-2 text-muted-foreground">
+                                                <x-band-dot :bloodline="$parent->bloodline" />
+                                                <span>{{ $parent->name }}</span>
+                                                <span class="text-[13px] lg:text-[11px]">removed</span>
+                                            </span>
+                                        @else
+                                            <x-bird-hover :bird="$parent">
+                                                <a href="{{ route('broodcocks.show', $parent) }}" wire:navigate
+                                                   class="group inline-flex min-h-11 items-center gap-2">
+                                                    <x-band-dot :bloodline="$parent->bloodline" />
+                                                    <span class="text-foreground">{{ $parent->name }}</span>
+                                                    @if ($parent->band_number)
+                                                        <span class="datum text-[13px] lg:text-[11px] text-muted-foreground">{{ $parent->band_number }}</span>
+                                                    @else
+                                                        <span class="text-[13px] lg:text-[11px] text-muted-foreground">Not yet banded</span>
+                                                    @endif
+                                                </a>
+                                            </x-bird-hover>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </td>
+
+                            @foreach ([$record->eggs_set, $record->eggs_fertile, $record->eggs_hatched] as $count)
+                                <td class="datum border-b border-border px-4 py-3 text-right text-foreground">
+                                    <span class="inline-flex min-h-11 items-center">{{ $count }}</span>
+                                </td>
+                            @endforeach
+
+                            <td class="datum hidden border-b border-border px-4 py-3 text-right text-muted-foreground lg:table-cell">
+                                <span class="inline-flex min-h-11 items-center">{{ $record->fertilityRate() !== null ? $record->fertilityRate().'%' : 'No data' }}</span>
+                            </td>
+                            <td class="datum border-b border-border px-4 py-3 text-right text-muted-foreground">
+                                <span class="inline-flex min-h-11 items-center">{{ $record->hatchRate() !== null ? $record->hatchRate().'%' : 'No data' }}</span>
+                            </td>
+
+                            <td class="whitespace-nowrap border-b border-border py-3 pl-4 pr-0 text-right">
+                                <span class="inline-flex min-h-11 items-center justify-end gap-3">
+                                    @if ($record->hasUnregisteredOffspring())
+                                        {{-- d-badge-warning, not the utilities it resolves to: the
+                                             class vocabulary is a contract with the enums. --}}
+                                        <span class="d-badge d-badge-soft d-badge-warning">
+                                            <span class="datum">{{ $record->unregisteredOffspring() }}</span>&nbsp;to register
+                                        </span>
+                                    @endif
+                                    <x-ui.row-action icon="eye" :label="'View '.($record->sire?->name ?? 'Bird removed').' × '.($record->dam?->name ?? 'Bird removed')"
+                                                     :href="route('breeding.show', $record)" wire:navigate />
+                                </span>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+
+                <x-table-skeleton :cols="8" wire:loading wire:target="{{ $loadingTargets }}" />
+            </table>
+        </div>
+
+        <x-ui.table-pagination :paginator="$records" class="mt-4" />
     @endif
+
+    {{-- Add and edit open here, over the list, never on a page of their own. --}}
+    {{-- The new-record form is built with the page, and it authorizes on
+         mount, so it is only built for someone who may create one. --}}
+    @can('create', \App\Models\BreedingRecord::class)
+        <x-ui.form-dialog id="breeding-form" model="showForm" size="xl" :wrap="false" :title="$formRecordId ? 'Edit Breeding Record' : 'Record a Mating'">
+            @if ($formRecordId || $formBroodcockId)
+                {{-- An edit, or a form for one bird: filled by the server when opened. --}}
+                @if ($showForm)
+                    <livewire:breeding.form :record="$formRecordId ? \App\Models\BreedingRecord::find($formRecordId) : null"
+                                            :in-dialog="true" :key="'breeding-form-'.($formRecordId ?? 'new').'-'.($formBroodcockId ?? '')" />
+                @else
+                    <x-ui.form-skeleton :fields="7" />
+                @endif
+            @else
+                {{-- A new record: built with the page, so Add opens at once with no request. --}}
+                <livewire:breeding.form :record="$formRecordId ? \App\Models\BreedingRecord::find($formRecordId) : null"
+                                      :in-dialog="true" :key="'breeding-form-new-'.$formNonce" />
+            @endif
+        </x-ui.form-dialog>
+    @endcan
 </div>

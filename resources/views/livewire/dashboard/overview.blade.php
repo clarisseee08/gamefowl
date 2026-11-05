@@ -3,19 +3,14 @@
     $breeding = $this->breedingOverall;
     $trend = $this->breedingTrend;
     $user = auth()->user();
+
     // Scale bars against the best month so a farm with modest rates still gets
-    // a readable chart rather than four flat stubs.
+    // a readable chart rather than flat stubs.
     $peak = max(1, max(array_map(fn ($m) => (int) ($m['fertility'] ?? 0), $trend)));
 
-    /*
-     * The fertility sparkline is the only one on this screen because it is the
-     * only figure with a time series behind it that already exists -
-     * breedingTrend() is one query and already drawn as the chart below. The
-     * other figures carry a supporting proportion instead of a fake trend.
-     */
-    $fertilitySeries = array_map(fn ($m) => $m['fertility'], $trend);
-
-    $scheduled = $this->overdueCount + $this->upcomingVaccinations->count();
+    $overdue = $this->overdueVaccinations;
+    $upcoming = $this->upcomingVaccinations;
+    $scheduled = $this->overdueCount + $upcoming->count();
     $compliance = $scheduled > 0
         ? round((($scheduled - $this->overdueCount) / $scheduled) * 100, 1)
         : null;
@@ -27,359 +22,292 @@
     $breedingShare = $flock['on_farm'] > 0 ? round($flock['breeding'] / $flock['on_farm'] * 100) : null;
     $hasOverdue = $this->overdueCount > 0;
 
-    $headingClass = 'font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground';
-    $labelClass = 'text-[13px] font-semibold text-muted-foreground';
-    $figureClass = 'datum mt-2 font-display text-[2rem] font-semibold leading-none tracking-[-0.025em]';
+    $statusRows = $this->byStatus;
+    $statusMax = max(1, (int) $statusRows->max('total'));
+    $bloodlines = $this->byBloodline;
+    $withoutPedigree = $this->birdsWithoutPedigree;
+    $pedigreeShare = $flock['total'] > 0 ? round(($flock['total'] - $withoutPedigree) / $flock['total'] * 100) : null;
 
-    // A headline figure is a d-stat laid out on paper: the hairline above it
-    // stays, daisyUI's own inline padding goes, and every part is reset to the
-    // console ink - daisyUI draws title and desc at 60% opacity, under 7:1.
-    $statClass = 'd-stat border-t border-e-0 border-border px-0 pb-0 pt-4';
-    $statTitleClass = 'd-stat-title whitespace-normal '.$labelClass;
-    $statValueClass = 'd-stat-value '.$figureClass;
-    $statDescClass = 'd-stat-desc whitespace-normal text-[13px] text-muted-foreground';
+    $row = 'flex min-h-11 items-center justify-between gap-3 px-5 py-2.5 lg:min-h-0';
 @endphp
 
 {{--
-    THE FARM DASHBOARD.
+    THE OWNER'S DASHBOARD (EMS, Part B §6.2 / §6.6).
 
-    Opens on the anchor block - the one number the owner reads first, birds on
-    the farm - then figures on paper, separated by hairlines rather than boxed
-    into stat cards. What needs doing today (vaccinations, deaths) comes before
-    what is merely interesting (the breeding trend, the flock breakdowns).
+    One screen on a laptop: the page header, the four KPI tiles, then two
+    columns of cards - what needs doing and how breeding is going on the
+    left, the shape of the flock on the right. Every figure is one this
+    component already computed; nothing new is queried.
 --}}
-<div>
-    <x-anchor-block eyebrow="Today on the farm" :title="$greeting"
-                    :figure="number_format($flock['on_farm'])" figure-label="birds on the farm">
-        Here is how {{ config('gfms.farm.name') }} is doing today.
-        You are signed in as <span class="font-semibold text-foreground">{{ $user->role->label() }}</span>.
+<div class="space-y-6">
+    <x-ui.page-header :title="$greeting" :figure="number_format($flock['on_farm'])" figure-label="birds on the farm">
+        {{ now()->format('l, j F Y') }} &middot; {{ $user->role->label() }}
 
         @can('create', App\Models\Broodcock::class)
             <x-slot:actions>
-                <a href="{{ route('broodcocks.create') }}" wire:navigate class="d-btn d-btn-primary">Add gamefowl</a>
+                <x-ui.button :href="route('broodcocks.create')" x-on:click.prevent="$dispatch('ems-dialog', 'broodcocks-form')"><x-ui.icon name="plus" /> Add gamefowl</x-ui.button>
             </x-slot:actions>
         @endcan
-    </x-anchor-block>
+    </x-ui.page-header>
 
-    {{-- Headline figures --}}
-    <dl class="mt-10 grid gap-x-10 gap-y-8 sm:grid-cols-2 xl:grid-cols-4" aria-label="Headline figures">
-        <div class="{{ $statClass }}">
-            <dt class="{{ $statTitleClass }}">Total broodcocks</dt>
-            <dd>
-                <p class="{{ $statValueClass }} text-foreground">{{ number_format($flock['total']) }}</p>
-                @if ($onFarmShare !== null)
-                    <progress class="d-progress d-progress-neutral mt-4 h-1.5" value="{{ $onFarmShare }}" max="100" aria-hidden="true"></progress>
-                    <p class="mt-2 {{ $statDescClass }}">
-                        <span class="datum">{{ $onFarmShare }}%</span> still on the farm, excluding sold and deceased
-                    </p>
-                @else
-                    <p class="mt-3 {{ $statDescClass }}">Every bird ever recorded</p>
-                @endif
-            </dd>
-        </div>
+    {{-- Headline figures: EMS KPI tiles. The overdue tile is the one alarm on
+         the row, so it is the one that turns red and the one that drills down. --}}
+    <x-ui.kpi-row role="group" aria-label="Headline figures">
+        <x-ui.kpi-tile label="Birds on record" icon="clipboard-list"
+                       :value="number_format($flock['total'])"
+                       :caption="$onFarmShare !== null ? $onFarmShare.'% still on the farm, excluding sold and deceased' : 'Every bird ever recorded'" />
 
-        <div class="{{ $statClass }}">
-            <dt class="{{ $statTitleClass }}">Currently breeding</dt>
-            <dd>
-                <p class="{{ $statValueClass }} text-foreground">{{ number_format($flock['breeding']) }}</p>
-                @if ($breedingShare !== null)
-                    <progress class="d-progress d-progress-neutral mt-4 h-1.5" value="{{ $breedingShare }}" max="100" aria-hidden="true"></progress>
-                    <p class="mt-2 {{ $statDescClass }}">
-                        <span class="datum">{{ $breedingShare }}%</span> of birds on the farm
-                    </p>
-                @else
-                    <p class="mt-3 {{ $statDescClass }}">Status set to breeding</p>
-                @endif
-            </dd>
-        </div>
+        <x-ui.kpi-tile label="Currently breeding" icon="heart"
+                       :value="number_format($flock['breeding'])"
+                       :caption="$breedingShare !== null ? $breedingShare.'% of birds on the farm' : 'Status set to breeding'" />
 
-        <div class="{{ $statClass }}">
-            <dt class="{{ $statTitleClass }}">Overdue vaccinations</dt>
-            <dd>
-                <p @class([$statValueClass, 'text-destructive' => $hasOverdue, 'text-foreground' => ! $hasOverdue])>
-                    {{ number_format($this->overdueCount) }}
-                </p>
-                <p class="mt-3 {{ $statDescClass }}">{{ $hasOverdue ? 'Needs attention' : 'Nothing overdue' }}</p>
-            </dd>
-        </div>
+        <x-ui.kpi-tile label="Overdue vaccinations" icon="syringe"
+                       :value="number_format($this->overdueCount)" :alarm="$hasOverdue"
+                       :href="route('health.schedule')" action="Open the vaccination schedule" wire:navigate
+                       :caption="$hasOverdue ? 'Needs attention' : 'Nothing overdue'" />
 
-        <div class="{{ $statClass }}">
-            <dt class="{{ $statTitleClass }}">Vaccination compliance</dt>
-            <dd>
-                <p class="{{ $statValueClass }} text-foreground">{{ $compliance !== null ? $compliance.'%' : 'No data' }}</p>
-                @if ($compliance !== null)
-                    <progress class="d-progress {{ $compliance < 80 ? 'd-progress-warning' : 'd-progress-success' }} mt-4 h-1.5"
-                              value="{{ $compliance }}" max="100" aria-hidden="true"></progress>
-                    <p class="mt-2 {{ $statDescClass }}">
-                        <span class="datum">{{ $scheduled - $this->overdueCount }}</span> of
-                        <span class="datum">{{ $scheduled }}</span> scheduled follow-ups are not overdue
-                    </p>
-                @else
-                    <p class="mt-3 {{ $statDescClass }}">Nothing is scheduled in the window.</p>
-                @endif
-            </dd>
-        </div>
-    </dl>
+        <x-ui.kpi-tile label="Vaccination compliance" icon="shield-check"
+                       :value="$compliance !== null ? $compliance.'%' : null"
+                       :caption="$compliance !== null
+                           ? ($scheduled - $this->overdueCount).' of '.$scheduled.' scheduled follow-ups are not overdue'
+                           : 'Nothing is scheduled in the window.'" />
+    </x-ui.kpi-row>
 
-    {{-- What needs doing: two columns on a desktop, one on a phone. --}}
-    <div class="mt-16 grid gap-x-12 gap-y-14 lg:grid-cols-2" data-reveal>
-        <section aria-labelledby="vaccinations-heading">
-            <div class="flex flex-wrap items-end justify-between gap-x-4 border-b border-border pb-3">
-                <h2 id="vaccinations-heading" class="{{ $headingClass }}">Vaccinations needing attention</h2>
-                @if (Route::has('health.schedule'))
-                    <a href="{{ route('health.schedule') }}" wire:navigate class="sb-link">
-                        Full schedule <span aria-hidden="true">&rarr;</span>
-                    </a>
-                @endif
-            </div>
+    <div class="grid gap-4 lg:grid-cols-3">
+        {{-- ============ What needs doing, and how breeding is going ============ --}}
+        <div class="min-w-0 space-y-4 lg:col-span-2">
 
-            @if ($this->overdueVaccinations->isEmpty() && $this->upcomingVaccinations->isEmpty())
-                <p class="flex items-start gap-3 py-5 text-[15px] text-foreground">
-                    <svg class="mt-0.5 h-5 w-5 shrink-0 text-success" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
-                    </svg>
-                    <span>
-                        Nothing is overdue and nothing is due in the next
-                        <span class="datum">{{ config('gfms.vaccination_warning_days') }}</span> days. The flock is up to date.
-                    </span>
-                </p>
-            @else
-                <ul class="divide-y divide-border">
-                    {{-- Every row here is overdue (scopeOverdue) or due soon
-                         (scopeDueSoon), and each says how late or how near in
-                         words. The section heading says the rest - a stripe that
-                         every row carries separates nothing. --}}
-                    @foreach ($this->overdueVaccinations as $record)
-                        <li class="flex min-h-11 items-center justify-between gap-3 py-3">
-                            <div class="min-w-0">
-                                <p class="truncate text-[15px] font-semibold text-foreground">
-                                    @if ($record->broodcock)
-                                        <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate class="hover:underline hover:underline-offset-4">{{ $record->broodcock->name }}</a>
-                                    @else
-                                        Unknown bird
-                                    @endif
-                                </p>
-                                <p class="truncate text-[13px] text-muted-foreground">
-                                    {{ $record->record_type->label() }}
-                                    @if ($record->product_name) &middot; {{ $record->product_name }} @endif
-                                </p>
-                            </div>
-                            <span class="d-badge d-badge-soft d-badge-error datum shrink-0">
-                                {{ abs((int) $record->daysUntilDue()) }} days overdue
-                            </span>
-                        </li>
-                    @endforeach
+            {{-- Vaccinations: overdue first; due soon one tab away. --}}
+            <x-ui.card :flush="true"
+                       x-data="{ tab: '{{ $overdue->isNotEmpty() || $upcoming->isEmpty() ? 'overdue' : 'soon' }}' }">
+                <x-ui.card.header class="border-b border-border/60 py-4">
+                    <x-ui.card.title>Vaccinations</x-ui.card.title>
+                    <x-ui.card.description>Follow-ups for birds on the farm</x-ui.card.description>
+                    <x-ui.card.action>
+                        <x-ui.button variant="outline" :href="route('health.schedule')" wire:navigate>Open schedule</x-ui.button>
+                    </x-ui.card.action>
+                </x-ui.card.header>
 
-                    @foreach ($this->upcomingVaccinations as $record)
-                        <li class="flex min-h-11 items-center justify-between gap-3 py-3">
-                            <div class="min-w-0">
-                                <p class="truncate text-[15px] font-semibold text-foreground">
-                                    @if ($record->broodcock)
-                                        <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate class="hover:underline hover:underline-offset-4">{{ $record->broodcock->name }}</a>
-                                    @else
-                                        Unknown bird
-                                    @endif
-                                </p>
-                                <p class="truncate text-[13px] text-muted-foreground">
-                                    {{ $record->record_type->label() }}
-                                    @if ($record->product_name) &middot; {{ $record->product_name }} @endif
-                                </p>
-                            </div>
-                            <span class="d-badge d-badge-soft d-badge-warning datum shrink-0">
-                                due in {{ (int) $record->daysUntilDue() }} days
-                            </span>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </section>
-
-        <section aria-labelledby="mortality-heading">
-            <div class="flex flex-wrap items-end justify-between gap-x-4 border-b border-border pb-3">
-                <h2 id="mortality-heading" class="{{ $headingClass }}">Recent mortality</h2>
-                <span class="text-[14px] text-muted-foreground"><span class="datum">{{ $this->deathsThisYear }}</span> this year</span>
-            </div>
-
-            @if ($this->recentMortality->isEmpty())
-                <p class="flex items-start gap-3 py-5 text-[15px] text-foreground">
-                    <svg class="mt-0.5 h-5 w-5 shrink-0 text-success" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
-                    </svg>
-                    <span>No deaths have been recorded.</span>
-                </p>
-            @else
-                <ul class="divide-y divide-border">
-                    @foreach ($this->recentMortality as $record)
-                        <li class="flex min-h-11 items-center justify-between gap-3 py-3">
-                            <div class="min-w-0">
-                                <p class="truncate text-[15px] font-semibold text-foreground">
-                                    @if ($record->broodcock)
-                                        <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate class="hover:underline hover:underline-offset-4">{{ $record->broodcock->name }}</a>
-                                    @else
-                                        Unknown bird
-                                    @endif
-                                </p>
-                                <p class="truncate text-[13px] text-muted-foreground">{{ $record->cause_of_death }}</p>
-                            </div>
-                            <span class="datum shrink-0 text-[14px] text-muted-foreground">
-                                {{ $record->date_of_death->format('j M Y') }}
-                            </span>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </section>
-    </div>
-
-    {{-- Breeding trend. Hand-drawn with CSS rather than a charting library -
-         the thesis describes a PHP/HTML/CSS system and adding a JS chart
-         dependency would contradict it. --}}
-    <section class="mt-16" aria-labelledby="breeding-heading" data-reveal>
-        <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-4 border-b border-border pb-4">
-            <div class="min-w-0">
-                <h2 id="breeding-heading" class="{{ $headingClass }}">Breeding success trend</h2>
-                <p class="mt-2 max-w-[62ch] text-[15px] leading-relaxed text-muted-foreground">
-                    Fertility rate per month, worked out from total eggs, not by averaging
-                    each mating's percentage, which would let a 2-egg mating count as much
-                    as a 200-egg one.
-                </p>
-            </div>
-            {{-- The heading beside it already says what the control does, so
-                 the label stays in the accessibility tree and off the page. --}}
-            <div class="w-full sm:w-52">
-                <x-form-select id="trendMonths" label="Trend period" label-hidden wire:model.live="trendMonths">
-                    <option value="6">Last 6 months</option>
-                    <option value="12">Last 12 months</option>
-                    <option value="24">Last 24 months</option>
-                </x-form-select>
-            </div>
-        </div>
-
-        <dl class="mt-8 grid gap-x-10 gap-y-8 sm:grid-cols-3">
-            <div class="{{ $statClass }}">
-                <dt class="{{ $statTitleClass }}">Matings recorded</dt>
-                <dd class="{{ $statValueClass }} text-foreground">{{ number_format($breeding['matings']) }}</dd>
-            </div>
-            <div class="{{ $statClass }}">
-                <dt class="{{ $statTitleClass }}">Overall fertility</dt>
-                <dd>
-                    <p class="{{ $statValueClass }} text-foreground">{{ $breeding['fertility'] !== null ? $breeding['fertility'].'%' : 'No data' }}</p>
-                    <div class="d-stat-desc mt-3 flex items-center gap-3 whitespace-normal">
-                        <x-sparkline :points="$fertilitySeries" tone="primary"
-                                     label="Monthly fertility rate over the last {{ count($trend) }} months" />
-                        <span class="text-[13px] text-muted-foreground">Last <span class="datum">{{ count($trend) }}</span> months</span>
+                @if ($overdue->isEmpty() && $upcoming->isEmpty())
+                    <div class="px-5 py-8 text-center">
+                        <x-ui.icon name="circle-check" class="mx-auto size-5 text-success" />
+                        <p class="mt-2 text-sm font-semibold text-foreground">The flock is up to date.</p>
+                        <p class="mt-1 text-xs text-muted-foreground">No vaccination is overdue or due in the next {{ config('gfms.vaccination_warning_days') }} days.</p>
                     </div>
-                </dd>
-            </div>
-            <div class="{{ $statClass }}">
-                <dt class="{{ $statTitleClass }}">Overall hatch rate</dt>
-                <dd class="{{ $statValueClass }} text-foreground">{{ $breeding['hatch'] !== null ? $breeding['hatch'].'%' : 'No data' }}</dd>
-            </div>
-        </dl>
+                @else
+                    <div class="flex gap-5 border-b border-border/60 px-5" role="tablist" aria-label="Vaccinations">
+                        @foreach (['overdue' => ['Overdue', $this->overdueCount, 'bg-destructive-bg text-destructive'], 'soon' => ['Due soon', $upcoming->count(), 'bg-warning-bg text-warning']] as $key => [$label, $count, $tone])
+                            <button type="button" role="tab" x-on:click="tab = '{{ $key }}'"
+                                    x-bind:aria-selected="tab === '{{ $key }}' ? 'true' : 'false'"
+                                    class="relative flex min-h-11 items-center gap-2 pt-2 pb-2 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring/50 lg:min-h-0 lg:text-[12.5px]"
+                                    x-bind:class="tab === '{{ $key }}' ? 'font-bold text-primary' : 'text-muted-foreground hover:text-foreground'">
+                                {{ $label }}
+                                <span class="{{ $tone }} datum inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[11px] leading-none font-semibold">{{ $count > 99 ? '99+' : $count }}</span>
+                                <span class="absolute -bottom-px left-0 h-[2px] w-full rounded-full" x-bind:class="tab === '{{ $key }}' ? 'bg-primary' : 'bg-transparent'"></span>
+                            </button>
+                        @endforeach
+                    </div>
 
-        <div class="mt-10 overflow-x-auto pb-2">
-            @php
-                // Bar heights are computed in PIXELS, not percentages. A
-                // percentage height on a flex child does not resolve against a
-                // flex-basis parent, so the bars silently collapsed to nothing
-                // while the labels still rendered.
-                $track = 132;
-            @endphp
-            <div class="flex min-w-max items-end gap-3 border-b border-border">
-                @foreach ($trend as $month)
-                    @php
-                        $barPx = $month['fertility'] !== null
-                            ? max(3, (int) round(($month['fertility'] / $peak) * $track))
-                            : 0;
-                    @endphp
-                    <div class="flex w-16 flex-col items-center gap-2">
-                        <span class="datum text-[12px] font-medium text-muted-foreground">
-                            {{ $month['fertility'] !== null ? $month['fertility'].'%' : 'No data' }}
-                        </span>
+                    @foreach (['overdue' => $overdue, 'soon' => $upcoming] as $key => $records)
+                        <ul class="divide-y divide-border/60" role="tabpanel" x-show="tab === '{{ $key }}'" @if ($key !== 'overdue') x-cloak @endif>
+                            @forelse ($records as $record)
+                                <li class="{{ $row }}">
+                                    <div class="min-w-0">
+                                        <p class="truncate text-sm font-semibold text-foreground lg:text-xs">
+                                            @if ($record->broodcock)
+                                                <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate class="">{{ $record->broodcock->name }}</a>
+                                                @if ($record->broodcock->band_number)
+                                                    <span class="datum ml-1 font-normal text-muted-foreground">{{ $record->broodcock->band_number }}</span>
+                                                @endif
+                                            @else
+                                                Unknown bird
+                                            @endif
+                                        </p>
+                                        <p class="truncate text-[13px] text-muted-foreground lg:text-[11px]">
+                                            {{ $record->record_type->label() }}@if ($record->product_name) &middot; {{ $record->product_name }}@endif
+                                        </p>
+                                    </div>
+                                    @if ($key === 'overdue')
+                                        <span class="d-badge d-badge-soft d-badge-error datum shrink-0">{{ abs((int) $record->daysUntilDue()) }} days overdue</span>
+                                    @else
+                                        <span class="d-badge d-badge-soft d-badge-warning datum shrink-0">
+                                            {{ (int) $record->daysUntilDue() === 0 ? 'due today' : 'due in '.(int) $record->daysUntilDue().' days' }}
+                                        </span>
+                                    @endif
+                                </li>
+                            @empty
+                                <li class="px-5 py-6 text-center text-xs text-muted-foreground">
+                                    {{ $key === 'overdue' ? 'Nothing is overdue.' : 'Nothing is due in the next '.config('gfms.vaccination_warning_days').' days.' }}
+                                </li>
+                            @endforelse
+                        </ul>
+                    @endforeach
+                @endif
+            </x-ui.card>
 
-                        <div class="flex w-full items-end justify-center" style="height: {{ $track }}px">
-                            @if ($month['fertility'] !== null)
-                                <div class="w-full rounded-t-[4px] bg-foreground"
-                                     style="height: {{ $barPx }}px"
-                                     title="{{ $month['label'] }}: {{ $month['fertility'] }}% fertility from {{ $month['eggs_set'] }} eggs"></div>
-                            @else
-                                <div class="h-px w-full bg-border"
-                                     title="{{ $month['label'] }}: no matings recorded"></div>
-                            @endif
+            {{-- Breeding: the three figures for the period, then fertility per month. --}}
+            <x-ui.card>
+                <x-ui.card.header>
+                    <x-ui.card.title>Breeding</x-ui.card.title>
+                    <x-ui.card.description>Fertility per month, worked out from total eggs</x-ui.card.description>
+                    <x-ui.card.action>
+                        <x-ui.select id="trendMonths" label="Trend period" :label-hidden="true" wire:model.live="trendMonths"
+                                    :options="['6' => 'Last 6 months', '12' => 'Last 12 months', '24' => 'Last 24 months']" wrapper-class="w-40" />
+                    </x-ui.card.action>
+                </x-ui.card.header>
+
+                <x-ui.card.content class="space-y-5">
+                    <dl class="grid grid-cols-3 gap-3">
+                        @foreach ([
+                            ['Matings', number_format($breeding['matings'])],
+                            ['Fertility', $breeding['fertility'] !== null ? $breeding['fertility'].'%' : null],
+                            ['Hatch rate', $breeding['hatch'] !== null ? $breeding['hatch'].'%' : null],
+                        ] as [$label, $value])
+                            <div class="rounded-lg bg-muted/50 px-3 py-2.5">
+                                <dt class="text-[11px] font-medium text-muted-foreground">{{ $label }}</dt>
+                                <dd @class(['datum mt-1 leading-none font-bold text-foreground', $value !== null ? 'text-lg' : 'text-sm'])>{{ $value ?? 'No data' }}</dd>
+                            </div>
+                        @endforeach
+                    </dl>
+
+                    @php $track = 96; @endphp
+                    <div>
+                        <div class="flex items-end gap-1.5 border-b border-border" style="height: {{ $track }}px" aria-hidden="true">
+                            @foreach ($trend as $month)
+                                <div class="flex h-full min-w-0 flex-1 items-end"
+                                     title="{{ $month['label'] }}: {{ $month['fertility'] !== null ? $month['fertility'].'% fertility from '.$month['eggs_set'].' eggs' : 'no matings recorded' }}">
+                                    @if ($month['fertility'] !== null)
+                                        <div class="w-full rounded-t-[3px] bg-primary/85 transition-colors hover:bg-primary"
+                                             style="height: {{ max(3, (int) round(($month['fertility'] / $peak) * $track)) }}px"></div>
+                                    @endif
+                                </div>
+                            @endforeach
                         </div>
+                        <div class="mt-1.5 flex gap-1.5" aria-hidden="true">
+                            @foreach ($trend as $month)
+                                <span class="datum min-w-0 flex-1 truncate text-center text-[11px] text-muted-foreground">{{ Str::before($month['label'], ' ') }}</span>
+                            @endforeach
+                        </div>
+                        <ul class="sr-only">
+                            @foreach ($trend as $month)
+                                <li>{{ $month['label'] }}: {{ $month['fertility'] !== null ? $month['fertility'].'% fertility' : 'no matings recorded' }}</li>
+                            @endforeach
+                        </ul>
                     </div>
-                @endforeach
-            </div>
-            <div class="flex min-w-max gap-3 pt-2">
-                @foreach ($trend as $month)
-                    <span class="datum w-16 text-center text-[12px] text-muted-foreground">{{ Str::before($month['label'], ' ') }}</span>
-                @endforeach
-            </div>
-            <p class="mt-3 text-[13px] text-muted-foreground">
-                No data means no matings were recorded that month, which is different from a 0% result.
-            </p>
+                </x-ui.card.content>
+            </x-ui.card>
         </div>
-    </section>
 
-    {{-- The flock, broken down. Three columns on a wide screen, one on a phone. --}}
-    <section class="mt-16" aria-labelledby="flock-heading" data-reveal>
-        <h2 id="flock-heading" class="{{ $headingClass }}">The flock</h2>
+        {{-- ============ The shape of the flock ============ --}}
+        <div class="min-w-0 space-y-4">
 
-        <div class="mt-6 grid gap-x-12 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
-            @foreach ([
-                ['By status', $this->byStatus, 'status'],
-                ['By class', $this->byClass, 'class'],
-            ] as [$heading, $rows, $field])
-                <div>
-                    <h3 class="border-b border-border pb-2 {{ $labelClass }}">{{ $heading }}</h3>
-                    @if ($rows->isEmpty())
-                        <p class="py-4 text-[15px] text-muted-foreground">No birds recorded yet.</p>
+            <x-ui.card>
+                <x-ui.card.header>
+                    <x-ui.card.title>Flock by status</x-ui.card.title>
+                </x-ui.card.header>
+                <x-ui.card.content>
+                    @if ($statusRows->isEmpty())
+                        <p class="text-xs text-muted-foreground">No birds recorded yet.</p>
                     @else
-                        <ul class="divide-y divide-border">
-                            @foreach ($rows as $row)
-                                @php $enum = $row->{$field}; @endphp
-                                <li class="flex min-h-11 items-center justify-between gap-3 py-2">
-                                    <span class="d-badge d-badge-soft {{ $enum->badgeClasses() }}">{{ $enum->label() }}</span>
-                                    <span class="datum text-[15px] font-medium text-foreground">{{ number_format($row->total) }}</span>
+                        <ul class="space-y-3">
+                            @foreach ($statusRows as $statusRow)
+                                <li>
+                                    <div class="flex items-center justify-between gap-3">
+                                        <span class="d-badge d-badge-soft {{ $statusRow->status->badgeClasses() }}">{{ $statusRow->status->label() }}</span>
+                                        <span class="datum text-sm font-semibold text-foreground lg:text-xs">{{ number_format($statusRow->total) }}</span>
+                                    </div>
+                                    <div class="mt-1.5 h-1 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+                                        <div class="h-full rounded-full bg-primary/70" style="width: {{ round($statusRow->total / $statusMax * 100) }}%"></div>
+                                    </div>
                                 </li>
                             @endforeach
                         </ul>
                     @endif
-                </div>
-            @endforeach
+                </x-ui.card.content>
+            </x-ui.card>
 
-            <div>
-                <h3 class="border-b border-border pb-2 {{ $labelClass }}">By bloodline</h3>
-                @if ($this->byBloodline->isEmpty())
-                    <p class="py-4 text-[15px] text-muted-foreground">No bloodlines recorded yet.</p>
+            <x-ui.card>
+                <x-ui.card.header>
+                    <x-ui.card.title>Bloodlines</x-ui.card.title>
+                </x-ui.card.header>
+                <x-ui.card.content>
+                    @if ($bloodlines->isEmpty())
+                        <p class="text-xs text-muted-foreground">No bloodlines recorded yet.</p>
+                    @else
+                        <ul class="space-y-2">
+                            @foreach ($bloodlines as $line)
+                                <li class="flex items-center justify-between gap-3 text-sm lg:text-xs">
+                                    <span class="flex min-w-0 items-center gap-2 text-foreground">
+                                        <x-band-dot :bloodline="$line->bloodline" />
+                                        <span class="truncate">{{ $line->bloodline }}</span>
+                                    </span>
+                                    <span class="datum font-semibold text-foreground">{{ number_format($line->total) }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </x-ui.card.content>
+            </x-ui.card>
+
+            <x-ui.card :flush="true">
+                <x-ui.card.header class="py-4">
+                    <x-ui.card.title>Recent deaths</x-ui.card.title>
+                    <x-ui.card.description><span class="datum">{{ $this->deathsThisYear }}</span> this year</x-ui.card.description>
+                    @if (Route::has('mortality.index'))
+                        <x-ui.card.action>
+                            <a href="{{ route('mortality.index') }}" wire:navigate class="text-xs font-medium text-primary">View all</a>
+                        </x-ui.card.action>
+                    @endif
+                </x-ui.card.header>
+                @if ($this->recentMortality->isEmpty())
+                    <p class="border-t border-border/60 px-5 py-5 text-xs text-muted-foreground">No deaths recorded.</p>
                 @else
-                    {{-- The one breakdown whose subject IS bloodline carries the
-                         band colour, as a dot beside the written name. --}}
-                    <ul class="divide-y divide-border">
-                        @foreach ($this->byBloodline as $row)
-                            <li class="flex min-h-11 items-center justify-between gap-3 py-2">
-                                <span class="flex min-w-0 items-center gap-2.5">
-                                    <x-band-dot :bloodline="$row->bloodline" />
-                                    <span class="truncate text-[15px] text-foreground">{{ $row->bloodline }}</span>
-                                </span>
-                                <span class="datum text-[15px] font-medium text-foreground">{{ number_format($row->total) }}</span>
+                    <ul class="divide-y divide-border/60 border-t border-border/60">
+                        @foreach ($this->recentMortality->take(3) as $record)
+                            <li class="{{ $row }}">
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-semibold text-foreground lg:text-xs">
+                                        @if ($record->broodcock)
+                                            <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate class="">{{ $record->broodcock->name }}</a>
+                                        @else
+                                            Unknown bird
+                                        @endif
+                                    </p>
+                                    <p class="truncate text-[13px] text-muted-foreground lg:text-[11px]">{{ $record->cause_of_death }}</p>
+                                </div>
+                                <span class="datum shrink-0 text-[13px] text-muted-foreground lg:text-[11px]">{{ $record->date_of_death->format('j M Y') }}</span>
                             </li>
                         @endforeach
                     </ul>
                 @endif
-            </div>
-        </div>
-    </section>
+            </x-ui.card>
 
-    @if ($this->birdsWithoutPedigree > 0)
-        <section class="mt-16 border-t border-border pt-6" aria-labelledby="pedigree-heading" data-reveal>
-            <h2 id="pedigree-heading" class="{{ $headingClass }}">Pedigree completeness</h2>
-            <p class="mt-2 max-w-[66ch] text-[15px] leading-relaxed text-muted-foreground">
-                <span class="datum font-semibold text-foreground">{{ number_format($this->birdsWithoutPedigree) }}</span>
-                {{ Str::plural('bird', $this->birdsWithoutPedigree) }} have no sire or dam recorded, so they
-                cannot appear in a family tree. Recording parents is what turns the bloodline
-                field from a label into real traceability.
-            </p>
-        </section>
-    @endif
+            <x-ui.card>
+                <x-ui.card.header>
+                    <x-ui.card.title>Pedigree</x-ui.card.title>
+                    <x-ui.card.description>
+                        @if ($withoutPedigree === 0)
+                            Every bird has its parents recorded.
+                        @else
+                            <span class="datum font-semibold text-foreground">{{ number_format($withoutPedigree) }}</span>
+                            {{ Str::plural('bird', $withoutPedigree) }} with no parents recorded
+                        @endif
+                    </x-ui.card.description>
+                </x-ui.card.header>
+                @if ($pedigreeShare !== null)
+                    <x-ui.card.content class="space-y-1.5">
+                        <x-ui.progress :value="$pedigreeShare" label="Pedigree completeness" />
+                        <p class="text-[11px] text-muted-foreground"><span class="datum">{{ $pedigreeShare }}%</span> of birds have a family tree</p>
+                    </x-ui.card.content>
+                @endif
+            </x-ui.card>
+        </div>
+    </div>
+
+    @can('create', App\Models\Broodcock::class)
+        {{-- Add gamefowl opens here, in a dialog over the dashboard. --}}
+        <x-ui.form-dialog id="broodcocks-form" model="showForm" size="xl" :wrap="false" title="Add a Gamefowl">
+            <livewire:broodcocks.form :in-dialog="true" :key="'dashboard-broodcock-form-'.$formNonce" />
+        </x-ui.form-dialog>
+    @endcan
 </div>

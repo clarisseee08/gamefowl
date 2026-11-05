@@ -3,9 +3,9 @@
          It is one sequence, about a second end to end, and it runs once on
          load. The delays live in a custom property so the order is readable
          down the file instead of hidden in six animation shorthands. --}}
-    <h1 class="rise-in font-display text-[2rem] font-semibold leading-[1.1] tracking-[-0.03em] text-foreground sm:text-[2.4rem]"
+    <h1 class="rise-in text-2xl font-bold tracking-tight text-foreground"
         style="--rise-delay: 180ms">Sign in to your account</h1>
-    <p class="rise-in mt-3 text-[16px] leading-relaxed text-muted-foreground"
+    <p class="rise-in mt-1.5 text-[15px] leading-relaxed text-muted-foreground lg:text-sm"
        style="--rise-delay: 240ms">
         Enter the email address and password given to you by the farm owner.
     </p>
@@ -29,10 +29,9 @@
          Fortify files a failed sign-in, a deactivated account and the rate
          limit all under `email`, so that is where they appear; the password
          field carries its own. Server-rendered, so they show with scripting
-         off - which matters here, because the guest layout loads no Livewire
-         and therefore no Alpine. --}}
+         off, and nothing here waits on a script. --}}
 
-    <form method="POST" action="{{ route('login') }}" class="mt-9 space-y-6">
+    <form method="POST" action="{{ route('login') }}" class="mt-6 space-y-5">
         @csrf
 
         {{-- ---------------------------------------------------------------
@@ -152,12 +151,12 @@
             </label>
 
             @if (Route::has('password.request'))
-                <a href="{{ route('password.request') }}" wire:navigate class="d-link d-link-primary inline-flex min-h-11 items-center text-[15px] font-semibold underline-offset-4">
+                <a href="{{ route('password.request') }}" wire:navigate class="d-link d-link-primary inline-flex min-h-11 items-center text-[15px] font-semibold">
                     Forgot password?
                 </a>
             @endif
         </div>
 
-        <button type="submit" class="d-btn d-btn-primary rise-in w-full" style="--rise-delay: 600ms">Sign in</button>
+        <button type="submit" class="d-btn d-btn-primary rise-in w-full" style="--rise-delay: 600ms"><x-ui.icon name="log-in" class="size-4" /> Sign in</button>
     </form>
 </x-layouts::guest>

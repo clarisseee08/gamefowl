@@ -64,7 +64,8 @@ final class BroodcockAuthorizationTest extends TestCase
             ->assertOk()
             ->assertSee('Add a Gamefowl')
             ->assertSee('Add Gamefowl')
-            ->assertSee('Back to gamefowl');
+            // The form opens in a side sheet over the list, so there is no page to go back from.
+            ->assertDontSee('Back to gamefowl');
     }
 
     #[DataProvider('allRoles')]

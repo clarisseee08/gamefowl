@@ -12,22 +12,24 @@
     updatedDamChoice, and ResolveExternalParent turns the typed name into a
     real broodcock row on save. Only the markup around it changed.
 --}}
-<div>
+<div @class(['flex min-h-0 flex-1 flex-col' => $inDialog])>
+    @unless ($inDialog)
     <a href="{{ route('breeding.index') }}" wire:navigate
-       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold underline-offset-4">
+       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] lg:text-xs font-semibold underline-offset-4">
         <span aria-hidden="true">&larr;</span> Back to breeding records
     </a>
 
     <x-anchor-block class="mt-2" eyebrow="Breeding" :title="$editing ? 'Edit Breeding Record' : 'Record a Mating'" />
+    @endunless
 
-    <form wire:submit="save" class="mt-8">
-        <div class="max-w-[40rem] space-y-12 pb-10">
+    <form wire:submit="save" @class(['mt-8' => ! $inDialog, 'flex min-h-0 flex-1 flex-col' => $inDialog])>
+        <div @class(['max-w-[40rem] space-y-12 pb-10' => ! $inDialog, 'min-h-0 flex-1 space-y-6 overflow-y-auto px-5 pb-5' => $inDialog])>
             {{-- -------------------------------------------------------
                  The pair
             ------------------------------------------------------- --}}
             <section aria-labelledby="pair-heading">
-                <h2 id="pair-heading" class="border-b border-border pb-3 font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">The Pair</h2>
-                <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                <h2 id="pair-heading" class="border-b border-border pb-3 font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">The Pair</h2>
+                <p class="mt-3 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     Only male birds can be chosen as the sire and only female birds as the dam.
                     If a parent is not one of the farm's own birds &mdash; a borrowed or visiting
                     breeder &mdash; pick &ldquo;Someone else's bird&rdquo; at the end of the list
@@ -51,25 +53,34 @@
                             <option value="{{ App\Livewire\Breeding\Form::OFF_LIST }}">Someone else's bird</option>
                         </x-form-select>
 
+                        <x-bird-preview :bird="$this->selectedSire" role="Sire" target="sire_choice" />
+
                         @if ($sire_is_external)
                             {{-- Indented off a hairline so the fields read as
                                  belonging to the choice above. --}}
                             <div class="mt-4 space-y-4 border-l-2 border-border pl-4">
                                 <div>
                                     <label for="sire_external_name" class="d-fieldset-legend">Name of the outside cock</label>
-                                    <input id="sire_external_name" type="text" wire:model.blur="sire_external_name"
+                                    <input id="sire_external_name" type="text" wire:model="sire_external_name"
                                            @error('sire_external_name') aria-invalid="true" aria-describedby="sire_external_name-error" @enderror
                                            class="d-input w-full mt-1 @error('sire_external_name') d-input-error @enderror">
-                                    @error('sire_external_name') <p id="sire_external_name-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                                    @error('sire_external_name') <p id="sire_external_name-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
 
                                 <div>
-                                    <label for="sire_external_bloodline" class="d-fieldset-legend">Bloodline</label>
-                                    <input id="sire_external_bloodline" type="text" wire:model.blur="sire_external_bloodline"
-                                           aria-describedby="sire_external_bloodline-help @error('sire_external_bloodline') sire_external_bloodline-error @enderror"
-                                           class="d-input w-full mt-1 @error('sire_external_bloodline') d-input-error @enderror">
-                                    <p id="sire_external_bloodline-help" class="d-label mt-1">Optional. Recorded so the bird carries its bloodline tag.</p>
-                                    @error('sire_external_bloodline') <p id="sire_external_bloodline-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                                    <x-form-select id="sire_bloodline_choice" label="Bloodline" error="sire_external_bloodline"
+                                                   wire:model="sire_bloodline_choice"
+                                                   help="Optional. Recorded so the bird carries its bloodline tag.">
+                                        <option value="">Not known</option>
+                                        @foreach ($this->bloodlineOptions as $line)
+                                            <option value="{{ $line }}">{{ $line }}</option>
+                                        @endforeach
+                                        <option value="{{ App\Livewire\Breeding\Form::OTHER }}">Others</option>
+                                    </x-form-select>
+                                    <label for="sire_external_bloodline" class="sr-only">Other bloodline</label>
+                                    <textarea id="sire_external_bloodline" x-show="$wire.sire_bloodline_choice === @js(App\Livewire\Breeding\Form::OTHER)" x-cloak rows="2" wire:model="sire_external_bloodline"
+                                              placeholder="Type the bloodline"
+                                              @class(['d-textarea mt-2 w-full', 'd-textarea-error' => $errors->has('sire_external_bloodline')])></textarea>
                                 </div>
                             </div>
                         @endif
@@ -88,23 +99,32 @@
                             <option value="{{ App\Livewire\Breeding\Form::OFF_LIST }}">Someone else's bird</option>
                         </x-form-select>
 
+                        <x-bird-preview :bird="$this->selectedDam" role="Dam" target="dam_choice" />
+
                         @if ($dam_is_external)
                             <div class="mt-4 space-y-4 border-l-2 border-border pl-4">
                                 <div>
                                     <label for="dam_external_name" class="d-fieldset-legend">Name of the outside hen</label>
-                                    <input id="dam_external_name" type="text" wire:model.blur="dam_external_name"
+                                    <input id="dam_external_name" type="text" wire:model="dam_external_name"
                                            @error('dam_external_name') aria-invalid="true" aria-describedby="dam_external_name-error" @enderror
                                            class="d-input w-full mt-1 @error('dam_external_name') d-input-error @enderror">
-                                    @error('dam_external_name') <p id="dam_external_name-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                                    @error('dam_external_name') <p id="dam_external_name-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
 
                                 <div>
-                                    <label for="dam_external_bloodline" class="d-fieldset-legend">Bloodline</label>
-                                    <input id="dam_external_bloodline" type="text" wire:model.blur="dam_external_bloodline"
-                                           aria-describedby="dam_external_bloodline-help @error('dam_external_bloodline') dam_external_bloodline-error @enderror"
-                                           class="d-input w-full mt-1 @error('dam_external_bloodline') d-input-error @enderror">
-                                    <p id="dam_external_bloodline-help" class="d-label mt-1">Optional. Recorded so the bird carries its bloodline tag.</p>
-                                    @error('dam_external_bloodline') <p id="dam_external_bloodline-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                                    <x-form-select id="dam_bloodline_choice" label="Bloodline" error="dam_external_bloodline"
+                                                   wire:model="dam_bloodline_choice"
+                                                   help="Optional. Recorded so the bird carries its bloodline tag.">
+                                        <option value="">Not known</option>
+                                        @foreach ($this->bloodlineOptions as $line)
+                                            <option value="{{ $line }}">{{ $line }}</option>
+                                        @endforeach
+                                        <option value="{{ App\Livewire\Breeding\Form::OTHER }}">Others</option>
+                                    </x-form-select>
+                                    <label for="dam_external_bloodline" class="sr-only">Other bloodline</label>
+                                    <textarea id="dam_external_bloodline" x-show="$wire.dam_bloodline_choice === @js(App\Livewire\Breeding\Form::OTHER)" x-cloak rows="2" wire:model="dam_external_bloodline"
+                                              placeholder="Type the bloodline"
+                                              @class(['d-textarea mt-2 w-full', 'd-textarea-error' => $errors->has('dam_external_bloodline')])></textarea>
                                 </div>
                             </div>
                         @endif
@@ -112,10 +132,10 @@
 
                     <div>
                         <label for="mating_date" class="d-fieldset-legend">Mating Date <span class="text-destructive">*</span></label>
-                        <input id="mating_date" type="date" wire:model.blur="mating_date" max="{{ today()->toDateString() }}"
+                        <input id="mating_date" type="date" wire:model="mating_date" max="{{ today()->toDateString() }}"
                                @error('mating_date') aria-invalid="true" aria-describedby="mating_date-error" @enderror
                                class="d-input w-full datum mt-1 sm:max-w-[16rem] @error('mating_date') d-input-error @enderror">
-                        @error('mating_date') <p id="mating_date-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('mating_date') <p id="mating_date-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </section>
@@ -124,8 +144,8 @@
                  Egg results
             ------------------------------------------------------- --}}
             <section aria-labelledby="eggs-heading">
-                <h2 id="eggs-heading" class="border-b border-border pb-3 font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Egg Results</h2>
-                <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                <h2 id="eggs-heading" class="border-b border-border pb-3 font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Egg Results</h2>
+                <p class="mt-3 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     Enter the counts and the system works out the rates. Each number must be
                     equal to or smaller than the one before it.
                 </p>
@@ -149,7 +169,7 @@
                                    @error($field) aria-invalid="true" @enderror
                                    class="d-input w-full datum mt-1 sm:max-w-[12rem] @error($field) d-input-error @enderror">
                             <p id="{{ $field }}-help" class="d-label mt-1">{{ $help }}</p>
-                            @error($field) <p id="{{ $field }}-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                            @error($field) <p id="{{ $field }}-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                         </div>
                     @endforeach
                 </div>
@@ -157,18 +177,18 @@
                 {{-- Live rate preview. Always calculated, never typed. --}}
                 <dl class="mt-8 grid grid-cols-2 gap-6 border-t border-border pt-5" aria-live="polite">
                     <div>
-                        <dt class="text-[14px] font-medium text-muted-foreground">Fertility Rate</dt>
-                        <dd class="datum mt-1 font-display text-[28px] font-semibold leading-tight tracking-[-0.02em] text-foreground">
+                        <dt class="text-[14px] lg:text-xs font-medium text-muted-foreground">Fertility Rate</dt>
+                        <dd class="datum mt-1 font-display text-[28px] lg:text-base font-semibold leading-tight tracking-[-0.02em] text-foreground">
                             {{ $rates['fertility'] !== null ? $rates['fertility'].'%' : 'No data' }}
                         </dd>
-                        <dd class="mt-1 text-[13px] text-muted-foreground">Fertile eggs ÷ eggs set</dd>
+                        <dd class="mt-1 text-[13px] lg:text-[11px] text-muted-foreground">Fertile eggs ÷ eggs set</dd>
                     </div>
                     <div>
-                        <dt class="text-[14px] font-medium text-muted-foreground">Hatch Rate</dt>
-                        <dd class="datum mt-1 font-display text-[28px] font-semibold leading-tight tracking-[-0.02em] text-foreground">
+                        <dt class="text-[14px] lg:text-xs font-medium text-muted-foreground">Hatch Rate</dt>
+                        <dd class="datum mt-1 font-display text-[28px] lg:text-base font-semibold leading-tight tracking-[-0.02em] text-foreground">
                             {{ $rates['hatch'] !== null ? $rates['hatch'].'%' : 'No data' }}
                         </dd>
-                        <dd class="mt-1 text-[13px] text-muted-foreground">Hatched ÷ fertile eggs</dd>
+                        <dd class="mt-1 text-[13px] lg:text-[11px] text-muted-foreground">Hatched ÷ fertile eggs</dd>
                     </div>
                 </dl>
             </section>
@@ -178,17 +198,21 @@
             ------------------------------------------------------- --}}
             <div class="border-t border-border pt-6">
                 <label for="notes" class="d-fieldset-legend">Notes</label>
-                <textarea id="notes" rows="4" wire:model.blur="notes"
+                <textarea id="notes" rows="4" wire:model="notes"
                           @error('notes') aria-invalid="true" aria-describedby="notes-error" @enderror
                           class="d-textarea w-full mt-1 @error('notes') d-textarea-error @enderror"></textarea>
-                @error('notes') <p id="notes-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                @error('notes') <p id="notes-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
             </div>
         </div>
 
         {{-- The Save bar stays in reach at the bottom of the screen, so a
              keeper on a phone never scrolls back up to find it. --}}
-        <div class="sticky bottom-0 z-10 -mx-4 flex justify-end gap-3 border-t border-border bg-background/95 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-            <a href="{{ route('breeding.index') }}" wire:navigate class="d-btn d-btn-outline">Cancel</a>
+        <div @class(['sticky bottom-0 z-10 -mx-4 flex justify-end gap-3 border-t border-border bg-background/95 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8' => ! $inDialog, 'flex shrink-0 justify-end gap-2 border-t border-border/60 bg-background/60 p-3' => $inDialog])>
+            @if ($inDialog)
+                <button type="button" class="d-btn d-btn-outline" x-on:click="$dispatch('ems-close-form')">Cancel</button>
+            @else
+                <a href="{{ route('breeding.index') }}" wire:navigate class="d-btn d-btn-outline">Cancel</a>
+            @endif
             <button type="submit" class="d-btn d-btn-primary" wire:loading.attr="disabled" wire:target="save">
                 <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="save"></span>
                 <span wire:loading.remove wire:target="save">{{ $editing ? 'Save Changes' : 'Save Breeding Record' }}</span>

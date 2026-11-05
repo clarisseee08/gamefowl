@@ -20,28 +20,37 @@
         ['label' => 'Status', 'sort' => null, 'cell' => ''],
     ];
 
-    $loadingTargets = 'search,role,status,sort,gotoPage,nextPage,previousPage';
+    $loadingTargets = 'search,role,status,sort,perPage,gotoPage,nextPage,previousPage';
 @endphp
 
 <div>
-    <x-anchor-block eyebrow="Admin" title="User Accounts"
-                    :figure="number_format($total)"
-                    :figure-label="Str::plural('account', $total).($filtered ? ' matching your filters' : '')">
+    <x-ui.page-header title="User Accounts"
+                      :figure="number_format($total)"
+                      :figure-label="Str::plural('account', $total).($filtered ? ' matching your filters' : '')">
         Who can sign in to the system and what they are allowed to do.
 
         @can('create', App\Models\User::class)
             <x-slot:actions>
-                <a href="{{ route('users.create') }}" wire:navigate class="d-btn d-btn-primary">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
-                    </svg>
-                    Add user
-                </a>
+                <x-ui.button :href="route('users.create')" x-on:click.prevent="$dispatch('ems-dialog', 'users-form')">
+                    <x-ui.icon name="plus" /> Add User
+                </x-ui.button>
             </x-slot:actions>
         @endcan
-    </x-anchor-block>
+    </x-ui.page-header>
 
-    <div class="mt-8 overflow-x-auto" data-scroll-x>
+    @php $stats = $this->stats; @endphp
+    <x-ui.kpi-row class="mt-5" role="group" aria-label="Account figures">
+        <x-ui.kpi-tile label="Accounts" icon="user" :value="number_format($stats['total'])"
+                       caption="Everyone who has an account" />
+        <x-ui.kpi-tile label="Active" icon="user-check" :value="number_format($stats['active'])"
+                       :caption="number_format($stats['total'] - $stats['active']).' deactivated'" />
+        <x-ui.kpi-tile label="Farm staff" icon="shield-check" :value="number_format($stats['internal'])"
+                       caption="The owner and staff who keep the records" />
+        <x-ui.kpi-tile label="Customers" icon="eye" :value="number_format($stats['customers'])"
+                       caption="Can browse the catalogue" />
+    </x-ui.kpi-row>
+
+    <div class="mt-5 overflow-x-auto" data-scroll-x>
         <x-segmented :segments="$statusSegments" :active="$status" model="status" label="Account status" />
     </div>
 
@@ -74,20 +83,21 @@
         {{-- Phones: one block per person - name and email, then role and
              status. Read one-handed, so no sideways scroll. The avatar is
              initials only: a photo URL costs a storage round trip per row. --}}
-        <ul class="divide-y divide-border border-y border-border md:hidden"
+        <x-ui.card :flush="true">
+        <ul class="divide-y divide-border px-5 md:hidden"
             wire:loading.class="opacity-60" wire:target="{{ $loadingTargets }}">
             @foreach ($people as $person)
                 <li wire:key="user-card-{{ $person->id }}" class="py-4">
                     <div class="flex items-start gap-3">
-                        <x-avatar :name="$person->full_name" size="md" class="mt-0.5 shrink-0" />
+                        <x-ui.avatar :name="$person->full_name" class="mt-0.5 shrink-0" />
                         <div class="min-w-0 flex-1">
-                            <p class="text-[16px] font-medium text-foreground">
+                            <p class="text-[16px] lg:text-xs font-medium text-foreground">
                                 {{ $person->full_name }}
                                 @if ($person->is(auth()->user()))
-                                    <span class="text-[14px] font-normal text-muted-foreground">(you)</span>
+                                    <span class="text-[14px] lg:text-xs font-normal text-muted-foreground">(you)</span>
                                 @endif
                             </p>
-                            <p class="mt-0.5 break-all text-[14px] text-muted-foreground">{{ $person->email }}</p>
+                            <p class="mt-0.5 break-all text-[14px] lg:text-xs text-muted-foreground">{{ $person->email }}</p>
 
                             <div class="mt-2 flex flex-wrap items-center gap-2">
                                 <span class="d-badge d-badge-soft d-badge-neutral">{{ $person->role->label() }}</span>
@@ -96,20 +106,20 @@
                                 @else
                                     <span class="d-badge d-badge-soft d-badge-neutral">Deactivated</span>
                                 @endif
-                                <span class="text-[14px] text-muted-foreground">{{ $person->position ?? 'No position recorded' }}</span>
+                                <span class="text-[14px] lg:text-xs text-muted-foreground">{{ $person->position ?? 'No position recorded' }}</span>
                             </div>
 
                             @canany(['update', 'deactivate'], $person)
                                 <div class="mt-1 flex flex-wrap items-center gap-x-6">
                                     @can('update', $person)
-                                        <a href="{{ route('users.edit', $person) }}" wire:navigate
-                                           class="d-link d-link-primary d-link-hover inline-flex min-h-11 items-center text-[15px] font-medium">
+                                        <a href="{{ route('users.edit', $person) }}" wire:click.prevent="openForm({{ $person->id }})" x-on:click="$dispatch('ems-dialog', { id: 'users-form', wait: true })"
+                                           class="d-link d-link-primary d-link-hover inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
                                             Edit<span class="sr-only">, {{ $person->full_name }}</span>
                                         </a>
                                     @endcan
                                     @can('deactivate', $person)
                                         <button type="button" wire:click="confirmToggle({{ $person->id }})"
-                                                class="d-link d-link-hover inline-flex min-h-11 items-center text-[15px] font-medium {{ $person->is_active ? 'd-link-error' : 'd-link-primary' }}">
+                                                class="d-link d-link-hover inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium {{ $person->is_active ? 'd-link-error' : 'd-link-primary' }}">
                                             {{ $person->is_active ? 'Deactivate' : 'Reactivate' }}<span class="sr-only">, {{ $person->full_name }}</span>
                                         </button>
                                     @endcan
@@ -134,7 +144,7 @@
                         @endphp
                         <th scope="col"
                             @if ($column['sort'] !== null) aria-sort="{{ $ariaSort }}" @endif
-                            class="sticky top-0 z-10 whitespace-nowrap bg-background px-3 py-2 text-left text-[13px] font-semibold text-muted-foreground {{ $column['cell'] }}">
+                            class="h-10 whitespace-nowrap border-b border-border px-5 text-left text-[13px] font-medium text-muted-foreground lg:h-9 lg:text-xs {{ $column['cell'] }}">
                             @if ($column['sort'] !== null)
                                 <button type="button" wire:click="sort('{{ $column['sort'] }}')"
                                         @class(['inline-flex items-center gap-1 hover:text-foreground', 'text-foreground' => $isSorted])>
@@ -151,8 +161,8 @@
                             @endif
                         </th>
                     @endforeach
-                    <th scope="col" class="sticky top-0 z-10 bg-background px-3 py-2 text-right">
-                        <span class="sr-only">Actions</span>
+                    <th scope="col" class="h-10 border-b border-border px-5 text-right text-[13px] font-medium text-muted-foreground lg:h-9 lg:text-xs">
+                        Actions
                     </th>
                 </tr>
             </thead>
@@ -162,46 +172,42 @@
                     <tr wire:key="user-row-{{ $person->id }}" class="hover:bg-muted/60">
                         <td class="px-3 py-3">
                             <div class="flex items-center gap-3">
-                                <x-avatar :name="$person->full_name" size="md" class="shrink-0" />
+                                <x-ui.avatar :name="$person->full_name" class="shrink-0" />
                                 <div class="min-w-0">
-                                    <p class="text-[15px] font-medium text-foreground">
+                                    <p class="text-sm font-semibold text-foreground lg:text-xs">
                                         {{ $person->full_name }}
                                         @if ($person->is(auth()->user()))
-                                            <span class="ml-1 text-[13px] font-normal text-muted-foreground">(you)</span>
+                                            <span class="ml-1 text-[13px] lg:text-[11px] font-normal text-muted-foreground">(you)</span>
                                         @endif
                                     </p>
-                                    <p class="mt-0.5 truncate text-[14px] text-muted-foreground">{{ $person->email }}</p>
+                                    <p class="mt-0.5 truncate text-[14px] lg:text-xs text-muted-foreground">{{ $person->email }}</p>
                                 </div>
                             </div>
                         </td>
-                        <td class="whitespace-nowrap px-3 py-3">
+                        <td class="whitespace-nowrap px-5 py-2.5">
                             <span class="d-badge d-badge-soft d-badge-neutral">{{ $person->role->label() }}</span>
                         </td>
-                        <td class="hidden whitespace-nowrap px-3 py-3 text-[15px] text-muted-foreground lg:table-cell">{{ $person->position ?? 'Not recorded' }}</td>
+                        <td class="hidden whitespace-nowrap px-5 py-2.5 text-[15px] lg:text-xs text-muted-foreground lg:table-cell">{{ $person->position ?? 'Not recorded' }}</td>
                         <td @class([
-                            'hidden whitespace-nowrap px-3 py-3 text-[15px] text-muted-foreground xl:table-cell',
+                            'hidden whitespace-nowrap px-5 py-2.5 text-[15px] lg:text-xs text-muted-foreground xl:table-cell',
                             'datum' => $person->contact_number !== null,
                         ])>{{ $person->contact_number ?? 'Not recorded' }}</td>
-                        <td class="whitespace-nowrap px-3 py-3">
+                        <td class="whitespace-nowrap px-5 py-2.5">
                             @if ($person->is_active)
                                 <span class="d-badge d-badge-soft d-badge-success">Active</span>
                             @else
                                 <span class="d-badge d-badge-soft d-badge-neutral">Deactivated</span>
                             @endif
                         </td>
-                        <td class="whitespace-nowrap px-3 py-3 text-right">
-                            <div class="flex items-center justify-end gap-5">
+                        <td class="whitespace-nowrap px-5 py-2.5 text-right">
+                            <div class="flex items-center justify-end gap-0.5">
                                 @can('update', $person)
-                                    <a href="{{ route('users.edit', $person) }}" wire:navigate
-                                       class="d-link d-link-primary d-link-hover inline-flex min-h-11 items-center text-[15px] font-medium">
-                                        Edit<span class="sr-only">, {{ $person->full_name }}</span>
-                                    </a>
+                                    <x-ui.row-action icon="pencil" :label="'Edit '.$person->full_name" :href="route('users.edit', $person)" wire:click.prevent="openForm({{ $person->id }})" x-on:click="$dispatch('ems-dialog', { id: 'users-form', wait: true })" />
                                 @endcan
                                 @can('deactivate', $person)
-                                    <button type="button" wire:click="confirmToggle({{ $person->id }})"
-                                            class="d-link d-link-hover inline-flex min-h-11 items-center text-[15px] font-medium {{ $person->is_active ? 'd-link-error' : 'd-link-primary' }}">
-                                        {{ $person->is_active ? 'Deactivate' : 'Reactivate' }}<span class="sr-only">, {{ $person->full_name }}</span>
-                                    </button>
+                                    <x-ui.row-action :icon="$person->is_active ? 'user-x' : 'user-check'"
+                                                     :label="($person->is_active ? 'Deactivate ' : 'Reactivate ').$person->full_name"
+                                                     :destructive="$person->is_active" wire:click="confirmToggle({{ $person->id }})" />
                                 @endcan
                             </div>
                         </td>
@@ -212,7 +218,10 @@
             <x-table-skeleton :cols="4" wire:loading wire:target="{{ $loadingTargets }}" />
         </table>
 
-        <div class="mt-6 border-t border-border pt-4">{{ $people->links() }}</div>
+        <div class="px-5 pb-5">
+            <x-ui.table-pagination :paginator="$people" />
+        </div>
+        </x-ui.card>
     @endif
 
     {{-- Confirmation. Names the person and says exactly what happens to them
@@ -225,13 +234,13 @@
             <div class="d-modal-box elev-3 w-full max-w-md">
                 <div class="flex items-center gap-3">
                     <x-avatar :name="$pending->full_name" size="md" class="shrink-0" />
-                    <p class="min-w-0 truncate text-[14px] text-muted-foreground">{{ $pending->email }}</p>
+                    <p class="min-w-0 truncate text-[14px] lg:text-xs text-muted-foreground">{{ $pending->email }}</p>
                 </div>
 
-                <h2 id="toggle-user-title" class="mt-4 font-display text-[22px] font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
+                <h2 id="toggle-user-title" class="mt-4 font-display text-[22px] lg:text-base font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
                     {{ $pending->is_active ? 'Deactivate' : 'Reactivate' }} {{ $pending->full_name }}?
                 </h2>
-                <p id="toggle-user-body" class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                <p id="toggle-user-body" class="mt-3 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     @if ($pending->is_active)
                         They will be signed out immediately and will not be able to sign in again.
                         Everything they have recorded is kept, and their name still appears on those
@@ -251,4 +260,25 @@
             </div>
         </div>
     @endif
+
+    {{-- Add and edit open here, in a dialog over the list, never on a page of their own. --}}
+    {{-- The new-record form is built with the page, and it authorizes on
+         mount, so it is only built for someone who may create one. --}}
+    @can('create', \App\Models\User::class)
+        <x-ui.form-dialog id="users-form" model="showForm" size="lg" :wrap="false" :title="$formRecordId ? 'Edit '.(\App\Models\User::find($formRecordId)?->full_name ?? 'user') : 'Add a User'">
+            @if ($formRecordId)
+                {{-- An edit, or a form for one bird: filled by the server when opened. --}}
+                @if ($showForm)
+                    <livewire:users.form :user="$formRecordId ? \App\Models\User::find($formRecordId) : null"
+                                         :in-dialog="true" :key="'users-form-'.($formRecordId ?? 'new').'-'.($formBroodcockId ?? '')" />
+                @else
+                    <x-ui.form-skeleton :fields="5" />
+                @endif
+            @else
+                {{-- A new record: built with the page, so Add opens at once with no request. --}}
+                <livewire:users.form :user="$formRecordId ? \App\Models\User::find($formRecordId) : null"
+                                      :in-dialog="true" :key="'users-form-new-'.$formNonce" />
+            @endif
+        </x-ui.form-dialog>
+    @endcan
 </div>

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Health;
 
+use App\Livewire\Concerns\ChoosesPageSize;
 use App\Models\Broodcock;
 use App\Models\HealthRecord;
 use Illuminate\Contracts\View\View;
@@ -29,20 +30,62 @@ use Livewire\WithPagination;
  */
 final class BroodcockHealthHistory extends Component
 {
+    use ChoosesPageSize;
     use WithPagination;
 
     /** Locked: the browser cannot repoint this component at a different bird. */
     #[Locked]
     public Broodcock $broodcock;
 
-    /** How many rows to show. Kept small - this is a panel, not a full screen. */
-    public int $perPage = 10;
+    /**
+     * The add / edit form, in a dialog over the bird's page rather than on
+     * the list, so recording something about this bird never leaves it.
+     */
+    public bool $showForm = false;
+
+    #[Locked]
+    public ?int $formRecordId = null;
+
+    /**
+     * A new form is built ahead, so Add opens instantly. Closing the dialog
+     * drops any edit and re-keys the new form, so the next Add is blank.
+     */
+    public int $formNonce = 0;
+
+    public function updatedShowForm(bool $open): void
+    {
+        if ($open) {
+            return;
+        }
+
+        $this->formRecordId = null;
+        $this->formNonce++;
+    }
+
+    /** Called by the dialog when a form that was typed in is closed: start the next one blank. */
+    public function resetForm(): void
+    {
+        $this->showForm = false;
+        $this->updatedShowForm(false);
+    }
 
     public function mount(Broodcock $broodcock): void
     {
         $this->authorize('viewAny', HealthRecord::class);
 
         $this->broodcock = $broodcock;
+    }
+
+    public function openForm(?int $recordId = null): void
+    {
+        $record = $recordId !== null
+            ? HealthRecord::query()->where('broodcock_id', $this->broodcock->id)->findOrFail($recordId)
+            : null;
+
+        $this->authorize($record ? 'update' : 'create', $record ?? HealthRecord::class);
+
+        $this->formRecordId = $record?->id;
+        $this->showForm = true;
     }
 
     /**
@@ -57,7 +100,7 @@ final class BroodcockHealthHistory extends Component
             ->where('broodcock_id', $this->broodcock->id)
             ->orderByDesc('checkup_date')
             ->orderByDesc('id')
-            ->paginate($this->perPage, pageName: 'historyPage');
+            ->paginate($this->pageSize(), pageName: 'historyPage');
     }
 
     /** The next follow-up this bird is actually waiting on, if any. */

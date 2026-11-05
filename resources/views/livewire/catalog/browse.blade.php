@@ -1,5 +1,8 @@
 @php
     $total = $this->birds->total();
+    // Staff see the catalogue inside the console, which opens every page on
+    // the compact EMS header; visitors see the stud-book page.
+    $inConsole = auth()->user()?->isInternal() ?? false;
 @endphp
 
 {{--
@@ -11,15 +14,21 @@
     No card background and no box: the photograph is the card.
 --}}
 <div>
-    <div class="max-w-[60ch]">
-        {{-- h1 when this IS the page (/catalog), h2 if it is ever embedded
-             under another page's heading. See the note on $headingLevel. --}}
-        <{{ $headingLevel }} class="sb-h2 lg:text-[2.4rem]">Our gamefowl</{{ $headingLevel }}>
-        <p class="mt-3 text-[16px] text-muted-foreground">
-            Every bird on the farm today. Open one to see its photographs, health record,
-            family tree and performance history.
-        </p>
-    </div>
+    @if ($inConsole)
+        <x-ui.page-header title="Our gamefowl"
+                          description="Every bird on the farm today. Open one to see its photographs, health record, family tree and performance history." />
+    @else
+        <div class="max-w-[60ch]">
+            <p class="sb-eyebrow sb-line" style="--line: 0ms">Our stock</p>
+            {{-- h1 when this IS the page (/catalog), h2 if it is ever embedded
+                 under another page's heading. See the note on $headingLevel. --}}
+            <{{ $headingLevel }} class="sb-hero-title sb-line mt-3" style="--line: 60ms">Our gamefowl</{{ $headingLevel }}>
+            <p class="sb-lead sb-line mt-4" style="--line: 130ms">
+                Every bird on the farm today. Open one to see its photographs, health record,
+                family tree and performance history.
+            </p>
+        </div>
+    @endif
 
     {{-- ---------------------------------------------------------------
          FILTERS — one row of real controls, not a box.
@@ -28,11 +37,16 @@
          edges, so the panel drew a second border around things already
          edged. A hairline underneath ends the row instead.
     --------------------------------------------------------------- --}}
-    <div class="mt-8 flex flex-col gap-3 border-b border-border pb-6 lg:flex-row lg:flex-wrap lg:items-center">
-        <div class="min-w-0 flex-1 lg:max-w-md">
+    <div @class([
+        'flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center',
+        'mt-6 border-b border-border pb-4' => $inConsole,
+        'mt-8 rounded-md border border-border bg-card p-3' => ! $inConsole,
+    ])>
+        <div class="relative min-w-0 flex-1 lg:max-w-md">
             <label for="search" class="sr-only">Search</label>
+            <x-ui.icon name="search" class="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
             <input id="search" type="search" wire:model.live.debounce.300ms="search"
-                   placeholder="Name, band number or bloodline" class="d-input w-full">
+                   placeholder="Name, band number or bloodline" class="d-input w-full pl-9">
         </div>
 
         <div class="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center">
@@ -66,7 +80,7 @@
              reason attached - disabled rather than hidden, because a control
              that comes and goes with the stock is a page that moves under you. --}}
         <label @class([
-                   'inline-flex min-h-11 shrink-0 items-center gap-2.5 text-[15px]',
+                   'inline-flex min-h-11 shrink-0 items-center gap-2.5 text-[15px] lg:min-h-7 lg:text-xs',
                    'cursor-pointer text-foreground' => $this->anyForSale,
                    'cursor-not-allowed text-muted-foreground' => ! $this->anyForSale,
                ])
@@ -76,7 +90,7 @@
             Available birds only
         </label>
 
-        <div class="flex items-center gap-4 text-[14px] text-muted-foreground lg:ml-auto">
+        <div class="flex items-center gap-4 text-[14px] text-muted-foreground lg:ml-auto lg:text-xs">
             <span wire:loading.remove wire:target="search,bloodline,sex,class,forSaleOnly,sort">
                 <span class="datum font-semibold text-foreground">{{ number_format($total) }}</span> {{ \Illuminate\Support\Str::plural('bird', $total) }} found.
             </span>
@@ -102,8 +116,11 @@
              that could not work, about a search the visitor had not botched. --}}
         @php $onlyForSale = $this->forSaleOnly && ! $this->anyForSale; @endphp
 
-        <div class="py-16">
-            <h2 class="sb-h2">
+        <div @class(['py-16', 'mt-6 flex flex-col items-center rounded-md border border-dashed border-border px-6 text-center' => ! $inConsole])>
+            @unless ($inConsole)
+                <span class="mb-4 inline-flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground"><x-ui.icon name="search" class="size-5" /></span>
+            @endunless
+            <h2 @class(['sb-h2' => $inConsole, 'text-lg font-bold text-foreground' => ! $inConsole])>
                 @if ($onlyForSale)
                     No birds are marked for sale just now
                 @elseif ($this->hasActiveFilters())
@@ -112,7 +129,7 @@
                     No birds are listed yet
                 @endif
             </h2>
-            <p class="mt-3 max-w-[56ch] text-[16px] text-muted-foreground">
+            <p class="mt-2 max-w-[56ch] text-[15px] text-muted-foreground">
                 @if ($onlyForSale)
                     The farm keeps its broodcocks for breeding and offers only a few at a time.
                     Everything it holds is still worth looking at &mdash; and worth ringing about.
@@ -123,20 +140,26 @@
                 @endif
             </p>
             @if ($this->hasActiveFilters())
-                <button type="button" wire:click="clearFilters" class="d-btn d-btn-outline mt-7">
+                <button type="button" wire:click="clearFilters" class="d-btn d-btn-outline mt-6">
                     {{ $onlyForSale ? 'Show every bird on the farm' : 'Clear filters' }}
                 </button>
             @endif
         </div>
     @else
-        <ul class="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-12">
+        <ul @class([
+            'grid grid-cols-2',
+            'mt-6 gap-x-3 gap-y-6 md:grid-cols-4 xl:grid-cols-6' => $inConsole,
+            'mt-6 gap-3 md:grid-cols-3 lg:grid-cols-4 lg:gap-4' => ! $inConsole,
+        ])>
             @foreach ($this->birds as $bird)
-                <li>
-                    <x-bird-card :bird="$bird" heading="h2" :details="true" :delay="($loop->index % 4) * 60" />
+                {{-- Keyed so a new search swaps cards whole instead of reusing a
+                     card's element for a different bird. --}}
+                <li wire:key="bird-{{ $bird->id }}">
+                    <x-bird-card :bird="$bird" heading="h2" :details="true" :compact="$inConsole" :delay="($loop->index % 4) * 60" />
                 </li>
             @endforeach
         </ul>
 
-        <div class="mt-12">{{ $this->birds->links() }}</div>
+        <div @class(['mt-12' => $inConsole, 'mt-8' => ! $inConsole])>{{ $this->birds->links() }}</div>
     @endif
 </div>

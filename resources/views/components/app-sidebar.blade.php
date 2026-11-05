@@ -77,8 +77,8 @@
     another panel.
 --}}
 <aside
-    class="flex h-full shrink-0 flex-col border-r border-border bg-muted transition-[width] duration-200"
-    :class="collapsed ? 'w-14' : 'w-60'"
+    class="flex h-full shrink-0 flex-col border-r border-border bg-background transition-[width] duration-200 ease-linear"
+    :class="collapsed ? 'w-14' : 'w-60 lg:w-[17.5rem]'"
     aria-label="Main navigation"
 >
     {{-- Pinned top: workspace identity. --}}
@@ -93,10 +93,11 @@
         rail did the least expected thing - clicking a logo goes home in every
         product anyone has used.
 
-        Collapse now has its own labelled control beside it, which also makes it
-        discoverable: a toggle hidden inside the logo is a toggle nobody finds.
+        Collapse is the toggle at the left of the header (and Ctrl+B), where
+        EMS puts it; who is signed in, and Sign out, are the header's account
+        menu.
     --}}
-    <div class="flex h-14 shrink-0 items-center gap-2 px-3"
+    <div class="flex h-14 shrink-0 items-center gap-2 border-b border-border px-3 lg:h-[52px]"
          style="border-bottom: 1px solid var(--color-border)"
          :class="collapsed ? 'justify-center px-2' : ''">
         <a href="{{ route('dashboard') }}" wire:navigate
@@ -112,69 +113,42 @@
             </span>
 
             <span x-show="! collapsed" x-cloak class="min-w-0">
-                <span class="block truncate font-display text-[15px] font-semibold leading-tight tracking-[-0.015em] text-foreground">
+                <span class="block truncate text-[15px] font-semibold leading-tight text-foreground lg:text-[13px]">
                     {{ config('gfms.farm.name') }}
                 </span>
             </span>
             <span class="sr-only">Go to dashboard</span>
         </a>
 
-        <button type="button"
-                x-show="! collapsed" x-cloak
-                @click="collapsed = true; localStorage.setItem('gfms-sidebar', '1')"
-                class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-sm)] text-muted-foreground hover:bg-background hover:text-foreground"
-                aria-label="Collapse sidebar" title="Collapse sidebar">
-            <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="1.7"
-                 viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M3.75 5.25h16.5M9 5.25v13.5M3.75 18.75h16.5M3.75 5.25v13.5M20.25 5.25v13.5"/>
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 9.75 14.25 12l2.25 2.25"/>
-            </svg>
-        </button>
     </div>
 
-    {{-- Expand, shown only on the collapsed rail where there is no room beside
-         the logo. --}}
-    <div x-show="collapsed" x-cloak class="shrink-0 px-2 pt-2">
-        <button type="button"
-                @click="collapsed = false; localStorage.setItem('gfms-sidebar', '0')"
-                class="inline-flex h-11 w-full items-center justify-center rounded-[var(--radius-sm)] text-muted-foreground hover:bg-background hover:text-foreground"
-                aria-label="Expand sidebar" title="Expand sidebar">
-            <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="1.7"
-                 viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M3.75 5.25h16.5M9 5.25v13.5M3.75 18.75h16.5M3.75 5.25v13.5M20.25 5.25v13.5"/>
-                <path stroke-linecap="round" stroke-linejoin="round" d="m14.25 9.75 2.25 2.25-2.25 2.25"/>
-            </svg>
-        </button>
-    </div>
 
     {{-- The nav scrolls between the two pinned blocks, so a long list never
          pushes the account menu off the bottom of the viewport. --}}
     {{-- d-menu with its active pair pointed back at the card ground and ink:
          daisyUI's default active fill is the neutral (solid ink), which on a
          --muted rail reads as a selected button rather than "you are here". --}}
-    <nav class="scroll-slim min-h-0 flex-1 overflow-y-auto px-2 py-2">
-        <ul class="d-menu w-full p-0 [--d-menu-active-bg:var(--color-card)] [--d-menu-active-fg:var(--color-foreground)]">
+    <nav class="scroll-slim min-h-0 flex-1 overflow-y-auto px-2 pt-1 pb-2 lg:px-3">
+        <ul class="flex w-full flex-col gap-1">
             @foreach ($visible as $groupName => $items)
-                <li class="d-menu-title px-3 pb-1 pt-5 text-[13px] text-muted-foreground" x-show="! collapsed" x-cloak>{{ $groupName }}</li>
+                <li class="mt-4 mb-1 flex h-5 items-center border-b border-muted-foreground/10 px-4 pb-2 text-[11px] font-medium tracking-widest text-muted-foreground uppercase" x-show="! collapsed" x-cloak>{{ $groupName }}</li>
                 @if (! $loop->first)
                     <li class="mx-0 my-2 h-px bg-border opacity-100" x-show="collapsed" x-cloak aria-hidden="true"></li>
                 @endif
 
                 @foreach ($items as $item)
-                    <li class="mb-0.5">
+                    <li>
                         <a href="{{ route($item['route']) }}" wire:navigate
                            @class([
-                               'relative min-h-11 gap-3 text-[15px] font-medium',
-                               'd-menu-active before:absolute before:left-0 before:top-1/2 before:h-5 before:w-[3px] before:-translate-y-1/2 before:rounded-full before:bg-primary' => $isActive($item['route']),
-                               'text-muted-foreground hover:text-foreground' => ! $isActive($item['route']),
+                               'relative flex min-h-11 w-full items-center gap-3 overflow-hidden rounded-lg border px-4 text-sm font-medium outline-none transition-[transform,box-shadow,border-color,background-color] duration-200 ease-out focus-visible:ring-2 focus-visible:ring-ring/50 lg:h-8 lg:min-h-0 lg:text-[12.5px]',
+                               'border-primary/20 bg-linear-to-r from-primary to-primary/80 text-primary-foreground shadow-[0_4px_8px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.2)] hover:shadow-[0_6px_12px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.3)]' => $isActive($item['route']),
+                               'border-transparent text-muted-foreground hover:bg-muted hover:text-foreground' => ! $isActive($item['route']),
                            ])
                            :class="collapsed ? 'justify-center px-0' : ''"
                            title="{{ $item['label'] }}"
                            @if ($isActive($item['route'])) aria-current="page" @endif>
-                            <svg class="h-[18px] w-[18px] shrink-0" fill="none" stroke="currentColor"
-                                 stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
+                            <svg class="size-[18px] shrink-0 lg:size-4" fill="none" stroke="currentColor"
+                                 stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}"/>
                             </svg>
                             <span x-show="! collapsed" x-cloak class="truncate">{{ $item['label'] }}</span>
@@ -184,48 +158,4 @@
             @endforeach
         </ul>
     </nav>
-
-    {{-- Pinned bottom: who you are and how to leave. --}}
-    <div class="shrink-0 p-2" style="border-top: 1px solid var(--color-border)">
-        {{-- The whole block is the link to your own profile: a name you can
-             click is a more obvious affordance than a separate icon beside it. --}}
-        <a href="{{ route('profile.edit') }}" wire:navigate
-           @class(['flex items-center gap-2.5 rounded-[var(--radius-sm)] px-2 py-1.5 transition-colors hover:bg-background',
-                   'bg-card elev-1' => request()->routeIs('profile.*')])>
-            @if ($user?->hasProfilePhoto() && $user->profilePhotoUrl())
-                <img src="{{ $user->profilePhotoUrl() }}" alt=""
-                     class="h-8 w-8 shrink-0 rounded-full object-cover"
-                     style="box-shadow: inset 0 0 0 1px var(--color-border)">
-            @else
-                <x-icon.user class="h-8 w-8 shrink-0" />
-            @endif
-            <div x-show="! collapsed" x-cloak class="min-w-0 flex-1">
-                <p class="truncate text-[13px] font-medium leading-tight text-foreground">{{ $user?->full_name }}</p>
-                <p class="truncate text-[11px] leading-tight text-muted-foreground">{{ $user?->role->label() }}</p>
-            </div>
-        </a>
-
-        {{-- Sign out is NOT hidden on the collapsed rail.
-
-             It used to be inside x-show="! collapsed", which meant collapsing
-             the sidebar removed the only way to sign out anywhere in the
-             console - the top bar carries no account menu. On a shared farm
-             phone that is not a cosmetic problem: the next person to pick it up
-             is signed in as whoever used it last, and the sidebar state
-             persists in localStorage, so it stayed broken until someone
-             happened to expand it again. --}}
-        <form method="POST" action="{{ route('logout') }}" class="mt-1">
-            @csrf
-            <button type="submit"
-                    class="inline-flex min-h-11 items-center gap-2.5 rounded-[var(--radius-sm)] px-2 text-[14px] text-muted-foreground hover:bg-background hover:text-foreground"
-                    :class="collapsed ? 'w-full justify-center px-0' : ''"
-                    aria-label="Sign out" title="Sign out">
-                <svg class="h-[18px] w-[18px] shrink-0" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"/>
-                </svg>
-                <span x-show="! collapsed" x-cloak>Sign out</span>
-            </button>
-        </form>
-    </div>
 </aside>

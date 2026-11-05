@@ -283,15 +283,15 @@ final class PublicCatalogueTest extends TestCase
         $bird = Broodcock::factory()->create();
 
         /*
-         * The link's COPY, not its href. route('broodcocks.index') is
-         * "/broodcocks", which is a substring of this very page's own URL
-         * "/broodcocks/28" - so asserting the href is absent fails on the
-         * address bar rather than on the link.
+         * The whole attribute, closing quote included: route('broodcocks.index')
+         * is "/broodcocks", a substring of this very page's own URL
+         * "/broodcocks/28", so a bare href would match the page itself.
          */
         $this->get(route('broodcocks.show', $bird))
             ->assertOk()
-            ->assertSee('Back to the catalogue')
-            ->assertDontSee('Back to gamefowl');
+            ->assertSee('href="'.route('catalog.index').'"', false)
+            ->assertSee('Our gamefowl')
+            ->assertDontSee('href="'.route('broodcocks.index').'"', false);
     }
 
     /** And following it actually works, rather than landing on the login. */
@@ -308,7 +308,7 @@ final class PublicCatalogueTest extends TestCase
         $this->actingAs(User::factory()->staff()->create())
             ->get(route('broodcocks.show', $bird))
             ->assertOk()
-            ->assertSee('Back to gamefowl')
-            ->assertDontSee('Back to the catalogue');
+            ->assertSee('href="'.route('broodcocks.index').'"', false)
+            ->assertDontSee('Our gamefowl');
     }
 }

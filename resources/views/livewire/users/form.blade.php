@@ -1,67 +1,69 @@
 {{-- One measured column, left-aligned, grouped under small headings with a
      hairline. The save bar sits outside the column so it spans the canvas. --}}
-<div>
+<div @class(['flex min-h-0 flex-1 flex-col' => $inDialog])>
+    @unless ($inDialog)
     <a href="{{ route('users.index') }}" wire:navigate
-       class="d-link d-link-primary d-link-hover -mt-2 inline-flex min-h-11 items-center gap-1.5 text-[14px] font-medium">
+       class="d-link d-link-primary d-link-hover -mt-2 inline-flex min-h-11 items-center gap-1.5 text-[14px] lg:text-xs font-medium">
         <span aria-hidden="true">&larr;</span> Back to user accounts
     </a>
 
     <x-anchor-block class="mt-2" eyebrow="Admin" :title="$this->isEditing() ? 'Edit '.$full_name : 'Add a User'">
         Accounts are created here &mdash; people cannot sign themselves up.
     </x-anchor-block>
+    @endunless
 
-    <form wire:submit="save" class="mt-8">
-        <div class="max-w-[40rem] space-y-12">
+    <form wire:submit="save" @class(['mt-8' => ! $inDialog, 'flex min-h-0 flex-1 flex-col' => $inDialog])>
+        <div @class(['max-w-[40rem] space-y-12' => ! $inDialog, 'min-h-0 flex-1 space-y-6 overflow-y-auto px-5 pb-5' => $inDialog])>
             <section aria-labelledby="person-heading">
-                <h2 id="person-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Person</h2>
+                <h2 id="person-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Person</h2>
 
                 <div class="mt-4 space-y-6 border-t border-border pt-6">
                     <div>
                         <label for="full_name" class="d-fieldset-legend justify-start">Full Name <span class="text-destructive">*</span></label>
-                        <input id="full_name" type="text" wire:model.blur="full_name" autocomplete="off"
+                        <input id="full_name" type="text" wire:model="full_name" autocomplete="off"
                                @error('full_name') aria-invalid="true" aria-describedby="full_name-error" @enderror
                                class="d-input w-full @error('full_name') d-input-error @enderror">
-                        @error('full_name') <p id="full_name-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('full_name') <p id="full_name-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label for="email" class="d-fieldset-legend justify-start">Email Address <span class="text-destructive">*</span></label>
-                        <input id="email" type="email" wire:model.blur="email" autocomplete="off"
+                        <input id="email" type="email" wire:model="email" autocomplete="off"
                                aria-describedby="email-help @error('email') email-error @enderror"
                                @error('email') aria-invalid="true" @enderror
                                class="d-input w-full @error('email') d-input-error @enderror">
                         <p id="email-help" class="d-label mt-1">They will use this to sign in.</p>
-                        @error('email') <p id="email-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('email') <p id="email-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label for="contact_number" class="d-fieldset-legend">Contact Number</label>
-                        <input id="contact_number" type="tel" inputmode="tel" wire:model.blur="contact_number"
+                        <input id="contact_number" type="tel" inputmode="tel" wire:model="contact_number"
                                @error('contact_number') aria-invalid="true" aria-describedby="contact_number-error" @enderror
                                class="d-input w-full datum @error('contact_number') d-input-error @enderror">
-                        @error('contact_number') <p id="contact_number-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('contact_number') <p id="contact_number-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label for="position" class="d-fieldset-legend">Position</label>
-                        <input id="position" type="text" wire:model.blur="position" placeholder="e.g. Farm Caretaker"
+                        <input id="position" type="text" wire:model="position" placeholder="e.g. Farm Caretaker"
                                @error('position') aria-invalid="true" aria-describedby="position-error" @enderror
                                class="d-input w-full @error('position') d-input-error @enderror">
-                        @error('position') <p id="position-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('position') <p id="position-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label for="address" class="d-fieldset-legend">Address</label>
-                        <input id="address" type="text" wire:model.blur="address"
+                        <input id="address" type="text" wire:model="address"
                                @error('address') aria-invalid="true" aria-describedby="address-error" @enderror
                                class="d-input w-full @error('address') d-input-error @enderror">
-                        @error('address') <p id="address-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('address') <p id="address-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </section>
 
             <section aria-labelledby="access-heading">
-                <h2 id="access-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">What they are allowed to do</h2>
+                <h2 id="access-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">What they are allowed to do</h2>
 
                 <div class="mt-4 border-t border-border pt-6">
                     {{-- Selected uses the action wash, never a status wash: green
@@ -76,13 +78,13 @@
                                     <input type="radio" name="role" value="{{ $option->value }}" wire:model.live="role"
                                            class="d-radio d-radio-primary mt-0.5 shrink-0">
                                     <span>
-                                        <span class="block text-[15px] font-medium text-foreground">{{ $option->label() }}</span>
-                                        <span class="mt-0.5 block text-[15px] leading-snug text-muted-foreground">{{ $option->description() }}</span>
+                                        <span class="block text-[15px] lg:text-xs font-medium text-foreground">{{ $option->label() }}</span>
+                                        <span class="mt-0.5 block text-[15px] lg:text-xs leading-snug text-muted-foreground">{{ $option->description() }}</span>
                                     </span>
                                 </label>
                             @endforeach
                         </div>
-                        @error('role') <p id="role-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('role') <p id="role-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </fieldset>
 
                     <div class="mt-6 border-t border-border pt-5">
@@ -91,20 +93,20 @@
                                    @error('is_active') aria-invalid="true" aria-describedby="is_active-error" @enderror
                                    class="d-checkbox d-checkbox-primary mt-0.5 shrink-0">
                             <span>
-                                <span class="block text-[15px] font-medium text-foreground">This person can sign in</span>
-                                <span class="mt-0.5 block text-[15px] leading-snug text-muted-foreground">
+                                <span class="block text-[15px] lg:text-xs font-medium text-foreground">This person can sign in</span>
+                                <span class="mt-0.5 block text-[15px] lg:text-xs leading-snug text-muted-foreground">
                                     Untick to deactivate the account. Their records are always kept.
                                 </span>
                             </span>
                         </label>
-                        @error('is_active') <p id="is_active-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('is_active') <p id="is_active-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </section>
 
             <section aria-labelledby="password-heading">
-                <h2 id="password-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Password</h2>
-                <p class="mt-1 text-[15px] leading-relaxed text-muted-foreground">
+                <h2 id="password-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Password</h2>
+                <p class="mt-1 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     @if ($this->isEditing())
                         Leave both boxes empty to keep the current password unchanged.
                     @else
@@ -117,23 +119,27 @@
                         <label for="password" class="d-fieldset-legend justify-start">
                             Password @unless ($this->isEditing())<span class="text-destructive">*</span>@endunless
                         </label>
-                        <input id="password" type="password" wire:model.blur="password" autocomplete="new-password"
+                        <input id="password" type="password" wire:model="password" autocomplete="new-password"
                                @error('password') aria-invalid="true" aria-describedby="password-error" @enderror
                                class="d-input w-full @error('password') d-input-error @enderror">
-                        @error('password') <p id="password-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('password') <p id="password-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label for="password_confirmation" class="d-fieldset-legend">Confirm Password</label>
-                        <input id="password_confirmation" type="password" wire:model.blur="password_confirmation"
+                        <input id="password_confirmation" type="password" wire:model="password_confirmation"
                                autocomplete="new-password" class="d-input w-full">
                     </div>
                 </div>
             </section>
         </div>
 
-        <div class="sticky bottom-0 z-20 -mx-4 mt-12 flex justify-end gap-3 border-t border-border bg-background/95 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-            <a href="{{ route('users.index') }}" wire:navigate class="d-btn d-btn-outline">Cancel</a>
+        <div @class(['sticky bottom-0 z-20 -mx-4 mt-12 flex justify-end gap-3 border-t border-border bg-background/95 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8' => ! $inDialog, 'flex shrink-0 justify-end gap-2 border-t border-border/60 bg-background/60 p-3' => $inDialog])>
+            @if ($inDialog)
+                <button type="button" class="d-btn d-btn-outline" x-on:click="$dispatch('ems-close-form')">Cancel</button>
+            @else
+                <a href="{{ route('users.index') }}" wire:navigate class="d-btn d-btn-outline">Cancel</a>
+            @endif
             <button type="submit" class="d-btn d-btn-primary" wire:loading.attr="disabled" wire:target="save">
                 <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="save"></span>
                 {{ $this->isEditing() ? 'Save Changes' : 'Create Account' }}

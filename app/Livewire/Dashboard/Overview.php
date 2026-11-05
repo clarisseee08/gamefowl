@@ -10,6 +10,7 @@ use App\Models\Broodcock;
 use App\Models\HealthRecord;
 use App\Models\MortalityRecord;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
@@ -29,9 +30,39 @@ final class Overview extends Component
     #[Url(except: 12)]
     public int $trendMonths = 12;
 
+    /**
+     * Add gamefowl opens its form in a dialog over the dashboard rather than
+     * sending the owner to another page (the owner's decision). The form
+     * component is unchanged.
+     */
+    public bool $showForm = false;
+
+    /** Closing the dialog re-keys the form, so it reopens as the record stands. */
+    public int $formNonce = 0;
+
+    public function updatedShowForm(bool $open): void
+    {
+        if (! $open) {
+            $this->formNonce++;
+        }
+    }
+
+    /** Called by the dialog when a form that was typed in is closed: start the next one blank. */
+    public function resetForm(): void
+    {
+        $this->showForm = false;
+        $this->updatedShowForm(false);
+    }
+
     public function mount(): void
     {
         $this->authorize('viewAny', BreedingRecord::class);
+    }
+
+    public function openForm(): void
+    {
+        $this->authorize('create', Broodcock::class);
+        $this->showForm = true;
     }
 
     // -----------------------------------------------------------------
@@ -117,6 +148,7 @@ final class Overview extends Component
     {
         return HealthRecord::query()
             ->with('broodcock:id,name,band_number')
+            ->forBirdsOnFarm()
             ->overdue()
             ->orderBy('next_due_date')
             ->limit(8)
@@ -129,6 +161,7 @@ final class Overview extends Component
     {
         return HealthRecord::query()
             ->with('broodcock:id,name,band_number')
+            ->forBirdsOnFarm()
             ->dueSoon((int) config('gfms.vaccination_warning_days'))
             ->orderBy('next_due_date')
             ->limit(8)
@@ -138,7 +171,7 @@ final class Overview extends Component
     #[Computed]
     public function overdueCount(): int
     {
-        return HealthRecord::query()->overdue()->count();
+        return HealthRecord::query()->forBirdsOnFarm()->overdue()->count();
     }
 
     /** @return Collection<int, MortalityRecord> */
@@ -164,6 +197,12 @@ final class Overview extends Component
     // Breeding success trend
     // -----------------------------------------------------------------
 
+    /** First day of the trend window: shared by the chart and the figures above it. */
+    private function trendStart(): Carbon
+    {
+        return now()->startOfMonth()->subMonths($this->trendMonths - 1);
+    }
+
     /**
      * Fertility and hatch rate per month.
      *
@@ -176,7 +215,7 @@ final class Overview extends Component
     #[Computed]
     public function breedingTrend(): array
     {
-        $since = now()->startOfMonth()->subMonths($this->trendMonths - 1);
+        $since = $this->trendStart();
 
         $records = BreedingRecord::query()
             ->where('mating_date', '>=', $since->toDateString())
@@ -231,7 +270,10 @@ final class Overview extends Component
     #[Computed]
     public function breedingOverall(): array
     {
+        // The same window as the chart beneath the period selector. Counting all
+        // time here put an all-time 81.3% next to a 75% month on screen.
         $row = BreedingRecord::query()
+            ->where('mating_date', '>=', $this->trendStart()->toDateString())
             ->selectRaw('count(*) as matings')
             ->selectRaw('coalesce(sum(eggs_set), 0) as eggs_set')
             ->selectRaw('coalesce(sum(eggs_fertile), 0) as eggs_fertile')

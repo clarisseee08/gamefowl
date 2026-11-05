@@ -37,9 +37,9 @@
     {{-- ---------------------------------------------------------------- --}}
     <section class="mt-10" aria-labelledby="overdue-heading" data-reveal>
         <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h2 id="overdue-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Overdue</h2>
+            <h2 id="overdue-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Overdue</h2>
             <span class="d-badge d-badge-soft d-badge-error datum">{{ number_format($this->overdueCount) }}</span>
-            <p class="w-full text-[15px] text-muted-foreground sm:w-auto">Most overdue first, because the bird waiting longest is at most risk.</p>
+            <p class="w-full text-[15px] lg:text-xs text-muted-foreground sm:w-auto">Most overdue first, because the bird waiting longest is at most risk.</p>
         </div>
 
         @if ($this->overdue->isEmpty())
@@ -55,7 +55,7 @@
                     @endphp
                     <li wire:key="overdue-day-{{ $date }}" class="grid gap-x-8 gap-y-2 border-b border-border py-4 md:grid-cols-[13rem_1fr]">
                         <div class="flex flex-wrap items-center gap-2 md:block md:pt-2.5">
-                            <p class="datum text-[15px] font-medium text-foreground">{{ $dueOn->format('d M Y') }}</p>
+                            <p class="datum text-[15px] lg:text-xs font-medium text-foreground">{{ $dueOn->format('d M Y') }}</p>
                             {{-- One flex child, not two: `.d-badge` carries a gap, and a
                                  bare text node beside the datum span would pick it up
                                  on top of the word space. --}}
@@ -71,14 +71,14 @@
                                        class="group inline-flex min-h-11 items-center gap-2.5">
                                         <x-band-dot :bloodline="$record->broodcock->bloodline" />
                                         <span class="min-w-0">
-                                            <span class="datum block text-[15px] font-medium text-foreground group-hover:underline">{{ $record->broodcock->displayBand() }}</span>
-                                            <span class="block text-[13px] leading-snug text-muted-foreground">{{ $record->broodcock->name }}@if ($record->broodcock->bloodline) &middot; {{ $record->broodcock->bloodline }}@endif</span>
+                                            <span class="datum block text-[15px] lg:text-xs font-medium text-foreground">{{ $record->broodcock->displayBand() }}</span>
+                                            <span class="block text-[13px] lg:text-[11px] leading-snug text-muted-foreground">{{ $record->broodcock->name }}@if ($record->broodcock->bloodline) &middot; {{ $record->broodcock->bloodline }}@endif</span>
                                         </span>
                                     </a>
 
                                     <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 md:mt-0">
                                         <span class="d-badge d-badge-soft {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
-                                        <span class="text-[15px] text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
+                                        <span class="text-[15px] lg:text-xs text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
                                     </div>
 
                                     @can('create', \App\Models\HealthRecord::class)
@@ -95,10 +95,8 @@
                 @endforeach
             </ol>
 
-            @if ($this->overdue->hasPages())
-                <div class="mt-6">
-                    {{ $this->overdue->links() }}
-                </div>
+            @if ($this->overdue->total() > 0)
+                <x-ui.table-pagination :paginator="$this->overdue" id="overduePerPage" class="mt-4" />
             @endif
         @endif
     </section>
@@ -108,9 +106,9 @@
     {{-- ---------------------------------------------------------------- --}}
     <section class="mt-14" aria-labelledby="upcoming-heading" data-reveal>
         <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h2 id="upcoming-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Due in the next {{ $this->warningDays() }} days</h2>
+            <h2 id="upcoming-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Due in the next {{ $this->warningDays() }} days</h2>
             <span class="d-badge d-badge-soft d-badge-warning datum">{{ number_format($this->dueSoonCount) }}</span>
-            <p class="w-full text-[15px] text-muted-foreground sm:w-auto">Soonest first, the order they will be done in.</p>
+            <p class="w-full text-[15px] lg:text-xs text-muted-foreground sm:w-auto">Soonest first, the order they will be done in.</p>
         </div>
 
         @if ($this->dueSoon->isEmpty())
@@ -126,7 +124,7 @@
                     @endphp
                     <li wire:key="upcoming-day-{{ $date }}" class="grid gap-x-8 gap-y-2 border-b border-border py-4 md:grid-cols-[13rem_1fr]">
                         <div class="flex flex-wrap items-center gap-2 md:block md:pt-2.5">
-                            <p class="datum text-[15px] font-medium text-foreground">{{ $dueOn->format('d M Y') }}</p>
+                            <p class="datum text-[15px] lg:text-xs font-medium text-foreground">{{ $dueOn->format('d M Y') }}</p>
                             <span class="d-badge d-badge-soft d-badge-warning md:mt-1.5">
                                 @if ($daysLeft === 0)
                                     Today
@@ -143,14 +141,14 @@
                                        class="group inline-flex min-h-11 items-center gap-2.5">
                                         <x-band-dot :bloodline="$record->broodcock->bloodline" />
                                         <span class="min-w-0">
-                                            <span class="datum block text-[15px] font-medium text-foreground group-hover:underline">{{ $record->broodcock->displayBand() }}</span>
-                                            <span class="block text-[13px] leading-snug text-muted-foreground">{{ $record->broodcock->name }}@if ($record->broodcock->bloodline) &middot; {{ $record->broodcock->bloodline }}@endif</span>
+                                            <span class="datum block text-[15px] lg:text-xs font-medium text-foreground">{{ $record->broodcock->displayBand() }}</span>
+                                            <span class="block text-[13px] lg:text-[11px] leading-snug text-muted-foreground">{{ $record->broodcock->name }}@if ($record->broodcock->bloodline) &middot; {{ $record->broodcock->bloodline }}@endif</span>
                                         </span>
                                     </a>
 
                                     <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 md:mt-0">
                                         <span class="d-badge d-badge-soft {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
-                                        <span class="text-[15px] text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
+                                        <span class="text-[15px] lg:text-xs text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
                                     </div>
 
                                     @can('create', \App\Models\HealthRecord::class)
@@ -167,10 +165,8 @@
                 @endforeach
             </ol>
 
-            @if ($this->dueSoon->hasPages())
-                <div class="mt-6">
-                    {{ $this->dueSoon->links() }}
-                </div>
+            @if ($this->dueSoon->total() > 0)
+                <x-ui.table-pagination :paginator="$this->dueSoon" id="dueSoonPerPage" class="mt-4" />
             @endif
         @endif
     </section>

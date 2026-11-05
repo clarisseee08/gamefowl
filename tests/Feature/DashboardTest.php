@@ -143,10 +143,44 @@ final class DashboardTest extends TestCase
         $this->actingAs(User::factory()->staff()->create())
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Today on the farm')
+            ->assertDontSee('Today on the farm')
             ->assertSeeInOrder(['3', 'birds on the farm'])
             ->assertSee('Add gamefowl')
             ->assertSee(route('broodcocks.create'), escape: false);
+    }
+
+    /**
+     * Add gamefowl opens the form in a dialog on the dashboard itself, rather
+     * than navigating to the gamefowl list to open it there.
+     */
+    public function test_add_gamefowl_opens_the_form_in_a_dialog_on_the_dashboard(): void
+    {
+        Livewire::actingAs(User::factory()->staff()->create())
+            ->test(Overview::class)
+            ->assertSet('showForm', false)
+            ->assertSee('Add a Gamefowl')
+            // Built with the page, so Add opens at once with no request.
+            ->assertSeeLivewire('broodcocks.form')
+            ->call('openForm')
+            ->assertSet('showForm', true)
+            ->assertNoRedirect();
+    }
+
+    /**
+     * The first tile counts every bird on record, sold and deceased included,
+     * so it says so. "Total broodcocks" read as the flock on the farm, which
+     * is the smaller number in the heading above it.
+     */
+    public function test_the_first_tile_counts_every_bird_on_record(): void
+    {
+        Broodcock::factory()->count(3)->create(['status' => 'active']);
+        Broodcock::factory()->create(['status' => 'sold']);
+
+        $this->actingAs(User::factory()->staff()->create())
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSeeInOrder(['Birds on record', '>4</span>'], escape: false)
+            ->assertDontSee('Total broodcocks');
     }
 
     public function test_an_up_to_date_flock_says_so_rather_than_showing_an_empty_list(): void
@@ -201,5 +235,30 @@ final class DashboardTest extends TestCase
             'Every figure must be aggregated in SQL - a per-row query here would make the '.
             'landing page unusable against a remote database.'
         );
+    }
+
+    /**
+     * The figures sit directly under the period selector, so they count the
+     * same period as the chart. They used to count all time, which put an
+     * all-time 81.3% beside a 75% month.
+     */
+    public function test_the_breeding_figures_follow_the_selected_period(): void
+    {
+        BreedingRecord::factory()->create([
+            'mating_date' => today(),
+            'eggs_set' => 10, 'eggs_fertile' => 5, 'eggs_hatched' => 5, 'offspring_count' => 0,
+        ]);
+        BreedingRecord::factory()->create([
+            'mating_date' => now()->subYears(3),
+            'eggs_set' => 10, 'eggs_fertile' => 10, 'eggs_hatched' => 10, 'offspring_count' => 0,
+        ]);
+
+        $overall = Livewire::actingAs(User::factory()->staff()->create())
+            ->test(Overview::class)
+            ->instance()
+            ->breedingOverall;
+
+        $this->assertSame(1, $overall['matings']);
+        $this->assertSame(50.0, $overall['fertility']);
     }
 }

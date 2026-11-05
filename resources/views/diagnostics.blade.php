@@ -7,14 +7,22 @@
     $state = fn (bool $ok) => $ok ? 'd-badge d-badge-soft d-badge-success' : 'd-badge d-badge-soft d-badge-error';
 
     // The headline is counted from the same arrays the rows below render -
-    // nothing is probed twice and nothing is invented.
+    // nothing is probed twice and nothing is invented. A failing row is
+    // flagged with the same red badge it is counted under, so the number and
+    // the page always agree. Debug mode is only a fault in production: on a
+    // developer's machine it is meant to be on.
+    $uploadFailed = fn (string $value) => $value === 'NO';
+    $debugIsFault = app()->isProduction() && ($php['Debug mode'] ?? null) === 'ON';
+
     $failing = count(array_filter($extensions, fn ($loaded) => ! $loaded))
         + count(array_filter($paths, fn ($info) => ! $info['exists'] || ! $info['writable']))
         + count(array_filter($disks, fn ($result) => $result !== 'reachable'))
-        + count(array_filter($services, fn ($value) => $value === 'MISSING'));
+        + count(array_filter($services, fn ($value) => $value === 'MISSING'))
+        + count(array_filter($uploads, $uploadFailed))
+        + ($debugIsFault ? 1 : 0);
 
-    $headingClass = 'font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground';
-    $noteClass = 'mt-1 max-w-[60ch] text-[14px] leading-relaxed text-muted-foreground';
+    $headingClass = 'font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground';
+    $noteClass = 'mt-1 max-w-[60ch] text-[14px] lg:text-xs leading-relaxed text-muted-foreground';
     $rowClass = 'flex min-h-11 items-center justify-between gap-4 border-b border-border py-2.5';
 @endphp
 
@@ -42,7 +50,7 @@
             <dl class="mt-4 border-t border-border">
                 @foreach ($extensions as $name => $loaded)
                     <div class="{{ $rowClass }}">
-                        <dt class="datum text-[15px] text-foreground">{{ $name }}</dt>
+                        <dt class="datum text-[15px] lg:text-xs text-foreground">{{ $name }}</dt>
                         <dd><span class="{{ $state($loaded) }}">{{ $loaded ? 'loaded' : 'MISSING' }}</span></dd>
                     </div>
                 @endforeach
@@ -54,8 +62,14 @@
             <dl class="mt-4 border-t border-border">
                 @foreach ($uploads as $label => $value)
                     <div class="{{ $rowClass }}">
-                        <dt class="text-[15px] text-muted-foreground">{{ $label }}</dt>
-                        <dd class="datum text-right text-[15px] text-foreground">{{ $value }}</dd>
+                        <dt class="text-[15px] lg:text-xs text-muted-foreground">{{ $label }}</dt>
+                        <dd class="datum text-right text-[15px] lg:text-xs text-foreground">
+                            @if ($uploadFailed($value))
+                                <span class="{{ $state(false) }}">{{ $value }}</span>
+                            @else
+                                {{ $value }}
+                            @endif
+                        </dd>
                     </div>
                 @endforeach
             </dl>
@@ -70,7 +84,7 @@
             <dl class="mt-4 border-t border-border">
                 @foreach ($paths as $label => $info)
                     <div class="{{ $rowClass }}">
-                        <dt class="datum min-w-0 break-all text-[14px] text-foreground">{{ $label }}</dt>
+                        <dt class="datum min-w-0 break-all text-[14px] lg:text-xs text-foreground">{{ $label }}</dt>
                         <dd class="flex shrink-0 gap-1.5">
                             <span class="{{ $state($info['exists']) }}">{{ $info['exists'] ? 'exists' : 'missing' }}</span>
                             <span class="{{ $state($info['writable']) }}">{{ $info['writable'] ? 'writable' : 'read-only' }}</span>
@@ -89,12 +103,12 @@
             <dl class="mt-4 border-t border-border">
                 @foreach ($disks as $name => $result)
                     <div class="{{ $rowClass }}">
-                        <dt class="datum text-[15px] text-foreground">{{ $name }}</dt>
+                        <dt class="datum text-[15px] lg:text-xs text-foreground">{{ $name }}</dt>
                         <dd class="text-right">
                             @if ($result === 'reachable')
                                 <span class="d-badge d-badge-soft d-badge-success">{{ $result }}</span>
                             @else
-                                <span class="text-[14px] text-destructive">{{ $result }}</span>
+                                <span class="text-[14px] lg:text-xs text-destructive">{{ $result }}</span>
                             @endif
                         </dd>
                     </div>
@@ -107,12 +121,12 @@
             <dl class="mt-4 border-t border-border">
                 @foreach ($services as $label => $value)
                     <div class="{{ $rowClass }}">
-                        <dt class="text-[15px] text-muted-foreground">{{ $label }}</dt>
+                        <dt class="text-[15px] lg:text-xs text-muted-foreground">{{ $label }}</dt>
                         <dd class="text-right">
                             @if ($value === 'MISSING')
                                 <span class="d-badge d-badge-soft d-badge-error">{{ $value }}</span>
                             @else
-                                <span class="datum text-[15px] text-foreground">{{ $value }}</span>
+                                <span class="datum text-[15px] lg:text-xs text-foreground">{{ $value }}</span>
                             @endif
                         </dd>
                     </div>
@@ -125,8 +139,14 @@
             <dl class="mt-4 border-t border-border">
                 @foreach ($php as $label => $value)
                     <div class="{{ $rowClass }}">
-                        <dt class="text-[15px] text-muted-foreground">{{ $label }}</dt>
-                        <dd class="datum text-right text-[15px] text-foreground">{{ $value }}</dd>
+                        <dt class="text-[15px] lg:text-xs text-muted-foreground">{{ $label }}</dt>
+                        <dd class="datum text-right text-[15px] lg:text-xs text-foreground">
+                            @if ($label === 'Debug mode' && $debugIsFault)
+                                <span class="{{ $state(false) }}">{{ $value }}</span>
+                            @else
+                                {{ $value }}
+                            @endif
+                        </dd>
                     </div>
                 @endforeach
             </dl>

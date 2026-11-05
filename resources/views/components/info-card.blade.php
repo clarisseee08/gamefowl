@@ -51,10 +51,10 @@
             @endif
 
             <div class="min-w-0">
-                <h3 class="text-[15px] leading-snug text-base-content">{{ $title }}</h3>
+                <h3 class="text-[15px] lg:text-xs leading-snug text-base-content">{{ $title }}</h3>
 
                 @if ($description)
-                    <p class="mt-0.5 text-[13px] leading-snug text-muted-foreground">{{ $description }}</p>
+                    <p class="mt-0.5 text-[13px] lg:text-[11px] leading-snug text-muted-foreground">{{ $description }}</p>
                 @endif
             </div>
         </div>

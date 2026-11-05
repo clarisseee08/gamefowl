@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Health;
 
 use App\Enums\HealthRecordType;
+use App\Livewire\Concerns\ChoosesPageSize;
 use App\Models\Broodcock;
 use App\Models\HealthRecord;
 use Illuminate\Contracts\View\View;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -26,6 +28,7 @@ use Livewire\WithPagination;
 #[Title('Health Records')]
 final class Index extends Component
 {
+    use ChoosesPageSize;
     use WithPagination;
 
     #[Url(as: 'q', except: '')]
@@ -78,14 +81,69 @@ final class Index extends Component
         $this->resetPage();
     }
 
-    public function mount(): void
+    /**
+     * The add / edit form, open in a dialog over this list (the owner's
+     * decision: create and edit never leave the list). /health/create and
+     * /health/{record}/edit still work - they render this list with the
+     * dialog already open. The form component itself is unchanged; it
+     * authorizes, validates and saves exactly as it did as a page.
+     */
+    public bool $showForm = false;
+
+    #[Locked]
+    public ?int $formRecordId = null;
+
+    /**
+     * A new form is built ahead, so Add opens instantly. Closing the dialog
+     * drops any edit and re-keys the new form, so the next Add is blank.
+     */
+    public int $formNonce = 0;
+
+    public function updatedShowForm(bool $open): void
+    {
+        if ($open) {
+            return;
+        }
+
+        $this->formRecordId = null;
+        $this->formNonce++;
+    }
+
+    /** Called by the dialog when a form that was typed in is closed: start the next one blank. */
+    public function resetForm(): void
+    {
+        $this->showForm = false;
+        $this->updatedShowForm(false);
+    }
+
+    public function mount(?HealthRecord $record = null): void
     {
         $this->authorize('viewAny', HealthRecord::class);
+
+        // The form is only built for someone allowed to create, so it can no
+        // longer refuse an /edit or /create address itself: checked here.
+        if ($record?->exists) {
+            $this->authorize('update', $record);
+            $this->openForm($record->id);
+        } elseif (request()->routeIs('health.create')) {
+            $this->authorize('create', HealthRecord::class);
+            $this->openForm();
+        }
+    }
+
+    public function openForm(?int $recordId = null): void
+    {
+        $this->formRecordId = $recordId;
+        $this->showForm = true;
     }
 
     /** Any filter change must return to page 1, or the user lands on an empty page. */
     public function updating(string $property): void
     {
+        if ($property === 'showForm') {
+            return;
+        }
+
         if ($property !== 'page' && ! str_starts_with($property, 'paginators')) {
             $this->resetPage();
         }
@@ -120,7 +178,7 @@ final class Index extends Component
         }
 
         return HealthRecord::query()
-            ->with('broodcock')
+            ->with(['broodcock' => fn ($query) => $query->withTrashed()])
             ->find($this->confirmingDeleteId);
     }
 
@@ -137,7 +195,7 @@ final class Index extends Component
         // The Policy is the gate. Hiding the button was only a courtesy.
         $this->authorize('delete', $record);
 
-        $bird = $record->broodcock->name;
+        $bird = $record->broodcock?->name ?? 'a removed bird';
         $type = $record->record_type->label();
 
         $record->delete();
@@ -162,7 +220,12 @@ final class Index extends Component
             // Eager-loaded because every row prints the bird's name and band
             // number. Without this the list is one extra query per row, and
             // every query is a network round trip to Supabase.
-            ->with('broodcock')
+            //
+            // withTrashed() because deleting a bird keeps its health history:
+            // without it the bird comes back null and the row cannot render.
+            // The photo too, for the hover card on the bird's name: one query
+            // for the page, not one per row.
+            ->with(['broodcock' => fn ($query) => $query->withTrashed()->with('primaryPhoto')])
             ->ofType($this->recordType)
             ->between($this->normalisedDate($this->dateFrom), $this->normalisedDate($this->dateTo))
             ->when($this->broodcockId !== '', fn (Builder $query) => $query->where('broodcock_id', (int) $this->broodcockId))
@@ -174,7 +237,7 @@ final class Index extends Component
                 $this->sortDirection === 'asc' ? 'asc' : 'desc'
             )
             ->orderByDesc('id')
-            ->paginate(config('gfms.per_page'));
+            ->paginate($this->pageSize());
     }
 
     /**

@@ -15,7 +15,7 @@
         return $ids === [] ? null : implode(' ', $ids);
     };
 
-    $heading = 'font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground';
+    $heading = 'font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground';
 @endphp
 
 {{--
@@ -27,60 +27,62 @@
     bar is sticky, so on a phone the button is never a long scroll away from
     the field just filled in.
 --}}
-<div>
+<div @class(['flex min-h-0 flex-1 flex-col' => $inDialog])>
+    @unless ($inDialog)
     <div class="max-w-[40rem]">
         <a href="{{ $editing ? route('broodcocks.show', $broodcock) : route('broodcocks.index') }}" wire:navigate
-           class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold underline-offset-4">
+           class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] lg:text-xs font-semibold underline-offset-4">
             <span aria-hidden="true">&larr;</span> {{ $editing ? 'Back to '.($broodcock->band_number ?: $broodcock->name) : 'Back to gamefowl' }}
         </a>
 
         <header class="mt-3 border-b border-border pb-6">
             <p class="sb-line sb-eyebrow" style="--line: 0ms">{{ $editing ? 'Edit bird' : 'Register a bird' }}</p>
-            <h1 class="sb-line mt-2 font-display text-[1.9rem] font-semibold leading-[1.08] tracking-[-0.025em] text-foreground sm:text-[2.3rem]" style="--line: 60ms">
+            <h1 class="mt-2 text-base font-bold text-foreground" style="--line: 60ms">
                 {{ $editing ? 'Edit '.$broodcock->name : 'Add a Gamefowl' }}
             </h1>
-            <p class="sb-line mt-3 text-[16px] leading-relaxed text-muted-foreground" style="--line: 120ms">
+            <p class="sb-line mt-3 text-[16px] lg:text-xs leading-relaxed text-muted-foreground" style="--line: 120ms">
                 Fields marked <span class="text-destructive" aria-hidden="true">*</span><span class="sr-only">with an asterisk</span>
                 are required. Everything else can be filled in later.
             </p>
         </header>
     </div>
+    @endunless
 
-    <form wire:submit="save" novalidate>
-        <div class="max-w-[40rem]">
+    <form wire:submit="save" novalidate @class(['flex min-h-0 flex-1 flex-col' => $inDialog])>
+        <div @class(['max-w-[40rem]' => ! $inDialog, 'min-h-0 flex-1 overflow-y-auto px-4 pb-4' => $inDialog])>
             {{-- IDENTITY --}}
             <section class="pt-8" aria-labelledby="identity-heading">
                 <h2 id="identity-heading" class="{{ $heading }}">Identity</h2>
-                <p class="mt-1 text-[15px] text-muted-foreground">The details used to recognise this bird.</p>
+                <p class="mt-1 text-[15px] lg:text-xs text-muted-foreground">The details used to recognise this bird.</p>
 
                 <div class="mt-6 space-y-6">
                     <div>
                         <label for="name" class="d-fieldset-legend justify-start">Name <span class="text-destructive">*</span></label>
-                        <input id="name" type="text" wire:model.blur="name" autocomplete="off"
+                        <input id="name" type="text" wire:model="name" autocomplete="off"
                                @if ($describedBy('name')) aria-describedby="{{ $describedBy('name') }}" @endif
                                @error('name') aria-invalid="true" @enderror
                                class="d-input w-full mt-1 @error('name') d-input-error @enderror">
-                        @error('name') <p id="name-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('name') <p id="name-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label for="band_number" class="d-fieldset-legend">Band number</label>
-                        <input id="band_number" type="text" wire:model.blur="band_number" autocomplete="off"
+                        <input id="band_number" type="text" wire:model="band_number" autocomplete="off"
                                placeholder="e.g. SW-1024"
                                aria-describedby="{{ $describedBy('band_number', true) }}"
                                @error('band_number') aria-invalid="true" @enderror
                                class="d-input w-full datum mt-1 @error('band_number') d-input-error @enderror">
                         <p id="band_number-help" class="d-label mt-1">Leave empty if the bird has not been banded yet.</p>
-                        @error('band_number') <p id="band_number-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('band_number') <p id="band_number-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label for="bloodline" class="d-fieldset-legend">Bloodline</label>
-                        <input id="bloodline" type="text" wire:model.blur="bloodline" autocomplete="off"
+                        <input id="bloodline" type="text" wire:model="bloodline" autocomplete="off"
                                @if ($describedBy('bloodline')) aria-describedby="{{ $describedBy('bloodline') }}" @endif
                                @error('bloodline') aria-invalid="true" @enderror
                                class="d-input w-full mt-1 @error('bloodline') d-input-error @enderror">
-                        @error('bloodline') <p id="bloodline-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('bloodline') <p id="bloodline-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <x-form-select id="sex" label="Sex" required wire:model.live="sex">
@@ -89,13 +91,13 @@
                         @endforeach
                     </x-form-select>
 
-                    <x-form-select id="class" label="Class" required wire:model.blur="class">
+                    <x-form-select id="class" label="Class" required wire:model="class">
                         @foreach ($this->classOptions() as $option)
                             <option value="{{ $option->value }}">{{ $option->label() }} - {{ $option->description() }}</option>
                         @endforeach
                     </x-form-select>
 
-                    <x-form-select id="status" label="Status" required wire:model.blur="status">
+                    <x-form-select id="status" label="Status" required wire:model="status">
                         @foreach ($this->statusOptions() as $option)
                             <option value="{{ $option->value }}">{{ $option->label() }}</option>
                         @endforeach
@@ -106,7 +108,7 @@
             {{-- PARENTS --}}
             <section class="mt-10 border-t border-border pt-8" aria-labelledby="parents-heading">
                 <h2 id="parents-heading" class="{{ $heading }}">Parents</h2>
-                <p class="mt-1 text-[15px] leading-relaxed text-muted-foreground">
+                <p class="mt-1 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     The sire and dam are what build this bird's family tree. Only a male can be a sire and
                     only a female a dam. If a parent is not on the list &mdash; bought in, borrowed for a
                     season, never registered &mdash; pick &ldquo;Someone else's bird&rdquo; at the end of the
@@ -144,20 +146,20 @@
                             <div class="mt-4 space-y-4 border-l-2 border-border pl-4">
                                 <div>
                                     <label for="sire_external_name" class="d-fieldset-legend">Name of the outside cock</label>
-                                    <input id="sire_external_name" type="text" wire:model.blur="sire_external_name" autocomplete="off"
+                                    <input id="sire_external_name" type="text" wire:model="sire_external_name" autocomplete="off"
                                            @if ($describedBy('sire_external_name')) aria-describedby="{{ $describedBy('sire_external_name') }}" @endif
                                            @error('sire_external_name') aria-invalid="true" @enderror
                                            class="d-input w-full mt-1 @error('sire_external_name') d-input-error @enderror">
-                                    @error('sire_external_name') <p id="sire_external_name-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                                    @error('sire_external_name') <p id="sire_external_name-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
                                 <div>
                                     <label for="sire_external_bloodline" class="d-fieldset-legend">Bloodline</label>
-                                    <input id="sire_external_bloodline" type="text" wire:model.blur="sire_external_bloodline" autocomplete="off"
+                                    <input id="sire_external_bloodline" type="text" wire:model="sire_external_bloodline" autocomplete="off"
                                            aria-describedby="{{ $describedBy('sire_external_bloodline', true) }}"
                                            @error('sire_external_bloodline') aria-invalid="true" @enderror
                                            class="d-input w-full mt-1 @error('sire_external_bloodline') d-input-error @enderror">
                                     <p id="sire_external_bloodline-help" class="d-label mt-1">Optional. Recorded so the bird carries its bloodline tag.</p>
-                                    @error('sire_external_bloodline') <p id="sire_external_bloodline-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                                    @error('sire_external_bloodline') <p id="sire_external_bloodline-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
                             </div>
                         @endif
@@ -179,20 +181,20 @@
                             <div class="mt-4 space-y-4 border-l-2 border-border pl-4">
                                 <div>
                                     <label for="dam_external_name" class="d-fieldset-legend">Name of the outside hen</label>
-                                    <input id="dam_external_name" type="text" wire:model.blur="dam_external_name" autocomplete="off"
+                                    <input id="dam_external_name" type="text" wire:model="dam_external_name" autocomplete="off"
                                            @if ($describedBy('dam_external_name')) aria-describedby="{{ $describedBy('dam_external_name') }}" @endif
                                            @error('dam_external_name') aria-invalid="true" @enderror
                                            class="d-input w-full mt-1 @error('dam_external_name') d-input-error @enderror">
-                                    @error('dam_external_name') <p id="dam_external_name-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                                    @error('dam_external_name') <p id="dam_external_name-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
                                 <div>
                                     <label for="dam_external_bloodline" class="d-fieldset-legend">Bloodline</label>
-                                    <input id="dam_external_bloodline" type="text" wire:model.blur="dam_external_bloodline" autocomplete="off"
+                                    <input id="dam_external_bloodline" type="text" wire:model="dam_external_bloodline" autocomplete="off"
                                            aria-describedby="{{ $describedBy('dam_external_bloodline', true) }}"
                                            @error('dam_external_bloodline') aria-invalid="true" @enderror
                                            class="d-input w-full mt-1 @error('dam_external_bloodline') d-input-error @enderror">
                                     <p id="dam_external_bloodline-help" class="d-label mt-1">Optional. Recorded so the bird carries its bloodline tag.</p>
-                                    @error('dam_external_bloodline') <p id="dam_external_bloodline-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                                    @error('dam_external_bloodline') <p id="dam_external_bloodline-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
                             </div>
                         @endif
@@ -203,7 +205,7 @@
             {{-- PARTICULARS --}}
             <section class="mt-10 border-t border-border pt-8" aria-labelledby="particulars-heading">
                 <h2 id="particulars-heading" class="{{ $heading }}">Particulars</h2>
-                <p class="mt-1 text-[15px] leading-relaxed text-muted-foreground">
+                <p class="mt-1 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     Age is worked out from the hatch date, so it is always up to date.
                 </p>
 
@@ -211,70 +213,85 @@
                     <div class="grid gap-6 sm:grid-cols-2">
                         <div>
                             <label for="date_hatched" class="d-fieldset-legend">Date hatched</label>
-                            <input id="date_hatched" type="date" wire:model.blur="date_hatched" max="{{ today()->toDateString() }}"
+                            <input id="date_hatched" type="date" wire:model="date_hatched" max="{{ today()->toDateString() }}"
                                    @if ($describedBy('date_hatched')) aria-describedby="{{ $describedBy('date_hatched') }}" @endif
                                    @error('date_hatched') aria-invalid="true" @enderror
                                    class="d-input w-full datum mt-1 @error('date_hatched') d-input-error @enderror">
-                            @error('date_hatched') <p id="date_hatched-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                            @error('date_hatched') <p id="date_hatched-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
                             <label for="date_acquired" class="d-fieldset-legend">Date acquired</label>
-                            <input id="date_acquired" type="date" wire:model.blur="date_acquired" max="{{ today()->toDateString() }}"
+                            <input id="date_acquired" type="date" wire:model="date_acquired" max="{{ today()->toDateString() }}"
                                    aria-describedby="{{ $describedBy('date_acquired', true) }}"
                                    @error('date_acquired') aria-invalid="true" @enderror
                                    class="d-input w-full datum mt-1 @error('date_acquired') d-input-error @enderror">
                             <p id="date_acquired-help" class="d-label mt-1">When the farm obtained this bird.</p>
-                            @error('date_acquired') <p id="date_acquired-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                            @error('date_acquired') <p id="date_acquired-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
-                    <div class="sm:w-1/2 sm:pr-3">
-                        <label for="weight" class="d-fieldset-legend">Weight (kg)</label>
-                        <input id="weight" type="number" step="0.01" min="0" inputmode="decimal" wire:model.blur="weight"
-                               @if ($describedBy('weight')) aria-describedby="{{ $describedBy('weight') }}" @endif
-                               @error('weight') aria-invalid="true" @enderror
-                               class="d-input w-full datum mt-1 @error('weight') d-input-error @enderror">
-                        @error('weight') <p id="weight-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
-                    </div>
-
-                    <div>
-                        <label for="color" class="d-fieldset-legend">Colour</label>
-                        <input id="color" type="text" wire:model.blur="color" placeholder="e.g. Red, Black, Spangled"
-                               @if ($describedBy('color')) aria-describedby="{{ $describedBy('color') }}" @endif
-                               @error('color') aria-invalid="true" @enderror
-                               class="d-input w-full mt-1 @error('color') d-input-error @enderror">
-                        @error('color') <p id="color-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
-                    </div>
-
+                    {{-- Weight, colour, comb and legs: the farm's usual values as
+                         dropdowns, with "Others" opening a box for anything else. --}}
                     <div class="grid gap-6 sm:grid-cols-2">
                         <div>
-                            <label for="comb_type" class="d-fieldset-legend">Comb type</label>
-                            <input id="comb_type" type="text" wire:model.blur="comb_type" placeholder="e.g. Straight, Pea"
-                                   @if ($describedBy('comb_type')) aria-describedby="{{ $describedBy('comb_type') }}" @endif
-                                   @error('comb_type') aria-invalid="true" @enderror
-                                   class="d-input w-full mt-1 @error('comb_type') d-input-error @enderror">
-                            @error('comb_type') <p id="comb_type-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                            <x-form-select id="weight_choice" label="Weight (kg)" error="weight" wire:model="weight_choice">
+                                <option value="">Not recorded</option>
+                                @foreach ($this->weightOptions as $option)
+                                    <option value="{{ $option }}">{{ $option }} kg</option>
+                                @endforeach
+                                <option value="{{ \App\Livewire\Broodcocks\Form::$presetOther }}">Others</option>
+                            </x-form-select>
+                                <input id="weight" x-show="$wire.weight_choice === @js(\App\Livewire\Broodcocks\Form::$presetOther)" x-cloak type="number" step="0.01" min="0" inputmode="decimal" wire:model="weight"
+                                   placeholder="Weight in kg, e.g. 2.15" aria-label="Other weight (kg)"
+                                   @class(['d-input datum mt-2 w-full', 'd-input-error' => $errors->has('weight')])>
                         </div>
-
                         <div>
-                            <label for="leg_color" class="d-fieldset-legend">Leg colour</label>
-                            <input id="leg_color" type="text" wire:model.blur="leg_color" placeholder="e.g. Yellow, White"
-                                   @if ($describedBy('leg_color')) aria-describedby="{{ $describedBy('leg_color') }}" @endif
-                                   @error('leg_color') aria-invalid="true" @enderror
-                                   class="d-input w-full mt-1 @error('leg_color') d-input-error @enderror">
-                            @error('leg_color') <p id="leg_color-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                            <x-form-select id="color_choice" label="Colour" error="color" wire:model="color_choice">
+                                <option value="">Not recorded</option>
+                                @foreach ($this->colorOptions as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
+                                <option value="{{ \App\Livewire\Broodcocks\Form::$presetOther }}">Others</option>
+                            </x-form-select>
+                                <input id="color" x-show="$wire.color_choice === @js(\App\Livewire\Broodcocks\Form::$presetOther)" x-cloak type="text" wire:model="color" maxlength="80"
+                                   placeholder="Type the colour" aria-label="Other colour"
+                                   @class(['d-input mt-2 w-full', 'd-input-error' => $errors->has('color')])>
+                        </div>
+                        <div>
+                            <x-form-select id="comb_type_choice" label="Comb type" error="comb_type" wire:model="comb_type_choice">
+                                <option value="">Not recorded</option>
+                                @foreach ($this->combTypeOptions as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
+                                <option value="{{ \App\Livewire\Broodcocks\Form::$presetOther }}">Others</option>
+                            </x-form-select>
+                                <input id="comb_type" x-show="$wire.comb_type_choice === @js(\App\Livewire\Broodcocks\Form::$presetOther)" x-cloak type="text" wire:model="comb_type" maxlength="80"
+                                   placeholder="Type the comb type" aria-label="Other comb type"
+                                   @class(['d-input mt-2 w-full', 'd-input-error' => $errors->has('comb_type')])>
+                        </div>
+                        <div>
+                            <x-form-select id="leg_color_choice" label="Leg colour" error="leg_color" wire:model="leg_color_choice">
+                                <option value="">Not recorded</option>
+                                @foreach ($this->legColorOptions as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
+                                <option value="{{ \App\Livewire\Broodcocks\Form::$presetOther }}">Others</option>
+                            </x-form-select>
+                                <input id="leg_color" x-show="$wire.leg_color_choice === @js(\App\Livewire\Broodcocks\Form::$presetOther)" x-cloak type="text" wire:model="leg_color" maxlength="80"
+                                   placeholder="Type the leg colour" aria-label="Other leg colour"
+                                   @class(['d-input mt-2 w-full', 'd-input-error' => $errors->has('leg_color')])>
                         </div>
                     </div>
 
                     <div>
                         <label for="distinguishing_marks" class="d-fieldset-legend">Distinguishing marks</label>
-                        <textarea id="distinguishing_marks" rows="3" wire:model.blur="distinguishing_marks"
+                        <textarea id="distinguishing_marks" rows="3" wire:model="distinguishing_marks"
                                   placeholder="Anything that helps tell this bird apart from a similar one"
                                   @if ($describedBy('distinguishing_marks')) aria-describedby="{{ $describedBy('distinguishing_marks') }}" @endif
                                   @error('distinguishing_marks') aria-invalid="true" @enderror
                                   class="d-textarea w-full mt-1 @error('distinguishing_marks') d-textarea-error @enderror"></textarea>
-                        @error('distinguishing_marks') <p id="distinguishing_marks-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('distinguishing_marks') <p id="distinguishing_marks-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </section>
@@ -292,19 +309,19 @@
                         <label for="for_sale" class="flex min-h-11 cursor-pointer items-center gap-3">
                             <input id="for_sale" type="checkbox" wire:model="for_sale" aria-describedby="for_sale-help"
                                    class="d-checkbox d-checkbox-primary shrink-0">
-                            <span class="text-[16px] text-foreground">This bird is for sale</span>
+                            <span class="text-[16px] lg:text-xs text-foreground">This bird is for sale</span>
                         </label>
                         <p id="for_sale-help" class="d-label mt-1 pl-8">Shown to customers in the catalogue.</p>
                     </div>
 
                     <div>
                         <label for="notes" class="d-fieldset-legend">Notes</label>
-                        <textarea id="notes" rows="4" wire:model.blur="notes"
+                        <textarea id="notes" rows="4" wire:model="notes"
                                   aria-describedby="{{ $describedBy('notes', true) }}"
                                   @error('notes') aria-invalid="true" @enderror
                                   class="d-textarea w-full mt-1 @error('notes') d-textarea-error @enderror"></textarea>
                         <p id="notes-help" class="d-label mt-1">Internal notes. Customers never see these.</p>
-                        @error('notes') <p id="notes-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        @error('notes') <p id="notes-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </section>
@@ -328,7 +345,7 @@
                          x-on:livewire-upload-error="uploading = false"
                          x-on:livewire-upload-progress="progress = $event.detail.progress">
                     <h2 id="photos-heading" class="{{ $heading }}">Photos</h2>
-                    <p class="mt-1 text-[15px] text-muted-foreground">
+                    <p class="mt-1 text-[15px] lg:text-xs text-muted-foreground">
                         Optional. JPG, PNG or WEBP, up to <span class="datum">4 MB</span> each.
                         @if ($editing)
                             These are added to the bird's existing photos.
@@ -352,14 +369,14 @@
                             <path stroke-linecap="round" stroke-linejoin="round"
                                   d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 7.5 12 3m0 0L7.5 7.5M12 3v13.5"/>
                         </svg>
-                        <span class="mt-2 text-[16px] font-medium text-foreground"
+                        <span class="mt-2 text-[16px] lg:text-xs font-medium text-foreground"
                               x-text="dragging ? 'Drop to add them' : 'Tap to choose photos'">Tap to choose photos</span>
-                        <span class="mt-0.5 text-[14px] text-muted-foreground">You can pick more than one, or drag them here.</span>
+                        <span class="mt-0.5 text-[14px] lg:text-xs text-muted-foreground">You can pick more than one, or drag them here.</span>
                         <input x-ref="input" type="file" wire:model="photos" accept="image/*" multiple class="sr-only">
                     </label>
 
                     <div x-show="uploading" x-cloak class="mt-4" role="status" aria-live="polite">
-                        <div class="flex items-center justify-between text-[15px] text-foreground">
+                        <div class="flex items-center justify-between text-[15px] lg:text-xs text-foreground">
                             <span>Uploading&hellip;</span>
                             <span class="datum" x-text="progress + '%'"></span>
                         </div>
@@ -368,8 +385,8 @@
                                   x-bind:value="progress" value="0" max="100"></progress>
                     </div>
 
-                    @error('photos') <p id="photos-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
-                    @error('photos.*') <p class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                    @error('photos') <p id="photos-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                    @error('photos.*') <p class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
 
                     @if ($photos)
                         <ul class="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-4">
@@ -384,7 +401,7 @@
                                             <img src="{{ $photo->temporaryUrl() }}" alt="Selected photo {{ $index + 1 }}"
                                                  class="h-full w-full object-cover">
                                         @else
-                                            <div class="flex h-full w-full items-center justify-center px-2 text-center text-[13px] text-muted-foreground">
+                                            <div class="flex h-full w-full items-center justify-center px-2 text-center text-[13px] lg:text-[11px] text-muted-foreground">
                                                 Not an image
                                             </div>
                                         @endif
@@ -399,7 +416,7 @@
                                 </li>
                             @endforeach
                         </ul>
-                        <p class="mt-2 text-[14px] text-muted-foreground">
+                        <p class="mt-2 text-[14px] lg:text-xs text-muted-foreground">
                             <span class="datum">{{ count($photos) }}</span>
                             {{ Str::plural('photo', count($photos)) }} will be attached when you save.
                         </p>
@@ -410,10 +427,14 @@
 
         {{-- THE SAVE BAR. Sticky to the bottom of the content region, so Save
              is always in reach on a phone. Ground, not blur. --}}
-        <div class="sticky bottom-0 z-20 -mx-4 mt-10 border-t border-border bg-background/95 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-            <div class="flex max-w-[40rem] justify-end gap-3">
-                <a href="{{ $editing ? route('broodcocks.show', $broodcock) : route('broodcocks.index') }}" wire:navigate
-                   class="d-btn d-btn-outline">Cancel</a>
+        <div @class(['sticky bottom-0 z-20 -mx-4 mt-10 border-t border-border bg-background/95 px-4 py-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8' => ! $inDialog, 'shrink-0 border-t border-border/60 bg-card p-3' => $inDialog])>
+            <div @class(['flex justify-end gap-3', 'max-w-[40rem]' => ! $inDialog])>
+                @if ($inDialog)
+                    <button type="button" class="d-btn d-btn-outline" x-on:click="$dispatch('ems-close-form')">Cancel</button>
+                @else
+                    <a href="{{ $editing ? route('broodcocks.show', $broodcock) : route('broodcocks.index') }}" wire:navigate
+                       class="d-btn d-btn-outline">Cancel</a>
+                @endif
 
                 <button type="submit" class="d-btn d-btn-primary" wire:loading.attr="disabled" wire:target="save, photos">
                     <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="save"></span>

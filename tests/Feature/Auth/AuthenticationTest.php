@@ -52,8 +52,8 @@ final class AuthenticationTest extends TestCase
         $response->assertSee('data-capslock-for="password"', false)
             ->assertSee('Caps Lock is on.');
 
-        // Light / dark, which every other shell had and this one did not.
-        $response->assertSee('data-theme-toggle', false);
+        // Light, Dark or System - the same EMS theme menu as every other shell.
+        $response->assertSee('data-theme-choice="system"', false);
     }
 
     /**

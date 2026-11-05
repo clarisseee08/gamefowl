@@ -57,7 +57,7 @@
 
 <th scope="col"
     aria-sort="{{ $ariaSort }}"
-    class="px-4 py-3 text-[13px] font-semibold text-muted-foreground {{ $align === 'right' ? 'text-right' : 'text-left' }} {{ $cell }}">
+    class="px-4 py-3 text-[13px] lg:text-[11px] font-semibold text-muted-foreground {{ $align === 'right' ? 'text-right' : 'text-left' }} {{ $cell }}">
 
     <button type="button"
             {{ $attributes->merge([

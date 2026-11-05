@@ -34,7 +34,7 @@
     // and silently disappear from `npm run build`.
     $scale = $size === 'xs'
         ? 'py-0.5 pl-1 pr-2 text-[11px] gap-1'
-        : 'py-1.5 pl-2 pr-3 text-[14px] gap-2';
+        : 'py-1.5 pl-2 pr-3 text-[14px] lg:text-xs gap-2';
 @endphp
 
 @if ($hasBand)

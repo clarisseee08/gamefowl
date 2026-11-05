@@ -16,10 +16,9 @@ use Tests\TestCase;
 /**
  * The Health tab on a bird's page.
  *
- * Health and performance used to live on separate tabs. A keeper doing a
- * weigh-in is already holding the bird, and sending them to a second tab to
- * write the number down is how a reading goes unrecorded — so the performance
- * timeline is rendered on this tab as well as its own.
+ * Health and performance each have their own tab. The performance timeline
+ * used to be repeated on this one; the owner had it taken off, because the
+ * Performance tab beside it already shows exactly that.
  *
  * This test exists because nothing else renders the tab: every other Show test
  * uses the default 'overview', so a broken tab body would not fail the suite.
@@ -28,9 +27,9 @@ final class BirdHealthTabTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_the_health_tab_renders_both_the_health_history_and_the_performance_timeline(): void
+    public function test_the_health_tab_renders_the_health_history_alone(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
         HealthRecord::factory()->for($bird)->create();
         PerformanceRecord::factory()->for($bird)->create();
 
@@ -39,7 +38,7 @@ final class BirdHealthTabTest extends TestCase
             ->set('tab', 'health')
             ->assertOk()
             ->assertSee('Add Health Record')
-            ->assertSee('Add Performance Record');
+            ->assertDontSee('Add Performance Record');
     }
 
     public function test_staff_can_reach_edit_from_the_health_tab(): void
@@ -55,7 +54,7 @@ final class BirdHealthTabTest extends TestCase
 
     public function test_the_performance_tab_still_renders_on_its_own(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
         PerformanceRecord::factory()->for($bird)->create();
 
         Livewire::actingAs(User::factory()->staff()->create())

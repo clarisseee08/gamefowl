@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace App\Livewire\Users;
 
 use App\Enums\UserRole;
+use App\Livewire\Concerns\ChoosesPageSize;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 final class Index extends Component
 {
+    use ChoosesPageSize;
     use WithPagination;
 
     #[Url(as: 'q', except: '')]
@@ -69,13 +72,73 @@ final class Index extends Component
         $this->resetPage();
     }
 
-    public function mount(): void
+    /**
+     * The add / edit form, open in a dialog over this list (the owner's
+     * decision: create and edit never leave the list). The old create and
+     * edit URLs still work - they render this list with the form open. The
+     * form component itself is unchanged: it authorizes, validates and saves
+     * exactly as it did as a page.
+     */
+    public bool $showForm = false;
+
+    #[Locked]
+    public ?int $formRecordId = null;
+
+    /**
+     * A new form is built ahead, so Add opens instantly. Closing the dialog
+     * drops any edit and re-keys the new form, so the next Add is blank.
+     */
+    public int $formNonce = 0;
+
+    public function updatedShowForm(bool $open): void
+    {
+        if ($open) {
+            return;
+        }
+
+        $this->formRecordId = null;
+        $this->formBroodcockId = null;
+        $this->formNonce++;
+    }
+
+    /** Called by the dialog when a form that was typed in is closed: start the next one blank. */
+    public function resetForm(): void
+    {
+        $this->showForm = false;
+        $this->updatedShowForm(false);
+    }
+
+    #[Locked]
+    public ?int $formBroodcockId = null;
+
+    public function mount(?User $user = null): void
     {
         $this->authorize('viewAny', User::class);
+
+        // The form is only built for someone allowed to create, so it can no
+        // longer refuse an /edit or /create address itself: checked here.
+        if ($user?->exists) {
+            $this->authorize('update', $user);
+            $this->openForm($user->id);
+        } elseif (request()->routeIs('users.create')) {
+            $this->authorize('create', User::class);
+            $this->openForm(null, null);
+        }
+    }
+
+    public function openForm(?int $recordId = null, ?int $broodcockId = null): void
+    {
+        $this->formRecordId = $recordId;
+        $this->formBroodcockId = $broodcockId;
+        $this->showForm = true;
     }
 
     public function updating(string $property): void
     {
+        if ($property === 'showForm') {
+            return;
+        }
+
         if ($property !== 'page') {
             $this->resetPage();
         }
@@ -108,7 +171,7 @@ final class Index extends Component
                 $this->sortDirection === 'asc' ? 'asc' : 'desc'
             )
             ->orderByDesc('id')
-            ->paginate(config('gfms.per_page'));
+            ->paginate($this->pageSize());
     }
 
     #[Computed]
@@ -163,6 +226,31 @@ final class Index extends Component
     public function dismissStatus(): void
     {
         $this->statusMessage = null;
+    }
+
+    /**
+     * The KPI tiles, from one grouped count: every account, how many can sign
+     * in, the farm's own people (owner and staff) and the customers.
+     *
+     * @return array{total: int, active: int, internal: int, customers: int}
+     */
+    #[Computed]
+    public function stats(): array
+    {
+        $counts = User::query()
+            ->selectRaw('role, is_active, count(*) as aggregate')
+            ->groupBy('role', 'is_active')
+            ->get();
+
+        $sum = fn (callable $filter): int => (int) $counts->filter($filter)->sum('aggregate');
+        $role = fn (User $row): string => $row->role instanceof UserRole ? $row->role->value : (string) $row->role;
+
+        return [
+            'total' => $sum(fn (): bool => true),
+            'active' => $sum(fn (User $row): bool => (bool) $row->is_active),
+            'internal' => $sum(fn (User $row): bool => $role($row) !== UserRole::Customer->value),
+            'customers' => $sum(fn (User $row): bool => $role($row) === UserRole::Customer->value),
+        ];
     }
 
     /** @return array<int, UserRole> */

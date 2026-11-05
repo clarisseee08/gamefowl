@@ -84,10 +84,10 @@
         {{-- min-w-0 on the column, not the wrapper: without it a long unbroken
              band number or email in the body forces the flex row wider than the
              card and the console scrolls sideways. --}}
-        <p class="text-[15px] font-medium leading-snug text-base-content">{{ $title }}</p>
+        <p class="text-[15px] lg:text-xs font-medium leading-snug text-base-content">{{ $title }}</p>
 
         @if (trim($slot) !== '')
-            <div class="mt-1 text-[15px] leading-snug text-base-content">{{ $slot }}</div>
+            <div class="mt-1 text-[15px] lg:text-xs leading-snug text-base-content">{{ $slot }}</div>
         @endif
     </div>
 </div>

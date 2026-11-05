@@ -21,8 +21,10 @@
     /*
      * THE FIGURE is the paginator's own total - the number of birds this view
      * is actually showing across all its pages. No extra query. Its label says
-     * what was counted, because the same number means "on the farm" in the
-     * default view and "matching" once a filter narrows it.
+     * what was counted, because the same number means "on record" in the
+     * default view and "matching" once a filter narrows it. "On record", not
+     * "on the farm": the default view lists every status, sold and deceased
+     * included, so it is the dashboard's on-farm count plus the birds that left.
      */
     $narrowed = $search !== '' || $status !== '' || $class !== '' || $sex !== '' || $bloodline !== '';
     $figureLabel = $narrowed
@@ -30,7 +32,7 @@
         : match ($ownership) {
             'outside' => Str::plural('outside bird', $total),
             'all' => Str::plural('bird', $total).', farm and outside',
-            default => Str::plural('bird', $total).' on the farm',
+            default => Str::plural('bird', $total).' on record',
         };
 
     /*
@@ -51,9 +53,10 @@
     $pageIds = $birds->pluck('id')->all();
     $allOnPageSelected = $pageIds !== [] && ! array_diff($pageIds, $selected);
 
-    // Every control that re-queries the list. One string so the skeleton,
-    // the "Searching" line and the result rows can never disagree about it.
-    $filterTargets = 'search,status,class,sex,bloodline,ownership,sort,gotoPage,nextPage,previousPage';
+    // The filters, then every control that re-queries the list. Strings, so
+    // the skeleton, the "Searching" line and the rows cannot disagree.
+    $searchTargets = 'search,status,class,sex,bloodline,ownership';
+    $filterTargets = $searchTargets.',sort,perPage,gotoPage,nextPage,previousPage';
 @endphp
 
 <div
@@ -66,7 +69,7 @@
     <x-anchor-block eyebrow="Manage" title="Gamefowl" :figure="number_format($total)" :figure-label="$figureLabel">
         @can('create', App\Models\Broodcock::class)
             <x-slot:actions>
-                <a href="{{ route('broodcocks.create') }}" wire:navigate class="d-btn d-btn-primary">
+                <a href="{{ route('broodcocks.create') }}" x-on:click.prevent="$dispatch('ems-dialog', 'broodcocks-form')" class="d-btn d-btn-primary">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                     </svg>
@@ -77,11 +80,17 @@
     </x-anchor-block>
 
     {{-- SEARCH AND FILTERS, ONE ROW. The search takes the space that is left;
-         every select shrinks to its own width and the row wraps where it runs
-         out of room. Each field name sits inside its control's border (see
-         x-filter-select), so the row is one control high, not two. --}}
-    <div class="mt-6 flex flex-wrap items-center gap-3" role="search" aria-label="Find a broodcock">
-        <div class="relative min-w-0 flex-1 basis-64">
+         every select keeps its own width. It compacts before it wraps: from lg to
+         102rem of screen the field names inside the selects step aside and
+         Columns becomes an icon; below 76rem the search takes a line of its
+         own and the filters share the next, rather than breaking the row
+         wherever it happens to run out.
+
+         Screen breakpoints, not a container query: a size container is the
+         containing block for fixed children, and every select's open list
+         is fixed-positioned - it would land in the corner of the row. --}}
+    <div class="mt-6 flex flex-wrap items-center gap-2" role="search" aria-label="Find a broodcock">
+        <div class="relative min-w-40 flex-1 basis-full min-[76rem]:basis-40">
             <label for="search" class="sr-only">Search</label>
             <svg class="pointer-events-none absolute left-3 top-1/2 z-[1] h-4 w-4 -translate-y-1/2 text-muted-foreground" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
@@ -95,28 +104,28 @@
             >
         </div>
 
-        <x-filter-select id="status" label="Status" wire:model.live="status">
+        <x-filter-select :compact="true" id="status" label="Status" wire:model.live="status">
             <option value="">All statuses</option>
             @foreach ($this->statusOptions() as $option)
                 <option value="{{ $option->value }}">{{ $option->label() }}</option>
             @endforeach
         </x-filter-select>
 
-        <x-filter-select id="class" label="Class" wire:model.live="class">
+        <x-filter-select :compact="true" id="class" label="Class" wire:model.live="class">
             <option value="">All classes</option>
             @foreach ($this->classOptions() as $option)
                 <option value="{{ $option->value }}">{{ $option->label() }}</option>
             @endforeach
         </x-filter-select>
 
-        <x-filter-select id="sex" label="Sex" wire:model.live="sex">
+        <x-filter-select :compact="true" id="sex" label="Sex" wire:model.live="sex">
             <option value="">Male and female</option>
             @foreach ($this->sexOptions() as $option)
                 <option value="{{ $option->value }}">{{ $option->farmTerm() }} ({{ $option->label() }})</option>
             @endforeach
         </x-filter-select>
 
-        <x-filter-select id="bloodline" label="Bloodline" wire:model.live="bloodline">
+        <x-filter-select :compact="true" id="bloodline" label="Bloodline" wire:model.live="bloodline">
             <option value="">All bloodlines</option>
             @foreach ($this->bloodlineOptions as $option)
                 <option value="{{ $option }}">{{ $option }}</option>
@@ -128,7 +137,7 @@
              or the pedigree loses the branch above her - so they stay one
              selection away rather than hidden: a keeper still needs to
              correct their details. --}}
-        <x-filter-select id="ownership" label="Ownership" wire:model.live="ownership">
+        <x-filter-select :compact="true" id="ownership" label="Ownership" wire:model.live="ownership">
             <option value="farm">This farm's birds</option>
             <option value="outside">Outside birds only</option>
             <option value="all">Both</option>
@@ -144,14 +153,14 @@
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15M4.5 19.5h15a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5h-15A1.5 1.5 0 0 0 3 6v12a1.5 1.5 0 0 0 1.5 1.5Z"/>
                 </svg>
-                Columns
+                <span class="lg:max-[102rem]:sr-only">Columns</span>
             </button>
 
             <div id="bc-columns" x-show="colsOpen" x-cloak @click.outside="colsOpen = false" @keydown.escape.window="colsOpen = false"
                  class="bg-base-100 rounded-box border border-base-300 elev-2 enter-pop absolute right-0 z-30 mt-2 w-56 p-2">
-                <p class="px-2 pb-1.5 pt-1 text-[13px] font-semibold text-muted-foreground">Show columns</p>
+                <p class="px-2 pb-1.5 pt-1 text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Show columns</p>
                 @foreach ($optionalColumns as $key => $label)
-                    <label class="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[var(--radius-sm)] px-2 text-[15px] text-foreground hover:bg-muted">
+                    <label class="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[var(--radius-sm)] px-2 text-[15px] lg:text-xs text-foreground hover:bg-muted">
                         <input type="checkbox" class="d-checkbox d-checkbox-primary"
                                x-model="cols['{{ $key }}']" @change="save()">
                         {{ $label }}
@@ -165,16 +174,18 @@
          on: a permanent "0 filters" line is chrome that never earns its space.
          The polite "Searching" lives here too, beside the count it is about to
          change - the round trip is to Tokyo, so a keystroke and its answer are
-         most of a second apart. --}}
-    <div class="mt-3 flex min-h-11 flex-wrap items-center gap-x-4 gap-y-1 text-[14px] text-muted-foreground" aria-live="polite">
-        <span wire:loading.remove wire:target="{{ $filterTargets }}">
-            @if ($this->hasActiveFilters())
+         most of a second apart. Where you are in the pages is in the footer
+         under the table, not here. --}}
+    <div @class([
+            'flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px] text-muted-foreground lg:text-xs',
+            'mt-3 min-h-11' => $this->hasActiveFilters(),
+         ]) aria-live="polite">
+        @if ($this->hasActiveFilters())
+            <span wire:loading.remove wire:target="{{ $searchTargets }}">
                 Showing <span class="datum text-foreground">{{ number_format($total) }}</span> {{ Str::plural('bird', $total) }} matching your filters.
-            @elseif ($birds->lastPage() > 1)
-                Page <span class="datum">{{ $birds->currentPage() }}</span> of <span class="datum">{{ $birds->lastPage() }}</span>.
-            @endif
-        </span>
-        <span wire:loading wire:target="{{ $filterTargets }}">Searching&hellip;</span>
+            </span>
+        @endif
+        <span wire:loading wire:target="{{ $searchTargets }}" @class(['mt-3' => ! $this->hasActiveFilters()])>Searching&hellip;</span>
 
         @if ($this->hasActiveFilters())
             <button type="button" wire:click="clearFilters" class="d-btn d-btn-ghost">Clear filters</button>
@@ -196,7 +207,7 @@
                            description="Start by adding your first bird. You will be able to record its health, breeding and performance afterwards."
                            icon="M12 4.5v15m7.5-7.5h-15">
                 @can('create', App\Models\Broodcock::class)
-                    <a href="{{ route('broodcocks.create') }}" wire:navigate class="d-btn d-btn-primary">Add your first broodcock</a>
+                    <a href="{{ route('broodcocks.create') }}" x-on:click.prevent="$dispatch('ems-dialog', 'broodcocks-form')" class="d-btn d-btn-primary">Add your first broodcock</a>
                 @endcan
             </x-empty-state>
         @endif
@@ -204,7 +215,7 @@
         {{-- PHONES: stacked rows. Farm staff are mostly on phones, outdoors; a
              table that scrolls sideways hides the column they came for. Each
              row is one tap target: band and name, then bloodline, sex and age. --}}
-        <ul class="divide-y divide-border border-y border-border sm:hidden"
+        <ul class="mt-4 divide-y divide-border border-y border-border sm:hidden"
             wire:loading.remove wire:target="{{ $filterTargets }}">
             @foreach ($birds as $bird)
                 <li wire:key="bc-m-{{ $bird->id }}">
@@ -222,14 +233,14 @@
                         <span class="min-w-0 flex-1">
                             <span class="flex items-baseline gap-2">
                                 @if ($bird->band_number)
-                                    <span class="datum font-display text-[17px] font-semibold text-foreground">{{ $bird->band_number }}</span>
-                                    <span class="truncate text-[15px] text-muted-foreground">{{ $bird->name }}</span>
+                                    <span class="datum font-display text-[17px] lg:text-sm font-semibold text-foreground">{{ $bird->band_number }}</span>
+                                    <span class="truncate text-[15px] lg:text-xs text-muted-foreground">{{ $bird->name }}</span>
                                 @else
-                                    <span class="truncate font-display text-[17px] font-semibold text-foreground">{{ $bird->name }}</span>
-                                    <span class="shrink-0 text-[14px] text-muted-foreground">Not yet banded</span>
+                                    <span class="truncate font-display text-[17px] lg:text-sm font-semibold text-foreground">{{ $bird->name }}</span>
+                                    <span class="shrink-0 text-[14px] lg:text-xs text-muted-foreground">Not yet banded</span>
                                 @endif
                             </span>
-                            <span class="mt-0.5 flex items-center gap-1.5 truncate text-[14px] text-muted-foreground">
+                            <span class="mt-0.5 flex items-center gap-1.5 truncate text-[14px] lg:text-xs text-muted-foreground">
                                 <x-band-dot :bloodline="$bird->bloodline" />
                                 <span class="truncate">{{ $bird->bloodline ?? 'Bloodline not recorded' }} &middot; {{ $bird->sex->label() }} &middot; <span class="datum">{{ $bird->ageLabel() ?? 'Age unknown' }}</span></span>
                             </span>
@@ -264,146 +275,190 @@
              and the column names stay put through a long list. An overflow
              wrapper would become the sticky container and quietly break that;
              secondary columns drop at narrower widths instead. --}}
-        <table class="d-table hidden w-full border-b border-border sm:table">
-            <thead class="sticky top-0 z-10 bg-background">
-                <tr class="border-b border-border">
-                    <th scope="col" class="w-12 py-0 pl-0 pr-1 text-left">
-                        <label class="flex h-11 w-11 cursor-pointer items-center justify-center">
-                            <input type="checkbox" class="d-checkbox d-checkbox-primary"
-                                   wire:click="toggleSelectPage"
-                                   @checked($allOnPageSelected)
-                                   aria-label="Select all birds on this page">
-                        </label>
-                    </th>
-                    <th scope="col" class="w-14 py-0 pr-2"><span class="sr-only">Photo</span></th>
-                    @foreach ($columns as $column)
-                        @php
-                            $isSorted = $column['sort'] !== null && $sortBy === $column['sort'];
-                            $isAscending = $sortDirection === 'asc';
-                        @endphp
-                        <th scope="col"
-                            @if ($column['vis']) x-show="cols.{{ $column['vis'] }}" @endif
-                            @if ($column['sort']) aria-sort="{{ $isSorted ? ($isAscending ? 'ascending' : 'descending') : 'none' }}" @endif
-                            @class([
-                                'whitespace-nowrap px-3 py-0 text-[13px] font-semibold text-muted-foreground',
-                                'text-right' => $column['align'] === 'right',
-                                'text-left' => $column['align'] !== 'right',
-                                $column['cell'],
-                            ])>
-                            @if ($column['sort'])
-                                <button type="button" wire:click="sort('{{ $column['sort'] }}')"
-                                        @class([
-                                            'inline-flex min-h-11 items-center gap-1 font-semibold hover:text-foreground',
-                                            'text-foreground' => $isSorted,
-                                            'flex-row-reverse' => $column['align'] === 'right',
-                                        ])>
-                                    {{ $column['label'] }}
-                                    @if ($isSorted)
-                                        <svg class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="{{ $isAscending ? 'm4.5 15.75 7.5-7.5 7.5 7.5' : 'm19.5 8.25-7.5 7.5-7.5-7.5' }}"/>
-                                        </svg>
-                                        <span class="sr-only">sorted {{ $isAscending ? 'ascending' : 'descending' }}</span>
-                                    @endif
-                                </button>
-                            @else
-                                {{ $column['label'] }}
-                            @endif
-                        </th>
-                    @endforeach
-                    <th scope="col" class="px-3 py-0"><span class="sr-only">Actions</span></th>
-                </tr>
-            </thead>
-
-            <tbody wire:loading.remove wire:target="{{ $filterTargets }}">
-                @foreach ($birds as $bird)
-                    {{-- .row-hover tints the row and reveals its actions together;
-                         focus-within means keyboard users get them too. --}}
-                    <tr wire:key="bc-{{ $bird->id }}"
-                        @class(['group row-hover', 'is-selected' => in_array($bird->id, $selected, true)])>
-                        <td class="w-12 py-1 pl-0 pr-1">
+        {{-- EMS: a wide table scrolls inside its own container; the page never does. --}}
+        <div class="mt-4 overflow-x-auto">
+            <table class="d-table hidden w-full border-b border-border sm:table">
+                <thead class="sticky top-0 z-10 bg-background">
+                    <tr class="border-b border-border">
+                        <th scope="col" class="w-12 py-0 pl-0 pr-1 text-left">
                             <label class="flex h-11 w-11 cursor-pointer items-center justify-center">
-                                <input type="checkbox" value="{{ $bird->id }}" wire:model.live="selected"
-                                       class="d-checkbox d-checkbox-primary"
-                                       aria-label="Select {{ $bird->name }}">
+                                <input type="checkbox" class="d-checkbox d-checkbox-primary"
+                                       wire:click="toggleSelectPage"
+                                       @checked($allOnPageSelected)
+                                       aria-label="Select all birds on this page">
                             </label>
-                        </td>
-                        <td class="w-14 py-1.5 pr-2">
-                            {{-- The thumbnail copy only, never the original: a page
-                                 of rows must not pull full-size files out of Tokyo. --}}
-                            <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate tabindex="-1" aria-hidden="true"
-                               class="block w-10 overflow-hidden rounded-[6px] bg-muted aspect-[4/5]">
-                                @if ($bird->primaryPhoto)
-                                    <img src="{{ route('photos.show', ['photo' => $bird->primaryPhoto, 'size' => 'thumb']) }}" alt=""
-                                         width="40" height="50" loading="lazy" decoding="async" class="h-full w-full object-cover">
+                        </th>
+                        <th scope="col" class="w-14 py-0 pr-2"><span class="sr-only">Photo</span></th>
+                        @foreach ($columns as $column)
+                            @php
+                                $isSorted = $column['sort'] !== null && $sortBy === $column['sort'];
+                                $isAscending = $sortDirection === 'asc';
+                            @endphp
+                            <th scope="col"
+                                @if ($column['vis']) x-show="cols.{{ $column['vis'] }}" @endif
+                                @if ($column['sort']) aria-sort="{{ $isSorted ? ($isAscending ? 'ascending' : 'descending') : 'none' }}" @endif
+                                @class([
+                                    'whitespace-nowrap px-3 py-0 text-[13px] lg:text-[11px] font-semibold text-muted-foreground',
+                                    'text-right' => $column['align'] === 'right',
+                                    'text-left' => $column['align'] !== 'right',
+                                    $column['cell'],
+                                ])>
+                                @if ($column['sort'])
+                                    <button type="button" wire:click="sort('{{ $column['sort'] }}')"
+                                            @class([
+                                                'inline-flex min-h-11 items-center gap-1 font-semibold hover:text-foreground',
+                                                'text-foreground' => $isSorted,
+                                                'flex-row-reverse' => $column['align'] === 'right',
+                                            ])>
+                                        {{ $column['label'] }}
+                                        @if ($isSorted)
+                                            <svg class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $isAscending ? 'm4.5 15.75 7.5-7.5 7.5 7.5' : 'm19.5 8.25-7.5 7.5-7.5-7.5' }}"/>
+                                            </svg>
+                                            <span class="sr-only">sorted {{ $isAscending ? 'ascending' : 'descending' }}</span>
+                                        @endif
+                                    </button>
                                 @else
-                                    <span class="flex h-full w-full items-center justify-center"><x-band-dot :bloodline="$bird->bloodline" /></span>
+                                    {{ $column['label'] }}
                                 @endif
-                            </a>
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-1.5">
-                            @if ($bird->band_number)
-                                <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate
-                                   class="datum font-display text-[16px] font-semibold text-foreground hover:underline hover:underline-offset-4">{{ $bird->band_number }}</a>
-                            @else
-                                <span class="text-[14px] text-muted-foreground">Not yet banded</span>
-                            @endif
-                        </td>
-                        <td class="px-3 py-1.5 text-[15px] text-foreground">
-                            <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate class="hover:underline hover:underline-offset-4">
-                                {{ $bird->name }}
-                            </a>
-                            {{-- Only when the list can contain both. Badging every row
-                                 in the default view would label the ordinary case. --}}
-                            @if ($bird->is_external && $ownership !== 'outside')
-                                <span class="d-badge d-badge-soft d-badge-neutral ml-1.5" title="Belongs to another farm; recorded so the pedigree stays complete">Outside</span>
-                            @endif
-                        </td>
-                        <td x-show="cols.bloodline" class="whitespace-nowrap px-3 py-1.5 text-[15px] text-foreground">
-                            <span class="inline-flex items-center gap-2">
-                                <x-band-dot :bloodline="$bird->bloodline" />
-                                @if ($bird->bloodline)
-                                    {{ $bird->bloodline }}
-                                @else
-                                    <span class="text-muted-foreground">Not recorded</span>
-                                @endif
-                            </span>
-                        </td>
-                        <td x-show="cols.sex" class="hidden whitespace-nowrap px-3 py-1.5 text-[15px] text-muted-foreground md:table-cell">{{ $bird->sex->label() }}</td>
-                        <td x-show="cols.age" class="whitespace-nowrap px-3 py-1.5 text-right text-[15px]">
-                            @if ($bird->ageLabel())
-                                <span class="datum text-foreground">{{ $bird->ageLabel() }}</span>
-                            @else
-                                <span class="text-muted-foreground">Unknown</span>
-                            @endif
-                        </td>
-                        <td x-show="cols.class" class="hidden whitespace-nowrap px-3 py-1.5 lg:table-cell">
-                            <span class="d-badge d-badge-soft {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
-                        </td>
-                        <td x-show="cols.status" class="whitespace-nowrap px-3 py-1.5">
-                            <span class="d-badge d-badge-soft {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-1 text-right">
-                            <span class="row-actions inline-flex items-center gap-1">
-                                <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate class="d-btn d-btn-ghost">
-                                    View<span class="sr-only">, {{ $bird->name }}</span>
-                                </a>
-                                @can('update', $bird)
-                                    <a href="{{ route('broodcocks.edit', $bird) }}" wire:navigate class="d-btn d-btn-ghost">
-                                        Edit<span class="sr-only">, {{ $bird->name }}</span>
-                                    </a>
-                                @endcan
-                            </span>
-                        </td>
+                            </th>
+                        @endforeach
+                        <th scope="col" class="px-3 py-0 text-right text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Actions</th>
                     </tr>
-                @endforeach
-            </tbody>
+                </thead>
 
-            <x-table-skeleton :cols="10" wire:loading wire:target="{{ $filterTargets }}" />
-        </table>
+                <tbody wire:loading.remove wire:target="{{ $filterTargets }}">
+                    @foreach ($birds as $bird)
+                        {{-- .row-hover tints the row and reveals its actions together;
+                             focus-within means keyboard users get them too. --}}
+                        {{-- Resting the pointer on a row previews the bird's photo
+                             beside it (an EMS hover card). Only on a device that
+                             can hover, after a short pause so sweeping the
+                             pointer down the list does not flash every bird. --}}
+                        <tr wire:key="bc-{{ $bird->id }}"
+                            x-data="{ preview: false, previewTimer: null }"
+                            x-on:mouseenter="if (matchMedia('(hover: hover)').matches) { previewTimer = setTimeout(() => preview = true, 350) }"
+                            x-on:mouseleave="clearTimeout(previewTimer); preview = false"
+                            @class(['group row-hover', 'is-selected' => in_array($bird->id, $selected, true)])>
+                            <td class="w-12 py-1 pl-0 pr-1">
+                                <label class="flex h-11 w-11 cursor-pointer items-center justify-center">
+                                    <input type="checkbox" value="{{ $bird->id }}" wire:model.live="selected"
+                                           class="d-checkbox d-checkbox-primary"
+                                           aria-label="Select {{ $bird->name }}">
+                                </label>
+                            </td>
+                            <td class="w-14 py-1.5 pr-2">
+                                {{-- The thumbnail copy only, never the original: a page
+                                     of rows must not pull full-size files out of Tokyo. --}}
+                                <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate tabindex="-1" aria-hidden="true" x-ref="thumb"
+                                   class="block w-10 overflow-hidden rounded-[6px] bg-muted aspect-[4/5]">
+                                    @if ($bird->primaryPhoto)
+                                        <img src="{{ route('photos.show', ['photo' => $bird->primaryPhoto, 'size' => 'thumb']) }}" alt=""
+                                             width="40" height="50" loading="lazy" decoding="async" class="h-full w-full object-cover">
+                                    @else
+                                        <span class="flex h-full w-full items-center justify-center"><x-band-dot :bloodline="$bird->bloodline" /></span>
+                                    @endif
+                                </a>
 
-        <div class="mt-6">
-            {{ $birds->links() }}
+                                {{-- The same thumbnail file the cell already loaded (about
+                                     400px, sharp at this size), so the preview costs no
+                                     new request and no query. Decorative: the row's own
+                                     links already name the bird. --}}
+                                <div x-show="preview" x-cloak aria-hidden="true"
+                                     x-anchor.fixed.right-start.offset.12="$refs.thumb"
+                                     x-transition:enter="transition ease-out duration-150"
+                                     x-transition:enter-start="scale-95 opacity-0"
+                                     x-transition:enter-end="scale-100 opacity-100"
+                                     x-transition:leave="transition ease-in duration-100"
+                                     x-transition:leave-start="opacity-100"
+                                     x-transition:leave-end="opacity-0"
+                                     class="pointer-events-none z-40 w-52 rounded-md border border-border bg-popover p-2 text-popover-foreground shadow-md">
+                                    <div class="aspect-[4/5] w-full overflow-hidden rounded-sm bg-muted">
+                                        @if ($bird->primaryPhoto)
+                                            <img x-bind:src="preview ? @js(route('photos.show', ['photo' => $bird->primaryPhoto, 'size' => 'thumb'])) : null" alt=""
+                                                 width="192" height="240" decoding="async" class="h-full w-full object-cover">
+                                        @else
+                                            <div class="flex h-full w-full flex-col items-center justify-center gap-2 text-xs text-muted-foreground">
+                                                <x-band-dot :bloodline="$bird->bloodline" />
+                                                No photo yet
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div class="px-1 pt-2 pb-0.5">
+                                        <p class="truncate text-sm font-semibold text-foreground lg:text-xs">{{ $bird->name }}</p>
+                                        <p class="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground lg:text-[11px]">
+                                            @if ($bird->band_number)
+                                                <span class="datum">{{ $bird->band_number }}</span>
+                                                <span aria-hidden="true">&middot;</span>
+                                            @endif
+                                            <span class="truncate">{{ $bird->bloodline }}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-1.5">
+                                @if ($bird->band_number)
+                                    <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate
+                                       class="datum font-display text-[16px] lg:text-xs font-semibold text-foreground">{{ $bird->band_number }}</a>
+                                @else
+                                    <span class="text-[14px] lg:text-xs text-muted-foreground">Not yet banded</span>
+                                @endif
+                            </td>
+                            <td class="px-3 py-1.5 text-[15px] lg:text-xs text-foreground">
+                                <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate class="">
+                                    {{ $bird->name }}
+                                </a>
+                                {{-- Only when the list can contain both. Badging every row
+                                     in the default view would label the ordinary case. --}}
+                                @if ($bird->is_external && $ownership !== 'outside')
+                                    <span class="d-badge d-badge-soft d-badge-neutral ml-1.5" title="Belongs to another farm; recorded so the pedigree stays complete">Outside</span>
+                                @endif
+                            </td>
+                            <td x-show="cols.bloodline" class="whitespace-nowrap px-3 py-1.5 text-[15px] lg:text-xs text-foreground">
+                                <span class="inline-flex items-center gap-2">
+                                    <x-band-dot :bloodline="$bird->bloodline" />
+                                    @if ($bird->bloodline)
+                                        {{ $bird->bloodline }}
+                                    @else
+                                        <span class="text-muted-foreground">Not recorded</span>
+                                    @endif
+                                </span>
+                            </td>
+                            <td x-show="cols.sex" class="hidden whitespace-nowrap px-3 py-1.5 text-[15px] lg:text-xs text-muted-foreground md:table-cell">{{ $bird->sex->label() }}</td>
+                            <td x-show="cols.age" class="whitespace-nowrap px-3 py-1.5 text-right text-[15px] lg:text-xs">
+                                @if ($bird->ageLabel())
+                                    <span class="datum text-foreground">{{ $bird->ageLabel() }}</span>
+                                @else
+                                    <span class="text-muted-foreground">Unknown</span>
+                                @endif
+                            </td>
+                            <td x-show="cols.class" class="hidden whitespace-nowrap px-3 py-1.5 lg:table-cell">
+                                <span class="d-badge d-badge-soft {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
+                            </td>
+                            <td x-show="cols.status" class="whitespace-nowrap px-3 py-1.5">
+                                <span class="d-badge d-badge-soft {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-1 text-right">
+                                <span class="inline-flex items-center justify-end gap-0.5">
+                                    <x-ui.row-action icon="eye" :label="'View '.$bird->name" :href="route('broodcocks.show', $bird)" wire:navigate />
+                                    @can('update', $bird)
+                                        <x-ui.row-action icon="pencil" :label="'Edit '.$bird->name" :href="route('broodcocks.edit', $bird)" wire:click.prevent="openForm({{ $bird->id }})" x-on:click="$dispatch('ems-dialog', { id: 'broodcocks-form', wait: true })" />
+                                    @endcan
+                                    @can('delete', $bird)
+                                        <x-ui.row-action icon="trash-2" :label="'Delete '.$bird->name" :destructive="true"
+                                                         x-on:click="const w = $wire; w.$set('selected', [{{ \Illuminate\Support\Js::from((string) $bird->id) }}]).then(() => w.confirmDeleteSelected())" />
+                                    @endcan
+                                </span>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+
+                <x-table-skeleton :cols="10" wire:loading wire:target="{{ $filterTargets }}" />
+            </table>
         </div>
+
+        <x-ui.table-pagination :paginator="$birds" class="mt-4" />
     @endif
 
     {{--
@@ -416,7 +471,7 @@
     @if (count($selected) > 0)
         <div class="sticky bottom-4 z-30 mt-6 flex justify-center" role="status" aria-live="polite">
             <div class="elev-3 enter-pop flex items-center gap-2 rounded-full border border-border bg-card py-1.5 pl-5 pr-1.5">
-                <span class="pr-2 text-[15px] text-foreground">
+                <span class="pr-2 text-[15px] lg:text-xs text-foreground">
                     <span class="datum font-semibold">{{ count($selected) }}</span>
                     {{ Str::plural('bird', count($selected)) }} selected
                 </span>
@@ -450,10 +505,10 @@
              x-data x-trap.noscroll="true" x-on:keydown.escape.window="$wire.cancelDeleteSelected()"
              role="dialog" aria-modal="true" aria-labelledby="bulk-delete-title" aria-describedby="bulk-delete-body">
             <div class="d-modal-box elev-3 w-full max-w-md">
-                <h2 id="bulk-delete-title" class="font-display text-[22px] font-semibold tracking-[-0.015em] text-foreground">
+                <h2 id="bulk-delete-title" class="font-display text-[22px] lg:text-base font-semibold tracking-[-0.015em] text-foreground">
                     Delete <span class="datum">{{ count($selected) }}</span> {{ Str::plural('bird', count($selected)) }}?
                 </h2>
-                <p id="bulk-delete-body" class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+                <p id="bulk-delete-body" class="mt-3 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     This removes <strong class="font-semibold text-foreground">{{ implode(', ', $named) }}@if ($more > 0) and <span class="datum">{{ $more }}</span> more @endif</strong>
                     from the active records. Their health, breeding and performance history is kept and the
                     deletion is recorded in the activity log. Birds your role cannot delete are left as they are.
@@ -468,4 +523,26 @@
             </div>
         </div>
     @endif
+
+    {{-- Add and edit open here, in a dialog over the list, never on a page of their own. --}}
+    {{-- The new-record form is built with the page, and it authorizes on
+         mount, so it is only built for someone who may create one. --}}
+    @can('create', \App\Models\Broodcock::class)
+        <x-ui.form-dialog id="broodcocks-form" model="showForm" size="xl" :wrap="false"
+                    :title="$formRecordId ? 'Edit '.(\App\Models\Broodcock::find($formRecordId)?->name ?? 'gamefowl') : 'Add a Gamefowl'">
+            @if ($formRecordId)
+                {{-- An edit, or a form for one bird: filled by the server when opened. --}}
+                @if ($showForm)
+                    <livewire:broodcocks.form :broodcock="$formRecordId ? \App\Models\Broodcock::find($formRecordId) : null"
+                                              :in-dialog="true" :key="'broodcocks-form-'.($formRecordId ?? 'new')" />
+                @else
+                    <x-ui.form-skeleton :fields="7" />
+                @endif
+            @else
+                {{-- A new record: built with the page, so Add opens at once with no request. --}}
+                <livewire:broodcocks.form :broodcock="$formRecordId ? \App\Models\Broodcock::find($formRecordId) : null"
+                                          :in-dialog="true" :key="'broodcocks-form-new-'.$formNonce" />
+            @endif
+        </x-ui.form-dialog>
+    @endcan
 </div>

@@ -155,6 +155,22 @@ class HealthRecord extends Model
             ->whereDate('next_due_date', '<=', today()->addDays($days));
     }
 
+    /**
+     * Only follow-ups for a bird that is still on the farm.
+     *
+     * A dead, sold or deleted bird is not due a vaccination, so the schedule and
+     * the dashboard leave its follow-ups out - otherwise the owner is told to
+     * treat a bird that is no longer there. Outside birds are not farm stock and
+     * are left out for the same reason. The records themselves are untouched:
+     * the health history still lists them.
+     *
+     * @param  Builder<HealthRecord>  $query
+     */
+    public function scopeForBirdsOnFarm(Builder $query): void
+    {
+        $query->whereHas('broodcock', fn (Builder $bird) => $bird->farmStock()->onFarm());
+    }
+
     /** @param Builder<HealthRecord> $query */
     public function scopeOfType(Builder $query, HealthRecordType|string|null $type): void
     {

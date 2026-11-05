@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace App\Livewire\Breeding;
 
+use App\Livewire\Concerns\ChoosesPageSize;
 use App\Models\BreedingRecord;
 use App\Models\Broodcock;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 final class Index extends Component
 {
+    use ChoosesPageSize;
     use WithPagination;
 
     #[Url(as: 'q', except: '')]
@@ -61,13 +64,73 @@ final class Index extends Component
         $this->resetPage();
     }
 
-    public function mount(): void
+    /**
+     * The add / edit form, open in a side sheet over this list (the owner's
+     * decision: create and edit never leave the list). The old create and
+     * edit URLs still work - they render this list with the form open. The
+     * form component itself is unchanged: it authorizes, validates and saves
+     * exactly as it did as a page.
+     */
+    public bool $showForm = false;
+
+    #[Locked]
+    public ?int $formRecordId = null;
+
+    /**
+     * A new form is built ahead, so Add opens instantly. Closing the dialog
+     * drops any edit and re-keys the new form, so the next Add is blank.
+     */
+    public int $formNonce = 0;
+
+    public function updatedShowForm(bool $open): void
+    {
+        if ($open) {
+            return;
+        }
+
+        $this->formRecordId = null;
+        $this->formBroodcockId = null;
+        $this->formNonce++;
+    }
+
+    /** Called by the dialog when a form that was typed in is closed: start the next one blank. */
+    public function resetForm(): void
+    {
+        $this->showForm = false;
+        $this->updatedShowForm(false);
+    }
+
+    #[Locked]
+    public ?int $formBroodcockId = null;
+
+    public function mount(?BreedingRecord $record = null): void
     {
         $this->authorize('viewAny', BreedingRecord::class);
+
+        // The form is only built for someone allowed to create, so it can no
+        // longer refuse an /edit or /create address itself: checked here.
+        if ($record?->exists) {
+            $this->authorize('update', $record);
+            $this->openForm($record->id);
+        } elseif (request()->routeIs('breeding.create')) {
+            $this->authorize('create', BreedingRecord::class);
+            $this->openForm(null, null);
+        }
+    }
+
+    public function openForm(?int $recordId = null, ?int $broodcockId = null): void
+    {
+        $this->formRecordId = $recordId;
+        $this->formBroodcockId = $broodcockId;
+        $this->showForm = true;
     }
 
     public function updating(string $property): void
     {
+        if ($property === 'showForm') {
+            return;
+        }
+
         if ($property !== 'page') {
             $this->resetPage();
         }
@@ -92,14 +155,24 @@ final class Index extends Component
             // Every row renders both parents' names, so they must be loaded up
             // front - otherwise this is 2 extra queries per row against a
             // database in another country.
-            ->with(['sire:id,name,band_number,bloodline', 'dam:id,name,band_number,bloodline'])
+            //
+            // withTrashed() because deleting a bird keeps its breeding history:
+            // without it a deleted parent comes back null and the page fails.
+            ->with([
+                'sire' => fn ($query) => $query->withTrashed()->select(['id', 'name', 'band_number', 'bloodline', 'deleted_at'])->with('primaryPhoto'),
+                'dam' => fn ($query) => $query->withTrashed()->select(['id', 'name', 'band_number', 'bloodline', 'deleted_at'])->with('primaryPhoto'),
+            ])
             ->between($this->from ?: null, $this->to ?: null)
             ->when($this->search !== '', function ($query): void {
                 $term = "%{$this->search}%";
-                $query->whereHas('sire', fn ($q) => $q->whereLike('name', $term, caseSensitive: false)
-                    ->orWhereLike('band_number', $term, caseSensitive: false))
-                    ->orWhereHas('dam', fn ($q) => $q->whereLike('name', $term, caseSensitive: false)
-                        ->orWhereLike('band_number', $term, caseSensitive: false));
+                // Grouped: an ungrouped orWhereHas would let a mating whose dam
+                // matches escape the date and bloodline filters around it.
+                $query->where(function ($query) use ($term): void {
+                    $query->whereHas('sire', fn ($q) => $q->whereLike('name', $term, caseSensitive: false)
+                        ->orWhereLike('band_number', $term, caseSensitive: false))
+                        ->orWhereHas('dam', fn ($q) => $q->whereLike('name', $term, caseSensitive: false)
+                            ->orWhereLike('band_number', $term, caseSensitive: false));
+                });
             })
             ->when($this->bloodline !== '', function ($query): void {
                 $query->whereHas('sire', fn ($q) => $q->where('bloodline', $this->bloodline));
@@ -111,7 +184,7 @@ final class Index extends Component
                 $this->sortDirection === 'asc' ? 'asc' : 'desc'
             )
             ->orderByDesc('id')
-            ->paginate(config('gfms.per_page'));
+            ->paginate($this->pageSize());
     }
 
     /**

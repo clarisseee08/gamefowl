@@ -7,18 +7,21 @@ namespace App\Livewire\Broodcocks;
 use App\Enums\BroodcockClass;
 use App\Enums\BroodcockStatus;
 use App\Enums\Sex;
+use App\Livewire\Concerns\ChoosesPageSize;
 use App\Models\Broodcock;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 final class Index extends Component
 {
+    use ChoosesPageSize;
     use WithPagination;
 
     #[Url(as: 'q', except: '')]
@@ -63,14 +66,69 @@ final class Index extends Component
     /** Columns a user is allowed to sort by - never interpolate raw input into SQL. */
     private const SORTABLE = ['band_number', 'name', 'bloodline', 'class', 'status', 'date_hatched', 'created_at'];
 
-    public function mount(): void
+    /**
+     * The add / edit form, open in a side sheet over this list (the owner's
+     * decision: create and edit never leave the list). /broodcocks/create and
+     * /broodcocks/{broodcock}/edit still work - they render this list with
+     * the sheet open. The form component itself is unchanged: it authorizes,
+     * validates and saves exactly as it did as a page.
+     */
+    public bool $showForm = false;
+
+    #[Locked]
+    public ?int $formRecordId = null;
+
+    /**
+     * A new form is built ahead, so Add opens instantly. Closing the dialog
+     * drops any edit and re-keys the new form, so the next Add is blank.
+     */
+    public int $formNonce = 0;
+
+    public function updatedShowForm(bool $open): void
+    {
+        if ($open) {
+            return;
+        }
+
+        $this->formRecordId = null;
+        $this->formNonce++;
+    }
+
+    /** Called by the dialog when a form that was typed in is closed: start the next one blank. */
+    public function resetForm(): void
+    {
+        $this->showForm = false;
+        $this->updatedShowForm(false);
+    }
+
+    public function mount(?Broodcock $broodcock = null): void
     {
         $this->authorize('viewAny', Broodcock::class);
+
+        // The form is only built for someone allowed to create, so it can no
+        // longer refuse an /edit or /create address itself: checked here.
+        if ($broodcock?->exists) {
+            $this->authorize('update', $broodcock);
+            $this->openForm($broodcock->id);
+        } elseif (request()->routeIs('broodcocks.create')) {
+            $this->authorize('create', Broodcock::class);
+            $this->openForm();
+        }
+    }
+
+    public function openForm(?int $recordId = null): void
+    {
+        $this->formRecordId = $recordId;
+        $this->showForm = true;
     }
 
     /** Any filter change must return to page 1, or the user lands on an empty page. */
     public function updating(string $property): void
     {
+        if ($property === 'showForm') {
+            return;
+        }
+
         if ($property !== 'page') {
             $this->resetPage();
         }
@@ -265,7 +323,7 @@ final class Index extends Component
             ->sex($this->sex)
             ->bloodline($this->bloodline)
             ->orderBy($sortBy, $direction)
-            ->paginate(config('gfms.per_page'));
+            ->paginate($this->pageSize());
     }
 
     /**

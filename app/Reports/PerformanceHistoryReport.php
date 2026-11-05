@@ -133,17 +133,18 @@ final class PerformanceHistoryReport implements ReportDefinition
     {
         return $this->records()->map(fn (PerformanceRecord $record): array => [
             'event_date' => $record->event_date->format('d M Y'),
-            'band_number' => $record->broodcock?->displayBand() ?? '-',
-            'bird_name' => $record->broodcock?->name ?? '-',
-            'bloodline' => $record->broodcock?->bloodline ?? '-',
+            'band_number' => $record->broodcock?->displayBand() ?? 'Bird removed',
+            'bird_name' => $record->broodcock?->name ?? 'Bird removed',
+            'bloodline' => $record->broodcock?->bloodline ?? 'Not recorded',
             'event_type' => $record->event_type->label(),
             'result' => $record->event_type->hasContestResult()
                 ? $record->result->label()
-                // A weigh-in has no outcome. Printing "Not applicable" in a
-                // Result column reads as a scoring decision; a dash does not.
-                : '-',
-            'weight' => $record->weight !== null ? number_format((float) $record->weight, 2) : '-',
-            'duration' => $record->durationLabel() ?? '-',
+                // A weigh-in has no outcome. "No contest" says so in words:
+                // a bare dash read as nothing, and in the CSV the formula
+                // guard turned it into '- in the spreadsheet.
+                : 'No contest',
+            'weight' => $record->weight !== null ? number_format((float) $record->weight, 2) : 'Not weighed',
+            'duration' => $record->durationLabel() ?? 'Not recorded',
             'rating' => $record->rating !== null ? (string) $record->rating : 'Not rated',
             'recorded_by' => $record->recordedBy?->full_name ?? 'Unknown',
         ]);
@@ -208,7 +209,7 @@ final class PerformanceHistoryReport implements ReportDefinition
 
             return [
                 'bird' => $this->birdLabel((string) $row->name, $row->band_number),
-                'bloodline' => $row->bloodline ?? '-',
+                'bloodline' => $row->bloodline ?? 'Not recorded',
                 'events' => (int) $row->total_events,
                 'contests' => $contests,
                 'wins' => $wins,

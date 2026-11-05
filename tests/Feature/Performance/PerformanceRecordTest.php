@@ -36,7 +36,7 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_the_list_opens_with_the_record_count_and_filters_by_kind_of_event(): void
     {
-        $bird = Broodcock::factory()->create(['name' => 'Kanlaon']);
+        $bird = Broodcock::factory()->male()->create(['name' => 'Kanlaon']);
         PerformanceRecord::factory()->count(3)->for($bird)->create(['event_type' => PerformanceEventType::Derby]);
         PerformanceRecord::factory()->count(2)->for($bird)->create(['event_type' => PerformanceEventType::WeighIn, 'result' => PerformanceResult::NotApplicable]);
 
@@ -54,7 +54,7 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_the_performance_list_shows_records_and_paginates(): void
     {
-        $bird = Broodcock::factory()->create(['name' => 'Kanlaon']);
+        $bird = Broodcock::factory()->male()->create(['name' => 'Kanlaon']);
         PerformanceRecord::factory()->count(20)->for($bird)->create();
 
         $component = Livewire::actingAs(User::factory()->staff()->create())
@@ -62,15 +62,15 @@ final class PerformanceRecordTest extends TestCase
             ->assertOk()
             ->assertSee('Kanlaon');
 
-        // config('gfms.per_page') is 15, so 20 records must split over pages.
+        // The lists page in 10 by default, so 20 records must split over pages.
         $this->assertSame(20, $component->instance()->records->total());
-        $this->assertSame(15, $component->instance()->records->count());
+        $this->assertSame(10, $component->instance()->records->count());
     }
 
     public function test_the_list_can_be_searched_by_bird(): void
     {
-        $wanted = Broodcock::factory()->create(['name' => 'Kanlaon', 'band_number' => 'KN-0001']);
-        $other = Broodcock::factory()->create(['name' => 'Mayon', 'band_number' => 'MY-0002']);
+        $wanted = Broodcock::factory()->male()->create(['name' => 'Kanlaon', 'band_number' => 'KN-0001']);
+        $other = Broodcock::factory()->male()->create(['name' => 'Mayon', 'band_number' => 'MY-0002']);
 
         PerformanceRecord::factory()->for($wanted)->create();
         PerformanceRecord::factory()->for($other)->create();
@@ -84,7 +84,7 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_the_list_can_be_filtered_by_event_type_and_result(): void
     {
-        $bird = Broodcock::factory()->create(['name' => 'Kanlaon']);
+        $bird = Broodcock::factory()->male()->create(['name' => 'Kanlaon']);
 
         PerformanceRecord::factory()->derby()->win()->for($bird)->create();
         PerformanceRecord::factory()->sparring()->loss()->for($bird)->create();
@@ -103,7 +103,7 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_the_list_can_be_filtered_by_a_date_range(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
 
         PerformanceRecord::factory()->on('2026-01-10')->for($bird)->create();
         PerformanceRecord::factory()->on('2026-03-15')->for($bird)->create();
@@ -119,7 +119,7 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_changing_a_filter_returns_to_the_first_page(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
         PerformanceRecord::factory()->count(20)->for($bird)->create();
 
         $component = Livewire::actingAs(User::factory()->staff()->create())
@@ -141,7 +141,7 @@ final class PerformanceRecordTest extends TestCase
     public function test_staff_can_record_a_performance_event(): void
     {
         $staff = User::factory()->staff()->create();
-        $bird = Broodcock::factory()->create(['name' => 'Kanlaon']);
+        $bird = Broodcock::factory()->male()->create(['name' => 'Kanlaon']);
 
         Livewire::actingAs($staff)
             ->test(Form::class)
@@ -179,7 +179,7 @@ final class PerformanceRecordTest extends TestCase
     {
         $staff = User::factory()->staff()->create();
         $owner = User::factory()->owner()->create();
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
 
         Livewire::actingAs($staff)
             ->test(Form::class)
@@ -199,7 +199,7 @@ final class PerformanceRecordTest extends TestCase
     /** Arriving from a bird's timeline pre-selects that bird. */
     public function test_the_create_form_can_be_opened_with_a_bird_already_chosen(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
 
         Livewire::actingAs(User::factory()->staff()->create())
             ->test(Form::class, ['broodcock' => $bird])
@@ -212,7 +212,7 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_a_weigh_in_cannot_be_recorded_as_a_win(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
 
         Livewire::actingAs(User::factory()->staff()->create())
             ->test(Form::class)
@@ -248,7 +248,7 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_a_conditioning_session_never_reaches_the_win_rate(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
 
         PerformanceRecord::factory()->win()->for($bird)->create();
         PerformanceRecord::factory()->count(9)->conditioning()->for($bird)->create();
@@ -268,7 +268,7 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_a_rating_outside_one_to_five_is_rejected(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
 
         Livewire::actingAs(User::factory()->staff()->create())
             ->test(Form::class)
@@ -285,7 +285,7 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_a_negative_weight_is_rejected(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
 
         Livewire::actingAs(User::factory()->staff()->create())
             ->test(Form::class)
@@ -302,7 +302,7 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_a_future_event_date_is_rejected(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
 
         Livewire::actingAs(User::factory()->staff()->create())
             ->test(Form::class)
@@ -318,7 +318,7 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_a_contest_must_state_its_result(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
 
         Livewire::actingAs(User::factory()->staff()->create())
             ->test(Form::class)
@@ -331,7 +331,7 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_validation_messages_are_written_in_plain_language(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
 
         $errors = Livewire::actingAs(User::factory()->staff()->create())
             ->test(Form::class)
@@ -389,7 +389,7 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_the_owner_can_soft_delete_a_record_after_confirming(): void
     {
-        $bird = Broodcock::factory()->create(['name' => 'Kanlaon']);
+        $bird = Broodcock::factory()->male()->create(['name' => 'Kanlaon']);
         $record = PerformanceRecord::factory()->derby()->for($bird)->on('2026-05-01')->create();
 
         $component = Livewire::actingAs(User::factory()->owner()->create())
@@ -427,7 +427,7 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_the_timeline_shows_a_birds_events_newest_first(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
 
         PerformanceRecord::factory()->for($bird)->on('2026-01-01')->create();
         PerformanceRecord::factory()->for($bird)->on('2026-06-01')->create();
@@ -447,8 +447,8 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_the_timeline_shows_only_that_birds_events(): void
     {
-        $bird = Broodcock::factory()->create();
-        $other = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
+        $other = Broodcock::factory()->male()->create();
 
         PerformanceRecord::factory()->count(2)->for($bird)->create();
         PerformanceRecord::factory()->count(5)->for($other)->create();
@@ -462,7 +462,7 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_the_timeline_shows_the_summary_above_the_events(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
 
         PerformanceRecord::factory()->count(3)->win()->for($bird)->create();
         PerformanceRecord::factory()->loss()->for($bird)->create();
@@ -476,7 +476,7 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_a_bird_with_no_events_gets_an_empty_state_that_says_what_to_do(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
 
         Livewire::actingAs(User::factory()->staff()->create())
             ->test(BroodcockTimeline::class, ['broodcock' => $bird])
@@ -487,7 +487,7 @@ final class PerformanceRecordTest extends TestCase
 
     public function test_deleting_from_the_timeline_updates_the_summary_immediately(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
 
         PerformanceRecord::factory()->win()->for($bird)->create();
         $loss = PerformanceRecord::factory()->loss()->for($bird)->create();
@@ -506,8 +506,8 @@ final class PerformanceRecordTest extends TestCase
     /** A crafted id must not reach another bird's record through this component. */
     public function test_the_timeline_cannot_delete_another_birds_record(): void
     {
-        $bird = Broodcock::factory()->create();
-        $other = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
+        $other = Broodcock::factory()->male()->create();
         $foreign = PerformanceRecord::factory()->for($other)->create();
 
         $component = Livewire::actingAs(User::factory()->owner()->create())
@@ -535,13 +535,13 @@ final class PerformanceRecordTest extends TestCase
     {
         $user = User::factory()->staff()->create();
 
-        Broodcock::factory()->count(2)->create()->each(
+        Broodcock::factory()->male()->count(2)->create()->each(
             fn (Broodcock $bird) => PerformanceRecord::factory()->count(2)->for($bird)->create(),
         );
 
         $small = $this->countQueriesWhileRendering(fn () => Livewire::actingAs($user)->test(Index::class));
 
-        Broodcock::factory()->count(5)->create()->each(
+        Broodcock::factory()->male()->count(5)->create()->each(
             fn (Broodcock $bird) => PerformanceRecord::factory()->count(2)->for($bird)->create(),
         );
 
@@ -553,7 +553,7 @@ final class PerformanceRecordTest extends TestCase
     public function test_the_timeline_issues_the_same_number_of_queries_regardless_of_row_count(): void
     {
         $user = User::factory()->staff()->create();
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
 
         PerformanceRecord::factory()->count(2)->for($bird)->create();
         $small = $this->countQueriesWhileRendering(

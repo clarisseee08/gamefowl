@@ -32,6 +32,35 @@ final class Show extends Component
 
     public ?string $generatePenId = null;
 
+    /**
+     * The edit form, open in a side sheet over this page rather than on a page
+     * of its own (the owner's decision). The form component is unchanged.
+     */
+    public bool $showForm = false;
+
+    /** Closing the dialog re-keys the form, so it reopens as the record stands. */
+    public int $formNonce = 0;
+
+    public function updatedShowForm(bool $open): void
+    {
+        if (! $open) {
+            $this->formNonce++;
+        }
+    }
+
+    /** Called by the dialog when a form that was typed in is closed: start the next one blank. */
+    public function resetForm(): void
+    {
+        $this->showForm = false;
+        $this->updatedShowForm(false);
+    }
+
+    public function openForm(): void
+    {
+        $this->authorize('update', $this->record);
+        $this->showForm = true;
+    }
+
     public function mount(BreedingRecord $record): void
     {
         $this->authorize('view', $record);
@@ -44,9 +73,11 @@ final class Show extends Component
     public function breeding(): BreedingRecord
     {
         return BreedingRecord::query()
+            // withTrashed() because deleting a bird keeps its breeding history:
+            // without it a deleted parent comes back null and this page fails.
             ->with([
-                'sire:id,name,band_number,bloodline,breed,sex',
-                'dam:id,name,band_number,bloodline,breed,sex',
+                'sire' => fn ($query) => $query->withTrashed()->select(['id', 'name', 'band_number', 'bloodline', 'breed', 'sex', 'deleted_at'])->with('primaryPhoto'),
+                'dam' => fn ($query) => $query->withTrashed()->select(['id', 'name', 'band_number', 'bloodline', 'breed', 'sex', 'deleted_at'])->with('primaryPhoto'),
                 'recordedBy:id,full_name',
             ])
             ->findOrFail($this->record->id);
@@ -67,6 +98,8 @@ final class Show extends Component
         return Broodcock::query()
             ->where('sire_id', $this->record->sire_id)
             ->where('dam_id', $this->record->dam_id)
+            // The photo too, for the hover card on each chick's row.
+            ->with('primaryPhoto')
             ->orderBy('date_hatched')
             // bloodline is selected because each row carries a band tag, and
             // BandTag resolves its colour from the bloodline. It is a column on
@@ -137,6 +170,6 @@ final class Show extends Component
     public function render(): View
     {
         return view('livewire.breeding.show')
-            ->title($this->breeding->sire->name.' × '.$this->breeding->dam->name);
+            ->title(($this->breeding->sire?->name ?? 'Bird removed').' × '.($this->breeding->dam?->name ?? 'Bird removed'));
     }
 }

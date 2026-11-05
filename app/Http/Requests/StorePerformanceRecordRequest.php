@@ -6,7 +6,10 @@ namespace App\Http\Requests;
 
 use App\Enums\PerformanceEventType;
 use App\Enums\PerformanceResult;
+use App\Enums\Sex;
+use App\Models\Broodcock;
 use App\Models\PerformanceRecord;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -26,7 +29,18 @@ final class StorePerformanceRecordRequest extends FormRequest
     public static function rulesFor(): array
     {
         return [
-            'broodcock_id' => ['required', 'integer', Rule::exists('broodcocks', 'id')->whereNull('deleted_at')],
+            'broodcock_id' => [
+                'required',
+                'integer',
+                Rule::exists('broodcocks', 'id')->whereNull('deleted_at'),
+                // Hens do not fight: sparring, derbies and conditioning are a
+                // cock's record, so a hen has no performance history at all.
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    if (Broodcock::query()->whereKey($value)->where('sex', Sex::Female->value)->exists()) {
+                        $fail('Performance is recorded for broodcocks only. This bird is a broodhen.');
+                    }
+                },
+            ],
             'event_date' => ['required', 'date', 'before_or_equal:today'],
             'event_type' => ['required', Rule::enum(PerformanceEventType::class)],
             'weight' => ['nullable', 'numeric', 'min:0', 'max:999.99'],

@@ -57,7 +57,7 @@
     row is chrome that never earns its space, and a Clear button that is
     usually disabled teaches people to ignore it.
 --}}
-<div {{ $attributes->merge(['class' => 'mb-6 border-b border-border pb-5 pt-6 sm:mb-8']) }}>
+<div {{ $attributes->merge(['class' => 'mb-4 border-b border-border pb-4 pt-4']) }}>
     {{-- flex-wrap, not a grid: the controls have genuinely different natural
          widths, and a grid forces them into columns the widest one dictates.
          Wrapping lets the row break where it actually runs out of room. --}}
@@ -77,7 +77,7 @@
              not in the footer: the footer only exists once a filter is active,
              so a loading state living there is invisible on the first search. --}}
         @if ($loading)
-            <div class="shrink-0 text-[14px] text-muted-foreground">{{ $loading }}</div>
+            <div class="shrink-0 text-[14px] lg:text-xs text-muted-foreground">{{ $loading }}</div>
         @endif
     </div>
 
@@ -88,7 +88,7 @@
                      block above and the only markup added afterwards is the
                      .datum span, so there is no path from caller input to
                      rendered HTML here. --}}
-                <p class="text-[14px] text-muted-foreground">{!! $summaryHtml !!}</p>
+                <p class="text-[14px] lg:text-xs text-muted-foreground">{!! $summaryHtml !!}</p>
             @else
                 <span></span>
             @endif

@@ -1,4 +1,8 @@
-@props(['bird'])
+@props([
+    'bird',
+    /** The console's EMS sizes: 14-16px nodes instead of the public page's display type. */
+    'compact' => false,
+])
 
 @php
     /*
@@ -7,6 +11,10 @@
      * bird in the tree links to its own page.
      */
     $label = fn ($b) => $b->band_number ?: $b->name;
+
+    $type = $compact
+        ? ['role' => 'text-xs font-medium text-muted-foreground lg:text-[11px]', 'self' => 'text-base font-bold text-foreground', 'parent' => 'text-sm font-semibold text-foreground', 'name' => 'text-xs font-medium text-muted-foreground', 'meta' => 'text-xs text-muted-foreground', 'grand' => 'text-sm font-semibold text-foreground', 'none' => 'text-xs text-muted-foreground']
+        : ['role' => 'text-[13px] font-semibold text-muted-foreground', 'self' => 'font-display text-[22px] font-semibold tracking-[-0.015em] text-foreground', 'parent' => 'font-display text-[18px] font-semibold tracking-[-0.015em] text-foreground', 'name' => 'font-sans text-[15px] font-medium text-muted-foreground', 'meta' => 'text-[14px] text-muted-foreground', 'grand' => 'font-display text-[16px] font-semibold tracking-[-0.015em] text-foreground', 'none' => 'text-[16px] text-muted-foreground'];
     $realName = fn ($b) => ($b->band_number && preg_match('/\p{L}/u', (string) $b->name)) ? $b->name : null;
 
     $parents = [
@@ -45,9 +53,9 @@
     ])>
         {{-- The bird. --}}
         <div class="border-l-2 py-1 pl-4" style="border-color: {{ \App\Support\BandTag::hex($bird->bloodline) }}">
-            <p class="text-[13px] font-semibold text-muted-foreground">This bird</p>
-            <p class="font-display text-[22px] font-semibold tracking-[-0.015em] text-foreground">{{ $label($bird) }}</p>
-            <p class="flex items-center gap-2 text-[14px] text-muted-foreground">
+            <p class="{{ $type['role'] }}">This bird</p>
+            <p class="{{ $type['self'] }}">{{ $label($bird) }}</p>
+            <p class="flex items-center gap-2 {{ $type['meta'] }}">
                 <x-band-dot :bloodline="$bird->bloodline" />{{ $bird->bloodline ?: 'Bloodline not recorded' }}
             </p>
         </div>
@@ -61,19 +69,19 @@
             @foreach ($parents as $parent)
                 <li class="border-l-2 py-1 pl-4"
                     style="border-color: {{ $parent['bird'] ? \App\Support\BandTag::hex($parent['bird']->bloodline) : 'var(--color-border)' }}">
-                    <p class="text-[13px] font-semibold text-muted-foreground">{{ $parent['role'] }}</p>
+                    <p class="{{ $type['role'] }}">{{ $parent['role'] }}</p>
                     @if ($parent['bird'])
                         <a href="{{ route('broodcocks.show', $parent['bird']) }}" wire:navigate
                            class="group inline-flex min-h-11 flex-col justify-center">
-                            <span class="font-display text-[18px] font-semibold tracking-[-0.015em] text-foreground group-hover:underline group-hover:underline-offset-4">
-                                {{ $label($parent['bird']) }}@if ($realName($parent['bird']))<span class="font-sans text-[15px] font-medium text-muted-foreground"> &nbsp;{{ $realName($parent['bird']) }}</span>@endif
+                            <span class="{{ $type['parent'] }}">
+                                {{ $label($parent['bird']) }}@if ($realName($parent['bird']))<span class="{{ $type['name'] }}"> &nbsp;{{ $realName($parent['bird']) }}</span>@endif
                             </span>
-                            <span class="flex items-center gap-2 text-[14px] text-muted-foreground">
+                            <span class="flex items-center gap-2 {{ $type['meta'] }}">
                                 <x-band-dot :bloodline="$parent['bird']->bloodline" />{{ $parent['bird']->bloodline ?: 'Bloodline not recorded' }}@if ($parent['bird']->is_external)<span>&middot; outside bird</span>@endif
                             </span>
                         </a>
                     @else
-                        <p class="min-h-11 py-2 text-[16px] text-muted-foreground">Not recorded</p>
+                        <p class="min-h-11 py-2 {{ $type['none'] }}">Not recorded</p>
                     @endif
                 </li>
             @endforeach
@@ -86,9 +94,9 @@
                 @foreach ($parents as $parent)
                     @foreach ($grand($parent['bird']) as $g)
                         <li class="border-l-2 py-0.5 pl-3" style="border-color: {{ \App\Support\BandTag::hex($g['bird']->bloodline) }}">
-                            <p class="text-[12px] font-semibold text-muted-foreground">{{ $g['role'] }} &middot; {{ strtolower($parent['role']) }}'s side</p>
+                            <p class="{{ $type['role'] }}">{{ $g['role'] }} &middot; {{ strtolower($parent['role']) }}'s side</p>
                             <a href="{{ route('broodcocks.show', $g['bird']) }}" wire:navigate
-                               class="inline-flex min-h-11 items-center font-display text-[16px] font-semibold tracking-[-0.015em] text-foreground hover:underline hover:underline-offset-4">
+                               class="inline-flex min-h-11 items-center {{ $type['grand'] }}">
                                 {{ $label($g['bird']) }}
                             </a>
                         </li>

@@ -102,4 +102,27 @@ final class BreedingScreensTest extends TestCase
             ->assertSee('No chicks registered yet')
             ->assertSee('Nothing hatched from this mating.');
     }
+
+    /**
+     * The search matches a sire OR a dam, and that OR used to sit loose in the
+     * query: a mating whose dam matched escaped the date filter around it.
+     */
+    public function test_the_search_stays_inside_the_date_filter(): void
+    {
+        BreedingRecord::factory()->forPair(
+            Broodcock::factory()->male()->create(['name' => 'Alpha']),
+            Broodcock::factory()->female()->create(['name' => 'Luna Old']),
+        )->create(['mating_date' => '2020-01-10']);
+        BreedingRecord::factory()->forPair(
+            Broodcock::factory()->male()->create(['name' => 'Bravo']),
+            Broodcock::factory()->female()->create(['name' => 'Luna New']),
+        )->create(['mating_date' => now()->subMonth()->toDateString()]);
+
+        Livewire::actingAs(User::factory()->staff()->create())
+            ->test(Index::class)
+            ->set('from', now()->subYear()->toDateString())
+            ->set('search', 'Luna')
+            ->assertSee('Bravo')
+            ->assertDontSee('Alpha');
+    }
 }

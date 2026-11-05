@@ -30,6 +30,19 @@
      * guarantee.
      */
     $b = config('gfms-brand');
+
+    /*
+     * THE TYPE: an editorial document, set the way a report written by Claude
+     * reads - a serif for the title and the prose (Source Serif 4, an open
+     * cousin of the serif Claude writes in; Claude's own faces are
+     * proprietary) and Inter, the app's face, for tables and figures, whose
+     * tabular digits keep a column of numbers aligned.
+     *
+     * Both are OFL-licensed TTFs in resources/fonts (licences beside them),
+     * read by dompdf from inside its chroot. Forward slashes: dompdf takes a
+     * path, and a Windows backslash is not one it can open.
+     */
+    $font = fn (string $file): string => str_replace('\\', '/', resource_path('fonts/'.$file));
 @endphp
 <!DOCTYPE html>
 <html>
@@ -37,114 +50,139 @@
     <meta charset="utf-8">
     <title>{{ $title }}</title>
     <style>
+        @font-face { font-family: 'Source Serif'; font-style: normal; font-weight: normal; src: url('{{ $font('source-serif-4-latin-400-normal.ttf') }}') format('truetype'); }
+        @font-face { font-family: 'Source Serif'; font-style: normal; font-weight: bold; src: url('{{ $font('source-serif-4-latin-600-normal.ttf') }}') format('truetype'); }
+        @font-face { font-family: 'Source Serif'; font-style: italic; font-weight: normal; src: url('{{ $font('source-serif-4-latin-400-italic.ttf') }}') format('truetype'); }
+        @font-face { font-family: 'Inter'; font-style: normal; font-weight: normal; src: url('{{ $font('inter-latin-400-normal.ttf') }}') format('truetype'); }
+        @font-face { font-family: 'Inter'; font-style: normal; font-weight: bold; src: url('{{ $font('inter-latin-600-normal.ttf') }}') format('truetype'); }
+
         @page {
-            margin: 26mm 14mm 20mm 14mm;
+            margin: 24mm 16mm 20mm 16mm;
         }
 
         body {
-            font-family: DejaVu Sans, sans-serif;   /* ships with dompdf; handles non-ASCII */
-            font-size: 9pt;
+            font-family: 'Inter', DejaVu Sans, sans-serif;
+            font-size: 8.5pt;
+            line-height: 1.45;
             color: {{ $b['foreground'] }};
             margin: 0;
         }
 
-        /* Running header - repeats on every page because it is position:fixed. */
+        /* Running header - repeats on every page because it is position:fixed.
+           A quiet line of small type over a hairline, as a document's header. */
         .page-header {
             position: fixed;
-            top: -18mm;
+            top: -15mm;
             left: 0;
             right: 0;
-            height: 14mm;
-            border-bottom: 2pt solid {{ $b['brand'] }};
+            height: 9mm;
+            border-bottom: 0.5pt solid {{ $b['print']['rule_strong'] }};
         }
 
         .page-header .farm {
-            font-size: 13pt;
+            font-family: 'Source Serif', serif;
+            font-size: 10.5pt;
             font-weight: bold;
-            color: {{ $b['brand'] }};
+            color: {{ $b['foreground'] }};
         }
 
         .page-header .subtitle {
-            font-size: 8pt;
+            font-size: 7.5pt;
             color: {{ $b['muted_foreground'] }};
         }
 
         .page-footer {
             position: fixed;
-            bottom: -14mm;
+            bottom: -13mm;
             left: 0;
             right: 0;
-            height: 10mm;
-            border-top: 1pt solid {{ $b['print']['rule_strong'] }};
+            height: 8mm;
+            border-top: 0.5pt solid {{ $b['print']['rule'] }};
             padding-top: 2mm;
-            font-size: 7.5pt;
+            font-size: 7pt;
             color: {{ $b['muted_foreground'] }};
         }
 
-        /* dompdf resolves these counters at render time. */
-        .page-number:after {
-            content: "Page " counter(page) " of " counter(pages);
+
+        /* The title block: a small spaced eyebrow, the title in the serif,
+           the subtitle in its italic. */
+        .eyebrow {
+            font-size: 7pt;
+            font-weight: bold;
+            letter-spacing: 1.2pt;
+            text-transform: uppercase;
+            color: {{ $b['brand'] }};
+            margin: 0 0 1.5mm 0;
         }
 
         h1 {
-            border-left: 3pt solid {{ $b['brand'] }};
-            padding-left: 3mm;
-            font-size: 15pt;
-            margin: 0 0 2mm 0;
+            font-family: 'Source Serif', serif;
+            font-size: 22pt;
+            font-weight: bold;
+            line-height: 1.15;
+            margin: 0 0 1.5mm 0;
             color: {{ $b['foreground'] }};
         }
 
         .meta {
-            font-size: 8pt;
+            font-family: 'Source Serif', serif;
+            font-style: italic;
+            font-size: 10pt;
             color: {{ $b['muted_foreground'] }};
-            margin-bottom: 4mm;
+            margin: 0 0 5mm 0;
         }
 
+        h2, h3 {
+            font-family: 'Source Serif', serif;
+            font-weight: bold;
+            color: {{ $b['foreground'] }};
+            margin: 6mm 0 2.5mm 0;
+        }
+
+        h2 { font-size: 13pt; }
+        h3 { font-size: 11pt; }
+
         /* Filter summary - a report is not defensible unless it states the
-           exact parameters it was generated with. */
+           exact parameters it was generated with. A margin note, not a box. */
         .filters {
-            background-color: {{ $b['muted'] }};
-            border: 0.5pt solid {{ $b['print']['rule_strong'] }};
-            padding: 2.5mm 3mm;
-            margin-bottom: 5mm;
+            border-left: 2pt solid {{ $b['brand'] }};
+            padding: 1mm 0 1mm 3mm;
+            margin: 0 0 6mm 0;
             font-size: 8pt;
+            color: {{ $b['muted_foreground'] }};
         }
 
         .filters strong {
             color: {{ $b['foreground'] }};
         }
 
+        /* Tables: hairlines, an airy header row, no zebra boxes. */
         table.data {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 5mm;
+            margin-bottom: 6mm;
         }
 
         table.data thead th {
-            background-color: {{ $b['foreground'] }};
-            color: {{ $b['card'] }};
-            font-size: 8pt;
+            color: {{ $b['muted_foreground'] }};
+            font-size: 7pt;
             font-weight: bold;
+            letter-spacing: 0.4pt;
+            text-transform: uppercase;
             text-align: left;
-            padding: 2mm;
-            border: 0.5pt solid {{ $b['foreground'] }};
+            padding: 2mm 2mm 2mm 0;
+            border-bottom: 1pt solid {{ $b['foreground'] }};
         }
 
         table.data tbody td {
-            padding: 1.8mm 2mm;
-            border: 0.5pt solid {{ $b['print']['rule'] }};
+            padding: 2mm 2mm 2mm 0;
+            border-bottom: 0.5pt solid {{ $b['print']['rule'] }};
             vertical-align: top;
         }
 
-        /* dompdf supports :nth-child on table rows for zebra striping. */
-        table.data tbody tr:nth-child(even) td {
-            background-color: {{ $b['background'] }};
-        }
-
         table.data tfoot td {
-            padding: 2mm;
-            border: 0.5pt solid {{ $b['print']['rule_strong'] }};
-            background-color: {{ $b['muted'] }};
+            padding: 2.2mm 2mm 2.2mm 0;
+            border-top: 1pt solid {{ $b['foreground'] }};
             font-weight: bold;
         }
 
@@ -156,43 +194,52 @@
             text-align: center;
         }
 
-        /* Summary tiles. Laid out as a TABLE, not flexbox - see the note above. */
+        /* Summary figures. Laid out as a TABLE, not flexbox - see the note
+           above. The figure large, its label small and spaced beneath a
+           hairline, the way a written report states its headline numbers. */
         table.summary {
             width: 100%;
             border-collapse: separate;
-            border-spacing: 2mm 0;
-            margin-bottom: 5mm;
+            border-spacing: 3mm 0;
+            margin: 0 -3mm 6mm -3mm;
         }
 
         table.summary td {
-            background-color: {{ $b['muted'] }};
-            border: 0.5pt solid {{ $b['print']['rule_strong'] }};
-            padding: 2.5mm;
+            border-top: 1.5pt solid {{ $b['brand'] }};
+            padding: 2.5mm 0 0 0;
             width: 25%;
+            vertical-align: top;
         }
 
         table.summary .label {
-            font-size: 7.5pt;
+            font-size: 6.8pt;
+            font-weight: bold;
+            letter-spacing: 0.8pt;
             color: {{ $b['muted_foreground'] }};
             text-transform: uppercase;
         }
 
         table.summary .value {
-            font-size: 14pt;
+            font-family: 'Source Serif', serif;
+            font-size: 17pt;
             font-weight: bold;
+            line-height: 1.2;
             color: {{ $b['foreground'] }};
         }
 
         .empty {
             padding: 12mm;
             text-align: center;
+            font-family: 'Source Serif', serif;
+            font-style: italic;
             color: {{ $b['muted_foreground'] }};
-            border: 0.5pt dashed {{ $b['print']['rule_strong'] }};
+            border-top: 0.5pt solid {{ $b['print']['rule'] }};
+            border-bottom: 0.5pt solid {{ $b['print']['rule'] }};
         }
 
         .badge {
-            padding: 0.4mm 1.4mm;
-            font-size: 7.5pt;
+            padding: 0.3mm 1.6mm;
+            font-size: 7pt;
             border: 0.5pt solid {{ $b['print']['rule_strong'] }};
             background-color: {{ $b['muted'] }};
         }
@@ -213,9 +260,11 @@
 
     <div class="page-footer">
         <span>Generated {{ $generatedAt->format('j F Y, g:i a') }}@if (! empty($generatedBy)) by {{ $generatedBy }}@endif</span>
-        <span style="float: right;" class="page-number"></span>
+        {{-- "Page X of Y" is stamped here by ReportController after
+             rendering: dompdf cannot fill counter(pages). --}}
     </div>
 
+    <p class="eyebrow">Report</p>
     <h1>{{ $title }}</h1>
 
     @if (! empty($subtitle))

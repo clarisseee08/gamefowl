@@ -9,17 +9,17 @@
 <section x-data="{ open: false, src: '', label: '' }" aria-labelledby="gallery-heading">
 
     <div class="flex items-baseline justify-between gap-3">
-        <h2 id="gallery-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">
+        <h2 id="gallery-heading" class="text-[15px] font-semibold text-foreground lg:text-sm">
             Photos
             @if ($photos->isNotEmpty())
-                <span class="datum ml-1 text-[15px] font-normal text-muted-foreground">{{ $photos->count() }}</span>
+                <span class="datum ml-1 text-[15px] lg:text-xs font-normal text-muted-foreground">{{ $photos->count() }}</span>
             @endif
         </h2>
     </div>
 
     @if ($photos->isEmpty())
         {{-- Empty state that says what to do next, never a blank box. --}}
-        <x-empty-state class="mt-5"
+        <x-empty-state :bare="true" class="mt-2 py-8"
                        title="No photos of this bird yet"
                        :description="$canManage
                            ? 'Use Add photos above to take or choose a picture. The first one you add becomes the main photo shown in lists.'
@@ -75,7 +75,7 @@
                                        @error('captionDraft') aria-describedby="caption-{{ $photo->id }}-error" aria-invalid="true" @enderror
                                        @class(['d-input w-full', 'mt-1', 'd-input-error' => $errors->has('captionDraft')])>
                                 @error('captionDraft')
-                                    <p id="caption-{{ $photo->id }}-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
+                                    <p id="caption-{{ $photo->id }}-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p>
                                 @enderror
 
                                 <div class="mt-3 flex gap-2">
@@ -91,7 +91,7 @@
                             </div>
                         @else
                             <p @class([
-                                'text-[15px] leading-snug',
+                                'text-[15px] lg:text-xs leading-snug',
                                 'text-foreground' => $photo->caption,
                                 'text-muted-foreground' => ! $photo->caption,
                             ])>
@@ -99,7 +99,7 @@
                             </p>
                         @endif
 
-                        <p class="mt-1 text-[13px] leading-snug text-muted-foreground">
+                        <p class="mt-1 text-[13px] lg:text-[11px] leading-snug text-muted-foreground">
                             Added by {{ $photo->uploadedBy?->full_name ?? 'a removed account' }}
                         </p>
 
@@ -149,10 +149,10 @@
                              width="64" height="80" class="h-full w-full object-cover">
                     </span>
                     <div class="min-w-0">
-                        <h2 id="delete-photo-title" class="font-display text-[22px] font-semibold tracking-[-0.015em] text-foreground">
+                        <h2 id="delete-photo-title" class="font-display text-[22px] lg:text-base font-semibold tracking-[-0.015em] text-foreground">
                             Delete this photo of {{ $confirming->broodcock->displayName() }}?
                         </h2>
-                        <p id="delete-photo-body" class="mt-2 text-[15px] leading-relaxed text-muted-foreground">
+                        <p id="delete-photo-body" class="mt-2 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                             @if ($confirming->caption)
                                 &ldquo;{{ $confirming->caption }}&rdquo; will be removed for good.
                             @else
@@ -201,7 +201,7 @@
 
         <figure class="flex max-h-full flex-col items-center">
             <img :src="src" :alt="label" class="max-h-[80vh] w-auto rounded-[12px] object-contain">
-            <figcaption class="mt-4 text-center text-[15px] leading-snug text-card" x-text="label"></figcaption>
+            <figcaption class="mt-4 text-center text-[15px] lg:text-xs leading-snug text-card" x-text="label"></figcaption>
         </figure>
     </div>
 </section>

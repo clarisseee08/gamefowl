@@ -55,7 +55,7 @@
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-1"
         role="menu"
-        class="d-menu absolute top-full z-50 mt-1.5 {{ $width }} flex-nowrap overflow-hidden rounded-box border border-base-300 bg-base-100 p-1 text-[15px] elev-2 {{ $align === 'left' ? 'left-0' : 'right-0' }}">
+        class="d-menu absolute top-full z-50 mt-1.5 {{ $width }} flex-nowrap overflow-hidden rounded-box border border-base-300 bg-base-100 p-1 text-[15px] lg:text-xs elev-2 {{ $align === 'left' ? 'left-0' : 'right-0' }}">
         {{ $slot }}
     </ul>
 </div>

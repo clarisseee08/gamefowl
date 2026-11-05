@@ -164,4 +164,27 @@ final class DiagnosticsTest extends TestCase
             ->assertOk()
             ->assertSee('Mail mailer');
     }
+
+    /**
+     * Debug mode is meant to be on for a developer, so it only counts as a
+     * failing check in production, where it leaks stack traces to visitors.
+     */
+    public function test_debug_mode_counts_as_a_failing_check_in_production(): void
+    {
+        config(['app.debug' => true]);
+        $owner = User::factory()->owner()->create();
+
+        $headline = function () use ($owner): int {
+            $html = $this->actingAs($owner)->get(route('diagnostics'))->assertOk()->getContent();
+            $found = preg_match('/>(\d+)<\/span>\s*<span[^>]*>checks? needs? attention/', $html, $match);
+            $this->assertSame(1, $found, 'The headline count was not found on the page.');
+
+            return (int) $match[1];
+        };
+
+        $locally = $headline();
+        $this->app['env'] = 'production';
+
+        $this->assertSame($locally + 1, $headline(), 'Debug mode left on in production must count as a failing check.');
+    }
 }
