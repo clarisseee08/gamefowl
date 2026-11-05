@@ -51,8 +51,13 @@
 @endphp
 
 <div {{ $attributes->class(['w-full', 'mb-3' => $variant === 'underline']) }}>
+    {{-- The selected tab moves the instant it is clicked; the server's answer
+         follows. Keyed on the server's choice, so a change made by the
+         server (clearing filters, say) re-renders the strip in step. --}}
     <div role="tablist" class="{{ $list }}" @if ($label) aria-label="{{ $label }}" @endif
+         wire:key="{{ $id }}-{{ $active }}"
          x-data="{
+             current: @js((string) $active),
              move(step) {
                  const tabs = [...$el.querySelectorAll('[role=tab]')];
                  const at = tabs.indexOf(document.activeElement);
@@ -67,45 +72,51 @@
          x-on:keydown.end.prevent="move('last')">
         @foreach ($segments as $segment)
             @php
-                $isActive = (string) $active === (string) $segment['key'];
+                $key = (string) $segment['key'];
+                $isActive = (string) $active === $key;
                 $count = $segment['count'] ?? null;
+                $toneClass = $countTones[$segment['tone'] ?? ''] ?? 'bg-muted text-muted-foreground';
 
-                $tabClass = match ($variant) {
+                [$base, $on, $off] = match ($variant) {
                     'segmented' => [
-                        'flex h-full shrink-0 items-center gap-2 rounded-md px-2.5 text-sm font-normal outline-none transition-[background-color,transform,box-shadow,border-color,color] duration-200 ease-out hover:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring/50 active:scale-[0.96] lg:text-xs',
-                        $isActive
-                            ? 'scale-100 border border-primary/20 bg-linear-to-r from-primary to-primary/80 text-primary-foreground shadow-[0_4px_8px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.2)]'
-                            : 'bg-transparent text-muted-foreground',
+                        'flex h-full shrink-0 items-center gap-2 rounded-md border px-2.5 text-sm font-normal outline-none transition-[background-color,transform,box-shadow,border-color,color] duration-200 ease-out hover:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring/50 active:scale-[0.96] lg:text-xs',
+                        'scale-100 border-primary/20 bg-linear-to-r from-primary to-primary/80 text-primary-foreground shadow-[0_4px_8px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.2)]',
+                        'border-transparent bg-transparent text-muted-foreground hover:text-foreground',
                     ],
                     'boxed' => [
                         'inline-flex h-full shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
-                        $isActive ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground',
+                        'bg-background text-foreground shadow-sm',
+                        'hover:text-foreground',
                     ],
                     default => [
                         'group relative flex min-h-11 shrink-0 items-end whitespace-nowrap rounded-sm px-0.5 pb-1.5 text-sm outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring/50 lg:min-h-0 lg:text-[12.5px]',
-                        $isActive ? 'font-bold text-primary' : 'font-medium text-muted-foreground hover:text-foreground',
+                        'font-bold text-primary',
+                        'font-medium text-muted-foreground hover:text-foreground',
                     ],
                 };
 
-                $countClass = $isActive
-                    ? ($variant === 'segmented' ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary text-primary-foreground')
-                    : ($countTones[$segment['tone'] ?? ''] ?? 'bg-muted text-muted-foreground');
-
+                $countOn = $variant === 'segmented' ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary text-primary-foreground';
                 $tag = isset($segment['href']) ? 'a' : 'button';
             @endphp
 
-            <{{ $tag }} @if ($tag === 'a') href="{{ $segment['href'] }}" @else type="button" wire:click="$set('{{ $model }}', '{{ $segment['key'] }}')" @endif
-                role="tab" id="{{ $id }}-{{ $segment['key'] }}" aria-controls="{{ $id }}-panel"
+            <{{ $tag }} @if ($tag === 'a') href="{{ $segment['href'] }}" @else type="button" wire:click="$set('{{ $model }}', '{{ $key }}')" @endif
+                x-on:click="current = @js($key)"
+                role="tab" id="{{ $id }}-{{ $key }}" aria-controls="{{ $id }}-panel"
                 aria-selected="{{ $isActive ? 'true' : 'false' }}" tabindex="{{ $isActive ? '0' : '-1' }}"
-                @class($tabClass)>
+                x-bind:aria-selected="current === @js($key) ? 'true' : 'false'"
+                x-bind:tabindex="current === @js($key) ? '0' : '-1'"
+                class="{{ $base }}"
+                x-bind:class="current === @js($key) ? @js($on) : @js($off)">
                 <span class="flex items-center gap-2">
                     <span class="leading-none">{{ $segment['label'] }}</span>
                     @if ($count !== null)
-                        <span class="{{ $countClass }} datum inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[11px] leading-none font-semibold transition-colors duration-200">{{ (int) $count > 99 ? '99+' : $count }}</span>
+                        <span class="datum inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[11px] leading-none font-semibold transition-colors duration-200"
+                              x-bind:class="current === @js($key) ? @js($countOn) : @js($toneClass)">{{ (int) $count > 99 ? '99+' : $count }}</span>
                     @endif
                 </span>
                 @if ($variant === 'underline')
-                    <span @class(['absolute -bottom-px left-0 h-[2px] w-full rounded-full transition-all duration-300', $isActive ? 'bg-primary' : 'bg-transparent group-hover:bg-border'])></span>
+                    <span class="absolute -bottom-px left-0 h-[2px] w-full rounded-full transition-all duration-300"
+                          x-bind:class="current === @js($key) ? 'bg-primary' : 'bg-transparent group-hover:bg-border'"></span>
                 @endif
             </{{ $tag }}>
         @endforeach
