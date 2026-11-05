@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Broodcocks;
 
+use App\Enums\Sex;
 use App\Livewire\Concerns\ChoosesShellByViewer;
 use App\Models\Broodcock;
 use Illuminate\Contracts\View\View;
@@ -34,6 +35,23 @@ final class Show extends Component
      */
     public bool $showForm = false;
 
+    /** Closing the dialog re-keys the form, so it reopens as the record stands. */
+    public int $formNonce = 0;
+
+    public function updatedShowForm(bool $open): void
+    {
+        if (! $open) {
+            $this->formNonce++;
+        }
+    }
+
+    /** Called by the dialog when a form that was typed in is closed: start the next one blank. */
+    public function resetForm(): void
+    {
+        $this->showForm = false;
+        $this->updatedShowForm(false);
+    }
+
     public function openForm(): void
     {
         $this->authorize('update', $this->broodcock);
@@ -45,6 +63,17 @@ final class Show extends Component
         $this->authorize('view', $broodcock);
 
         $this->broodcock = $broodcock;
+
+        // A hen has no Performance tab; an old link to it opens the pedigree.
+        if ($this->tab === 'performance' && ! $this->hasPerformance()) {
+            $this->tab = 'overview';
+        }
+    }
+
+    /** Hens do not fight, so only a broodcock has a performance record. */
+    public function hasPerformance(): bool
+    {
+        return $this->broodcock->sex !== Sex::Female;
     }
 
     /**

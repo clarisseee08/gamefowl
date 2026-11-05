@@ -38,6 +38,23 @@ final class Show extends Component
      */
     public bool $showForm = false;
 
+    /** Closing the dialog re-keys the form, so it reopens as the record stands. */
+    public int $formNonce = 0;
+
+    public function updatedShowForm(bool $open): void
+    {
+        if (! $open) {
+            $this->formNonce++;
+        }
+    }
+
+    /** Called by the dialog when a form that was typed in is closed: start the next one blank. */
+    public function resetForm(): void
+    {
+        $this->showForm = false;
+        $this->updatedShowForm(false);
+    }
+
     public function openForm(): void
     {
         $this->authorize('update', $this->record);
@@ -59,8 +76,8 @@ final class Show extends Component
             // withTrashed() because deleting a bird keeps its breeding history:
             // without it a deleted parent comes back null and this page fails.
             ->with([
-                'sire' => fn ($query) => $query->withTrashed()->select(['id', 'name', 'band_number', 'bloodline', 'breed', 'sex', 'deleted_at']),
-                'dam' => fn ($query) => $query->withTrashed()->select(['id', 'name', 'band_number', 'bloodline', 'breed', 'sex', 'deleted_at']),
+                'sire' => fn ($query) => $query->withTrashed()->select(['id', 'name', 'band_number', 'bloodline', 'breed', 'sex', 'deleted_at'])->with('primaryPhoto'),
+                'dam' => fn ($query) => $query->withTrashed()->select(['id', 'name', 'band_number', 'bloodline', 'breed', 'sex', 'deleted_at'])->with('primaryPhoto'),
                 'recordedBy:id,full_name',
             ])
             ->findOrFail($this->record->id);
@@ -81,6 +98,8 @@ final class Show extends Component
         return Broodcock::query()
             ->where('sire_id', $this->record->sire_id)
             ->where('dam_id', $this->record->dam_id)
+            // The photo too, for the hover card on each chick's row.
+            ->with('primaryPhoto')
             ->orderBy('date_hatched')
             // bloodline is selected because each row carries a band tag, and
             // BandTag resolves its colour from the bloodline. It is a column on

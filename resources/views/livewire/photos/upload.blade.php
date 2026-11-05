@@ -12,9 +12,9 @@
     anything wrong, then save. Nothing is committed until Save, and the saved
     result is confirmed with a toast as well as a line here.
 --}}
-<section aria-labelledby="upload-heading" class="border-b border-border pb-10">
+<section aria-labelledby="upload-heading">
     <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-        <h2 id="upload-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Add photos</h2>
+        <h2 id="upload-heading" class="text-[15px] font-semibold text-foreground lg:text-sm">Add Photos</h2>
         <p class="text-[15px] lg:text-xs text-muted-foreground">
             @if ($this->isFull)
                 This bird already has the most photos allowed (<span class="datum">{{ $maxPerBird }}</span>).

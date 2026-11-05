@@ -45,7 +45,7 @@
 
         @can('create', App\Models\Broodcock::class)
             <x-slot:actions>
-                <x-ui.button :href="route('broodcocks.create')" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'broodcocks-form')"><x-ui.icon name="plus" /> Add gamefowl</x-ui.button>
+                <x-ui.button :href="route('broodcocks.create')" x-on:click.prevent="$dispatch('ems-dialog', 'broodcocks-form')"><x-ui.icon name="plus" /> Add gamefowl</x-ui.button>
             </x-slot:actions>
         @endcan
     </x-ui.page-header>
@@ -115,7 +115,7 @@
                                     <div class="min-w-0">
                                         <p class="truncate text-sm font-semibold text-foreground lg:text-xs">
                                             @if ($record->broodcock)
-                                                <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate class="hover:underline hover:underline-offset-4">{{ $record->broodcock->name }}</a>
+                                                <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate class="">{{ $record->broodcock->name }}</a>
                                                 @if ($record->broodcock->band_number)
                                                     <span class="datum ml-1 font-normal text-muted-foreground">{{ $record->broodcock->band_number }}</span>
                                                 @endif
@@ -255,7 +255,7 @@
                     <x-ui.card.description><span class="datum">{{ $this->deathsThisYear }}</span> this year</x-ui.card.description>
                     @if (Route::has('mortality.index'))
                         <x-ui.card.action>
-                            <a href="{{ route('mortality.index') }}" wire:navigate class="text-xs font-medium text-primary hover:underline hover:underline-offset-4">View all</a>
+                            <a href="{{ route('mortality.index') }}" wire:navigate class="text-xs font-medium text-primary">View all</a>
                         </x-ui.card.action>
                     @endif
                 </x-ui.card.header>
@@ -268,7 +268,7 @@
                                 <div class="min-w-0">
                                     <p class="truncate text-sm font-semibold text-foreground lg:text-xs">
                                         @if ($record->broodcock)
-                                            <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate class="hover:underline hover:underline-offset-4">{{ $record->broodcock->name }}</a>
+                                            <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate class="">{{ $record->broodcock->name }}</a>
                                         @else
                                             Unknown bird
                                         @endif
@@ -307,11 +307,7 @@
     @can('create', App\Models\Broodcock::class)
         {{-- Add gamefowl opens here, in a dialog over the dashboard. --}}
         <x-ui.form-dialog id="broodcocks-form" model="showForm" size="xl" :wrap="false" title="Add a Gamefowl">
-            @if ($showForm)
-                <livewire:broodcocks.form :in-dialog="true" :key="'dashboard-broodcock-form'" />
-            @else
-                <x-ui.form-skeleton :fields="7" />
-            @endif
+            <livewire:broodcocks.form :in-dialog="true" :key="'dashboard-broodcock-form-'.$formNonce" />
         </x-ui.form-dialog>
     @endcan
 </div>

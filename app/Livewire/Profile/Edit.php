@@ -6,6 +6,7 @@ namespace App\Livewire\Profile;
 
 use App\Actions\Photos\StorePhoto;
 use App\Http\Requests\StoreBroodcockPhotoRequest;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -83,11 +84,25 @@ final class Edit extends Component
         ];
     }
 
+    /**
+     * A chosen photo is saved the moment it is chosen. It used to wait for
+     * the details form's Save - but the banner showed it straight away, so it
+     * looked saved, and a refresh quietly brought the initials back.
+     */
     public function updatedPhoto(): void
     {
-        // Validate on selection rather than on save, so an oversized file is
-        // rejected while the user is still looking at the picker.
+        // Validated first, so an oversized or non-image file is rejected
+        // while the user is still looking at the picker.
         $this->validateOnly('photo');
+
+        $user = auth()->user();
+        $this->authorize('updateOwnProfile', $user);
+
+        $this->storePhoto($user);
+        $user->save();
+
+        $this->status = 'Your photo has been updated.';
+        $this->dispatch('toast', message: $this->status, tone: 'ok');
     }
 
     public function save(): void
@@ -103,27 +118,7 @@ final class Edit extends Component
 
         $data = $this->validate();
 
-        if ($this->photo !== null) {
-            // gfms.photo_disk, NOT filesystems.default.
-            //
-            // These are not the same disk in production and the difference is
-            // silent data loss. Render sets GFMS_PHOTO_DISK=supabase and never
-            // sets FILESYSTEM_DISK, so the default resolves to 'local' -
-            // storage/app/private inside a container whose filesystem is wiped
-            // on every restart, which on the free instance type is constant.
-            // Bird photos already read this key; profile photos did not, so
-            // they were the only uploads that did not survive a restart.
-            $disk = StorePhoto::disk();
-
-            $path = $this->photo->store('profile-photos', $disk);
-
-            // Remove the previous file only after the new one is safely stored;
-            // the reverse order loses the old photo if the upload fails.
-            $this->deleteStoredPhoto($user->profile_photo_disk, $user->profile_photo_path);
-
-            $user->profile_photo_path = $path;
-            $user->profile_photo_disk = $disk;
-        }
+        $this->storePhoto($user);
 
         $user->fill([
             'full_name' => $data['full_name'],
@@ -139,6 +134,36 @@ final class Edit extends Component
         $this->status = 'Your profile has been updated.';
 
         $this->dispatch('toast', message: $this->status, tone: 'ok');
+    }
+
+    /** Store a chosen photo on the photo disk and point the user at it (not saved). */
+    private function storePhoto(User $user): void
+    {
+        if ($this->photo === null) {
+            return;
+        }
+
+        // gfms.photo_disk, NOT filesystems.default.
+        //
+        // These are not the same disk in production and the difference is
+        // silent data loss. Render sets GFMS_PHOTO_DISK=supabase and never
+        // sets FILESYSTEM_DISK, so the default resolves to 'local' -
+        // storage/app/private inside a container whose filesystem is wiped
+        // on every restart, which on the free instance type is constant.
+        // Bird photos already read this key; profile photos did not, so
+        // they were the only uploads that did not survive a restart.
+        $disk = StorePhoto::disk();
+
+        $path = $this->photo->store('profile-photos', $disk);
+
+        // Remove the previous file only after the new one is safely stored;
+        // the reverse order loses the old photo if the upload fails.
+        $this->deleteStoredPhoto($user->profile_photo_disk, $user->profile_photo_path);
+
+        $user->profile_photo_path = $path;
+        $user->profile_photo_disk = $disk;
+
+        $this->photo = null;
     }
 
     public function removePhoto(): void

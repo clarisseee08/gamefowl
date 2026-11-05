@@ -15,7 +15,7 @@
     @endunless
 
     <form wire:submit="save" @class(['mt-8' => ! $inDialog, 'flex min-h-0 flex-1 flex-col' => $inDialog])>
-        <div @class(['max-w-[40rem] space-y-12' => ! $inDialog, 'min-h-0 flex-1 space-y-8 overflow-y-auto px-5 pb-5' => $inDialog])>
+        <div @class(['max-w-[40rem] space-y-12' => ! $inDialog, 'min-h-0 flex-1 space-y-6 overflow-y-auto px-5 pb-5' => $inDialog])>
             {{-- What happened --}}
             <section aria-labelledby="event-heading">
                 <h2 id="event-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">The Event</h2>
@@ -28,10 +28,11 @@
                             <option value="{{ $bird->id }}">{{ $bird->displayName() }}</option>
                         @endforeach
                     </x-form-select>
+                    <x-bird-preview :bird="$this->selectedBird" target="broodcock_id" class="!mt-3" />
 
                     <div>
                         <label for="event_date" class="d-fieldset-legend">Date of the Event <span class="text-destructive">*</span></label>
-                        <input id="event_date" type="date" wire:model.live.blur="event_date"
+                        <input id="event_date" type="date" wire:model="event_date"
                                max="{{ now()->toDateString() }}"
                                aria-describedby="event_date-help @error('event_date') event_date-error @enderror"
                                @error('event_date') aria-invalid="true" @enderror
@@ -58,7 +59,7 @@
                          selector is not merely disabled - it is absent, and the
                          server forces "Not applicable" regardless of what is sent. --}}
                     @if ($this->resultApplies())
-                        <x-form-select id="result" label="Result" required wire:model.live.blur="result">
+                        <x-form-select id="result" label="Result" required wire:model="result">
                             <option value="">Choose the result</option>
                             @foreach ($this->resultOptions() as $option)
                                 <option value="{{ $option->value }}">{{ $option->label() }}</option>
@@ -76,7 +77,7 @@
                     <div>
                         <label for="weight" class="d-fieldset-legend">Weight (kg)</label>
                         <input id="weight" type="number" step="0.01" min="0" inputmode="decimal"
-                               wire:model.live.blur="weight" placeholder="e.g. 2.10"
+                               wire:model="weight" placeholder="e.g. 2.10"
                                aria-describedby="weight-help @error('weight') weight-error @enderror"
                                @error('weight') aria-invalid="true" @enderror
                                class="d-input w-full datum @error('weight') d-input-error @enderror">
@@ -87,7 +88,7 @@
                     <div>
                         <label for="duration_seconds" class="d-fieldset-legend">Duration (seconds)</label>
                         <input id="duration_seconds" type="number" step="1" min="0" inputmode="numeric"
-                               wire:model.live.blur="duration_seconds" placeholder="e.g. 180"
+                               wire:model="duration_seconds" placeholder="e.g. 180"
                                aria-describedby="duration_seconds-help @error('duration_seconds') duration_seconds-error @enderror"
                                @error('duration_seconds') aria-invalid="true" @enderror
                                class="d-input w-full datum @error('duration_seconds') d-input-error @enderror">
@@ -147,7 +148,7 @@
 
                     <div class="mt-5 border-t border-border pt-6">
                         <label for="remarks" class="d-fieldset-legend">Remarks</label>
-                        <textarea id="remarks" rows="4" wire:model.live.blur="remarks"
+                        <textarea id="remarks" rows="4" wire:model="remarks"
                                   placeholder="e.g. Tired in the last minute, needs more conditioning."
                                   @error('remarks') aria-invalid="true" aria-describedby="remarks-error" @enderror
                                   class="d-textarea w-full @error('remarks') d-textarea-error @enderror"></textarea>

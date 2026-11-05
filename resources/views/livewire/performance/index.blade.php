@@ -26,7 +26,31 @@
         ['label' => 'Recorded by', 'sort' => null, 'align' => 'left', 'cell' => 'hidden 2xl:table-cell'],
     ];
 
-    $loadingTargets = 'search,eventType,result,from,to,sort,gotoPage,nextPage,previousPage';
+    $loadingTargets = 'search,eventType,result,from,to,sort,perPage,gotoPage,nextPage,previousPage';
+
+    // Everything the View dialog shows, from the row already on the page: the
+    // dialog opens with no request. Remarks only for those allowed to read them.
+    $viewPayload = fn (\App\Models\PerformanceRecord $record): array => [
+        'id' => $record->id,
+        'bird' => $record->broodcock?->name ?? 'Bird removed',
+        'band' => $record->broodcock?->band_number,
+        'bloodline' => $record->broodcock?->bloodline ?? 'Bloodline not recorded',
+        'tag' => \App\Support\BandTag::hex($record->broodcock?->bloodline),
+        'photo' => $record->broodcock?->primaryPhoto ? route('photos.show', ['photo' => $record->broodcock->primaryPhoto, 'size' => 'thumb']) : null,
+        'birdUrl' => $record->broodcock ? route('broodcocks.show', $record->broodcock) : null,
+        'date' => $record->event_date->format('j F Y'),
+        'ago' => $record->event_date->diffForHumans(),
+        'type' => $record->event_type->label(),
+        'typeBadge' => $record->event_type->badgeClasses(),
+        'result' => $record->result->label(),
+        'resultBadge' => $record->result->badgeClasses(),
+        'weight' => $record->weight !== null ? number_format((float) $record->weight, 2).' kg' : 'Not weighed',
+        'duration' => $record->durationLabel() ?? 'Not recorded',
+        'rating' => $record->rating,
+        'remarks' => auth()->user()?->can('viewRemarks', $record) ? $record->remarks : null,
+        'recordedBy' => $record->recordedBy?->full_name ?? 'a former staff member',
+        'canEdit' => auth()->user()?->can('update', $record) ?? false,
+    ];
 @endphp
 
 <div>
@@ -37,7 +61,7 @@
 
         @can('create', App\Models\PerformanceRecord::class)
             <x-slot:actions>
-                <a href="{{ route('performance.create') }}" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'performance-form')" class="d-btn d-btn-primary">
+                <a href="{{ route('performance.create') }}" x-on:click.prevent="$dispatch('ems-dialog', 'performance-form')" class="d-btn d-btn-primary">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                     </svg>
@@ -110,7 +134,7 @@
                            description="Record a sparring session, derby, conditioning session or weigh-in and it will appear here and on the bird's own timeline."
                            icon="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z">
                 @can('create', App\Models\PerformanceRecord::class)
-                    <a href="{{ route('performance.create') }}" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'performance-form')" class="d-btn d-btn-primary">
+                    <a href="{{ route('performance.create') }}" x-on:click.prevent="$dispatch('ems-dialog', 'performance-form')" class="d-btn d-btn-primary">
                         Add your first performance record
                     </a>
                 @endcan
@@ -128,7 +152,7 @@
                         <div class="min-w-0">
                             @if ($record->broodcock !== null)
                                 <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate
-                                   class="inline-flex min-h-11 max-w-full items-center gap-2 text-[16px] lg:text-xs font-medium text-foreground hover:underline">
+                                   class="inline-flex min-h-11 max-w-full items-center gap-2 text-[16px] lg:text-xs font-medium text-foreground">
                                     <x-band-tag :bloodline="$record->broodcock->bloodline"
                                                 :band="$record->broodcock->band_number" size="xs" />
                                     <span class="truncate">{{ $record->broodcock->name }}</span>
@@ -152,10 +176,15 @@
                         <span class="datum">{{ $record->rating !== null ? $record->rating.' of 5' : 'Not rated' }}</span>
                     </div>
 
+                    <div class="mt-2 flex flex-wrap items-center gap-x-6">
+                        <button type="button" x-on:click="$dispatch('performance-view', {{ Js::from($viewPayload($record)) }}); $dispatch('ems-dialog', 'performance-view')"
+                                class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
+                            View<span class="sr-only">, {{ $record->event_type->label() }} record</span>
+                        </button>
                     @canany(['update', 'delete'], $record)
-                        <div class="mt-2 flex flex-wrap items-center gap-x-6">
+                        <div class="contents">
                             @can('update', $record)
-                                <a href="{{ route('performance.edit', $record) }}" wire:click.prevent="openForm({{ $record->id }})" x-on:click="$dispatch('ems-dialog', 'performance-form')"
+                                <a href="{{ route('performance.edit', $record) }}" wire:click.prevent="openForm({{ $record->id }})" x-on:click="$dispatch('ems-dialog', { id: 'performance-form', wait: true })"
                                    class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
                                     Edit<span class="sr-only">, {{ $record->event_type->label() }} record</span>
                                 </a>
@@ -168,6 +197,7 @@
                             @endcan
                         </div>
                     @endcanany
+                    </div>
                 </li>
             @endforeach
         </ul>
@@ -219,17 +249,23 @@
 
                 <tbody wire:loading.remove wire:target="{{ $loadingTargets }}">
                     @foreach ($records as $record)
-                        <tr wire:key="perf-tr-{{ $record->id }}" class="hover:bg-muted/60">
+                        <tr wire:key="perf-tr-{{ $record->id }}" class="hover:bg-muted/60"
+                            x-data="{ preview: false, timer: null }"
+                            x-on:mouseenter="if (matchMedia('(hover: hover)').matches) { timer = setTimeout(() => preview = true, 350) }"
+                            x-on:mouseleave="clearTimeout(timer); preview = false">
                             <td class="whitespace-nowrap px-3 py-2 text-[15px] lg:text-xs font-medium text-foreground">
                                 @if ($record->broodcock !== null)
                                     {{-- Name only: displayName() appends the band in
                                          parentheses, which the tag already shows. --}}
-                                    <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate
-                                       class="inline-flex min-h-11 items-center gap-2 hover:underline">
-                                        <x-band-tag :bloodline="$record->broodcock->bloodline"
-                                                    :band="$record->broodcock->band_number" size="xs" />
-                                        {{ $record->broodcock->name }}
-                                    </a>
+                                    <span class="relative inline-flex">
+                                        <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate
+                                           class="inline-flex min-h-11 items-center gap-2">
+                                            <x-band-tag :bloodline="$record->broodcock->bloodline"
+                                                        :band="$record->broodcock->band_number" size="xs" />
+                                            {{ $record->broodcock->name }}
+                                        </a>
+                                        <x-bird-hover-card :bird="$record->broodcock" />
+                                    </span>
                                 @else
                                     <span class="font-normal text-muted-foreground">Bird removed</span>
                                 @endif
@@ -284,8 +320,10 @@
                             </td>
                             <td class="whitespace-nowrap px-3 py-2 text-right">
                                 <span class="inline-flex items-center justify-end gap-0.5">
+                                    <x-ui.row-action icon="eye" :label="'View the '.$record->event_type->label().' record'"
+                                                     x-on:click="$dispatch('performance-view', {{ Js::from($viewPayload($record)) }}); $dispatch('ems-dialog', 'performance-view')" />
                                     @can('update', $record)
-                                        <x-ui.row-action icon="pencil" :label="'Edit the '.$record->event_type->label().' record'" :href="route('performance.edit', $record)" wire:click.prevent="openForm({{ $record->id }})" x-on:click="$dispatch('ems-dialog', 'performance-form')" />
+                                        <x-ui.row-action icon="pencil" :label="'Edit the '.$record->event_type->label().' record'" :href="route('performance.edit', $record)" wire:click.prevent="openForm({{ $record->id }})" x-on:click="$dispatch('ems-dialog', { id: 'performance-form', wait: true })" />
                                     @endcan
                                     @can('delete', $record)
                                         <x-ui.row-action icon="trash-2" :label="'Delete the '.$record->event_type->label().' record'" :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
@@ -300,9 +338,7 @@
             </table>
         </div>
 
-        <div class="mt-6 border-t border-border pt-4">
-            {{ $records->links() }}
-        </div>
+        <x-ui.table-pagination :paginator="$records" class="mt-4" />
     @endif
 
     {{-- Delete confirmation. Names the exact record - the bird, the kind of
@@ -339,12 +375,108 @@
     @endif
 
     {{-- Add and edit open here, in a dialog over the list, never on a page of their own. --}}
-    <x-ui.form-dialog id="performance-form" model="showForm" size="lg" :wrap="false" :title="$formRecordId ? 'Edit Performance Record' : 'Add a Performance Record'">
-        @if ($showForm)
-            <livewire:performance.form :record="$formRecordId ? \App\Models\PerformanceRecord::find($formRecordId) : null" :broodcock="$formBroodcockId ? \App\Models\Broodcock::find($formBroodcockId) : null"
-                                  :in-dialog="true" :key="'performance-form-'.($formRecordId ?? 'new').'-'.($formBroodcockId ?? '')" />
-        @else
-            <x-ui.form-skeleton :fields="5" />
-        @endif
-    </x-ui.form-dialog>
+    {{-- The new-record form is built with the page, and it authorizes on
+         mount, so it is only built for someone who may create one. --}}
+    @can('create', \App\Models\PerformanceRecord::class)
+        <x-ui.form-dialog id="performance-form" model="showForm" size="lg" :wrap="false" :title="$formRecordId ? 'Edit Performance Record' : 'Add a Performance Record'">
+            @if ($formRecordId || $formBroodcockId)
+                {{-- An edit, or a form for one bird: filled by the server when opened. --}}
+                @if ($showForm)
+                    <livewire:performance.form :record="$formRecordId ? \App\Models\PerformanceRecord::find($formRecordId) : null" :broodcock="$formBroodcockId ? \App\Models\Broodcock::find($formBroodcockId) : null"
+                                               :in-dialog="true" :key="'performance-form-'.($formRecordId ?? 'new').'-'.($formBroodcockId ?? '')" />
+                @else
+                    <x-ui.form-skeleton :fields="5" />
+                @endif
+            @else
+                {{-- A new record: built with the page, so Add opens at once with no request. --}}
+                <livewire:performance.form :record="$formRecordId ? \App\Models\PerformanceRecord::find($formRecordId) : null" :broodcock="$formBroodcockId ? \App\Models\Broodcock::find($formBroodcockId) : null"
+                                      :in-dialog="true" :key="'performance-form-new-'.$formNonce" />
+            @endif
+        </x-ui.form-dialog>
+    @endcan
+
+    {{-- VIEW: one record, read-only, filled from the row that opened it - no
+         request. Edit goes straight into the edit form from here. --}}
+    <div x-data="{ r: null }" x-on:performance-view.window="r = $event.detail">
+        <x-ui.dialog id="performance-view" size="md" title="Performance Record">
+            <template x-if="r">
+                <div class="space-y-4">
+                    {{-- The bird --}}
+                    <div class="flex items-center gap-3 rounded-md border border-border bg-muted/40 p-2.5">
+                        <span class="relative block h-20 w-16 shrink-0 overflow-hidden rounded-sm bg-muted" x-bind:style="{ boxShadow: 'inset 0 3px 0 ' + r.tag }">
+                            <template x-if="r.photo">
+                                <span x-data="{ loaded: false }" class="block h-full w-full">
+                                    <span x-show="! loaded" class="absolute inset-0 animate-pulse bg-muted-foreground/15"></span>
+                                    <img x-bind:src="r.photo" alt="" x-on:load="loaded = true" class="h-full w-full object-cover transition-opacity duration-300" x-bind:class="loaded ? 'opacity-100' : 'opacity-0'">
+                                </span>
+                            </template>
+                            <template x-if="! r.photo">
+                                <span class="flex h-full w-full items-center justify-center text-[11px] text-muted-foreground">No photo</span>
+                            </template>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block truncate text-sm font-semibold text-foreground lg:text-xs">
+                                <span x-text="r.bird"></span><span x-show="r.band" class="datum font-normal text-muted-foreground"> &middot; <span x-text="r.band"></span></span>
+                            </span>
+                            <span class="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground lg:text-[11px]">
+                                <span class="inline-block size-2 rounded-full" x-bind:style="{ backgroundColor: r.tag }"></span>
+                                <span x-text="r.bloodline"></span>
+                            </span>
+                            <a x-show="r.birdUrl" x-bind:href="r.birdUrl" wire:navigate class="mt-1 inline-flex text-xs font-medium text-primary lg:text-[11px]">Open the bird&rsquo;s page</a>
+                        </span>
+                    </div>
+
+                    {{-- The event --}}
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="d-badge d-badge-soft" x-bind:class="r.typeBadge" x-text="r.type"></span>
+                        <span class="d-badge d-badge-soft" x-bind:class="r.resultBadge" x-text="r.result"></span>
+                        <span class="ml-auto text-xs text-muted-foreground lg:text-[11px]"><span class="datum font-semibold text-foreground" x-text="r.date"></span> &middot; <span x-text="r.ago"></span></span>
+                    </div>
+
+                    <dl class="grid grid-cols-3 gap-2">
+                        <div class="rounded-md bg-muted/60 px-3 py-2.5">
+                            <dt class="text-[11px] text-muted-foreground">Weight</dt>
+                            <dd class="datum mt-0.5 text-sm font-semibold text-foreground lg:text-xs" x-text="r.weight"></dd>
+                        </div>
+                        <div class="rounded-md bg-muted/60 px-3 py-2.5">
+                            <dt class="text-[11px] text-muted-foreground">Duration</dt>
+                            <dd class="datum mt-0.5 text-sm font-semibold text-foreground lg:text-xs" x-text="r.duration"></dd>
+                        </div>
+                        <div class="rounded-md bg-muted/60 px-3 py-2.5">
+                            <dt class="text-[11px] text-muted-foreground">Rating</dt>
+                            <dd class="mt-1 flex items-center gap-0.5" x-bind:aria-label="r.rating ? r.rating + ' out of 5 stars' : 'Not rated'">
+                                <template x-if="r.rating">
+                                    <span class="inline-flex gap-0.5">
+                                        <template x-for="star in 5">
+                                            <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" aria-hidden="true" stroke="currentColor"
+                                                 x-bind:class="star <= r.rating ? 'text-foreground' : 'text-muted-foreground'"
+                                                 x-bind:fill="star <= r.rating ? 'currentColor' : 'none'"
+                                                 x-bind:stroke-width="star <= r.rating ? 0 : 1.25">
+                                                <path stroke-linejoin="round" d="M10 1.5l2.6 5.27 5.82.85-4.21 4.1.99 5.79L10 14.78l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85L10 1.5z"/>
+                                            </svg>
+                                        </template>
+                                    </span>
+                                </template>
+                                <template x-if="! r.rating"><span class="text-xs text-muted-foreground">Not rated</span></template>
+                            </dd>
+                        </div>
+                    </dl>
+
+                    <div x-show="r.remarks" class="border-l-2 border-border pl-3">
+                        <p class="text-[11px] font-semibold text-muted-foreground">Remarks (staff only)</p>
+                        <p class="mt-1 whitespace-pre-line text-sm leading-relaxed text-foreground lg:text-xs" x-text="r.remarks"></p>
+                    </div>
+
+                    <p class="text-xs text-muted-foreground lg:text-[11px]">Recorded by <span x-text="r.recordedBy"></span></p>
+                </div>
+            </template>
+
+            <x-slot:actions>
+                <x-ui.button variant="outline" x-show="r && r.canEdit"
+                             x-on:click="const id = r.id; requestClose(); $dispatch('ems-dialog', { id: 'performance-form', wait: true }); $wire.openForm(id)">
+                    <x-ui.icon name="pencil" /> Edit
+                </x-ui.button>
+            </x-slot:actions>
+        </x-ui.dialog>
+    </div>
 </div>

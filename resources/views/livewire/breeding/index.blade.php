@@ -22,7 +22,7 @@
 
         <x-slot:actions>
             @can('create', App\Models\BreedingRecord::class)
-                <a href="{{ route('breeding.create') }}" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'breeding-form')" class="d-btn d-btn-primary w-full sm:w-auto">
+                <a href="{{ route('breeding.create') }}" x-on:click.prevent="$dispatch('ems-dialog', 'breeding-form')" class="d-btn d-btn-primary w-full sm:w-auto">
                     Record a Mating
                 </a>
             @endcan
@@ -91,7 +91,7 @@
                            description="Record a mating to start tracking fertility and hatch rates."
                            icon="M12 3c-3.3 0-6 4.6-6 9.2A6 6 0 0 0 12 18.5a6 6 0 0 0 6-6.3C18 7.6 15.3 3 12 3Z">
                 @can('create', App\Models\BreedingRecord::class)
-                    <a href="{{ route('breeding.create') }}" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'breeding-form')" class="d-btn d-btn-primary">Record your first mating</a>
+                    <a href="{{ route('breeding.create') }}" x-on:click.prevent="$dispatch('ems-dialog', 'breeding-form')" class="d-btn d-btn-primary">Record your first mating</a>
                 @endcan
             </x-empty-state>
         @endif
@@ -216,16 +216,18 @@
                                                 <span class="text-[13px] lg:text-[11px]">removed</span>
                                             </span>
                                         @else
-                                            <a href="{{ route('broodcocks.show', $parent) }}" wire:navigate
-                                               class="group inline-flex min-h-11 items-center gap-2">
-                                                <x-band-dot :bloodline="$parent->bloodline" />
-                                                <span class="text-foreground group-hover:underline group-hover:underline-offset-4">{{ $parent->name }}</span>
-                                                @if ($parent->band_number)
-                                                    <span class="datum text-[13px] lg:text-[11px] text-muted-foreground">{{ $parent->band_number }}</span>
-                                                @else
-                                                    <span class="text-[13px] lg:text-[11px] text-muted-foreground">Not yet banded</span>
-                                                @endif
-                                            </a>
+                                            <x-bird-hover :bird="$parent">
+                                                <a href="{{ route('broodcocks.show', $parent) }}" wire:navigate
+                                                   class="group inline-flex min-h-11 items-center gap-2">
+                                                    <x-band-dot :bloodline="$parent->bloodline" />
+                                                    <span class="text-foreground">{{ $parent->name }}</span>
+                                                    @if ($parent->band_number)
+                                                        <span class="datum text-[13px] lg:text-[11px] text-muted-foreground">{{ $parent->band_number }}</span>
+                                                    @else
+                                                        <span class="text-[13px] lg:text-[11px] text-muted-foreground">Not yet banded</span>
+                                                    @endif
+                                                </a>
+                                            </x-bird-hover>
                                         @endif
                                     @endforeach
                                 </div>
@@ -265,16 +267,27 @@
             </table>
         </div>
 
-        <div class="mt-6">{{ $records->links() }}</div>
+        <x-ui.table-pagination :paginator="$records" class="mt-4" />
     @endif
 
     {{-- Add and edit open here, over the list, never on a page of their own. --}}
-    <x-ui.form-dialog id="breeding-form" model="showForm" size="xl" :wrap="false" :title="$formRecordId ? 'Edit Breeding Record' : 'Record a Mating'">
-        @if ($showForm)
-            <livewire:breeding.form :record="$formRecordId ? \App\Models\BreedingRecord::find($formRecordId) : null"
-                                  :in-dialog="true" :key="'breeding-form-'.($formRecordId ?? 'new').'-'.($formBroodcockId ?? '')" />
-        @else
-            <x-ui.form-skeleton :fields="7" />
-        @endif
-    </x-ui.form-dialog>
+    {{-- The new-record form is built with the page, and it authorizes on
+         mount, so it is only built for someone who may create one. --}}
+    @can('create', \App\Models\BreedingRecord::class)
+        <x-ui.form-dialog id="breeding-form" model="showForm" size="xl" :wrap="false" :title="$formRecordId ? 'Edit Breeding Record' : 'Record a Mating'">
+            @if ($formRecordId || $formBroodcockId)
+                {{-- An edit, or a form for one bird: filled by the server when opened. --}}
+                @if ($showForm)
+                    <livewire:breeding.form :record="$formRecordId ? \App\Models\BreedingRecord::find($formRecordId) : null"
+                                            :in-dialog="true" :key="'breeding-form-'.($formRecordId ?? 'new').'-'.($formBroodcockId ?? '')" />
+                @else
+                    <x-ui.form-skeleton :fields="7" />
+                @endif
+            @else
+                {{-- A new record: built with the page, so Add opens at once with no request. --}}
+                <livewire:breeding.form :record="$formRecordId ? \App\Models\BreedingRecord::find($formRecordId) : null"
+                                      :in-dialog="true" :key="'breeding-form-new-'.$formNonce" />
+            @endif
+        </x-ui.form-dialog>
+    @endcan
 </div>

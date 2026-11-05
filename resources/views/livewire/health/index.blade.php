@@ -26,7 +26,7 @@
         $typeSegments[] = ['key' => $type->value, 'label' => $type->label()];
     }
 
-    $th = 'sticky top-0 z-10 h-12 border-b border-border bg-background px-4 text-left align-middle text-[13px] lg:text-[11px] font-semibold text-muted-foreground';
+    $th = 'sticky top-0 z-10 h-10 border-b lg:h-9 border-border bg-background px-4 text-left align-middle text-[13px] lg:text-[11px] font-semibold text-muted-foreground';
     $td = 'border-b-0 p-0 md:table-cell md:border-b md:border-border md:px-4 md:py-3.5 md:align-top';
 @endphp
 <div>
@@ -37,7 +37,7 @@
 
         <x-slot:actions>
             @can('create', \App\Models\HealthRecord::class)
-                <a href="{{ route('health.create') }}" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'health-form')" class="d-btn d-btn-primary">
+                <a href="{{ route('health.create') }}" x-on:click.prevent="$dispatch('ems-dialog', 'health-form')" class="d-btn d-btn-primary">
                     Add Health Record
                 </a>
             @endcan
@@ -50,13 +50,13 @@
         </x-slot:actions>
     </x-anchor-block>
 
-    <div class="mt-8">
+    <div class="mt-5">
         <x-segmented :segments="$typeSegments" :active="$recordType" model="recordType" label="Record type" />
     </div>
 
     {{-- Every filter is optional; leaving a box blank means "all". The count
          only appears once a filter is actually narrowing the list. --}}
-    <x-filter-bar class="mt-6" :active="$isFiltered"
+    <x-filter-bar class="mt-1" :active="$isFiltered"
                   clear="clearFilters"
                   :summary="'Showing '.number_format($total).' '.Str::plural('record', $total).'.'">
         <x-slot:search>
@@ -105,7 +105,7 @@
                 <button type="button" wire:click="clearFilters" class="d-btn d-btn-outline">Clear filters</button>
             @else
                 @can('create', \App\Models\HealthRecord::class)
-                    <a href="{{ route('health.create') }}" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'health-form')" class="d-btn d-btn-primary">Add Health Record</a>
+                    <a href="{{ route('health.create') }}" x-on:click.prevent="$dispatch('ems-dialog', 'health-form')" class="d-btn d-btn-primary">Add Health Record</a>
                 @endcan
             @endif
         </x-empty-state>
@@ -161,7 +161,11 @@
                         };
                     @endphp
 
-                    <tr wire:key="record-{{ $record->id }}" class="block border-b border-border py-4 transition-colors hover:bg-muted/60 md:table-row md:border-0 md:py-0">
+                    {{-- Resting on a row shows its bird's photo beside the bird's cell. --}}
+                    <tr wire:key="record-{{ $record->id }}" class="block border-b border-border py-4 transition-colors hover:bg-muted/60 md:table-row md:border-0 md:py-0"
+                        x-data="{ preview: false, timer: null }"
+                        x-on:mouseenter="if (matchMedia('(hover: hover)').matches) { timer = setTimeout(() => preview = true, 350) }"
+                        x-on:mouseleave="clearTimeout(timer); preview = false">
                         {{-- Bird: the band is the identifier a keeper scans for, the
                              dot its bloodline, and the bloodline is written beside
                              the name so colour is never the only channel. --}}
@@ -177,14 +181,17 @@
                                     </span>
                                 </span>
                             @else
-                                <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate
-                                   class="group -my-1 inline-flex min-h-11 items-center gap-2.5">
-                                    <x-band-dot :bloodline="$bird->bloodline" />
-                                    <span class="min-w-0">
-                                        <span class="datum block text-[15px] lg:text-xs font-medium text-foreground group-hover:underline">{{ $bird->displayBand() }}</span>
-                                        <span class="block text-[13px] lg:text-[11px] leading-snug text-muted-foreground">{{ $bird->name }}@if ($bird->bloodline) &middot; {{ $bird->bloodline }}@endif</span>
-                                    </span>
-                                </a>
+                                <span class="relative inline-flex">
+                                    <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate
+                                       class="group -my-1 inline-flex min-h-11 items-center gap-2.5">
+                                        <x-band-dot :bloodline="$bird->bloodline" />
+                                        <span class="min-w-0">
+                                            <span class="datum block text-[15px] lg:text-xs font-medium text-foreground">{{ $bird->displayBand() }}</span>
+                                            <span class="block text-[13px] lg:text-[11px] leading-snug text-muted-foreground">{{ $bird->name }}@if ($bird->bloodline) &middot; {{ $bird->bloodline }}@endif</span>
+                                        </span>
+                                    </a>
+                                    <x-bird-hover-card :bird="$bird" />
+                                </span>
                             @endif
                         </td>
 
@@ -227,7 +234,7 @@
                             <div class="-ml-3 flex gap-0.5 md:ml-0 md:justify-end">
                                 @php $what = $record->record_type->label().' for '.$birdName.' on '.$record->checkup_date->format('d M Y'); @endphp
                                 @can('update', $record)
-                                    <x-ui.row-action icon="pencil" :label="'Edit the '.$what" wire:click="openForm({{ $record->id }})" x-on:click="$dispatch('ems-dialog', 'health-form')" />
+                                    <x-ui.row-action icon="pencil" :label="'Edit the '.$what" wire:click="openForm({{ $record->id }})" x-on:click="$dispatch('ems-dialog', { id: 'health-form', wait: true })" />
                                 @endcan
                                 @can('delete', $record)
                                     <x-ui.row-action icon="trash-2" :label="'Delete the '.$what" :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
@@ -241,10 +248,8 @@
             <x-table-skeleton :cols="5" wire:loading wire:target="search,recordType,broodcockId,dateFrom,dateTo" />
         </table>
 
-        @if ($this->rows->hasPages())
-            <div class="mt-6">
-                {{ $this->rows->links() }}
-            </div>
+        @if ($this->rows->total() > 0)
+            <x-ui.table-pagination :paginator="$this->rows" class="mt-4" />
         @endif
     @endif
 
@@ -290,14 +295,25 @@
     @endif
 
     {{-- Add and edit open here, in a dialog over the list, never on a page of their own. --}}
-    <x-ui.form-dialog id="health-form" model="showForm" size="lg" :wrap="false"
-                      :title="$formRecordId ? 'Edit Health Record' : 'Add Health Record'"
-                      description="Record a vaccination, medication, deworming, treatment or check-up for one bird.">
-        @if ($showForm)
-            <livewire:health.form :record="$formRecordId ? \App\Models\HealthRecord::find($formRecordId) : null"
-                                  :in-dialog="true" :key="'health-form-'.($formRecordId ?? 'new')" />
-        @else
-            <x-ui.form-skeleton :fields="5" />
-        @endif
-    </x-ui.form-dialog>
+    {{-- The new-record form is built with the page, and it authorizes on
+         mount, so it is only built for someone who may create one. --}}
+    @can('create', \App\Models\HealthRecord::class)
+        <x-ui.form-dialog id="health-form" model="showForm" size="lg" :wrap="false"
+                          :title="$formRecordId ? 'Edit Health Record' : 'Add Health Record'"
+                          description="Record a vaccination, medication, deworming, treatment or check-up for one bird.">
+            @if ($formRecordId)
+                {{-- An edit, or a form for one bird: filled by the server when opened. --}}
+                @if ($showForm)
+                    <livewire:health.form :record="$formRecordId ? \App\Models\HealthRecord::find($formRecordId) : null"
+                                          :in-dialog="true" :key="'health-form-'.($formRecordId ?? 'new')" />
+                @else
+                    <x-ui.form-skeleton :fields="5" />
+                @endif
+            @else
+                {{-- A new record: built with the page, so Add opens at once with no request. --}}
+                <livewire:health.form :record="$formRecordId ? \App\Models\HealthRecord::find($formRecordId) : null"
+                                      :in-dialog="true" :key="'health-form-new-'.$formNonce" />
+            @endif
+        </x-ui.form-dialog>
+    @endcan
 </div>

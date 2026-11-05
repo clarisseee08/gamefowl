@@ -8,6 +8,7 @@ use App\Actions\Performance\CreatePerformanceRecord;
 use App\Actions\Performance\UpdatePerformanceRecord;
 use App\Enums\PerformanceEventType;
 use App\Enums\PerformanceResult;
+use App\Enums\Sex;
 use App\Http\Requests\StorePerformanceRecordRequest;
 use App\Models\Broodcock;
 use App\Models\PerformanceRecord;
@@ -15,12 +16,21 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 final class Form extends Component
 {
     /** Rendered inside the list's form dialog rather than as a page of its own. */
     public bool $inDialog = false;
+
+    /**
+     * Where saving lands. Set by the page that opened the form in a dialog
+     * (a bird's page sends you back to that bird); otherwise the list.
+     * Locked, so the browser cannot point it anywhere else.
+     */
+    #[Locked]
+    public ?string $returnUrl = null;
 
     public ?PerformanceRecord $record = null;
 
@@ -199,7 +209,7 @@ final class Form extends Component
             ? "Changes to the {$saved->event_type->label()} record for {$birdName} have been saved."
             : "The {$saved->event_type->label()} record for {$birdName} has been saved.");
 
-        $this->redirectRoute('performance.index', navigate: true);
+        $this->redirect($this->returnUrl ?? route('performance.index'), navigate: true);
     }
 
     /**
@@ -214,7 +224,8 @@ final class Form extends Component
     {
         return Broodcock::query()
             ->where(function ($query): void {
-                $query->onFarm();
+                // Broodcocks only - hens do not fight, so they have no performance.
+                $query->onFarm()->where('sex', Sex::Male->value);
 
                 if ($this->broodcock_id !== null && $this->broodcock_id !== '') {
                     $query->orWhere('id', $this->broodcock_id);
@@ -238,6 +249,15 @@ final class Form extends Component
             PerformanceResult::cases(),
             fn (PerformanceResult $result): bool => $result->countsTowardRecord(),
         ));
+    }
+
+    /** The chosen bird with its photograph, shown under the picker. */
+    #[Computed]
+    public function selectedBird(): ?Broodcock
+    {
+        return $this->broodcock_id === '' || $this->broodcock_id === null
+            ? null
+            : Broodcock::query()->with('primaryPhoto')->find((int) $this->broodcock_id);
     }
 
     public function render(): View

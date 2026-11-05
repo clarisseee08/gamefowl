@@ -25,7 +25,7 @@
     <form wire:submit="review" @class(['mt-8' => ! $inDialog, 'flex min-h-0 flex-1 flex-col' => $inDialog])>
         @csrf
 
-        <div @class(['max-w-[40rem] space-y-12 pb-10' => ! $inDialog, 'min-h-0 flex-1 space-y-8 overflow-y-auto px-5 pb-5' => $inDialog])>
+        <div @class(['max-w-[40rem] space-y-12 pb-10' => ! $inDialog, 'min-h-0 flex-1 space-y-6 overflow-y-auto px-5 pb-5' => $inDialog])>
             {{-- -------------------------------------------------------
                  Which bird
             ------------------------------------------------------- --}}
@@ -67,6 +67,7 @@
                             <option value="{{ $bird->id }}">{{ $bird->displayName() }}</option>
                         @endforeach
                     </x-form-select>
+                    <x-bird-preview :bird="$this->selectedBird" target="broodcock_id" class="!mt-3" />
                 </div>
             </section>
 

@@ -60,17 +60,17 @@ return [
     /*
      * How many ancestor generations the pedigree view renders.
      *
-     * ONE - the sire and dam, and nothing above them. It was three, and the
-     * farm asked for it to be cut back: a bird's parents are what they
-     * actually record and can vouch for, and two further columns of "Not
-     * recorded" made a screen whose job is to prove traceability look like a
-     * screen that had failed to load.
+     * TWO - parents, then grandparents. A generation beyond the parents is
+     * drawn only when something in it is recorded: the farm asked for columns
+     * of "Not recorded" to go, because they made a screen whose job is to
+     * prove traceability look like a screen that had failed to load.
      *
-     * Raising it costs one extra query per generation and grows the column
-     * count exponentially - 2, then 4, then 8. The view labels each column
-     * from an array that currently names two; add to it before raising this.
+     * Raising it costs one extra query per generation and doubles the widest
+     * row each time - 2, then 4, then 8 cards. The tree names each card's
+     * role (Sire, Granddam ...) up to the grandparents; extend that list in
+     * the same commit as this number.
      */
-    'pedigree_generations' => 1,
+    'pedigree_generations' => 2,
 
     /*
      * The band number of the bird whose photograph leads the front page.
@@ -138,6 +138,61 @@ return [
         'name' => env('APP_NAME', 'Digital Broodcock Farm Record Management System'),
         'short' => env('GFMS_SHORT_NAME', 'SSGuad Game Farm'),
         'tagline' => 'Broodcock farm records',
+    ],
+
+    /*
+     * The choices offered on the health record form. Product and condition
+     * are dropdowns of what the farm actually uses, with "Others" opening a
+     * text box for anything not listed - so the common entries are spelled
+     * the same way every time, which is what makes the list searchable and
+     * the reports group cleanly. Saved as plain text: adding a product here
+     * needs no migration, and an old record whose value is not listed still
+     * opens under "Others" with its text intact.
+     *
+     * Dosage is an amount and one of these units, saved as "0.5 ml".
+     */
+    'health_presets' => [
+        'products' => [
+            'Newcastle Disease vaccine',
+            'Infectious Bronchitis vaccine',
+            'Fowl Pox vaccine',
+            'Avian Influenza vaccine',
+            'Levamisole dewormer',
+            'Piperazine dewormer',
+            'Ivermectin',
+            'Amprolium',
+            'Enrofloxacin',
+            'Tylosin',
+            'Doxycycline',
+            'Vitamin B-complex',
+            'Electrolytes',
+        ],
+        'conditions' => [
+            'Healthy',
+            'Alert and active',
+            'Recovering',
+            'Mild cough',
+            'Sneezing',
+            'Watery eyes',
+            'Diarrhoea',
+            'Slight limp',
+            'Wound',
+            'Lethargic',
+            'Off feed',
+        ],
+        'dosage_units' => ['ml', 'mg', 'g'],
+    ],
+
+    /*
+     * The choices offered for a bird's particulars on the gamefowl form - the
+     * farm's usual values, with "Others" for anything not listed. Saved as
+     * plain text (weight as a number), so a new entry needs no migration.
+     */
+    'bird_presets' => [
+        'weights' => ['1.5', '1.6', '1.7', '1.8', '1.9', '2.0', '2.1', '2.2', '2.3', '2.4', '2.5', '2.6', '2.7', '2.8', '2.9', '3.0'],
+        'colors' => ['Red', 'Black', 'White', 'Grey', 'Brown', 'Spangled', 'Pyle', 'Wheaten', 'Ginger', 'Lemon', 'Blue'],
+        'comb_types' => ['Straight', 'Pea', 'Rose', 'Walnut', 'Dubbed'],
+        'leg_colors' => ['Yellow', 'White', 'Green', 'Black', 'Slate', 'Willow', 'Blue'],
     ],
 
 ];

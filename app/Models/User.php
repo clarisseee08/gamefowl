@@ -210,14 +210,23 @@ class User extends Authenticatable
         // gfms.photo_disk, not filesystems.default - see StorePhoto::disk().
         // The fallback only covers rows written before profile_photo_disk
         // existed; anything newer carries the disk it was actually stored on.
-        $disk = Storage::disk($this->profile_photo_disk ?: StorePhoto::disk());
+        $diskName = $this->profile_photo_disk ?: StorePhoto::disk();
+        $disk = Storage::disk($diskName);
 
         if (! $disk->exists($this->profile_photo_path)) {
             return null;
         }
 
-        return $disk->providesTemporaryUrls()
-            ? $disk->temporaryUrl($this->profile_photo_path, now()->addMinutes($minutes))
+        if ($disk->providesTemporaryUrls()) {
+            return $disk->temporaryUrl($this->profile_photo_path, now()->addMinutes($minutes));
+        }
+
+        // The local public disk builds its links from APP_URL, which on a
+        // development machine is rarely the host and port the app is actually
+        // served from - the photo saved, and then showed as a broken image.
+        // asset() builds the same /storage link from the request itself.
+        return $diskName === 'public'
+            ? asset('storage/'.ltrim($this->profile_photo_path, '/'))
             : $disk->url($this->profile_photo_path);
     }
 

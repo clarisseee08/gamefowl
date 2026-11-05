@@ -60,6 +60,17 @@ final class Form extends Component
 
     public ?string $dam_external_bloodline = null;
 
+    /**
+     * An outside parent's bloodline, picked from the bloodlines the farm
+     * already records (so it is spelled the same and carries the same band
+     * colour), or "Others" with a box to type one. Writes *_external_bloodline.
+     */
+    public const OTHER = '__other__';
+
+    public string $sire_bloodline_choice = '';
+
+    public string $dam_bloodline_choice = '';
+
     public ?string $mating_date = null;
 
     public int $eggs_set = 0;
@@ -163,7 +174,66 @@ final class Form extends Component
         if (! $isOffList) {
             $this->{$role.'_external_name'} = null;
             $this->{$role.'_external_bloodline'} = null;
+            $this->{$role.'_bloodline_choice'} = '';
         }
+    }
+
+    public function updatedSireBloodlineChoice(string $choice): void
+    {
+        $this->sire_external_bloodline = $this->bloodlineForChoice($choice, $this->sire_external_bloodline);
+    }
+
+    public function updatedDamBloodlineChoice(string $choice): void
+    {
+        $this->dam_external_bloodline = $this->bloodlineForChoice($choice, $this->dam_external_bloodline);
+    }
+
+    /** A listed bloodline becomes the value; "Others" empties the box for typing unless it holds custom text. */
+    private function bloodlineForChoice(string $choice, ?string $current): ?string
+    {
+        if ($choice === self::OTHER) {
+            return in_array((string) $current, $this->bloodlineOptions, true) ? null : $current;
+        }
+
+        return $choice === '' ? null : $choice;
+    }
+
+    /**
+     * The bloodlines already on record, for the outside parent's dropdown.
+     *
+     * @return list<string>
+     */
+    #[Computed]
+    public function bloodlineOptions(): array
+    {
+        return Broodcock::query()
+            ->whereNotNull('bloodline')
+            ->where('bloodline', '!=', '')
+            ->distinct()
+            ->orderBy('bloodline')
+            ->pluck('bloodline')
+            ->all();
+    }
+
+    /** The chosen sire with its photograph, shown under the picker. */
+    #[Computed]
+    public function selectedSire(): ?Broodcock
+    {
+        return $this->chosenParent($this->sire_id);
+    }
+
+    /** The chosen dam with its photograph, shown under the picker. */
+    #[Computed]
+    public function selectedDam(): ?Broodcock
+    {
+        return $this->chosenParent($this->dam_id);
+    }
+
+    private function chosenParent(?string $id): ?Broodcock
+    {
+        return ($id === null || $id === '')
+            ? null
+            : Broodcock::query()->with('primaryPhoto')->find((int) $id);
     }
 
     /**
@@ -187,6 +257,14 @@ final class Form extends Component
 
     public function save(): void
     {
+        // The bloodline dropdowns bind without a round trip; apply them now.
+        if ($this->sire_is_external) {
+            $this->sire_external_bloodline = $this->bloodlineForChoice($this->sire_bloodline_choice, $this->sire_external_bloodline);
+        }
+        if ($this->dam_is_external) {
+            $this->dam_external_bloodline = $this->bloodlineForChoice($this->dam_bloodline_choice, $this->dam_external_bloodline);
+        }
+
         $data = $this->validate();
 
         // Cross-field rule that needs the parent models loaded. An outside

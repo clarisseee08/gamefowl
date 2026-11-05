@@ -13,161 +13,152 @@
 @endphp
 
 {{--
-    ONE MATING.
+    ONE MATING (EMS).
 
-    The pair first - the two birds side by side, each opening its own page -
-    then the hatch as label/value rows, then the chicks it produced as a
-    ledger. Nothing boxed except the two birds, which are separate objects
-    a keeper will want to open.
+    A trail back to the list, the page header with the one action, then the
+    hatch as four figures - each rate beside the count it is taken from,
+    naming its own base - and the pair as photo cards, each opening the
+    bird's page. The chicks it produced follow as a ledger.
 --}}
 <div>
-    <a href="{{ route('breeding.index') }}" wire:navigate
-       class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center gap-1.5 text-[15px] lg:text-xs font-semibold underline-offset-4">
-        <span aria-hidden="true">&larr;</span> Back to breeding records
-    </a>
+    <nav aria-label="Breadcrumb" class="text-[13px] text-muted-foreground lg:text-xs">
+        <ol class="flex flex-wrap items-center gap-1.5">
+            <li><a href="{{ route('breeding.index') }}" wire:navigate class="hover:text-foreground">Back to breeding records</a></li>
+            <li aria-hidden="true"><x-ui.icon name="chevron-right" class="size-3.5" /></li>
+            <li class="font-medium text-foreground" aria-current="page">{{ $breeding->sire?->name ?? 'Bird removed' }} &times; {{ $breeding->dam?->name ?? 'Bird removed' }}</li>
+        </ol>
+    </nav>
 
-    <header class="mt-2 flex flex-wrap items-end justify-between gap-x-10 gap-y-5 border-b border-border pb-6 sm:pb-8">
-        <div class="min-w-0">
-            <p class="sb-line sb-eyebrow" style="--line: 0ms">Breeding record</p>
-            <h1 class="mt-2 text-base font-bold text-foreground" style="--line: 60ms">
-                {{ $breeding->sire?->name ?? 'Bird removed' }} &times; {{ $breeding->dam?->name ?? 'Bird removed' }}
-            </h1>
-            <p class="sb-line mt-3 text-[15px] lg:text-xs text-muted-foreground" style="--line: 120ms">
-                Mated on <span class="datum text-foreground">{{ $breeding->mating_date->format('j F Y') }}</span>
-                @if ($breeding->recordedBy)
-                    &middot; recorded by {{ $breeding->recordedBy->full_name }}
-                @endif
-            </p>
-        </div>
+    <x-ui.page-header class="mt-3" :title="($breeding->sire?->name ?? 'Bird removed').' × '.($breeding->dam?->name ?? 'Bird removed')">
+        <span>
+            Mated on <span class="datum text-foreground">{{ $breeding->mating_date->format('j F Y') }}</span>
+            @if ($breeding->recordedBy)
+                &middot; recorded by {{ $breeding->recordedBy->full_name }}
+            @endif
+        </span>
 
         @can('update', $breeding)
-            <div class="sb-line flex flex-wrap items-center gap-3" style="--line: 180ms">
-                <a href="{{ route('breeding.edit', $breeding) }}" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'breeding-form')" class="d-btn d-btn-outline">Edit</a>
-            </div>
+            <x-slot:actions>
+                <x-ui.button :href="route('breeding.edit', $breeding)" x-on:click.prevent="$dispatch('ems-dialog', 'breeding-form')">
+                    <x-ui.icon name="pencil" /> Edit
+                </x-ui.button>
+            </x-slot:actions>
         @endcan
-    </header>
+    </x-ui.page-header>
 
-    {{-- ---------------------------------------------------------------
-         THE PAIR. Sire and dam side by side, each a card because each is
-         a bird with its own page. The band dot and the band number are
-         the identifiers a keeper reads; the name is the link.
-    --------------------------------------------------------------- --}}
-    <section aria-label="The pair" class="mt-8 grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr] sm:gap-4">
+    {{-- THE HATCH, as the funnel it is: set, then fertile, then hatched, each
+         a subset of the one before. BreedingRecord::hatchRate is measured
+         against FERTILE eggs, so every rate names its base. --}}
+    <x-ui.kpi-row class="mt-5" role="group" aria-label="The hatch">
+        <x-ui.kpi-tile label="Eggs set" icon="clipboard-list" :value="number_format($breeding->eggs_set)"
+                       caption="Eggs put under the hen or into the incubator" />
+        <x-ui.kpi-tile label="Fertile" icon="circle-check" :value="number_format($breeding->eggs_fertile)"
+                       :caption="$rate($breeding->fertilityRate()) ? $rate($breeding->fertilityRate()).' of eggs set' : 'No eggs set yet'" />
+        <x-ui.kpi-tile label="Hatched" icon="heart" :value="number_format($breeding->eggs_hatched)"
+                       :caption="$rate($breeding->hatchRate()) ? $rate($breeding->hatchRate()).' of fertile' : 'No fertile eggs yet'" />
+        <x-ui.kpi-tile label="End to end" icon="arrow-up-right" :value="$rate($breeding->overallHatchRate())"
+                       :caption="$breeding->overallHatchRate() !== null
+                            ? $breeding->eggs_hatched.' of '.$breeding->eggs_set.' '.Str::plural('egg', $breeding->eggs_set).' set reached hatch'
+                            : 'No eggs have been recorded as set for this mating yet.'" />
+    </x-ui.kpi-row>
+
+    {{-- THE PAIR: sire and dam as photo cards, each opening its bird's page.
+         A deleted parent keeps its place, greyed and unlinked. --}}
+    <section aria-label="The pair" class="mt-4 grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr] sm:gap-4">
         @foreach ([['Sire', $breeding->sire], ['Dam', $breeding->dam]] as [$role, $parent])
             @if (! $loop->first)
-                <span class="hidden text-center font-display text-[22px] lg:text-base text-muted-foreground sm:block" aria-hidden="true">&times;</span>
+                <span class="hidden text-center text-base font-semibold text-muted-foreground sm:block" aria-hidden="true">&times;</span>
             @endif
 
-            {{-- A deleted parent keeps its place in the record, greyed and not
-                 linked: the history is kept, but its own page is gone. --}}
-            @if ($parent === null || $parent->trashed())
-                <div class="block min-h-11 rounded-[12px] border border-border bg-card p-5">
-                    <span class="block text-[14px] lg:text-xs font-medium text-muted-foreground">{{ $role }}</span>
-                    <span class="mt-1 block font-display text-[22px] lg:text-base font-semibold leading-tight tracking-[-0.015em] text-muted-foreground">
-                        {{ $parent?->name ?? 'Bird removed' }}
-                    </span>
-                    <span class="mt-3 block text-[15px] lg:text-xs text-muted-foreground">
-                        @if ($parent?->band_number)<span class="datum">{{ $parent->band_number }}</span> &middot; @endif
-                        Removed from the records
-                    </span>
-                </div>
-                @continue
-            @endif
+            @php
+                $removed = $parent === null || $parent->trashed();
+                $photo = (! $removed && $parent->relationLoaded('primaryPhoto')) ? $parent->primaryPhoto : null;
+            @endphp
 
-            <a href="{{ route('broodcocks.show', $parent) }}" wire:navigate
-               class="group block min-h-11 rounded-[12px] border border-border bg-card p-5 elev-1">
-                <span class="block text-[14px] lg:text-xs font-medium text-muted-foreground">{{ $role }}</span>
-                <span class="mt-1 block font-display text-[22px] lg:text-base font-semibold leading-tight tracking-[-0.015em] text-foreground group-hover:underline group-hover:underline-offset-4">
-                    {{ $parent->name }}
+            <{{ $removed ? 'div' : 'a' }} @unless ($removed) href="{{ route('broodcocks.show', $parent) }}" wire:navigate @endunless
+                @class([
+                    'flex items-center gap-4 rounded-md border border-border bg-card p-3',
+                    'transition-colors hover:border-primary/50' => ! $removed,
+                ])>
+                <span class="relative block h-24 w-20 shrink-0 overflow-hidden rounded-sm bg-muted"
+                      @unless ($removed) style="box-shadow: inset 0 3px 0 {{ \App\Support\BandTag::hex($parent->bloodline) }}" @endunless>
+                    @if ($photo)
+                        <span x-data="{ loaded: false }" x-init="loaded = $refs.photo.complete && $refs.photo.naturalWidth > 0" class="block h-full w-full">
+                            <span x-show="! loaded" class="absolute inset-0 animate-pulse bg-muted-foreground/15" aria-hidden="true"></span>
+                            <img x-ref="photo" x-on:load="loaded = true" src="{{ route('photos.show', ['photo' => $photo, 'size' => 'thumb']) }}" alt=""
+                                 width="80" height="96" decoding="async" class="h-full w-full object-cover transition-opacity duration-300"
+                                 x-bind:class="loaded ? 'opacity-100' : 'opacity-0'">
+                        </span>
+                    @else
+                        <span class="flex h-full w-full flex-col items-center justify-center gap-1 text-[11px] text-muted-foreground">
+                            @unless ($removed)<x-band-dot :bloodline="$parent->bloodline" />@endunless
+                            No photo
+                        </span>
+                    @endif
                 </span>
-                <span class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[15px] lg:text-xs">
-                    <span class="inline-flex items-center gap-2 text-foreground">
-                        <x-band-dot :bloodline="$parent->bloodline" />
-                        @if ($parent->band_number)
-                            <span class="datum">{{ $parent->band_number }}</span>
+                <span class="min-w-0">
+                    <span class="block text-xs font-medium text-muted-foreground lg:text-[11px]">{{ $role }}</span>
+                    <span @class(['mt-0.5 block truncate text-sm font-semibold', 'text-foreground' => ! $removed, 'text-muted-foreground' => $removed])>{{ $parent?->name ?? 'Bird removed' }}</span>
+                    <span class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground lg:text-[11px]">
+                        @if ($removed)
+                            @if ($parent?->band_number)<span class="datum">{{ $parent->band_number }}</span>@endif
+                            <span>Removed from the records</span>
                         @else
-                            <span class="text-muted-foreground">Not yet banded</span>
+                            <span class="inline-flex items-center gap-1.5 text-foreground">
+                                <x-band-dot :bloodline="$parent->bloodline" />
+                                @if ($parent->band_number)
+                                    <span class="datum">{{ $parent->band_number }}</span>
+                                @else
+                                    <span class="text-muted-foreground">Not yet banded</span>
+                                @endif
+                            </span>
+                            <span>{{ $parent->bloodline ?: 'Bloodline not recorded' }}</span>
                         @endif
                     </span>
-                    <span class="text-muted-foreground">{{ $parent->bloodline ?: 'Bloodline not recorded' }}</span>
                 </span>
-            </a>
+            </{{ $removed ? 'div' : 'a' }}>
         @endforeach
     </section>
 
-    {{-- ---------------------------------------------------------------
-         THE HATCH, as the funnel it is. Set, then fertile, then hatched -
-         each a subset of the one before - and each ratio beside the figure
-         it describes, naming its own denominator. BreedingRecord::hatchRate
-         is measured against FERTILE eggs, not eggs set, so a rate without
-         its basis invites exactly the wrong reading.
-    --------------------------------------------------------------- --}}
-    <section class="mt-12" aria-labelledby="hatch-heading" data-reveal>
-        <h2 id="hatch-heading" class="sb-h2">The hatch</h2>
-
-        <dl class="mt-5 max-w-[44rem] border-t border-border">
-            <x-field-row label="Eggs set">
-                <span class="datum">{{ $breeding->eggs_set }}</span>
-            </x-field-row>
-            <x-field-row label="Fertile">
-                <span class="datum">{{ $breeding->eggs_fertile }}</span>
-                @if ($rate($breeding->fertilityRate()))
-                    <span class="ml-2 text-[14px] lg:text-xs text-muted-foreground"><span class="datum">{{ $rate($breeding->fertilityRate()) }}</span> of eggs set</span>
-                @endif
-            </x-field-row>
-            <x-field-row label="Hatched">
-                <span class="datum">{{ $breeding->eggs_hatched }}</span>
-                @if ($rate($breeding->hatchRate()))
-                    <span class="ml-2 text-[14px] lg:text-xs text-muted-foreground"><span class="datum">{{ $rate($breeding->hatchRate()) }}</span> of fertile</span>
-                @endif
-            </x-field-row>
-            <x-field-row label="End to end">
-                {{-- The yield: the one number a breeder judges a mating by. --}}
-                @if ($breeding->overallHatchRate() !== null)
-                    <span class="datum">{{ $breeding->eggs_hatched }}</span>
-                    of <span class="datum">{{ $breeding->eggs_set }}</span>
-                    {{ Str::plural('egg', $breeding->eggs_set) }} set reached hatch
-                    &mdash; <span class="datum">{{ $rate($breeding->overallHatchRate()) }}</span>.
-                @else
-                    <span class="text-muted-foreground">No eggs have been recorded as set for this mating yet.</span>
-                @endif
-            </x-field-row>
-            @if ($breeding->notes)
-                <x-field-row label="Notes">
-                    <span class="block max-w-[60ch] whitespace-pre-line leading-relaxed">{{ $breeding->notes }}</span>
-                </x-field-row>
-            @endif
-        </dl>
-    </section>
+    @if ($breeding->notes)
+        <x-ui.card class="mt-4">
+            <x-ui.card.header>
+                <x-ui.card.title>Notes</x-ui.card.title>
+            </x-ui.card.header>
+            <x-ui.card.content>
+                <p class="max-w-[70ch] whitespace-pre-line text-sm leading-relaxed text-foreground lg:text-xs">{{ $breeding->notes }}</p>
+            </x-ui.card.content>
+        </x-ui.card>
+    @endif
 
     {{-- ---------------------------------------------------------------
          OFFSPRING. Generating chicks here is what makes the pedigree real:
          each is created with sire_id and dam_id already set, so the family
          tree is a by-product of normal data entry.
     --------------------------------------------------------------- --}}
-    <section class="mt-12" aria-labelledby="offspring-heading">
-        <div class="flex flex-wrap items-end justify-between gap-4">
+    <x-ui.card class="mt-4" :flush="true" aria-labelledby="offspring-heading">
+        <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-5">
             <div>
-                <h2 id="offspring-heading" class="sb-h2">Offspring</h2>
-                <p class="mt-2 text-[15px] lg:text-xs text-muted-foreground">
-                    <span class="datum text-foreground">{{ $breeding->offspring_count }}</span> of
-                    <span class="datum text-foreground">{{ $breeding->eggs_hatched }}</span>
+                <h2 id="offspring-heading" class="text-sm font-semibold text-foreground">Offspring</h2>
+                <p class="mt-0.5 text-[13px] text-muted-foreground lg:text-xs">
+                    <span class="datum font-semibold text-foreground">{{ $breeding->offspring_count }}</span> of
+                    <span class="datum font-semibold text-foreground">{{ $breeding->eggs_hatched }}</span>
                     {{ Str::plural('chick', $breeding->eggs_hatched) }} registered as bird records.
                 </p>
             </div>
 
             @if ($breeding->hasUnregisteredOffspring() && ! $generating)
                 @can('generateOffspring', $breeding)
-                    <button type="button" wire:click="startGenerating" class="d-btn d-btn-primary">
-                        Register {{ $unregistered }} {{ Str::plural('chick', $unregistered) }}
-                    </button>
+                    <x-ui.button wire:click="startGenerating">
+                        <x-ui.icon name="plus" /> Register {{ $unregistered }} {{ Str::plural('chick', $unregistered) }}
+                    </x-ui.button>
                 @endcan
             @endif
         </div>
 
         @if ($generating)
-            <div class="mt-6 max-w-[44rem] rounded-[12px] border border-border bg-card p-5 sm:p-6" role="group" aria-labelledby="generate-heading">
-                <h3 id="generate-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Register chicks from this hatch</h3>
+            <div class="border-t border-border bg-muted/40 px-5 py-5" role="group" aria-labelledby="generate-heading">
+                <h3 id="generate-heading" class="text-sm font-semibold text-foreground">Register Chicks From This Hatch</h3>
                 <p class="mt-2 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     Each chick will be created with
                     <strong class="font-semibold text-foreground">{{ $breeding->sire?->name ?? 'Bird removed' }}</strong> as its sire and
@@ -175,7 +166,7 @@
                     family tree straight away. You can rename and band them afterwards.
                 </p>
 
-                <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                <div class="mt-4 grid max-w-3xl gap-4 sm:grid-cols-2">
                     <div>
                         <label for="generateCount" class="d-fieldset-legend">How many</label>
                         <input id="generateCount" type="number" min="1" max="{{ max(1, $unregistered) }}" inputmode="numeric"
@@ -213,7 +204,7 @@
                     </div>
                 </div>
 
-                <div class="mt-6 flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end">
+                <div class="mt-5 flex max-w-3xl flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                     <button type="button" wire:click="$set('generating', false)" class="d-btn d-btn-outline">Cancel</button>
                     <button type="button" wire:click="generate" class="d-btn d-btn-primary" wire:loading.attr="disabled" wire:target="generate">
                         <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="generate"></span>
@@ -224,14 +215,14 @@
             </div>
         @endif
 
-        <div class="mt-6">
+        <div class="border-t border-border">
             @if ($offspring->isEmpty())
-                <x-empty-state title="No chicks registered yet"
+                <x-empty-state :bare="true" class="py-10" title="No chicks registered yet"
                                :description="$offspringEmptyLine"
                                icon="M12 3c-3.3 0-6 4.6-6 9.2A6 6 0 0 0 12 18.5a6 6 0 0 0 6-6.3C18 7.6 15.3 3 12 3Z" />
             @else
                 {{-- Phones: one block per chick. --}}
-                <ul class="divide-y divide-border border-y border-border md:hidden">
+                <ul class="divide-y divide-border px-5 md:hidden">
                     @foreach ($offspring as $child)
                         <li wire:key="c-m-{{ $child->id }}">
                             <a href="{{ route('broodcocks.show', $child) }}" wire:navigate class="block py-3">
@@ -262,30 +253,31 @@
                     @endforeach
                 </ul>
 
-                {{-- Wider screens: a ledger. --}}
-                <table class="d-table hidden w-full border-separate border-spacing-0 text-[15px] lg:text-xs md:table">
-                    <thead class="sticky top-0 z-10 bg-background">
-                        <tr>
-                            @foreach (['Name', 'Band', 'Sex', 'Hatched', 'Status'] as $heading)
-                                <th scope="col" @class([
-                                    'border-b border-border py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground',
-                                    'pl-0 pr-4' => $loop->first,
-                                    'px-4' => ! $loop->first,
-                                ])>{{ $heading }}</th>
+                {{-- Wider screens: a ledger. Resting on a row shows the chick's photo. --}}
+                <table class="d-table hidden w-full text-left md:table">
+                    <thead>
+                        <tr class="border-b border-border">
+                            @foreach (['Name', 'Band number', 'Sex', 'Hatched', 'Status'] as $heading)
+                                <th scope="col" class="h-10 px-5 text-[13px] font-medium text-muted-foreground lg:h-9 lg:text-xs">{{ $heading }}</th>
                             @endforeach
+                            <th scope="col" class="h-10 px-5 text-right text-[13px] font-medium text-muted-foreground lg:h-9 lg:text-xs">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($offspring as $child)
-                            <tr class="row-hover" wire:key="c-{{ $child->id }}">
-                                <td class="border-b border-border py-2 pl-0 pr-4">
-                                    <a href="{{ route('broodcocks.show', $child) }}" wire:navigate
-                                       class="d-link d-link-hover inline-flex min-h-11 items-center font-medium text-foreground underline-offset-4">
-                                        {{ $child->name }}
-                                    </a>
+                            <tr class="row-hover border-b border-border last:border-b-0" wire:key="c-{{ $child->id }}"
+                                x-data="{ preview: false, timer: null }"
+                                x-on:mouseenter="if (matchMedia('(hover: hover)').matches) { timer = setTimeout(() => preview = true, 350) }"
+                                x-on:mouseleave="clearTimeout(timer); preview = false">
+                                <td class="px-5 py-2">
+                                    <span class="relative inline-flex">
+                                        <a href="{{ route('broodcocks.show', $child) }}" wire:navigate
+                                           class="inline-flex min-h-11 items-center text-sm font-semibold text-foreground hover:text-primary lg:min-h-0 lg:text-xs">{{ $child->name }}</a>
+                                        <x-bird-hover-card :bird="$child" />
+                                    </span>
                                 </td>
-                                <td class="border-b border-border px-4 py-2">
-                                    <span class="inline-flex items-center gap-2">
+                                <td class="px-5 py-2">
+                                    <span class="inline-flex items-center gap-2 text-sm lg:text-xs">
                                         <x-band-dot :bloodline="$child->bloodline" />
                                         @if ($child->band_number)
                                             <span class="datum text-foreground">{{ $child->band_number }}</span>
@@ -294,16 +286,19 @@
                                         @endif
                                     </span>
                                 </td>
-                                <td class="border-b border-border px-4 py-2 text-muted-foreground">{{ $child->sex->label() }}</td>
-                                <td class="border-b border-border px-4 py-2">
+                                <td class="px-5 py-2 text-sm text-muted-foreground lg:text-xs">{{ $child->sex->label() }}</td>
+                                <td class="px-5 py-2 text-sm lg:text-xs">
                                     @if ($child->date_hatched)
                                         <span class="datum text-foreground">{{ $child->date_hatched->format('j M Y') }}</span>
                                     @else
                                         <span class="text-muted-foreground">Not recorded</span>
                                     @endif
                                 </td>
-                                <td class="border-b border-border px-4 py-2">
+                                <td class="px-5 py-2">
                                     <span class="d-badge d-badge-soft {{ $child->status->badgeClasses() }}">{{ $child->status->label() }}</span>
+                                </td>
+                                <td class="px-5 py-2 text-right">
+                                    <x-ui.row-action icon="eye" :label="'View '.$child->name" :href="route('broodcocks.show', $child)" wire:navigate />
                                 </td>
                             </tr>
                         @endforeach
@@ -311,16 +306,12 @@
                 </table>
             @endif
         </div>
-    </section>
+    </x-ui.card>
 
     @can('update', $this->record)
         {{-- Edit opens here, in a dialog over this page. --}}
         <x-ui.form-dialog id="breeding-form" model="showForm" size="xl" :wrap="false" :title="'Edit Breeding Record'">
-            @if ($showForm)
-                <livewire:breeding.form :record="$this->record" :in-dialog="true" :key="'breeding-show-form'" />
-            @else
-                <x-ui.form-skeleton :fields="7" />
-            @endif
+            <livewire:breeding.form :record="$this->record" :in-dialog="true" :key="'breeding-show-form-'.$formNonce" />
         </x-ui.form-dialog>
     @endcan
 </div>

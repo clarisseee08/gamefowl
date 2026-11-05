@@ -165,8 +165,10 @@ final class Form extends Component
             return null;
         }
 
+        // primaryPhoto, sex and is_external for the photo preview under the picker.
         return Broodcock::query()
-            ->select(['id', 'name', 'band_number', 'bloodline', 'date_hatched', 'status'])
+            ->select(['id', 'name', 'band_number', 'bloodline', 'date_hatched', 'status', 'sex', 'is_external'])
+            ->with('primaryPhoto')
             ->find((int) $this->broodcock_id);
     }
 

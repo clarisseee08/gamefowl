@@ -11,6 +11,7 @@ use App\Enums\BroodcockStatus;
 use App\Enums\Sex;
 use App\Http\Requests\StoreBroodcockPhotoRequest;
 use App\Http\Requests\StoreBroodcockRequest;
+use App\Livewire\Concerns\ChoosesFromPresets;
 use App\Models\Broodcock;
 use App\Models\BroodcockPhoto;
 use Illuminate\Contracts\View\View;
@@ -24,6 +25,7 @@ use Livewire\WithFileUploads;
 
 final class Form extends Component
 {
+    use ChoosesFromPresets;
     use WithFileUploads;
 
     /**
@@ -68,6 +70,18 @@ final class Form extends Component
     public ?string $comb_type = null;
 
     public ?string $leg_color = null;
+
+    /**
+     * What the Weight, Colour, Comb type and Leg colour dropdowns show: a
+     * listed value, "Others", or nothing (ChoosesFromPresets).
+     */
+    public string $weight_choice = '';
+
+    public string $color_choice = '';
+
+    public string $comb_type_choice = '';
+
+    public string $leg_color_choice = '';
 
     public ?string $distinguishing_marks = null;
 
@@ -157,6 +171,11 @@ final class Form extends Component
                 'notes' => $broodcock->notes,
             ]);
 
+            $this->weight_choice = $this->presetChoiceFor($this->weight, $this->weightOptions, numeric: true);
+            $this->color_choice = $this->presetChoiceFor($this->color, $this->colorOptions);
+            $this->comb_type_choice = $this->presetChoiceFor($this->comb_type, $this->combTypeOptions);
+            $this->leg_color_choice = $this->presetChoiceFor($this->leg_color, $this->legColorOptions);
+
             return;
         }
 
@@ -164,6 +183,67 @@ final class Form extends Component
         $this->class = BroodcockClass::Ordinary->value;
         $this->sex = Sex::Male->value;
         $this->status = BroodcockStatus::Active->value;
+    }
+
+    /**
+     * The dropdowns bind without a server round trip (picking "Others" shows
+     * its box in the browser at once), so their choice reaches the columns
+     * here, just before validation.
+     */
+    private function applyPresetChoices(): void
+    {
+        $this->weight = $this->presetValueFor($this->weight_choice, $this->weight, $this->weightOptions);
+        $this->color = $this->presetValueFor($this->color_choice, $this->color, $this->colorOptions);
+        $this->comb_type = $this->presetValueFor($this->comb_type_choice, $this->comb_type, $this->combTypeOptions);
+        $this->leg_color = $this->presetValueFor($this->leg_color_choice, $this->leg_color, $this->legColorOptions);
+    }
+
+    public function updatedWeightChoice(string $choice): void
+    {
+        $this->weight = $this->presetValueFor($choice, $this->weight, $this->weightOptions);
+    }
+
+    public function updatedColorChoice(string $choice): void
+    {
+        $this->color = $this->presetValueFor($choice, $this->color, $this->colorOptions);
+    }
+
+    public function updatedCombTypeChoice(string $choice): void
+    {
+        $this->comb_type = $this->presetValueFor($choice, $this->comb_type, $this->combTypeOptions);
+    }
+
+    public function updatedLegColorChoice(string $choice): void
+    {
+        $this->leg_color = $this->presetValueFor($choice, $this->leg_color, $this->legColorOptions);
+    }
+
+    /** @return list<string> */
+    #[Computed]
+    public function weightOptions(): array
+    {
+        return config('gfms.bird_presets.weights', []);
+    }
+
+    /** @return list<string> */
+    #[Computed]
+    public function colorOptions(): array
+    {
+        return config('gfms.bird_presets.colors', []);
+    }
+
+    /** @return list<string> */
+    #[Computed]
+    public function combTypeOptions(): array
+    {
+        return config('gfms.bird_presets.comb_types', []);
+    }
+
+    /** @return list<string> */
+    #[Computed]
+    public function legColorOptions(): array
+    {
+        return config('gfms.bird_presets.leg_colors', []);
     }
 
     public function updatedSireChoice(?string $value): void
@@ -276,6 +356,8 @@ final class Form extends Component
 
     public function save(): void
     {
+        $this->applyPresetChoices();
+
         $data = $this->validate();
 
         // `photos` is validated with the rest of the form but is NOT a column

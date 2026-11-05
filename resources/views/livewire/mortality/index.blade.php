@@ -49,7 +49,7 @@
 
         <x-slot:actions>
             @if ($this->canCreate)
-                <a href="{{ route('mortality.create') }}" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'mortality-form')" class="d-btn d-btn-primary w-full sm:w-auto">
+                <a href="{{ route('mortality.create') }}" x-on:click.prevent="$dispatch('ems-dialog', 'mortality-form')" class="d-btn d-btn-primary w-full sm:w-auto">
                     Record a Death
                 </a>
             @endif
@@ -118,7 +118,7 @@
                            :description="$this->canCreate ? 'When a bird dies, record it here so the farm keeps a complete history for that bird.' : null"
                            icon="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z">
                 @if ($this->canCreate)
-                    <a href="{{ route('mortality.create') }}" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'mortality-form')" class="d-btn d-btn-primary">Record a Death</a>
+                    <a href="{{ route('mortality.create') }}" x-on:click.prevent="$dispatch('ems-dialog', 'mortality-form')" class="d-btn d-btn-primary">Record a Death</a>
                 @endif
             </x-empty-state>
         @endif
@@ -207,12 +207,20 @@
 
             <tbody wire:loading.remove wire:target="{{ $loadingTargets }}">
                 @foreach ($rows as $record)
-                    <tr wire:key="row-{{ $record->id }}" class="row-hover align-top *:align-top">
+                    <tr wire:key="row-{{ $record->id }}" class="row-hover align-top *:align-top"
+                        x-data="{ preview: false, timer: null }"
+                        x-on:mouseenter="if (matchMedia('(hover: hover)').matches) { timer = setTimeout(() => preview = true, 350) }"
+                        x-on:mouseleave="clearTimeout(timer); preview = false">
                         <td class="datum whitespace-nowrap border-b border-border py-3 pl-0 pr-4 text-foreground">
                             {{ $record->date_of_death->format('d M Y') }}
                         </td>
                         <td class="border-b border-border px-4 py-3">
-                            <p class="font-medium text-foreground">{{ $record->broodcock?->name ?? 'Unknown bird' }}</p>
+                            <p class="relative inline-flex font-medium text-foreground">
+                                {{ $record->broodcock?->name ?? 'Unknown bird' }}
+                                @if ($record->broodcock)
+                                    <x-bird-hover-card :bird="$record->broodcock" />
+                                @endif
+                            </p>
                             <p class="mt-0.5 inline-flex items-center gap-1.5 text-[13px] lg:text-[11px] text-muted-foreground">
                                 @if ($record->broodcock)
                                     <x-band-dot :bloodline="$record->broodcock->bloodline" />
@@ -245,9 +253,7 @@
             <x-table-skeleton :cols="$canDelete ? 7 : 6" wire:loading wire:target="{{ $loadingTargets }}" />
         </table>
 
-        <div class="mt-6">
-            {{ $rows->links() }}
-        </div>
+        <x-ui.table-pagination :paginator="$rows" class="mt-4" />
     @endif
 
     {{-- ---------------------------------------------------------------
@@ -293,12 +299,23 @@
     @endif
 
     {{-- Add and edit open here, in a dialog over the list, never on a page of their own. --}}
-    <x-ui.form-dialog id="mortality-form" model="showForm" size="lg" :wrap="false" :title="'Record a Death'">
-        @if ($showForm)
-            <livewire:mortality.form :broodcock="$formBroodcockId ? \App\Models\Broodcock::find($formBroodcockId) : null"
-                                  :in-dialog="true" :key="'mortality-form-'.($formRecordId ?? 'new').'-'.($formBroodcockId ?? '')" />
-        @else
-            <x-ui.form-skeleton :fields="5" />
-        @endif
-    </x-ui.form-dialog>
+    {{-- The new-record form is built with the page, and it authorizes on
+         mount, so it is only built for someone who may create one. --}}
+    @can('create', \App\Models\MortalityRecord::class)
+        <x-ui.form-dialog id="mortality-form" model="showForm" size="lg" :wrap="false" :title="'Record a Death'">
+            @if ($formRecordId || $formBroodcockId)
+                {{-- An edit, or a form for one bird: filled by the server when opened. --}}
+                @if ($showForm)
+                    <livewire:mortality.form :broodcock="$formBroodcockId ? \App\Models\Broodcock::find($formBroodcockId) : null"
+                                             :in-dialog="true" :key="'mortality-form-'.($formRecordId ?? 'new').'-'.($formBroodcockId ?? '')" />
+                @else
+                    <x-ui.form-skeleton :fields="5" />
+                @endif
+            @else
+                {{-- A new record: built with the page, so Add opens at once with no request. --}}
+                <livewire:mortality.form :broodcock="$formBroodcockId ? \App\Models\Broodcock::find($formBroodcockId) : null"
+                                      :in-dialog="true" :key="'mortality-form-new-'.$formNonce" />
+            @endif
+        </x-ui.form-dialog>
+    @endcan
 </div>

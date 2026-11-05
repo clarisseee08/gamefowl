@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Health;
 
+use App\Livewire\Concerns\ChoosesPageSize;
 use App\Models\HealthRecord;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -31,6 +32,7 @@ use Livewire\WithPagination;
 #[Title('Vaccination Schedule')]
 final class Schedule extends Component
 {
+    use ChoosesPageSize;
     use WithPagination;
 
     public function mount(): void
@@ -60,7 +62,7 @@ final class Schedule extends Component
             ->overdue()
             ->orderBy('next_due_date')
             ->orderBy('id')
-            ->paginate(config('gfms.per_page'), pageName: 'overduePage');
+            ->paginate($this->pageSize(), pageName: 'overduePage');
     }
 
     /**
@@ -80,7 +82,7 @@ final class Schedule extends Component
             ->dueSoon($this->warningDays())
             ->orderBy('next_due_date')
             ->orderBy('id')
-            ->paginate(config('gfms.per_page'), pageName: 'upcomingPage');
+            ->paginate($this->pageSize(), pageName: 'upcomingPage');
     }
 
     /** Counts for the summary tiles - cheap, and they answer "how bad is it?" at a glance. */

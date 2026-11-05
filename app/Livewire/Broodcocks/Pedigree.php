@@ -7,6 +7,7 @@ namespace App\Livewire\Broodcocks;
 use App\Livewire\Concerns\ChoosesShellByViewer;
 use App\Models\Broodcock;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -17,10 +18,12 @@ use Livewire\Component;
  * traceability, and it is the clearest differentiator from the prior systems
  * reviewed in the thesis.
  *
- * IT IS CURRENTLY SET TO ONE GENERATION - the sire and dam only. The farm
- * asked for grandparents and great-grandparents to go: they are not recorded
- * in practice, so two thirds of the chart was the words "Not recorded" and a
- * screen meant to prove traceability read as a screen that had failed.
+ * IT IS SET TO TWO GENERATIONS, AND A GENERATION SHOWS ONLY WHERE SOMETHING
+ * IN IT IS RECORDED. The farm asked for empty ancestor columns to go: two
+ * thirds of the chart reading "Not recorded" made a screen meant to prove
+ * traceability read as a screen that had failed. Grandparents are drawn when
+ * at least one is on file - the bird page's Pedigree tab already did, and
+ * the "full family tree" it links to must not show less than the tab.
  *
  * PERFORMANCE - read before raising that number back.
  *
@@ -98,6 +101,10 @@ final class Pedigree extends Component
             $frontier = $level->all();
         }
 
+        // Every card in the tree shows its bird's photograph: one query for
+        // the whole tree, not one per card.
+        (new Collection(array_values($map)))->load('primaryPhoto');
+
         return $map;
     }
 
@@ -132,6 +139,13 @@ final class Pedigree extends Component
 
             $columns[] = $next;
             $current = $next;
+        }
+
+        // A generation beyond the parents is drawn only if something in it is
+        // recorded. The parents always are: an unrecorded sire or dam is
+        // stated, not hidden.
+        while (count($columns) > 2 && array_filter(end($columns)) === []) {
+            array_pop($columns);
         }
 
         return $columns;

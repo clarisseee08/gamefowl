@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Mortality;
 
 use App\Actions\Mortality\DeleteMortality;
+use App\Livewire\Concerns\ChoosesPageSize;
 use App\Models\Broodcock;
 use App\Models\MortalityRecord;
 use Illuminate\Contracts\View\View;
@@ -29,6 +30,7 @@ use Livewire\WithPagination;
 #[Title('Mortality')]
 final class Index extends Component
 {
+    use ChoosesPageSize;
     use WithPagination;
 
     #[Url(as: 'from')]
@@ -90,6 +92,30 @@ final class Index extends Component
     #[Locked]
     public ?int $formRecordId = null;
 
+    /**
+     * A new form is built ahead, so Add opens instantly. Closing the dialog
+     * drops any edit and re-keys the new form, so the next Add is blank.
+     */
+    public int $formNonce = 0;
+
+    public function updatedShowForm(bool $open): void
+    {
+        if ($open) {
+            return;
+        }
+
+        $this->formRecordId = null;
+        $this->formBroodcockId = null;
+        $this->formNonce++;
+    }
+
+    /** Called by the dialog when a form that was typed in is closed: start the next one blank. */
+    public function resetForm(): void
+    {
+        $this->showForm = false;
+        $this->updatedShowForm(false);
+    }
+
     #[Locked]
     public ?int $formBroodcockId = null;
 
@@ -98,6 +124,9 @@ final class Index extends Component
         $this->authorize('viewAny', MortalityRecord::class);
 
         if (request()->routeIs('mortality.create')) {
+            // The form is only built for someone allowed to create, so it
+            // can no longer refuse this address itself: checked here.
+            $this->authorize('create', MortalityRecord::class);
             $this->openForm(null, $broodcock?->id);
         }
     }
@@ -189,7 +218,7 @@ final class Index extends Component
         return $this->filtered()
             // Eager-loaded: the table shows the bird and the recorder on every
             // row, and strict mode turns a missed relation into an exception.
-            ->with(['broodcock:id,name,band_number,bloodline,date_hatched', 'recordedBy:id,full_name'])
+            ->with(['broodcock:id,name,band_number,bloodline,date_hatched', 'broodcock.primaryPhoto', 'recordedBy:id,full_name'])
             // Checked against the allow-list a second time: the URL can set
             // $sortBy directly without ever passing through sort().
             ->orderBy(
@@ -197,7 +226,7 @@ final class Index extends Component
                 $this->sortDirection === 'asc' ? 'asc' : 'desc'
             )
             ->orderByDesc('id')
-            ->paginate((int) config('gfms.per_page', 15));
+            ->paginate($this->pageSize());
     }
 
     /**

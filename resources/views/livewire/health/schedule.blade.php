@@ -71,7 +71,7 @@
                                        class="group inline-flex min-h-11 items-center gap-2.5">
                                         <x-band-dot :bloodline="$record->broodcock->bloodline" />
                                         <span class="min-w-0">
-                                            <span class="datum block text-[15px] lg:text-xs font-medium text-foreground group-hover:underline">{{ $record->broodcock->displayBand() }}</span>
+                                            <span class="datum block text-[15px] lg:text-xs font-medium text-foreground">{{ $record->broodcock->displayBand() }}</span>
                                             <span class="block text-[13px] lg:text-[11px] leading-snug text-muted-foreground">{{ $record->broodcock->name }}@if ($record->broodcock->bloodline) &middot; {{ $record->broodcock->bloodline }}@endif</span>
                                         </span>
                                     </a>
@@ -95,10 +95,8 @@
                 @endforeach
             </ol>
 
-            @if ($this->overdue->hasPages())
-                <div class="mt-6">
-                    {{ $this->overdue->links() }}
-                </div>
+            @if ($this->overdue->total() > 0)
+                <x-ui.table-pagination :paginator="$this->overdue" id="overduePerPage" class="mt-4" />
             @endif
         @endif
     </section>
@@ -143,7 +141,7 @@
                                        class="group inline-flex min-h-11 items-center gap-2.5">
                                         <x-band-dot :bloodline="$record->broodcock->bloodline" />
                                         <span class="min-w-0">
-                                            <span class="datum block text-[15px] lg:text-xs font-medium text-foreground group-hover:underline">{{ $record->broodcock->displayBand() }}</span>
+                                            <span class="datum block text-[15px] lg:text-xs font-medium text-foreground">{{ $record->broodcock->displayBand() }}</span>
                                             <span class="block text-[13px] lg:text-[11px] leading-snug text-muted-foreground">{{ $record->broodcock->name }}@if ($record->broodcock->bloodline) &middot; {{ $record->broodcock->bloodline }}@endif</span>
                                         </span>
                                     </a>
@@ -167,10 +165,8 @@
                 @endforeach
             </ol>
 
-            @if ($this->dueSoon->hasPages())
-                <div class="mt-6">
-                    {{ $this->dueSoon->links() }}
-                </div>
+            @if ($this->dueSoon->total() > 0)
+                <x-ui.table-pagination :paginator="$this->dueSoon" id="dueSoonPerPage" class="mt-4" />
             @endif
         @endif
     </section>

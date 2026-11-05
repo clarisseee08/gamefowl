@@ -9,7 +9,7 @@
 <section x-data="{ open: false, src: '', label: '' }" aria-labelledby="gallery-heading">
 
     <div class="flex items-baseline justify-between gap-3">
-        <h2 id="gallery-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">
+        <h2 id="gallery-heading" class="text-[15px] font-semibold text-foreground lg:text-sm">
             Photos
             @if ($photos->isNotEmpty())
                 <span class="datum ml-1 text-[15px] lg:text-xs font-normal text-muted-foreground">{{ $photos->count() }}</span>
@@ -19,7 +19,7 @@
 
     @if ($photos->isEmpty())
         {{-- Empty state that says what to do next, never a blank box. --}}
-        <x-empty-state class="mt-5"
+        <x-empty-state :bare="true" class="mt-2 py-8"
                        title="No photos of this bird yet"
                        :description="$canManage
                            ? 'Use Add photos above to take or choose a picture. The first one you add becomes the main photo shown in lists.'

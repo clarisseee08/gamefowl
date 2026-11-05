@@ -37,6 +37,23 @@ final class Overview extends Component
      */
     public bool $showForm = false;
 
+    /** Closing the dialog re-keys the form, so it reopens as the record stands. */
+    public int $formNonce = 0;
+
+    public function updatedShowForm(bool $open): void
+    {
+        if (! $open) {
+            $this->formNonce++;
+        }
+    }
+
+    /** Called by the dialog when a form that was typed in is closed: start the next one blank. */
+    public function resetForm(): void
+    {
+        $this->showForm = false;
+        $this->updatedShowForm(false);
+    }
+
     public function mount(): void
     {
         $this->authorize('viewAny', BreedingRecord::class);

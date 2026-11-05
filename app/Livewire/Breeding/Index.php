@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Breeding;
 
+use App\Livewire\Concerns\ChoosesPageSize;
 use App\Models\BreedingRecord;
 use App\Models\Broodcock;
 use Illuminate\Contracts\View\View;
@@ -16,6 +17,7 @@ use Livewire\WithPagination;
 
 final class Index extends Component
 {
+    use ChoosesPageSize;
     use WithPagination;
 
     #[Url(as: 'q', except: '')]
@@ -74,6 +76,30 @@ final class Index extends Component
     #[Locked]
     public ?int $formRecordId = null;
 
+    /**
+     * A new form is built ahead, so Add opens instantly. Closing the dialog
+     * drops any edit and re-keys the new form, so the next Add is blank.
+     */
+    public int $formNonce = 0;
+
+    public function updatedShowForm(bool $open): void
+    {
+        if ($open) {
+            return;
+        }
+
+        $this->formRecordId = null;
+        $this->formBroodcockId = null;
+        $this->formNonce++;
+    }
+
+    /** Called by the dialog when a form that was typed in is closed: start the next one blank. */
+    public function resetForm(): void
+    {
+        $this->showForm = false;
+        $this->updatedShowForm(false);
+    }
+
     #[Locked]
     public ?int $formBroodcockId = null;
 
@@ -81,9 +107,13 @@ final class Index extends Component
     {
         $this->authorize('viewAny', BreedingRecord::class);
 
+        // The form is only built for someone allowed to create, so it can no
+        // longer refuse an /edit or /create address itself: checked here.
         if ($record?->exists) {
+            $this->authorize('update', $record);
             $this->openForm($record->id);
         } elseif (request()->routeIs('breeding.create')) {
+            $this->authorize('create', BreedingRecord::class);
             $this->openForm(null, null);
         }
     }
@@ -129,8 +159,8 @@ final class Index extends Component
             // withTrashed() because deleting a bird keeps its breeding history:
             // without it a deleted parent comes back null and the page fails.
             ->with([
-                'sire' => fn ($query) => $query->withTrashed()->select(['id', 'name', 'band_number', 'bloodline', 'deleted_at']),
-                'dam' => fn ($query) => $query->withTrashed()->select(['id', 'name', 'band_number', 'bloodline', 'deleted_at']),
+                'sire' => fn ($query) => $query->withTrashed()->select(['id', 'name', 'band_number', 'bloodline', 'deleted_at'])->with('primaryPhoto'),
+                'dam' => fn ($query) => $query->withTrashed()->select(['id', 'name', 'band_number', 'bloodline', 'deleted_at'])->with('primaryPhoto'),
             ])
             ->between($this->from ?: null, $this->to ?: null)
             ->when($this->search !== '', function ($query): void {
@@ -154,7 +184,7 @@ final class Index extends Component
                 $this->sortDirection === 'asc' ? 'asc' : 'desc'
             )
             ->orderByDesc('id')
-            ->paginate(config('gfms.per_page'));
+            ->paginate($this->pageSize());
     }
 
     /**

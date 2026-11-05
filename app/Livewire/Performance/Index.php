@@ -6,6 +6,7 @@ namespace App\Livewire\Performance;
 
 use App\Enums\PerformanceEventType;
 use App\Enums\PerformanceResult;
+use App\Livewire\Concerns\ChoosesPageSize;
 use App\Models\PerformanceRecord;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -17,6 +18,7 @@ use Livewire\WithPagination;
 
 final class Index extends Component
 {
+    use ChoosesPageSize;
     use WithPagination;
 
     #[Url(as: 'q', except: '')]
@@ -67,6 +69,30 @@ final class Index extends Component
     #[Locked]
     public ?int $formRecordId = null;
 
+    /**
+     * A new form is built ahead, so Add opens instantly. Closing the dialog
+     * drops any edit and re-keys the new form, so the next Add is blank.
+     */
+    public int $formNonce = 0;
+
+    public function updatedShowForm(bool $open): void
+    {
+        if ($open) {
+            return;
+        }
+
+        $this->formRecordId = null;
+        $this->formBroodcockId = null;
+        $this->formNonce++;
+    }
+
+    /** Called by the dialog when a form that was typed in is closed: start the next one blank. */
+    public function resetForm(): void
+    {
+        $this->showForm = false;
+        $this->updatedShowForm(false);
+    }
+
     #[Locked]
     public ?int $formBroodcockId = null;
 
@@ -74,9 +100,13 @@ final class Index extends Component
     {
         $this->authorize('viewAny', PerformanceRecord::class);
 
+        // The form is only built for someone allowed to create, so it can no
+        // longer refuse an /edit or /create address itself: checked here.
         if ($record?->exists) {
+            $this->authorize('update', $record);
             $this->openForm($record->id);
         } elseif (request()->routeIs('performance.create')) {
+            $this->authorize('create', PerformanceRecord::class);
             $this->openForm(null, request()->integer('broodcock') ?: null);
         }
     }
@@ -208,7 +238,7 @@ final class Index extends Component
             // Every row prints the bird and the recorder. Without these two
             // eager loads the page fires 2 extra queries per row, and each one
             // is a network round trip to Supabase.
-            ->with(['broodcock:id,name,band_number,bloodline', 'recordedBy:id,full_name'])
+            ->with(['broodcock:id,name,band_number,bloodline', 'broodcock.primaryPhoto', 'recordedBy:id,full_name'])
             ->when($this->search !== '', fn ($query) => $query->whereHas(
                 'broodcock',
                 fn ($birds) => $birds->search($this->search),
@@ -220,7 +250,7 @@ final class Index extends Component
             // A stable tiebreaker: without it, two events on the same date can
             // swap places between pages and a row is silently skipped.
             ->orderBy('id', 'desc')
-            ->paginate(config('gfms.per_page'));
+            ->paginate($this->pageSize());
     }
 
     /** @return array<int, PerformanceEventType> */

@@ -23,7 +23,7 @@
     @endunless
 
     <form wire:submit="save" @class(['mt-8' => ! $inDialog, 'flex min-h-0 flex-1 flex-col' => $inDialog])>
-        <div @class(['max-w-[40rem] space-y-12 pb-10' => ! $inDialog, 'min-h-0 flex-1 space-y-8 overflow-y-auto px-5 pb-5' => $inDialog])>
+        <div @class(['max-w-[40rem] space-y-12 pb-10' => ! $inDialog, 'min-h-0 flex-1 space-y-6 overflow-y-auto px-5 pb-5' => $inDialog])>
             {{-- -------------------------------------------------------
                  The pair
             ------------------------------------------------------- --}}
@@ -53,25 +53,34 @@
                             <option value="{{ App\Livewire\Breeding\Form::OFF_LIST }}">Someone else's bird</option>
                         </x-form-select>
 
+                        <x-bird-preview :bird="$this->selectedSire" role="Sire" target="sire_choice" />
+
                         @if ($sire_is_external)
                             {{-- Indented off a hairline so the fields read as
                                  belonging to the choice above. --}}
                             <div class="mt-4 space-y-4 border-l-2 border-border pl-4">
                                 <div>
                                     <label for="sire_external_name" class="d-fieldset-legend">Name of the outside cock</label>
-                                    <input id="sire_external_name" type="text" wire:model.blur="sire_external_name"
+                                    <input id="sire_external_name" type="text" wire:model="sire_external_name"
                                            @error('sire_external_name') aria-invalid="true" aria-describedby="sire_external_name-error" @enderror
                                            class="d-input w-full mt-1 @error('sire_external_name') d-input-error @enderror">
                                     @error('sire_external_name') <p id="sire_external_name-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
 
                                 <div>
-                                    <label for="sire_external_bloodline" class="d-fieldset-legend">Bloodline</label>
-                                    <input id="sire_external_bloodline" type="text" wire:model.blur="sire_external_bloodline"
-                                           aria-describedby="sire_external_bloodline-help @error('sire_external_bloodline') sire_external_bloodline-error @enderror"
-                                           class="d-input w-full mt-1 @error('sire_external_bloodline') d-input-error @enderror">
-                                    <p id="sire_external_bloodline-help" class="d-label mt-1">Optional. Recorded so the bird carries its bloodline tag.</p>
-                                    @error('sire_external_bloodline') <p id="sire_external_bloodline-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                                    <x-form-select id="sire_bloodline_choice" label="Bloodline" error="sire_external_bloodline"
+                                                   wire:model="sire_bloodline_choice"
+                                                   help="Optional. Recorded so the bird carries its bloodline tag.">
+                                        <option value="">Not known</option>
+                                        @foreach ($this->bloodlineOptions as $line)
+                                            <option value="{{ $line }}">{{ $line }}</option>
+                                        @endforeach
+                                        <option value="{{ App\Livewire\Breeding\Form::OTHER }}">Others</option>
+                                    </x-form-select>
+                                    <label for="sire_external_bloodline" class="sr-only">Other bloodline</label>
+                                    <textarea id="sire_external_bloodline" x-show="$wire.sire_bloodline_choice === @js(App\Livewire\Breeding\Form::OTHER)" x-cloak rows="2" wire:model="sire_external_bloodline"
+                                              placeholder="Type the bloodline"
+                                              @class(['d-textarea mt-2 w-full', 'd-textarea-error' => $errors->has('sire_external_bloodline')])></textarea>
                                 </div>
                             </div>
                         @endif
@@ -90,23 +99,32 @@
                             <option value="{{ App\Livewire\Breeding\Form::OFF_LIST }}">Someone else's bird</option>
                         </x-form-select>
 
+                        <x-bird-preview :bird="$this->selectedDam" role="Dam" target="dam_choice" />
+
                         @if ($dam_is_external)
                             <div class="mt-4 space-y-4 border-l-2 border-border pl-4">
                                 <div>
                                     <label for="dam_external_name" class="d-fieldset-legend">Name of the outside hen</label>
-                                    <input id="dam_external_name" type="text" wire:model.blur="dam_external_name"
+                                    <input id="dam_external_name" type="text" wire:model="dam_external_name"
                                            @error('dam_external_name') aria-invalid="true" aria-describedby="dam_external_name-error" @enderror
                                            class="d-input w-full mt-1 @error('dam_external_name') d-input-error @enderror">
                                     @error('dam_external_name') <p id="dam_external_name-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                                 </div>
 
                                 <div>
-                                    <label for="dam_external_bloodline" class="d-fieldset-legend">Bloodline</label>
-                                    <input id="dam_external_bloodline" type="text" wire:model.blur="dam_external_bloodline"
-                                           aria-describedby="dam_external_bloodline-help @error('dam_external_bloodline') dam_external_bloodline-error @enderror"
-                                           class="d-input w-full mt-1 @error('dam_external_bloodline') d-input-error @enderror">
-                                    <p id="dam_external_bloodline-help" class="d-label mt-1">Optional. Recorded so the bird carries its bloodline tag.</p>
-                                    @error('dam_external_bloodline') <p id="dam_external_bloodline-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                                    <x-form-select id="dam_bloodline_choice" label="Bloodline" error="dam_external_bloodline"
+                                                   wire:model="dam_bloodline_choice"
+                                                   help="Optional. Recorded so the bird carries its bloodline tag.">
+                                        <option value="">Not known</option>
+                                        @foreach ($this->bloodlineOptions as $line)
+                                            <option value="{{ $line }}">{{ $line }}</option>
+                                        @endforeach
+                                        <option value="{{ App\Livewire\Breeding\Form::OTHER }}">Others</option>
+                                    </x-form-select>
+                                    <label for="dam_external_bloodline" class="sr-only">Other bloodline</label>
+                                    <textarea id="dam_external_bloodline" x-show="$wire.dam_bloodline_choice === @js(App\Livewire\Breeding\Form::OTHER)" x-cloak rows="2" wire:model="dam_external_bloodline"
+                                              placeholder="Type the bloodline"
+                                              @class(['d-textarea mt-2 w-full', 'd-textarea-error' => $errors->has('dam_external_bloodline')])></textarea>
                                 </div>
                             </div>
                         @endif
@@ -114,7 +132,7 @@
 
                     <div>
                         <label for="mating_date" class="d-fieldset-legend">Mating Date <span class="text-destructive">*</span></label>
-                        <input id="mating_date" type="date" wire:model.blur="mating_date" max="{{ today()->toDateString() }}"
+                        <input id="mating_date" type="date" wire:model="mating_date" max="{{ today()->toDateString() }}"
                                @error('mating_date') aria-invalid="true" aria-describedby="mating_date-error" @enderror
                                class="d-input w-full datum mt-1 sm:max-w-[16rem] @error('mating_date') d-input-error @enderror">
                         @error('mating_date') <p id="mating_date-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
@@ -180,7 +198,7 @@
             ------------------------------------------------------- --}}
             <div class="border-t border-border pt-6">
                 <label for="notes" class="d-fieldset-legend">Notes</label>
-                <textarea id="notes" rows="4" wire:model.blur="notes"
+                <textarea id="notes" rows="4" wire:model="notes"
                           @error('notes') aria-invalid="true" aria-describedby="notes-error" @enderror
                           class="d-textarea w-full mt-1 @error('notes') d-textarea-error @enderror"></textarea>
                 @error('notes') <p id="notes-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror

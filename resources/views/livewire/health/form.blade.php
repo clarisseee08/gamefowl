@@ -34,19 +34,25 @@
     {{-- wire:submit posts through Livewire, which carries the CSRF token on
          every request automatically. --}}
     <form wire:submit="save" @class(['mt-8' => ! $inDialog, 'flex min-h-0 flex-1 flex-col' => $inDialog])>
-        <div @class(['max-w-[40rem] space-y-12' => ! $inDialog, 'min-h-0 flex-1 space-y-8 overflow-y-auto px-5 pb-5' => $inDialog])>
+        <div @class(['max-w-[40rem] space-y-12' => ! $inDialog, 'min-h-0 flex-1 space-y-6 overflow-y-auto px-5 pb-5' => $inDialog])>
             {{-- Which bird --}}
             {{-- No heading: the field's own label already says "Bird". --}}
             <section aria-label="Bird">
                 <div class="space-y-6">
-                    <x-form-select id="broodcock_id" label="Bird" required
-                                   wire:model="broodcock_id"
-                                   help="Birds are listed by name, with the band number in brackets.">
-                        <option value="">Choose a bird&hellip;</option>
-                        @foreach ($this->birds as $bird)
-                            <option value="{{ $bird->id }}">{{ $bird->displayName() }}</option>
-                        @endforeach
-                    </x-form-select>
+                    <div>
+                        <x-form-select id="broodcock_id" label="Bird" required
+                                       wire:model.live="broodcock_id"
+                                       help="Birds are listed by name, with the band number in brackets.">
+                            <option value="">Choose a bird&hellip;</option>
+                            @foreach ($this->birds as $bird)
+                                <option value="{{ $bird->id }}">{{ $bird->displayName() }}</option>
+                            @endforeach
+                        </x-form-select>
+
+                        {{-- The chosen bird's photograph, so the keeper can check it
+                             is the bird in their hands before saving. --}}
+                        <x-bird-preview :bird="$this->selectedBird" target="broodcock_id" />
+                    </div>
                 </div>
             </section>
 
@@ -63,41 +69,63 @@
                         @endforeach
                     </x-form-select>
 
+                    {{-- Product and condition: the farm's usual entries, then
+                         "Others", which opens a box for anything not listed. --}}
                     <div>
-                        <label for="product_name" class="d-fieldset-legend">Product Name</label>
-                        <input id="product_name"
-                               type="text"
-                               wire:model="product_name"
-                               placeholder="e.g. Newcastle Disease vaccine"
-                               aria-describedby="{{ $describedBy('product_name') }}"
-                               @error('product_name') aria-invalid="true" @enderror
-                               @class(['d-input w-full', 'd-input-error' => $errors->has('product_name')])>
-                        <p id="product_name-help" class="d-label mt-1">The name of the vaccine, medicine or dewormer used.</p>
-                        @error('product_name') <p id="product_name-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        <x-form-select id="product_choice" label="Product Name" error="product_name"
+                                       wire:model="product_choice"
+                                       help="The vaccine, medicine or dewormer used.">
+                            <option value="">Choose a product&hellip;</option>
+                            @foreach ($this->productOptions as $option)
+                                <option value="{{ $option }}">{{ $option }}</option>
+                            @endforeach
+                            <option value="{{ \App\Livewire\Health\Form::OTHER }}">Others</option>
+                        </x-form-select>
+                        <label for="product_name" class="sr-only">Other product</label>
+                        <textarea id="product_name" x-show="$wire.product_choice === @js(\App\Livewire\Health\Form::OTHER)" x-cloak rows="2" wire:model="product_name"
+                                  placeholder="Type the product name"
+                                  @class(['d-textarea mt-2 w-full', 'd-textarea-error' => $errors->has('product_name')])></textarea>
+                    </div>
+
+                    {{-- Dosage: an amount and its unit, saved together as "0.5 ml". --}}
+                    <div>
+                        <label for="dosage_amount" class="d-fieldset-legend">Dosage</label>
+                        <div class="mt-1 flex items-start gap-2">
+                            <input id="dosage_amount"
+                                   type="text"
+                                   x-bind:inputmode="$wire.dosage_unit === @js(\App\Livewire\Health\Form::OTHER) ? 'text' : 'decimal'"
+                                   wire:model="dosage_amount"
+                                   x-bind:placeholder="$wire.dosage_unit === @js(\App\Livewire\Health\Form::OTHER) ? 'e.g. 1 tablet' : 'e.g. 0.5'"
+                                   @if ($errors->has('dosage_amount') || $errors->has('dosage')) aria-describedby="dosage-error" aria-invalid="true" @endif
+                                   @class(['d-input datum w-full max-w-[10rem]', 'd-input-error' => $errors->has('dosage_amount') || $errors->has('dosage')])>
+                            <div class="w-32">
+                                <x-form-select id="dosage_unit" label="Unit" :label-hidden="true" wire:model="dosage_unit">
+                                    @foreach ($this->dosageUnits as $unit)
+                                        <option value="{{ $unit }}">{{ $unit }}</option>
+                                    @endforeach
+                                    <option value="{{ \App\Livewire\Health\Form::OTHER }}">Others</option>
+                                </x-form-select>
+                            </div>
+                        </div>
+                        @if ($errors->has('dosage_amount') || $errors->has('dosage'))
+                            <p id="dosage-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $errors->first('dosage_amount') ?: $errors->first('dosage') }}</p>
+                        @endif
                     </div>
 
                     <div>
-                        <label for="dosage" class="d-fieldset-legend">Dosage</label>
-                        <input id="dosage"
-                               type="text"
-                               wire:model="dosage"
-                               placeholder="e.g. 0.5 ml"
-                               @if ($errors->has('dosage')) aria-describedby="dosage-error" aria-invalid="true" @endif
-                               @class(['d-input w-full datum max-w-[16rem]', 'd-input-error' => $errors->has('dosage')])>
-                        @error('dosage') <p id="dosage-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
-                    </div>
-
-                    <div>
-                        <label for="condition" class="d-fieldset-legend">Condition</label>
-                        <input id="condition"
-                               type="text"
-                               wire:model="condition"
-                               placeholder="e.g. Healthy, coughing, wound on left leg"
-                               aria-describedby="{{ $describedBy('condition') }}"
-                               @error('condition') aria-invalid="true" @enderror
-                               @class(['d-input w-full', 'd-input-error' => $errors->has('condition')])>
-                        <p id="condition-help" class="d-label mt-1">How the bird was on the day.</p>
-                        @error('condition') <p id="condition-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        <x-form-select id="condition_choice" label="Condition" error="condition"
+                                       wire:model="condition_choice"
+                                       help="How the bird was on the day.">
+                            <option value="">Choose a condition&hellip;</option>
+                            @foreach ($this->conditionOptions as $option)
+                                <option value="{{ $option }}">{{ $option }}</option>
+                            @endforeach
+                            <option value="{{ \App\Livewire\Health\Form::OTHER }}">Others</option>
+                        </x-form-select>
+                        <label for="condition" class="sr-only">Other condition</label>
+                        <textarea id="condition" x-show="$wire.condition_choice === @js(\App\Livewire\Health\Form::OTHER)" x-cloak rows="2" wire:model="condition"
+                                  placeholder="Describe how the bird was, e.g. wound on left leg"
+                                  @class(['d-textarea mt-2 w-full', 'd-textarea-error' => $errors->has('condition')])></textarea>
                     </div>
                 </div>
             </section>

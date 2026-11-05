@@ -26,9 +26,9 @@ final class FarmProfileSeeder extends Seeder
     {
         $profile = [
             'farm_name' => 'SSGuad Game Farm',
-            'address' => 'Guimbal, Iloilo',
-            'phone' => '+639123456789',
-            'email' => 'gfms_inquiries@gmail.com',
+            'address' => 'Brgy. Igcadlum, San Joaquin, Iloilo',
+            'phone' => '(0981) 564 7116',
+            'email' => 'sarciasam@gmail.com',
             'hours' => 'Monday to Saturday, 8AM to 5PM',
         ];
 

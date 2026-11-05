@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Health;
 
 use App\Enums\HealthRecordType;
+use App\Livewire\Concerns\ChoosesPageSize;
 use App\Models\Broodcock;
 use App\Models\HealthRecord;
 use Illuminate\Contracts\View\View;
@@ -27,6 +28,7 @@ use Livewire\WithPagination;
 #[Title('Health Records')]
 final class Index extends Component
 {
+    use ChoosesPageSize;
     use WithPagination;
 
     #[Url(as: 'q', except: '')]
@@ -91,13 +93,40 @@ final class Index extends Component
     #[Locked]
     public ?int $formRecordId = null;
 
+    /**
+     * A new form is built ahead, so Add opens instantly. Closing the dialog
+     * drops any edit and re-keys the new form, so the next Add is blank.
+     */
+    public int $formNonce = 0;
+
+    public function updatedShowForm(bool $open): void
+    {
+        if ($open) {
+            return;
+        }
+
+        $this->formRecordId = null;
+        $this->formNonce++;
+    }
+
+    /** Called by the dialog when a form that was typed in is closed: start the next one blank. */
+    public function resetForm(): void
+    {
+        $this->showForm = false;
+        $this->updatedShowForm(false);
+    }
+
     public function mount(?HealthRecord $record = null): void
     {
         $this->authorize('viewAny', HealthRecord::class);
 
+        // The form is only built for someone allowed to create, so it can no
+        // longer refuse an /edit or /create address itself: checked here.
         if ($record?->exists) {
+            $this->authorize('update', $record);
             $this->openForm($record->id);
         } elseif (request()->routeIs('health.create')) {
+            $this->authorize('create', HealthRecord::class);
             $this->openForm();
         }
     }
@@ -194,7 +223,9 @@ final class Index extends Component
             //
             // withTrashed() because deleting a bird keeps its health history:
             // without it the bird comes back null and the row cannot render.
-            ->with(['broodcock' => fn ($query) => $query->withTrashed()])
+            // The photo too, for the hover card on the bird's name: one query
+            // for the page, not one per row.
+            ->with(['broodcock' => fn ($query) => $query->withTrashed()->with('primaryPhoto')])
             ->ofType($this->recordType)
             ->between($this->normalisedDate($this->dateFrom), $this->normalisedDate($this->dateTo))
             ->when($this->broodcockId !== '', fn (Builder $query) => $query->where('broodcock_id', (int) $this->broodcockId))
@@ -206,7 +237,7 @@ final class Index extends Component
                 $this->sortDirection === 'asc' ? 'asc' : 'desc'
             )
             ->orderByDesc('id')
-            ->paginate(config('gfms.per_page'));
+            ->paginate($this->pageSize());
     }
 
     /**

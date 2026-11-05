@@ -13,14 +13,14 @@
     @endunless
 
     <form wire:submit="save" @class(['mt-8' => ! $inDialog, 'flex min-h-0 flex-1 flex-col' => $inDialog])>
-        <div @class(['max-w-[40rem] space-y-12' => ! $inDialog, 'min-h-0 flex-1 space-y-8 overflow-y-auto px-5 pb-5' => $inDialog])>
+        <div @class(['max-w-[40rem] space-y-12' => ! $inDialog, 'min-h-0 flex-1 space-y-6 overflow-y-auto px-5 pb-5' => $inDialog])>
             <section aria-labelledby="person-heading">
                 <h2 id="person-heading" class="font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Person</h2>
 
                 <div class="mt-4 space-y-6 border-t border-border pt-6">
                     <div>
                         <label for="full_name" class="d-fieldset-legend justify-start">Full Name <span class="text-destructive">*</span></label>
-                        <input id="full_name" type="text" wire:model.blur="full_name" autocomplete="off"
+                        <input id="full_name" type="text" wire:model="full_name" autocomplete="off"
                                @error('full_name') aria-invalid="true" aria-describedby="full_name-error" @enderror
                                class="d-input w-full @error('full_name') d-input-error @enderror">
                         @error('full_name') <p id="full_name-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
@@ -28,7 +28,7 @@
 
                     <div>
                         <label for="email" class="d-fieldset-legend justify-start">Email Address <span class="text-destructive">*</span></label>
-                        <input id="email" type="email" wire:model.blur="email" autocomplete="off"
+                        <input id="email" type="email" wire:model="email" autocomplete="off"
                                aria-describedby="email-help @error('email') email-error @enderror"
                                @error('email') aria-invalid="true" @enderror
                                class="d-input w-full @error('email') d-input-error @enderror">
@@ -38,7 +38,7 @@
 
                     <div>
                         <label for="contact_number" class="d-fieldset-legend">Contact Number</label>
-                        <input id="contact_number" type="tel" inputmode="tel" wire:model.blur="contact_number"
+                        <input id="contact_number" type="tel" inputmode="tel" wire:model="contact_number"
                                @error('contact_number') aria-invalid="true" aria-describedby="contact_number-error" @enderror
                                class="d-input w-full datum @error('contact_number') d-input-error @enderror">
                         @error('contact_number') <p id="contact_number-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
@@ -46,7 +46,7 @@
 
                     <div>
                         <label for="position" class="d-fieldset-legend">Position</label>
-                        <input id="position" type="text" wire:model.blur="position" placeholder="e.g. Farm Caretaker"
+                        <input id="position" type="text" wire:model="position" placeholder="e.g. Farm Caretaker"
                                @error('position') aria-invalid="true" aria-describedby="position-error" @enderror
                                class="d-input w-full @error('position') d-input-error @enderror">
                         @error('position') <p id="position-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
@@ -54,7 +54,7 @@
 
                     <div>
                         <label for="address" class="d-fieldset-legend">Address</label>
-                        <input id="address" type="text" wire:model.blur="address"
+                        <input id="address" type="text" wire:model="address"
                                @error('address') aria-invalid="true" aria-describedby="address-error" @enderror
                                class="d-input w-full @error('address') d-input-error @enderror">
                         @error('address') <p id="address-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
@@ -119,7 +119,7 @@
                         <label for="password" class="d-fieldset-legend justify-start">
                             Password @unless ($this->isEditing())<span class="text-destructive">*</span>@endunless
                         </label>
-                        <input id="password" type="password" wire:model.blur="password" autocomplete="new-password"
+                        <input id="password" type="password" wire:model="password" autocomplete="new-password"
                                @error('password') aria-invalid="true" aria-describedby="password-error" @enderror
                                class="d-input w-full @error('password') d-input-error @enderror">
                         @error('password') <p id="password-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
@@ -127,7 +127,7 @@
 
                     <div>
                         <label for="password_confirmation" class="d-fieldset-legend">Confirm Password</label>
-                        <input id="password_confirmation" type="password" wire:model.blur="password_confirmation"
+                        <input id="password_confirmation" type="password" wire:model="password_confirmation"
                                autocomplete="new-password" class="d-input w-full">
                     </div>
                 </div>

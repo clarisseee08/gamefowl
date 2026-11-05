@@ -37,6 +37,14 @@ final class Form extends Component
     #[Locked]
     public ?int $recordId = null;
 
+    /**
+     * Where saving lands. Set by the page that opened the form in a dialog
+     * (a bird's page sends you back to that bird); otherwise the list.
+     * Locked, so the browser cannot point it anywhere else.
+     */
+    #[Locked]
+    public ?string $returnUrl = null;
+
     public string $broodcock_id = '';
 
     public string $record_type = '';
@@ -44,6 +52,23 @@ final class Form extends Component
     public ?string $product_name = null;
 
     public ?string $dosage = null;
+
+    /** "Others" in a preset dropdown: the text box beside it holds the value. */
+    public const OTHER = '__other__';
+
+    /**
+     * What the Product Name and Condition dropdowns show: a preset, OTHER, or
+     * nothing. The value saved is still product_name / condition - a preset
+     * copies itself there, and OTHER leaves the text box to fill it.
+     */
+    public string $product_choice = '';
+
+    public string $condition_choice = '';
+
+    /** Dosage as an amount and a unit (ml, mg, g, or OTHER for "1 tablet"); saved as "0.5 ml". */
+    public string $dosage_amount = '';
+
+    public string $dosage_unit = 'ml';
 
     public string $checkup_date = '';
 
@@ -53,8 +78,11 @@ final class Form extends Component
 
     public ?string $remarks = null;
 
-    /** @param HealthRecord|null $record Route-bound from /health/{record}/edit; null when creating. */
-    public function mount(?HealthRecord $record = null): void
+    /**
+     * @param  HealthRecord|null  $record  Route-bound from /health/{record}/edit; null when creating.
+     * @param  int|null  $forBroodcock  The bird to pre-select, when opened from that bird's page.
+     */
+    public function mount(?HealthRecord $record = null, ?int $forBroodcock = null): void
     {
         if ($record?->exists) {
             $this->authorize('update', $record);
@@ -69,6 +97,8 @@ final class Form extends Component
             $this->condition = $record->condition;
             $this->remarks = $record->remarks;
 
+            $this->deriveChoices();
+
             return;
         }
 
@@ -80,11 +110,132 @@ final class Form extends Component
 
         // /health/create?broodcock=12 pre-selects the bird, so "Add health
         // record" from a bird's profile does not make staff hunt for it again.
-        $preselected = (int) request()->integer('broodcock');
+        $preselected = $forBroodcock ?? (int) request()->integer('broodcock');
 
         if ($preselected > 0) {
             $this->broodcock_id = (string) $preselected;
         }
+    }
+
+    /**
+     * An existing record's text, shown back in the dropdowns: a value on the
+     * list selects it, anything else opens under "Others" with its text
+     * intact, and a dosage like "0.5 ml" splits into amount and unit.
+     */
+    private function deriveChoices(): void
+    {
+        $this->product_choice = $this->choiceFor($this->product_name, $this->productOptions);
+        $this->condition_choice = $this->choiceFor($this->condition, $this->conditionOptions);
+
+        $dosage = trim((string) $this->dosage);
+
+        if ($dosage === '') {
+            return;
+        }
+
+        if (preg_match('/^([0-9]*\.?[0-9]+)\s*(ml|mg|g)$/i', $dosage, $match) === 1) {
+            $this->dosage_amount = $match[1];
+            $this->dosage_unit = strtolower($match[2]);
+        } else {
+            $this->dosage_amount = $dosage;
+            $this->dosage_unit = self::OTHER;
+        }
+    }
+
+    /** @param list<string> $options */
+    private function choiceFor(?string $value, array $options): string
+    {
+        $value = trim((string) $value);
+
+        return match (true) {
+            $value === '' => '',
+            in_array($value, $options, true) => $value,
+            default => self::OTHER,
+        };
+    }
+
+    public function updatedProductChoice(string $choice): void
+    {
+        $this->product_name = $this->valueForChoice($choice, $this->product_name, $this->productOptions);
+    }
+
+    public function updatedConditionChoice(string $choice): void
+    {
+        $this->condition = $this->valueForChoice($choice, $this->condition, $this->conditionOptions);
+    }
+
+    /**
+     * A preset becomes the value. "Others" empties the box for typing - unless
+     * it already holds custom text, which switching back must not throw away.
+     *
+     * @param  list<string>  $options
+     */
+    private function valueForChoice(string $choice, ?string $current, array $options): ?string
+    {
+        if ($choice === self::OTHER) {
+            return in_array((string) $current, $options, true) ? null : $current;
+        }
+
+        return $choice === '' ? null : $choice;
+    }
+
+    /**
+     * "0.5" and "ml" saved as "0.5 ml"; nothing when no amount is given. The
+     * product and condition dropdowns bind without a round trip, so their
+     * choice reaches the columns here too, just before validation.
+     */
+    private function composeDosage(): void
+    {
+        $this->product_name = $this->valueForChoice($this->product_choice, $this->product_name, $this->productOptions);
+        $this->condition = $this->valueForChoice($this->condition_choice, $this->condition, $this->conditionOptions);
+
+        $amount = trim($this->dosage_amount);
+        $unit = $this->dosage_unit === self::OTHER ? '' : $this->dosage_unit;
+
+        $this->dosage = $amount === '' ? null : trim($amount.' '.$unit);
+    }
+
+    /**
+     * The amount must be a number when a unit is chosen; under "Others" it is
+     * free text ("1 tablet").
+     *
+     * @return array<string, list<string>>
+     */
+    private function dosageRules(): array
+    {
+        return ['dosage_amount' => $this->dosage_unit === self::OTHER
+            ? ['nullable', 'string', 'max:120']
+            : ['nullable', 'numeric', 'gt:0', 'max:100000']];
+    }
+
+    /** @return list<string> */
+    #[Computed]
+    public function productOptions(): array
+    {
+        return config('gfms.health_presets.products', []);
+    }
+
+    /** @return list<string> */
+    #[Computed]
+    public function conditionOptions(): array
+    {
+        return config('gfms.health_presets.conditions', []);
+    }
+
+    /** @return list<string> */
+    #[Computed]
+    public function dosageUnits(): array
+    {
+        return config('gfms.health_presets.dosage_units', ['ml', 'mg', 'g']);
+    }
+
+    /** The chosen bird with its photograph, shown under the picker. */
+    #[Computed]
+    public function selectedBird(): ?Broodcock
+    {
+        return $this->broodcock_id === ''
+            ? null
+            : Broodcock::query()->with('primaryPhoto')->find((int) $this->broodcock_id);
     }
 
     public function isEditing(): bool
@@ -101,11 +252,14 @@ final class Form extends Component
         if ($record instanceof HealthRecord) {
             $this->authorize('update', $record);
 
+            $this->composeDosage();
+
             $data = $this->validate(
-                UpdateHealthRecordRequest::rulesFor(),
+                [...UpdateHealthRecordRequest::rulesFor(), ...$this->dosageRules()],
                 UpdateHealthRecordRequest::messagesFor(),
-                UpdateHealthRecordRequest::attributesFor(),
+                [...UpdateHealthRecordRequest::attributesFor(), 'dosage_amount' => 'dosage'],
             );
+            unset($data['dosage_amount']);
 
             app(UpdateHealthRecord::class)->handle($record, $data);
 
@@ -113,11 +267,14 @@ final class Form extends Component
         } else {
             $this->authorize('create', HealthRecord::class);
 
+            $this->composeDosage();
+
             $data = $this->validate(
-                StoreHealthRecordRequest::rulesFor(),
+                [...StoreHealthRecordRequest::rulesFor(), ...$this->dosageRules()],
                 StoreHealthRecordRequest::messagesFor(),
-                StoreHealthRecordRequest::attributesFor(),
+                [...StoreHealthRecordRequest::attributesFor(), 'dosage_amount' => 'dosage'],
             );
+            unset($data['dosage_amount']);
 
             /** @var User $actor */
             $actor = auth()->user();
@@ -127,7 +284,7 @@ final class Form extends Component
             session()->flash('success', 'The health record was added.');
         }
 
-        $this->redirectRoute('health.index', navigate: true);
+        $this->redirect($this->returnUrl ?? route('health.index'), navigate: true);
     }
 
     /** The record being edited, or null when creating a new one. */
