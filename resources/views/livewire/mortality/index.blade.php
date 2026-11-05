@@ -49,7 +49,7 @@
 
         <x-slot:actions>
             @if ($this->canCreate)
-                <a href="{{ route('mortality.create') }}" wire:click.prevent="openForm" class="d-btn d-btn-primary w-full sm:w-auto">
+                <a href="{{ route('mortality.create') }}" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'mortality-form')" class="d-btn d-btn-primary w-full sm:w-auto">
                     Record a Death
                 </a>
             @endif
@@ -118,7 +118,7 @@
                            :description="$this->canCreate ? 'When a bird dies, record it here so the farm keeps a complete history for that bird.' : null"
                            icon="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z">
                 @if ($this->canCreate)
-                    <a href="{{ route('mortality.create') }}" wire:click.prevent="openForm" class="d-btn d-btn-primary">Record a Death</a>
+                    <a href="{{ route('mortality.create') }}" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'mortality-form')" class="d-btn d-btn-primary">Record a Death</a>
                 @endif
             </x-empty-state>
         @endif
@@ -297,6 +297,8 @@
         @if ($showForm)
             <livewire:mortality.form :broodcock="$formBroodcockId ? \App\Models\Broodcock::find($formBroodcockId) : null"
                                   :in-dialog="true" :key="'mortality-form-'.($formRecordId ?? 'new').'-'.($formBroodcockId ?? '')" />
+        @else
+            <x-ui.form-skeleton :fields="5" />
         @endif
     </x-ui.form-dialog>
 </div>

@@ -22,7 +22,7 @@
 
         <x-slot:actions>
             @can('create', App\Models\BreedingRecord::class)
-                <a href="{{ route('breeding.create') }}" wire:click.prevent="openForm" class="d-btn d-btn-primary w-full sm:w-auto">
+                <a href="{{ route('breeding.create') }}" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'breeding-form')" class="d-btn d-btn-primary w-full sm:w-auto">
                     Record a Mating
                 </a>
             @endcan
@@ -91,7 +91,7 @@
                            description="Record a mating to start tracking fertility and hatch rates."
                            icon="M12 3c-3.3 0-6 4.6-6 9.2A6 6 0 0 0 12 18.5a6 6 0 0 0 6-6.3C18 7.6 15.3 3 12 3Z">
                 @can('create', App\Models\BreedingRecord::class)
-                    <a href="{{ route('breeding.create') }}" wire:click.prevent="openForm" class="d-btn d-btn-primary">Record your first mating</a>
+                    <a href="{{ route('breeding.create') }}" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'breeding-form')" class="d-btn d-btn-primary">Record your first mating</a>
                 @endcan
             </x-empty-state>
         @endif
@@ -273,6 +273,8 @@
         @if ($showForm)
             <livewire:breeding.form :record="$formRecordId ? \App\Models\BreedingRecord::find($formRecordId) : null"
                                   :in-dialog="true" :key="'breeding-form-'.($formRecordId ?? 'new').'-'.($formBroodcockId ?? '')" />
+        @else
+            <x-ui.form-skeleton :fields="7" />
         @endif
     </x-ui.sheet>
 </div>

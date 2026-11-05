@@ -68,7 +68,7 @@
     <x-anchor-block eyebrow="Manage" title="Gamefowl" :figure="number_format($total)" :figure-label="$figureLabel">
         @can('create', App\Models\Broodcock::class)
             <x-slot:actions>
-                <a href="{{ route('broodcocks.create') }}" wire:click.prevent="openForm" class="d-btn d-btn-primary">
+                <a href="{{ route('broodcocks.create') }}" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'broodcocks-form')" class="d-btn d-btn-primary">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                     </svg>
@@ -198,7 +198,7 @@
                            description="Start by adding your first bird. You will be able to record its health, breeding and performance afterwards."
                            icon="M12 4.5v15m7.5-7.5h-15">
                 @can('create', App\Models\Broodcock::class)
-                    <a href="{{ route('broodcocks.create') }}" wire:click.prevent="openForm" class="d-btn d-btn-primary">Add your first broodcock</a>
+                    <a href="{{ route('broodcocks.create') }}" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'broodcocks-form')" class="d-btn d-btn-primary">Add your first broodcock</a>
                 @endcan
             </x-empty-state>
         @endif
@@ -390,7 +390,7 @@
                                 <span class="inline-flex items-center justify-end gap-0.5">
                                     <x-ui.row-action icon="eye" :label="'View '.$bird->name" :href="route('broodcocks.show', $bird)" wire:navigate />
                                     @can('update', $bird)
-                                        <x-ui.row-action icon="pencil" :label="'Edit '.$bird->name" :href="route('broodcocks.edit', $bird)" wire:click.prevent="openForm({{ $bird->id }})" />
+                                        <x-ui.row-action icon="pencil" :label="'Edit '.$bird->name" :href="route('broodcocks.edit', $bird)" wire:click.prevent="openForm({{ $bird->id }})" x-on:click="$dispatch('ems-dialog', 'broodcocks-form')" />
                                     @endcan
                                     @can('delete', $bird)
                                         <x-ui.row-action icon="trash-2" :label="'Delete '.$bird->name" :destructive="true"
@@ -480,6 +480,8 @@
         @if ($showForm)
             <livewire:broodcocks.form :broodcock="$formRecordId ? \App\Models\Broodcock::find($formRecordId) : null"
                                       :in-dialog="true" :key="'broodcocks-form-'.($formRecordId ?? 'new')" />
+        @else
+            <x-ui.form-skeleton :fields="7" />
         @endif
     </x-ui.sheet>
 </div>

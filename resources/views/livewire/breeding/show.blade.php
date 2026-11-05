@@ -42,7 +42,7 @@
 
         @can('update', $breeding)
             <div class="sb-line flex flex-wrap items-center gap-3" style="--line: 180ms">
-                <a href="{{ route('breeding.edit', $breeding) }}" wire:click.prevent="openForm" class="d-btn d-btn-outline">Edit</a>
+                <a href="{{ route('breeding.edit', $breeding) }}" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'breeding-form')" class="d-btn d-btn-outline">Edit</a>
             </div>
         @endcan
     </header>
@@ -318,6 +318,8 @@
         <x-ui.sheet id="breeding-form" model="showForm" size="xl" :wrap="false" :title="'Edit Breeding Record'">
             @if ($showForm)
                 <livewire:breeding.form :record="$this->record" :in-dialog="true" :key="'breeding-show-form'" />
+            @else
+                <x-ui.form-skeleton :fields="7" />
             @endif
         </x-ui.sheet>
     @endcan

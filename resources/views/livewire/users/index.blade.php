@@ -31,7 +31,7 @@
 
         @can('create', App\Models\User::class)
             <x-slot:actions>
-                <a href="{{ route('users.create') }}" wire:click.prevent="openForm" class="d-btn d-btn-primary">
+                <a href="{{ route('users.create') }}" wire:click.prevent="openForm" x-on:click="$dispatch('ems-dialog', 'users-form')" class="d-btn d-btn-primary">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                     </svg>
@@ -102,7 +102,7 @@
                             @canany(['update', 'deactivate'], $person)
                                 <div class="mt-1 flex flex-wrap items-center gap-x-6">
                                     @can('update', $person)
-                                        <a href="{{ route('users.edit', $person) }}" wire:click.prevent="openForm({{ $person->id }})"
+                                        <a href="{{ route('users.edit', $person) }}" wire:click.prevent="openForm({{ $person->id }})" x-on:click="$dispatch('ems-dialog', 'users-form')"
                                            class="d-link d-link-primary d-link-hover inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
                                             Edit<span class="sr-only">, {{ $person->full_name }}</span>
                                         </a>
@@ -192,7 +192,7 @@
                         <td class="whitespace-nowrap px-3 py-3 text-right">
                             <div class="flex items-center justify-end gap-0.5">
                                 @can('update', $person)
-                                    <x-ui.row-action icon="pencil" :label="'Edit '.$person->full_name" :href="route('users.edit', $person)" wire:click.prevent="openForm({{ $person->id }})" />
+                                    <x-ui.row-action icon="pencil" :label="'Edit '.$person->full_name" :href="route('users.edit', $person)" wire:click.prevent="openForm({{ $person->id }})" x-on:click="$dispatch('ems-dialog', 'users-form')" />
                                 @endcan
                                 @can('deactivate', $person)
                                     <x-ui.row-action :icon="$person->is_active ? 'user-x' : 'user-check'"
@@ -253,6 +253,8 @@
         @if ($showForm)
             <livewire:users.form :user="$formRecordId ? \App\Models\User::find($formRecordId) : null"
                                   :in-dialog="true" :key="'users-form-'.($formRecordId ?? 'new').'-'.($formBroodcockId ?? '')" />
+        @else
+            <x-ui.form-skeleton :fields="5" />
         @endif
     </x-ui.form-dialog>
 </div>
