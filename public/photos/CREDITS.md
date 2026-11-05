@@ -16,3 +16,12 @@ where any image on its site came from.
 |---|---|---|---|
 | `hero-farm.webp` | Chicken Walking on Grass in Countryside | 2000x1240 from the full-size original, lanczos3 resize and a light unsharp mask (sharp, sigma 0.6), WebP q74. Used on the visiting page and the sign-in panel | https://www.pexels.com/photo/chicken-walking-on-grass-in-countryside-5557743/ |
 | `visit-field.webp` | Green Grass Field during Sun Rise | 4:5 crop at 1240x1550 from the full-size original, lanczos3 resize and a light unsharp mask (sharp, sigma 0.6), WebP q74. The home page's visit section | https://www.pexels.com/photo/green-grass-field-during-sun-rise-997121/ |
+| `rooster-walking.webp` | Photo Of A Rooster (James Wheeler) | 1600x1200 from the 2000px download, bicubic resize, WebP q74 (GD). A slide in the public and sign-in slideshows | https://www.pexels.com/photo/photo-of-a-rooster-3941727/ |
+| `rooster-crowing.webp` | Vibrant Rooster Crowing on a Farm | 1600x1066, as above | https://www.pexels.com/photo/vibrant-rooster-crowing-on-a-farm-33937064/ |
+| `rooster-portrait.webp` | Moody Portrait of a Rooster in Dramatic Light | 1173x1600, as above | https://www.pexels.com/photo/moody-portrait-of-a-rooster-in-dramatic-light-31859964/ |
+| `hens-fence.webp` | Free Range Chickens Behind the Fence | 1600x1066, as above | https://www.pexels.com/photo/free-range-chickens-behind-the-fence-4270954/ |
+| `rooster-profile.webp` | Close-up Photo of Rooster | 1067x1600, as above | https://www.pexels.com/photo/close-up-photo-of-rooster-11359897/ |
+
+The slideshows rotate these as atmosphere. A slide that shows one of the farm's
+own birds comes from its own storage and carries the bird's name; a stock slide
+never carries a caption that could be read as naming a bird.

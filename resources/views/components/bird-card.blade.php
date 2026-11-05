@@ -19,55 +19,61 @@
 @endphp
 
 {{--
-    THE BIRD CARD - the same object everywhere a bird is listed.
+    THE BIRD CARD (EMS) - the same object everywhere a bird is listed.
 
-    The photograph IS the card: 4:5, 12px corners, a gentle zoom on hover. No
-    background, no border, no shadow under it. Below: the band in the display
-    face, the age in tabular figures on the right, and the bloodline as a dot
-    and a word. A bird looks the same on the front page, in the catalogue and
-    anywhere else it is listed, which is the point of it being one component.
+    A bordered card: the photograph across the top at 4:3 (a gentle zoom on
+    hover), then the band, the age in tabular figures, and the bloodline as a
+    dot and a word. A bird looks the same on the front page, in the catalogue
+    and anywhere else it is listed, which is the point of it being one
+    component.
 --}}
 <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate
-   {{ $attributes->merge(['class' => 'group block']) }}
+   {{ $attributes->merge(['class' => 'group flex h-full flex-col overflow-hidden rounded-md border border-border bg-card transition-[border-color,box-shadow] duration-200 hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50']) }}
    data-reveal style="--reveal-delay: {{ $delay }}ms">
-    <div class="sb-photo aspect-[4/5]">
+    <div class="sb-photo aspect-[4/3] rounded-none" style="box-shadow: inset 0 3px 0 {{ \App\Support\BandTag::hex($bird->bloodline) }}">
         @if ($bird->primaryPhoto)
             <img src="{{ route('photos.show', ['photo' => $bird->primaryPhoto, 'size' => 'thumb']) }}"
-                 alt="{{ $alt }}" width="400" height="500" loading="lazy" decoding="async">
+                 alt="{{ $alt }}" width="400" height="300" loading="lazy" decoding="async">
         @else
-            <span class="flex h-full flex-col items-center justify-center gap-2 text-[14px] text-muted-foreground">
-                <x-band-dot :bloodline="$bird->bloodline" class="h-3 w-3" />
+            <span class="flex h-full flex-col items-center justify-center gap-2 text-[13px] text-muted-foreground">
+                <x-band-dot :bloodline="$bird->bloodline" class="h-2.5 w-2.5" />
                 No photo yet
             </span>
         @endif
     </div>
 
-    <div @class(["flex items-baseline justify-between gap-3", $compact ? "mt-2" : "mt-3.5"])>
-        <{{ $heading }} class="min-w-0 truncate font-display {{ $compact ? 'text-[13px]' : 'text-[17px]' }} font-semibold tracking-[-0.015em] text-foreground group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4">
-            {{ $title }}@if ($realName && $bird->band_number)<span class="font-sans {{ $compact ? 'text-xs' : 'text-[15px]' }} font-medium text-muted-foreground"> &nbsp;{{ $realName }}</span>@endif
-        </{{ $heading }}>
-        @if ($bird->ageLabel())
-            <span class="datum shrink-0 {{ $compact ? 'text-[11px]' : 'text-[14px]' }} text-muted-foreground">{{ $bird->ageLabel() }}</span>
+    <div @class(['flex flex-1 flex-col', $compact ? 'p-2.5' : 'p-3.5'])>
+        <div class="flex items-baseline justify-between gap-3">
+            <{{ $heading }} class="min-w-0 truncate {{ $compact ? 'text-[13px]' : 'text-[15px]' }} font-semibold text-foreground">
+                <span class="datum">{{ $title }}</span>@if ($realName && $bird->band_number)<span class="{{ $compact ? 'text-xs' : 'text-[13px]' }} font-medium text-muted-foreground"> &nbsp;{{ $realName }}</span>@endif
+            </{{ $heading }}>
+            @if ($bird->ageLabel())
+                <span class="datum shrink-0 {{ $compact ? 'text-[11px]' : 'text-xs' }} text-muted-foreground">{{ $bird->ageLabel() }}</span>
+            @endif
+        </div>
+
+        <p class="mt-1 flex flex-wrap items-center gap-x-2 {{ $compact ? 'text-[11px]' : 'text-[13px]' }} text-muted-foreground">
+            <span class="inline-flex items-center gap-1.5">
+                <x-band-dot :bloodline="$bird->bloodline" />
+                {{ $bird->bloodline ?: 'Bloodline not recorded' }}
+            </span>
+            @if ($details)
+                <span><span aria-hidden="true">&middot;</span> {{ $bird->class->label() }}</span>
+                <span><span aria-hidden="true">&middot;</span> {{ $bird->sex->farmTerm() }}</span>
+            @endif
+        </p>
+
+        {{-- Only the positive case is marked: "Not for sale" is the normal
+             state of almost every bird here. --}}
+        @if (($details && $bird->for_sale) || ($details && ! $bird->band_number))
+            <div class="mt-2.5 flex flex-wrap gap-1.5">
+                @if ($bird->for_sale)
+                    <span class="d-badge d-badge-soft d-badge-success">For sale</span>
+                @endif
+                @unless ($bird->band_number)
+                    <span class="d-badge d-badge-soft d-badge-neutral">Not yet banded</span>
+                @endunless
+            </div>
         @endif
     </div>
-
-    <p class="mt-1 flex flex-wrap items-center gap-x-2 {{ $compact ? 'text-[11px]' : 'text-[14px]' }} text-muted-foreground">
-        <span class="inline-flex items-center gap-2">
-            <x-band-dot :bloodline="$bird->bloodline" />
-            {{ $bird->bloodline ?: 'Bloodline not recorded' }}
-        </span>
-        @if ($details)
-            <span><span aria-hidden="true">&middot;</span> {{ $bird->class->label() }}</span>
-            <span><span aria-hidden="true">&middot;</span> {{ $bird->sex->farmTerm() }}</span>
-        @endif
-    </p>
-
-    {{-- Only the positive case is marked: "Not for sale" is the normal state
-         of almost every bird here. --}}
-    @if ($details && $bird->for_sale)
-        <p class="mt-1.5 text-[14px] font-semibold text-primary">For sale</p>
-    @endif
-    @if ($details && ! $bird->band_number)
-        <p class="mt-1.5 text-[13px] text-muted-foreground">Not yet banded</p>
-    @endif
 </a>

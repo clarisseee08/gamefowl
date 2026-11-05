@@ -11,6 +11,11 @@
     --}}
     <x-long-form eyebrow="Privacy" title="Privacy notice"
                  lead="What {{ $farm['name'] }} collects through this website, and what it does not."
+                 :highlights="[
+                     ['user', 'No sign-up', 'Every public page opens without an account or a contact form.'],
+                     ['shield-check', 'No trackers', 'One session cookie. No analytics, advertising or social pixels.'],
+                     ['phone', 'Visits by phone or email', 'Nothing you tell the farm is stored in this system.'],
+                 ]"
                  :contents="[
                      'browsing' => 'Browsing this site',
                      'contact' => 'If you get in touch',

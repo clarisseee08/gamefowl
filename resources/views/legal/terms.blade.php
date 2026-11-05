@@ -11,6 +11,11 @@
     --}}
     <x-long-form eyebrow="Terms" title="Terms of use"
                  lead="What the listings on this site mean, and what they do not."
+                 :highlights="[
+                     ['layout-grid', 'A shop window', 'Nothing is sold, reserved or priced through this site.'],
+                     ['file-text', 'The farm\'s own records', 'Written down carefully - a record, not a guarantee.'],
+                     ['map-pin', 'Come and look', 'See a bird in person, by arrangement, before deciding.'],
+                 ]"
                  :contents="[
                      'window' => 'This site is a shop window',
                      'records' => 'The records are the farm\'s own',

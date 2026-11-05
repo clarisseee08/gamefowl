@@ -1,11 +1,11 @@
 <x-layouts::guest title="Confirm your password">
-    <h1 class="rise-in font-display text-[2rem] font-semibold leading-[1.1] tracking-[-0.03em] text-foreground sm:text-[2.4rem]"
+    <h1 class="rise-in text-2xl font-bold tracking-tight text-foreground"
         style="--rise-delay: 180ms">Confirm your password</h1>
-    <p class="rise-in mt-3 text-[16px] leading-relaxed text-muted-foreground" style="--rise-delay: 240ms">
+    <p class="rise-in mt-1.5 text-[15px] leading-relaxed text-muted-foreground lg:text-sm" style="--rise-delay: 240ms">
         This is a secure area. Please enter your password again to continue.
     </p>
 
-    <form method="POST" action="{{ route('password.confirm') }}" class="mt-9 space-y-6">
+    <form method="POST" action="{{ route('password.confirm') }}" class="mt-6 space-y-5">
         @csrf
 
         <div class="rise-in" style="--rise-delay: 300ms">

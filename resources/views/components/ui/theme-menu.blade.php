@@ -5,8 +5,9 @@
     on the first paint. The tick beside the current choice is set by app.js,
     which owns the choice; System follows the operating system.
 
-    Needs Alpine (it is a dropdown), so the console uses it; the sign-in pages,
-    which have no Alpine, keep <x-theme-toggle>.
+    Needs Alpine (it is a dropdown). The public and sign-in layouts load
+    Livewire's bundle explicitly for that reason, so it is the one theme
+    control everywhere.
 --}}
 <x-ui.dropdown-menu align="end" label="Theme" {{ $attributes }}>
     <x-slot:trigger aria-label="Theme" title="Theme">
