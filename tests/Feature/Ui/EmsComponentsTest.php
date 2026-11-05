@@ -141,8 +141,8 @@ final class EmsComponentsTest extends TestCase
     public function test_a_kpi_tile_with_no_figure_says_so(): void
     {
         $this->blade('<x-ui.kpi-tile label="Pedigree gaps" />')
-            ->assertSee('&mdash;', escape: false)
-            ->assertSee('No data');
+            ->assertSee('No data')
+            ->assertDontSee('&mdash;', escape: false);
     }
 
     public function test_a_loading_kpi_tile_is_busy_and_names_what_is_loading(): void

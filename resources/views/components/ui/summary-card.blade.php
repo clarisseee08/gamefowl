@@ -1,6 +1,6 @@
 @props([
     'title',
-    /** The figure, already formatted. null shows a dash, read out as "No data". */
+    /** The figure, already formatted. null says "No data" - in words, never a dash (AbsenceIsAWordTest). */
     'value' => null,
     /** A Lucide name, drawn in the tinted chip at the top right. */
     'icon' => null,
@@ -67,7 +67,7 @@
         <p class="pr-8 text-[11px] leading-none font-medium text-muted-foreground sm:pr-10">{{ $title }}</p>
 
         @if ($value === null || $value === '')
-            <p class="datum mt-2.5 text-lg leading-none font-bold text-foreground">&mdash;<span class="sr-only">No data</span></p>
+            <p class="datum mt-2.5 text-lg leading-none font-bold text-foreground"><span class="text-sm font-semibold text-muted-foreground">No data</span></p>
         @else
             <p @class(['datum mt-2.5 text-lg leading-none font-bold', $alarm ? 'text-destructive' : 'text-foreground'])>{{ $value }}</p>
         @endif

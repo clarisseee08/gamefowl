@@ -61,65 +61,29 @@
         @endcan
     </x-anchor-block>
 
-    {{-- Headline figures --}}
-    <dl class="mt-10 grid gap-x-10 gap-y-8 sm:grid-cols-2 xl:grid-cols-4" aria-label="Headline figures">
-        <div class="{{ $statClass }}">
-            <dt class="{{ $statTitleClass }}">Birds on record</dt>
-            <dd>
-                <p class="{{ $statValueClass }} text-foreground">{{ number_format($flock['total']) }}</p>
-                @if ($onFarmShare !== null)
-                    <progress class="d-progress d-progress-neutral mt-4 h-1.5" value="{{ $onFarmShare }}" max="100" aria-hidden="true"></progress>
-                    <p class="mt-2 {{ $statDescClass }}">
-                        <span class="datum">{{ $onFarmShare }}%</span> still on the farm, excluding sold and deceased
-                    </p>
-                @else
-                    <p class="mt-3 {{ $statDescClass }}">Every bird ever recorded</p>
-                @endif
-            </dd>
-        </div>
+    {{-- Headline figures: EMS KPI tiles (Part B §6.6). The overdue tile is the
+         one alarm on the row, so it is the one that turns red and the one
+         that drills down. --}}
+    <x-ui.kpi-row class="mt-10" role="group" aria-label="Headline figures">
+        <x-ui.kpi-tile label="Birds on record" icon="clipboard-list"
+                       :value="number_format($flock['total'])"
+                       :caption="$onFarmShare !== null ? $onFarmShare.'% still on the farm, excluding sold and deceased' : 'Every bird ever recorded'" />
 
-        <div class="{{ $statClass }}">
-            <dt class="{{ $statTitleClass }}">Currently breeding</dt>
-            <dd>
-                <p class="{{ $statValueClass }} text-foreground">{{ number_format($flock['breeding']) }}</p>
-                @if ($breedingShare !== null)
-                    <progress class="d-progress d-progress-neutral mt-4 h-1.5" value="{{ $breedingShare }}" max="100" aria-hidden="true"></progress>
-                    <p class="mt-2 {{ $statDescClass }}">
-                        <span class="datum">{{ $breedingShare }}%</span> of birds on the farm
-                    </p>
-                @else
-                    <p class="mt-3 {{ $statDescClass }}">Status set to breeding</p>
-                @endif
-            </dd>
-        </div>
+        <x-ui.kpi-tile label="Currently breeding" icon="heart"
+                       :value="number_format($flock['breeding'])"
+                       :caption="$breedingShare !== null ? $breedingShare.'% of birds on the farm' : 'Status set to breeding'" />
 
-        <div class="{{ $statClass }}">
-            <dt class="{{ $statTitleClass }}">Overdue vaccinations</dt>
-            <dd>
-                <p @class([$statValueClass, 'text-destructive' => $hasOverdue, 'text-foreground' => ! $hasOverdue])>
-                    {{ number_format($this->overdueCount) }}
-                </p>
-                <p class="mt-3 {{ $statDescClass }}">{{ $hasOverdue ? 'Needs attention' : 'Nothing overdue' }}</p>
-            </dd>
-        </div>
+        <x-ui.kpi-tile label="Overdue vaccinations" icon="syringe"
+                       :value="number_format($this->overdueCount)" :alarm="$hasOverdue"
+                       :href="route('health.schedule')" action="Open the vaccination schedule" wire:navigate
+                       :caption="$hasOverdue ? 'Needs attention' : 'Nothing overdue'" />
 
-        <div class="{{ $statClass }}">
-            <dt class="{{ $statTitleClass }}">Vaccination compliance</dt>
-            <dd>
-                <p class="{{ $statValueClass }} text-foreground">{{ $compliance !== null ? $compliance.'%' : 'No data' }}</p>
-                @if ($compliance !== null)
-                    <progress class="d-progress {{ $compliance < 80 ? 'd-progress-warning' : 'd-progress-success' }} mt-4 h-1.5"
-                              value="{{ $compliance }}" max="100" aria-hidden="true"></progress>
-                    <p class="mt-2 {{ $statDescClass }}">
-                        <span class="datum">{{ $scheduled - $this->overdueCount }}</span> of
-                        <span class="datum">{{ $scheduled }}</span> scheduled follow-ups are not overdue
-                    </p>
-                @else
-                    <p class="mt-3 {{ $statDescClass }}">Nothing is scheduled in the window.</p>
-                @endif
-            </dd>
-        </div>
-    </dl>
+        <x-ui.kpi-tile label="Vaccination compliance" icon="shield-check"
+                       :value="$compliance !== null ? $compliance.'%' : null"
+                       :caption="$compliance !== null
+                           ? ($scheduled - $this->overdueCount).' of '.$scheduled.' scheduled follow-ups are not overdue'
+                           : 'Nothing is scheduled in the window.'" />
+    </x-ui.kpi-row>
 
     {{-- What needs doing: two columns on a desktop, one on a phone. --}}
     <div class="mt-16 grid gap-x-12 gap-y-14 lg:grid-cols-2" data-reveal>

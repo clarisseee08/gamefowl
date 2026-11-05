@@ -1,7 +1,7 @@
 @props([
     /** What is counted. Sentence case - the tile sets it in small capitals. */
     'label',
-    /** The figure, already formatted. null shows a dash, read out as "No data". */
+    /** The figure, already formatted. null says "No data" - in words, never a dash (AbsenceIsAWordTest). */
     'value' => null,
     /** A Lucide name beside the label. */
     'icon' => null,
@@ -67,7 +67,7 @@
 
         <div class="mt-2.5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
             @if ($value === null || $value === '')
-                <span class="datum text-[19px] leading-none font-bold text-foreground">&mdash;<span class="sr-only">No data</span></span>
+                <span class="datum text-[19px] leading-none font-bold text-foreground"><span class="text-sm font-semibold text-muted-foreground">No data</span></span>
             @else
                 <span @class(['datum text-[19px] leading-none font-bold', $alarm ? 'text-destructive' : 'text-foreground'])>{{ $value }}</span>
             @endif
