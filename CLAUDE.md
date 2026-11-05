@@ -221,20 +221,30 @@ any UI. Full rationale in `docs/design-brief.md`; the tokens themselves are
 so anything that lived there was never committed and is not available to a fresh
 clone. `/design` and `docs/design-brief.md` are the real references.)
 
+**The UI is moving to the EMS design system (Part B, branch `redesign/ems`).**
+The owner's decisions on it — and every screen's status — are in
+`docs/design-audit.md`; where EMS and this file disagree, those decisions win.
+
 The short version:
 
 - **Colour means bloodline and nothing else.** Everything else is ink, rule, and
-  paper. No stock Tailwind palette classes — no `blue-500`, no `gray-600`.
-- **Registry data is monospaced.** Every band number, date, weight, count, rate
-  and percentage gets `.datum`. Digits must align in a column.
-- **Console minimums** (staff screens, used outdoors on phones): 7:1 contrast,
-  44px touch targets, 16px inputs. Catalog is 4.5:1.
-- No gradients, no `backdrop-blur`, no `font-bold`, nothing under 11px.
-- **Elevation is a three-step scale, not decoration.** `--shadow-e1/e2/e3` and
-  `.elev-1/2/3` in `app.css`; buttons, popovers and the command palette use them.
-  Nothing lifts on its own — a shadow means interactive or layered. (This rule
-  used to read "no shadows"; the direction changed and the scale is now in
-  active use. Don't reintroduce ad-hoc `box-shadow` outside the three tokens.)
+  paper — the forest-green palette, kept over EMS's blue. No stock Tailwind
+  palette classes — no `blue-500`, no `gray-600`; an EMS class string that
+  names a gray uses the matching token (`text-muted-foreground`, `border-border`).
+- **One face: Inter**, loaded in `partials/head-meta` (400–700 only).
+  Registry data — every band number, date, weight, count, rate and percentage —
+  gets `.datum` (tabular figures) so digits align in a column.
+- **Console minimums** (staff screens, used outdoors on phones): 7:1 contrast
+  at every width. **Below `lg`: 44px touch targets, 16px inputs. From `lg` up:
+  EMS compact controls — 28px, 12px text.** Catalog is 4.5:1. Nothing under 11px.
+- **EMS effects are allowed where EMS specifies them**: bold page and dialog
+  titles and KPI values, gradients drawn in the green, blurred dialog backdrops.
+- **Shadows are EMS's scale** — Tailwind's `shadow-xs` … `shadow-2xl`, per
+  component as the EMS spec lists. Cards are flat (a border, no shadow); only
+  overlays and the primary button carry one. The older `--shadow-e1/e2/e3` /
+  `.elev-1/2/3` stay only until the views using them migrate — no new uses.
+- **Theme is Light / Dark / System**: `data-theme="light|dark"` on `<html>`,
+  absent for System, stored as `gfms-theme`. The `dark:` variant follows it.
 - **Components are daisyUI 5, prefixed `d-`** (`d-btn d-btn-primary`, `d-input`,
   `d-badge d-badge-soft`, `d-modal`). The old GFMS vocabulary (`.btn-primary`,
   `.input`, `.badge-ok`, `.card`, `.label`) is gone from app.css, and
