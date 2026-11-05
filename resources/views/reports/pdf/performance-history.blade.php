@@ -38,7 +38,7 @@
             @foreach (['Events', 'Contests', 'Birds'] as $tile)
                 <td style="width: 33%;">
                     <div class="label">{{ $tile }}</div>
-                    <div class="value">{{ $summary[$tile] ?? '-' }}</div>
+                    <div class="value">{{ $summary[$tile] ?? 'No data' }}</div>
                 </td>
             @endforeach
         </tr>
@@ -49,7 +49,7 @@
             @foreach (['Record (W-L-D)', 'Win Rate', 'Average Rating'] as $tile)
                 <td style="width: 33%;">
                     <div class="label">{{ $tile }}</div>
-                    <div class="value" style="font-size: 12pt;">{{ $summary[$tile] ?? '-' }}</div>
+                    <div class="value" style="font-size: 12pt;">{{ $summary[$tile] ?? 'No data' }}</div>
                 </td>
             @endforeach
         </tr>

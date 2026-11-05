@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Reports;
 
+use App\Livewire\Concerns\ChoosesPageSize;
 use App\Models\Report;
 use App\Reports\ReportDefinition;
 use App\Reports\ReportRegistry;
@@ -25,6 +26,7 @@ use Livewire\WithPagination;
  */
 final class Index extends Component
 {
+    use ChoosesPageSize;
     use WithPagination;
 
     #[Url(except: '')]
@@ -76,7 +78,30 @@ final class Index extends Component
         return Report::query()
             ->with('generatedBy:id,full_name')
             ->orderByDesc('generated_at')
-            ->paginate(10);
+            ->paginate($this->pageSize());
+    }
+
+    /**
+     * The KPI tiles, all read from the audit trail: how many reports, how many
+     * this month, which report is asked for most, and the latest one.
+     *
+     * @return array{total: int, thisMonth: int, top: ?array{type: string, count: int}, latest: ?Report}
+     */
+    #[Computed]
+    public function stats(): array
+    {
+        $top = Report::query()
+            ->selectRaw('report_type, count(*) as aggregate')
+            ->groupBy('report_type')
+            ->orderByDesc('aggregate')
+            ->first();
+
+        return [
+            'total' => Report::query()->count(),
+            'thisMonth' => Report::query()->where('generated_at', '>=', now()->startOfMonth())->count(),
+            'top' => $top ? ['type' => (string) $top->report_type, 'count' => (int) $top->aggregate] : null,
+            'latest' => Report::query()->with('generatedBy:id,full_name')->latest('generated_at')->first(),
+        ];
     }
 
     /** Query string appended to each export link. */
