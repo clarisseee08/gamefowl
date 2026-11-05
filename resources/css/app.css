@@ -610,7 +610,10 @@
 .ems-toast { animation: ems-toast-in 400ms ease; }
 
 /* App dialog: a native <dialog class="d-modal ems-modal">. The panel fades
-   and scales up from 0.98 over 300ms while the backdrop fades in. */
+   and scales up from 0.98 over 300ms while the backdrop fades in. It rests
+   at `scale: none`, not 1 (the sheet at `translate: none`): any other value
+   makes the panel the containing block for fixed children, and a select's
+   open list inside a form would be clipped by the panel's scroll area. */
 .ems-modal {
     transition: background-color 300ms ease-out, display 300ms allow-discrete, overlay 300ms allow-discrete;
 }
@@ -620,7 +623,7 @@
     transform: none;
     transition: opacity 300ms ease-out, scale 300ms ease-out;
 }
-.ems-modal[open] .ems-modal-panel { opacity: 1; scale: 1; }
+.ems-modal[open] .ems-modal-panel { opacity: 1; scale: none; }
 @starting-style {
     .ems-modal[open] .ems-modal-panel { opacity: 0; scale: 0.98; }
     .ems-modal[open] { background-color: rgb(0 0 0 / 0); }
@@ -636,7 +639,7 @@
 .ems-sheet[open]::backdrop { background-color: rgb(0 0 0 / 0.5); }
 .ems-sheet .ems-sheet-panel { translate: 100% 0; transition: translate 300ms ease-in-out; }
 .ems-sheet[data-side='left'] .ems-sheet-panel { translate: -100% 0; }
-.ems-sheet[open] .ems-sheet-panel { translate: 0 0; transition-duration: 500ms; }
+.ems-sheet[open] .ems-sheet-panel { translate: none; transition-duration: 500ms; }
 @starting-style {
     .ems-sheet[open] .ems-sheet-panel { translate: 100% 0; }
     .ems-sheet[data-side='left'][open] .ems-sheet-panel { translate: -100% 0; }
@@ -1716,4 +1719,21 @@
 
 :root[data-theme='light'] {
     color-scheme: light;
+}
+
+/* The page-loading line along the top edge (loadingLine in app.js). Scaled,
+   not resized, so it animates on the compositor; transform first and opacity
+   second, matching the two durations app.js sets. */
+.ems-loading-line {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 2147483647;
+    height: 2px;
+    pointer-events: none;
+    background-color: var(--color-primary);
+    transform: scaleX(0);
+    transform-origin: left;
+    opacity: 0;
+    transition-property: transform, opacity;
+    transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1), ease;
 }

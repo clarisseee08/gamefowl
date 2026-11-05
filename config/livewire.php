@@ -198,7 +198,7 @@ return [
     */
 
     'navigate' => [
-        'show_progress_bar' => true,
+        'show_progress_bar' => false, // resources/js/app.js draws its own, faster-feeling line
         'progress_bar_color' => '#2299dd',
     ],
 

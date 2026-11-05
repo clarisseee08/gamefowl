@@ -75,7 +75,7 @@ win. In short:
 - **Wrappers** in `resources/views/components/ui/`, all shown in every state
   on `/design`:
   - Actions: button, row action.
-  - Fields: field, input, textarea, native select, checkbox, radio, switch,
+  - Fields: field, input, textarea, select, checkbox, radio, switch,
     slider.
   - Surfaces: card, KPI tile, summary card, KPI row, status badge, count pill,
     avatar.

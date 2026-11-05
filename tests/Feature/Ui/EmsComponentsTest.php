@@ -7,6 +7,7 @@ namespace Tests\Feature\Ui;
 use App\Enums\BroodcockStatus;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -86,10 +87,36 @@ final class EmsComponentsTest extends TestCase
             ->assertSee('aria-describedby="sire_choice-error"', escape: false);
     }
 
-    public function test_a_native_select_lists_its_placeholder_then_its_options(): void
+    public function test_a_select_lists_its_placeholder_then_its_options(): void
     {
-        $this->blade('<x-ui.native-select wire:model="sex" label="Sex" placeholder="Choose..." :options="[\'male\' => \'Cock\', \'female\' => \'Hen\']" />')
+        $this->blade('<x-ui.select wire:model="sex" label="Sex" placeholder="Choose..." :options="[\'male\' => \'Cock\', \'female\' => \'Hen\']" />')
             ->assertSeeInOrder(['<option value="">Choose...</option>', '<option value="male">Cock</option>', '<option value="female">Hen</option>'], escape: false);
+    }
+
+    /**
+     * The browser's own option list is never shown: every select is a hidden
+     * value store under an EMS combobox trigger and dropdown listbox.
+     *
+     * @return array<string, array{0: string}>
+     */
+    public static function selectsProvider(): array
+    {
+        return [
+            'ui select' => ['<x-ui.select id="sex" wire:model="sex" label="Sex" :options="[\'male\' => \'Cock\']" />'],
+            'form select' => ['<x-form-select id="sex" label="Sex" wire:model="sex"><option value="male">Cock</option></x-form-select>'],
+            'filter select' => ['<x-filter-select id="sex" label="Sex" wire:model.live="sex"><option value="male">Cock</option></x-filter-select>'],
+        ];
+    }
+
+    #[DataProvider('selectsProvider')]
+    public function test_every_select_opens_the_ems_dropdown_not_the_browser_list(string $template): void
+    {
+        $this->withViewErrors([])->blade($template)
+            ->assertSee('x-data="emsSelect"', escape: false)
+            ->assertSee('aria-hidden="true" tabindex="-1"', escape: false)
+            ->assertSee('role="combobox"', escape: false)
+            ->assertSee('id="sex-listbox" role="listbox"', escape: false)
+            ->assertSee('wire:model', escape: false);
     }
 
     public function test_a_textarea_keeps_its_content(): void

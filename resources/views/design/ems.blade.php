@@ -63,7 +63,7 @@
 
     {{-- FIELDS --}}
     <div class="space-y-4">
-        <h3 class="{{ $sectionTitle }}">Input, textarea, native select</h3>
+        <h3 class="{{ $sectionTitle }}">Input, textarea, select</h3>
 
         <div class="grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
             <x-ui.input id="gallery_band" label="Band number" placeholder="e.g. SW-1024"
@@ -73,9 +73,9 @@
             <x-ui.input id="gallery_weight" label="Weight (kg)" value="-2" class="datum" />
             <x-ui.input id="gallery_hatched" label="Hatch date" type="date" />
             <x-ui.input id="gallery_disabled" label="Recorded by" value="Owner" disabled />
-            <x-ui.native-select id="gallery_line" label="Bloodline" placeholder="All bloodlines"
+            <x-ui.select id="gallery_line" label="Bloodline" placeholder="All bloodlines"
                                 :options="['sweater' => 'Sweater', 'kelso' => 'Kelso', 'hatch' => 'Hatch']" />
-            <x-ui.native-select id="gallery_sex" label="Sex" required placeholder="Choose..."
+            <x-ui.select id="gallery_sex" label="Sex" required placeholder="Choose..."
                                 :options="['male' => 'Cock', 'female' => 'Hen']" />
             <x-ui.textarea id="gallery_remarks" label="Remarks" placeholder="Temperament, markings, anything a buyer should know"
                            wrapper-class="sm:col-span-2" />
@@ -300,7 +300,7 @@
             <div class="space-y-4">
                 <x-ui.input id="gallery_sheet_name" label="Name" required />
                 <x-ui.input id="gallery_sheet_band" label="Band number" />
-                <x-ui.native-select id="gallery_sheet_sex" label="Sex" :options="['male' => 'Cock', 'female' => 'Hen']" />
+                <x-ui.select id="gallery_sheet_sex" label="Sex" :options="['male' => 'Cock', 'female' => 'Hen']" />
             </div>
             <x-slot:footer>
                 <x-ui.button variant="outline" x-on:click="requestClose()">Cancel</x-ui.button>

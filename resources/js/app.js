@@ -140,6 +140,161 @@ document.addEventListener('alpine:init', () => {
     }));
 
     /**
+     * The EMS select (Part B §5.5): <x-ui.select>, <x-form-select> and
+     * <x-filter-select>. A native select's open list is drawn by the operating
+     * system, which no stylesheet reaches, so the list here is an EMS dropdown
+     * panel instead.
+     *
+     * A hidden native <select> stays as the value store. It carries wire:model
+     * and the <option> children, so Livewire binds exactly as before. Choosing
+     * writes the select and fires `change` (what wire:model listens for) and
+     * `blur` (for wire:model.blur, since nobody can blur a hidden control).
+     *
+     * Focus never leaves the trigger: it is a combobox, and the highlighted
+     * option is announced through aria-activedescendant.
+     */
+    window.Alpine.data('emsSelect', () => ({
+        open: false,
+        options: [],
+        active: -1,
+        selected: -1,
+        label: '',
+        empty: false,
+        width: 0,
+        typed: '',
+        typedAt: 0,
+
+        init() {
+            this.sync();
+
+            // wire:model binds the native select after this component starts,
+            // so the first read can see the browser's default option. Read
+            // again once the binding exists, and after every morph.
+            this.$nextTick(() => this.sync());
+            new MutationObserver(() => this.$nextTick(() => this.sync()))
+                .observe(this.$refs.native, { childList: true, subtree: true, attributes: true, characterData: true });
+        },
+
+        anchor() {
+            return this.$refs.anchor ?? this.$refs.trigger;
+        },
+
+        sync() {
+            const select = this.$refs.native;
+            this.options = [...select.options].map((option, index) => ({ value: option.value, label: option.text, index }));
+            this.selected = select.selectedIndex;
+            this.label = select.selectedIndex > -1 ? select.options[select.selectedIndex].text : '';
+            this.empty = select.selectedIndex < 0 || select.value === '';
+
+            if (! this.open) {
+                this.active = select.selectedIndex;
+            }
+        },
+
+        show(which = null) {
+            const count = this.options.length;
+            this.width = this.anchor().offsetWidth;
+            this.active = which === 'first' ? 0 : which === 'last' ? count - 1 : Math.max(0, this.selected);
+            this.open = true;
+            this.$nextTick(() => this.scrollToActive());
+        },
+
+        close(refocus = true) {
+            if (! this.open) {
+                return;
+            }
+
+            this.open = false;
+
+            if (refocus) {
+                this.$refs.trigger.focus();
+            }
+        },
+
+        toggle() {
+            this.open ? this.close() : this.show();
+        },
+
+        choose(index) {
+            const select = this.$refs.native;
+
+            if (index < 0 || index >= select.options.length) {
+                return;
+            }
+
+            const changed = select.selectedIndex !== index;
+            select.selectedIndex = index;
+            this.sync();
+
+            if (changed) {
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+                select.dispatchEvent(new Event('blur'));
+            }
+
+            this.close();
+        },
+
+        move(step) {
+            const count = this.options.length;
+
+            if (! count) {
+                return;
+            }
+
+            this.active = Math.min(count - 1, Math.max(0, this.active + step));
+            this.scrollToActive();
+        },
+
+        scrollToActive() {
+            this.$refs.list?.querySelector(`[data-index="${this.active}"]`)?.scrollIntoView({ block: 'nearest' });
+        },
+
+        keydown(event) {
+            const key = event.key;
+
+            if (key === 'ArrowDown' || key === 'ArrowUp') {
+                event.preventDefault();
+                this.open ? this.move(key === 'ArrowDown' ? 1 : -1) : this.show();
+            } else if (key === 'Home' || key === 'End') {
+                event.preventDefault();
+                this.show(key === 'Home' ? 'first' : 'last');
+            } else if (key === 'Enter' || key === ' ') {
+                event.preventDefault();
+                this.open ? this.choose(this.active) : this.show();
+            } else if (key === 'Escape' && this.open) {
+                // preventDefault as well as stop: inside a <dialog>, Escape
+                // would otherwise close the whole form, not just this list.
+                event.preventDefault();
+                event.stopPropagation();
+                this.close();
+            } else if (key === 'Tab') {
+                this.close(false);
+            } else if (key.length === 1 && /\S/.test(key) && ! event.ctrlKey && ! event.metaKey && ! event.altKey) {
+                this.typeahead(key);
+            }
+        },
+
+        typeahead(key) {
+            const now = Date.now();
+            this.typed = now - this.typedAt > 700 ? key : this.typed + key;
+            this.typedAt = now;
+
+            const index = this.options.findIndex((option) => option.label.toLowerCase().startsWith(this.typed.toLowerCase()));
+
+            if (index < 0) {
+                return;
+            }
+
+            if (this.open) {
+                this.active = index;
+                this.scrollToActive();
+            } else {
+                this.choose(index);
+            }
+        },
+    }));
+
+    /**
      * The EMS dialogs (Part B §5.20): <x-ui.form-dialog>, <x-ui.sheet> and the
      * info dialog. A native <dialog> under showModal() gives the focus trap,
      * the inert page behind it, Escape and the top layer; this keeps the
@@ -822,3 +977,69 @@ document.addEventListener('livewire:navigated', () => {
     main.classList.add('page-enter');
     main.addEventListener('animationend', () => main.classList.remove('page-enter'), { once: true });
 });
+
+/**
+ * The page-loading line along the top edge, for wire:navigate.
+ *
+ * Livewire's own bar (switched off in config/livewire.php) waits 150ms
+ * before it appears and then creeps in 2% steps, so a quick page reads as a
+ * slow one. This one starts the moment a link is pressed, covers most of the
+ * width at once, then slows to a crawl while the server works and snaps to
+ * the end when the page arrives. The waiting happens near the finish, where
+ * it feels shortest.
+ *
+ * It hangs off <html>, not <body>, because navigation swaps the body.
+ */
+const loadingLine = (() => {
+    let bar = null;
+    let trickle = null;
+    let hide = null;
+    let progress = 0;
+    let running = false;
+
+    const moveTo = (value, duration) => {
+        progress = value;
+        bar.style.transitionDuration = `${duration}ms, 200ms`;
+        bar.style.transform = `scaleX(${value})`;
+    };
+
+    return {
+        start() {
+            if (! bar?.isConnected) {
+                bar = document.createElement('div');
+                bar.className = 'ems-loading-line';
+                bar.setAttribute('aria-hidden', 'true');
+                document.documentElement.appendChild(bar);
+            }
+
+            clearInterval(trickle);
+            clearTimeout(hide);
+            running = true;
+
+            bar.style.transitionDuration = '0ms, 0ms';
+            bar.style.transform = 'scaleX(0)';
+            bar.style.opacity = '1';
+            void bar.offsetWidth;
+
+            moveTo(0.7, 400);
+            trickle = setInterval(() => moveTo(progress + (0.94 - progress) * 0.2, 700), 700);
+        },
+
+        done() {
+            if (! running) {
+                return;
+            }
+
+            running = false;
+            clearInterval(trickle);
+            moveTo(1, 150);
+            hide = setTimeout(() => { bar.style.opacity = '0'; }, 200);
+        },
+    };
+})();
+
+document.addEventListener('livewire:navigate', (event) => {
+    // Wait a tick: a listener that cancels the navigation runs after this one.
+    setTimeout(() => event.defaultPrevented || loadingLine.start());
+});
+document.addEventListener('livewire:navigated', () => loadingLine.done());
