@@ -30,7 +30,7 @@
         <div class="min-w-0">
             <p class="sb-line sb-eyebrow" style="--line: 0ms">Breeding record</p>
             <h1 class="sb-line mt-2 font-display text-[1.9rem] font-semibold leading-[1.08] tracking-[-0.025em] text-foreground sm:text-[2.3rem]" style="--line: 60ms">
-                {{ $breeding->sire->name }} &times; {{ $breeding->dam->name }}
+                {{ $breeding->sire?->name ?? 'Bird removed' }} &times; {{ $breeding->dam?->name ?? 'Bird removed' }}
             </h1>
             <p class="sb-line mt-3 text-[15px] text-muted-foreground" style="--line: 120ms">
                 Mated on <span class="datum text-foreground">{{ $breeding->mating_date->format('j F Y') }}</span>
@@ -56,6 +56,22 @@
         @foreach ([['Sire', $breeding->sire], ['Dam', $breeding->dam]] as [$role, $parent])
             @if (! $loop->first)
                 <span class="hidden text-center font-display text-[22px] text-muted-foreground sm:block" aria-hidden="true">&times;</span>
+            @endif
+
+            {{-- A deleted parent keeps its place in the record, greyed and not
+                 linked: the history is kept, but its own page is gone. --}}
+            @if ($parent === null || $parent->trashed())
+                <div class="block min-h-11 rounded-[12px] border border-border bg-card p-5">
+                    <span class="block text-[14px] font-medium text-muted-foreground">{{ $role }}</span>
+                    <span class="mt-1 block font-display text-[22px] font-semibold leading-tight tracking-[-0.015em] text-muted-foreground">
+                        {{ $parent?->name ?? 'Bird removed' }}
+                    </span>
+                    <span class="mt-3 block text-[15px] text-muted-foreground">
+                        @if ($parent?->band_number)<span class="datum">{{ $parent->band_number }}</span> &middot; @endif
+                        Removed from the records
+                    </span>
+                </div>
+                @continue
             @endif
 
             <a href="{{ route('broodcocks.show', $parent) }}" wire:navigate
@@ -154,8 +170,8 @@
                 <h3 id="generate-heading" class="font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground">Register chicks from this hatch</h3>
                 <p class="mt-2 text-[15px] leading-relaxed text-muted-foreground">
                     Each chick will be created with
-                    <strong class="font-semibold text-foreground">{{ $breeding->sire->name }}</strong> as its sire and
-                    <strong class="font-semibold text-foreground">{{ $breeding->dam->name }}</strong> as its dam, so it appears in the
+                    <strong class="font-semibold text-foreground">{{ $breeding->sire?->name ?? 'Bird removed' }}</strong> as its sire and
+                    <strong class="font-semibold text-foreground">{{ $breeding->dam?->name ?? 'Bird removed' }}</strong> as its dam, so it appears in the
                     family tree straight away. You can rename and band them afterwards.
                 </p>
 

@@ -147,6 +147,9 @@
                 @foreach ($this->rows as $record)
                     @php
                         $bird = $record->broodcock;
+                        // A deleted bird keeps its health history, so the row still
+                        // names it - greyed and unlinked, because its page is gone.
+                        $birdName = $bird?->name ?? 'a removed bird';
                         $state = $record->scheduleState();
                         // The status washes are the only colour besides a band, and
                         // the word itself carries the state - never hue alone.
@@ -163,14 +166,26 @@
                              dot its bloodline, and the bloodline is written beside
                              the name so colour is never the only channel. --}}
                         <td class="block {{ $td }}">
-                            <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate
-                               class="group -my-1 inline-flex min-h-11 items-center gap-2.5">
-                                <x-band-dot :bloodline="$bird->bloodline" />
-                                <span class="min-w-0">
-                                    <span class="datum block text-[15px] font-medium text-foreground group-hover:underline">{{ $bird->displayBand() }}</span>
-                                    <span class="block text-[13px] leading-snug text-muted-foreground">{{ $bird->name }}@if ($bird->bloodline) &middot; {{ $bird->bloodline }}@endif</span>
+                            @if ($bird === null)
+                                <p class="flex min-h-11 items-center text-[15px] text-muted-foreground">Bird removed</p>
+                            @elseif ($bird->trashed())
+                                <span class="-my-1 inline-flex min-h-11 items-center gap-2.5">
+                                    <x-band-dot :bloodline="$bird->bloodline" />
+                                    <span class="min-w-0">
+                                        <span class="datum block text-[15px] font-medium text-muted-foreground">{{ $bird->displayBand() }}</span>
+                                        <span class="block text-[13px] leading-snug text-muted-foreground">{{ $bird->name }} &middot; removed</span>
+                                    </span>
                                 </span>
-                            </a>
+                            @else
+                                <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate
+                                   class="group -my-1 inline-flex min-h-11 items-center gap-2.5">
+                                    <x-band-dot :bloodline="$bird->bloodline" />
+                                    <span class="min-w-0">
+                                        <span class="datum block text-[15px] font-medium text-foreground group-hover:underline">{{ $bird->displayBand() }}</span>
+                                        <span class="block text-[13px] leading-snug text-muted-foreground">{{ $bird->name }}@if ($bird->bloodline) &middot; {{ $bird->bloodline }}@endif</span>
+                                    </span>
+                                </a>
+                            @endif
                         </td>
 
                         <td class="mt-2 block md:mt-0 {{ $td }}">
@@ -212,7 +227,7 @@
                             <div class="-ml-3 flex gap-1 md:ml-0 md:justify-end">
                                 @can('update', $record)
                                     <a href="{{ route('health.edit', $record) }}" wire:navigate class="d-btn d-btn-ghost">
-                                        Edit<span class="sr-only">, {{ $record->record_type->label() }} for {{ $bird->name }} on {{ $record->checkup_date->format('d M Y') }}</span>
+                                        Edit<span class="sr-only">, {{ $record->record_type->label() }} for {{ $birdName }} on {{ $record->checkup_date->format('d M Y') }}</span>
                                     </a>
                                 @endcan
                                 {{-- Ghost, not the filled .d-btn-error: a solid crimson
@@ -222,7 +237,7 @@
                                 @can('delete', $record)
                                     <button type="button" wire:click="confirmDelete({{ $record->id }})"
                                             class="d-btn d-btn-ghost text-destructive hover:bg-destructive-bg">
-                                        Delete<span class="sr-only">, {{ $record->record_type->label() }} for {{ $bird->name }} on {{ $record->checkup_date->format('d M Y') }}</span>
+                                        Delete<span class="sr-only">, {{ $record->record_type->label() }} for {{ $birdName }} on {{ $record->checkup_date->format('d M Y') }}</span>
                                     </button>
                                 @endcan
                             </div>
@@ -246,7 +261,7 @@
     @if ($this->recordPendingDeletion)
         @php
             $pending = $this->recordPendingDeletion;
-            $pendingBird = $pending->broodcock->band_number ?: $pending->broodcock->name;
+            $pendingBird = $pending->broodcock?->band_number ?: ($pending->broodcock?->name ?? 'a removed bird');
         @endphp
 
         <div class="d-modal d-modal-open"
@@ -260,8 +275,10 @@
                 </h2>
 
                 <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-                    <strong class="font-medium text-foreground">{{ $pending->broodcock->name }}</strong>
-                    (Band Number: <span class="datum text-foreground">{{ $pending->broodcock->displayBand() }}</span>),
+                    @if ($pending->broodcock)
+                        <strong class="font-medium text-foreground">{{ $pending->broodcock->name }}</strong>
+                        (Band Number: <span class="datum text-foreground">{{ $pending->broodcock->displayBand() }}</span>),
+                    @endif
                     {{ $pending->record_type->label() }}@if ($pending->product_name) &middot; {{ $pending->product_name }}@endif.
                     The record is kept in the farm's history and can be restored by the owner,
                     but it will no longer appear in lists or reports.

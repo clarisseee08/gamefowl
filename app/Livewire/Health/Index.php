@@ -120,7 +120,7 @@ final class Index extends Component
         }
 
         return HealthRecord::query()
-            ->with('broodcock')
+            ->with(['broodcock' => fn ($query) => $query->withTrashed()])
             ->find($this->confirmingDeleteId);
     }
 
@@ -137,7 +137,7 @@ final class Index extends Component
         // The Policy is the gate. Hiding the button was only a courtesy.
         $this->authorize('delete', $record);
 
-        $bird = $record->broodcock->name;
+        $bird = $record->broodcock?->name ?? 'a removed bird';
         $type = $record->record_type->label();
 
         $record->delete();
@@ -162,7 +162,10 @@ final class Index extends Component
             // Eager-loaded because every row prints the bird's name and band
             // number. Without this the list is one extra query per row, and
             // every query is a network round trip to Supabase.
-            ->with('broodcock')
+            //
+            // withTrashed() because deleting a bird keeps its health history:
+            // without it the bird comes back null and the row cannot render.
+            ->with(['broodcock' => fn ($query) => $query->withTrashed()])
             ->ofType($this->recordType)
             ->between($this->normalisedDate($this->dateFrom), $this->normalisedDate($this->dateTo))
             ->when($this->broodcockId !== '', fn (Builder $query) => $query->where('broodcock_id', (int) $this->broodcockId))

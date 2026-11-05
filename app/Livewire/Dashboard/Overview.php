@@ -117,6 +117,7 @@ final class Overview extends Component
     {
         return HealthRecord::query()
             ->with('broodcock:id,name,band_number')
+            ->forBirdsOnFarm()
             ->overdue()
             ->orderBy('next_due_date')
             ->limit(8)
@@ -129,6 +130,7 @@ final class Overview extends Component
     {
         return HealthRecord::query()
             ->with('broodcock:id,name,band_number')
+            ->forBirdsOnFarm()
             ->dueSoon((int) config('gfms.vaccination_warning_days'))
             ->orderBy('next_due_date')
             ->limit(8)
@@ -138,7 +140,7 @@ final class Overview extends Component
     #[Computed]
     public function overdueCount(): int
     {
-        return HealthRecord::query()->overdue()->count();
+        return HealthRecord::query()->forBirdsOnFarm()->overdue()->count();
     }
 
     /** @return Collection<int, MortalityRecord> */

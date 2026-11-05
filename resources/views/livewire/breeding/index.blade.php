@@ -110,16 +110,16 @@
                     <a href="{{ route('breeding.show', $record) }}" wire:navigate
                        class="flex min-h-11 items-start justify-between gap-3">
                         <span class="min-w-0 text-[16px] font-medium text-foreground">
-                            {{ $record->sire->name }}
+                            {{ $record->sire?->name ?? 'Bird removed' }}@if ($record->sire?->trashed()) <span class="text-muted-foreground">(removed)</span>@endif
                             <span class="text-muted-foreground" aria-hidden="true">&times;</span>
                             <span class="sr-only">with</span>
-                            {{ $record->dam->name }}
+                            {{ $record->dam?->name ?? 'Bird removed' }}@if ($record->dam?->trashed()) <span class="text-muted-foreground">(removed)</span>@endif
                         </span>
                         <span class="datum shrink-0 pt-0.5 text-[14px] text-muted-foreground">{{ $record->mating_date->format('j M Y') }}</span>
                     </a>
 
                     <p class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px] text-muted-foreground">
-                        @foreach ([$record->sire, $record->dam] as $parent)
+                        @foreach (array_filter([$record->sire, $record->dam]) as $parent)
                             <span class="inline-flex items-center gap-1.5">
                                 <x-band-dot :bloodline="$parent->bloodline" />
                                 @if ($parent->band_number)
@@ -207,16 +207,26 @@
                                         <span class="text-muted-foreground" aria-hidden="true">&times;</span>
                                         <span class="sr-only">with</span>
                                     @endif
-                                    <a href="{{ route('broodcocks.show', $parent) }}" wire:navigate
-                                       class="group inline-flex min-h-11 items-center gap-2">
-                                        <x-band-dot :bloodline="$parent->bloodline" />
-                                        <span class="text-foreground group-hover:underline group-hover:underline-offset-4">{{ $parent->name }}</span>
-                                        @if ($parent->band_number)
-                                            <span class="datum text-[13px] text-muted-foreground">{{ $parent->band_number }}</span>
-                                        @else
-                                            <span class="text-[13px] text-muted-foreground">Not yet banded</span>
-                                        @endif
-                                    </a>
+                                    @if ($parent === null)
+                                        <span class="inline-flex min-h-11 items-center text-muted-foreground">Bird removed</span>
+                                    @elseif ($parent->trashed())
+                                        <span class="inline-flex min-h-11 items-center gap-2 text-muted-foreground">
+                                            <x-band-dot :bloodline="$parent->bloodline" />
+                                            <span>{{ $parent->name }}</span>
+                                            <span class="text-[13px]">removed</span>
+                                        </span>
+                                    @else
+                                        <a href="{{ route('broodcocks.show', $parent) }}" wire:navigate
+                                           class="group inline-flex min-h-11 items-center gap-2">
+                                            <x-band-dot :bloodline="$parent->bloodline" />
+                                            <span class="text-foreground group-hover:underline group-hover:underline-offset-4">{{ $parent->name }}</span>
+                                            @if ($parent->band_number)
+                                                <span class="datum text-[13px] text-muted-foreground">{{ $parent->band_number }}</span>
+                                            @else
+                                                <span class="text-[13px] text-muted-foreground">Not yet banded</span>
+                                            @endif
+                                        </a>
+                                    @endif
                                 @endforeach
                             </div>
                         </td>
@@ -245,7 +255,7 @@
                                 @endif
                                 <a href="{{ route('breeding.show', $record) }}" wire:navigate
                                    class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center font-semibold underline-offset-4">
-                                    View<span class="sr-only"> {{ $record->sire->name }} &times; {{ $record->dam->name }}</span>
+                                    View<span class="sr-only"> {{ $record->sire?->name ?? 'Bird removed' }} &times; {{ $record->dam?->name ?? 'Bird removed' }}</span>
                                 </a>
                             </span>
                         </td>

@@ -56,6 +56,7 @@ final class Schedule extends Component
     {
         return HealthRecord::query()
             ->with('broodcock')
+            ->forBirdsOnFarm()
             ->overdue()
             ->orderBy('next_due_date')
             ->orderBy('id')
@@ -75,6 +76,7 @@ final class Schedule extends Component
     {
         return HealthRecord::query()
             ->with('broodcock')
+            ->forBirdsOnFarm()
             ->dueSoon($this->warningDays())
             ->orderBy('next_due_date')
             ->orderBy('id')
@@ -85,13 +87,13 @@ final class Schedule extends Component
     #[Computed]
     public function overdueCount(): int
     {
-        return HealthRecord::query()->overdue()->count();
+        return HealthRecord::query()->forBirdsOnFarm()->overdue()->count();
     }
 
     #[Computed]
     public function dueSoonCount(): int
     {
-        return HealthRecord::query()->dueSoon($this->warningDays())->count();
+        return HealthRecord::query()->forBirdsOnFarm()->dueSoon($this->warningDays())->count();
     }
 
     public function render(): View

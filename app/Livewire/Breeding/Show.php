@@ -44,9 +44,11 @@ final class Show extends Component
     public function breeding(): BreedingRecord
     {
         return BreedingRecord::query()
+            // withTrashed() because deleting a bird keeps its breeding history:
+            // without it a deleted parent comes back null and this page fails.
             ->with([
-                'sire:id,name,band_number,bloodline,breed,sex',
-                'dam:id,name,band_number,bloodline,breed,sex',
+                'sire' => fn ($query) => $query->withTrashed()->select(['id', 'name', 'band_number', 'bloodline', 'breed', 'sex', 'deleted_at']),
+                'dam' => fn ($query) => $query->withTrashed()->select(['id', 'name', 'band_number', 'bloodline', 'breed', 'sex', 'deleted_at']),
                 'recordedBy:id,full_name',
             ])
             ->findOrFail($this->record->id);
@@ -137,6 +139,6 @@ final class Show extends Component
     public function render(): View
     {
         return view('livewire.breeding.show')
-            ->title($this->breeding->sire->name.' × '.$this->breeding->dam->name);
+            ->title(($this->breeding->sire?->name ?? 'Bird removed').' × '.($this->breeding->dam?->name ?? 'Bird removed'));
     }
 }

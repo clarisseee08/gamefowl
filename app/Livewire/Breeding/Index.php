@@ -92,7 +92,13 @@ final class Index extends Component
             // Every row renders both parents' names, so they must be loaded up
             // front - otherwise this is 2 extra queries per row against a
             // database in another country.
-            ->with(['sire:id,name,band_number,bloodline', 'dam:id,name,band_number,bloodline'])
+            //
+            // withTrashed() because deleting a bird keeps its breeding history:
+            // without it a deleted parent comes back null and the page fails.
+            ->with([
+                'sire' => fn ($query) => $query->withTrashed()->select(['id', 'name', 'band_number', 'bloodline', 'deleted_at']),
+                'dam' => fn ($query) => $query->withTrashed()->select(['id', 'name', 'band_number', 'bloodline', 'deleted_at']),
+            ])
             ->between($this->from ?: null, $this->to ?: null)
             ->when($this->search !== '', function ($query): void {
                 $term = "%{$this->search}%";
