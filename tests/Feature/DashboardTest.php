@@ -159,10 +159,11 @@ final class DashboardTest extends TestCase
             ->test(Overview::class)
             ->assertSet('showForm', false)
             ->assertSee('Add a Gamefowl')
+            // Built with the page, so Add opens at once with no request.
+            ->assertSeeLivewire('broodcocks.form')
             ->call('openForm')
             ->assertSet('showForm', true)
-            ->assertNoRedirect()
-            ->assertSeeLivewire('broodcocks.form');
+            ->assertNoRedirect();
     }
 
     /**

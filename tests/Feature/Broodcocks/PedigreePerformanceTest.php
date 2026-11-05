@@ -96,14 +96,15 @@ final class PedigreePerformanceTest extends TestCase
     }
 
     /**
-     * The chart shows the parents and stops there.
+     * The chart shows the parents and the grandparents, and stops there.
      *
-     * The farm asked for grandparents and great-grandparents to be removed, so
-     * this asserts BOTH halves of that: the sire and dam are on the page, and
-     * the generation above them is not. Only checking the first half would let
-     * a stray config change put four columns back without failing anything.
+     * Two generations (config gfms.pedigree_generations), the owner's call
+     * for the family tree. This asserts BOTH halves: the grandparents are on
+     * the page, and the generation above them is not. Only checking the first
+     * half would let a stray config change put more columns back without
+     * failing anything.
      */
-    public function test_the_pedigree_shows_the_parents_and_nothing_above_them(): void
+    public function test_the_pedigree_shows_two_generations_and_nothing_above_them(): void
     {
         $bird = $this->buildFullPedigree();
         $this->actingAs(User::factory()->staff()->create());
@@ -117,22 +118,20 @@ final class PedigreePerformanceTest extends TestCase
         $greatGrandsire = $grandsire->sire;
 
         $this->assertNotNull($greatGrandsire, 'Fixture did not build three generations.');
+        $this->assertStringContainsString($grandsire->name, $html, 'A grandparent is missing from the chart.');
         $this->assertStringNotContainsString(
-            $grandsire->name,
+            $greatGrandsire->name,
             $html,
-            'A grandparent is still being rendered; the chart is meant to stop at the parents.'
+            'A great-grandparent is being rendered; the chart is meant to stop at the grandparents.'
         );
-        $this->assertStringNotContainsString($greatGrandsire->name, $html);
     }
 
-    /** The column headings must match the depth that is actually rendered. */
+    /** No heading names a generation the chart does not draw. */
     public function test_the_chart_is_not_headed_by_columns_it_no_longer_draws(): void
     {
         $this->actingAs(User::factory()->staff()->create());
 
         Livewire::test(Pedigree::class, ['broodcock' => $this->buildFullPedigree()])
-            ->assertSee('Parents')
-            ->assertDontSee('Grandparents')
             ->assertDontSee('Great-Grandparents');
     }
 
@@ -147,17 +146,18 @@ final class PedigreePerformanceTest extends TestCase
         // outside that span and is no longer contiguous in the HTML. The number
         // is what this test is about.
         //
-        // Two, not fourteen - the denominator is the number of slots the chart
-        // DRAWS, and it now draws a sire and a dam. A bird with both recorded
-        // reads 100% even though the farm knows nothing about its grandparents,
-        // which is the honest figure for what this screen now claims to show.
+        // The denominator is the number of slots the chart DRAWS. A bird with
+        // no parents gets the parents' two; the grandparents' generation is
+        // drawn only when something in it is recorded, so it is not counted
+        // against a bird whose tree was never entered. A full tree draws both
+        // generations: two parents and four grandparents.
         Livewire::test(Pedigree::class, ['broodcock' => $orphan])
             ->assertSee('0 of 2');
 
         $full = $this->buildFullPedigree();
 
         Livewire::test(Pedigree::class, ['broodcock' => $full])
-            ->assertSee('2 of 2');
+            ->assertSee('6 of 6');
     }
 
     /**

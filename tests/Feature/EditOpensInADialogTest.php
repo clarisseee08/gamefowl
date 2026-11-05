@@ -29,7 +29,8 @@ final class EditOpensInADialogTest extends TestCase
         Livewire::actingAs(User::factory()->staff()->create())
             ->test(BirdShow::class, ['broodcock' => $bird])
             ->assertSee('aria-labelledby="broodcocks-form-title"', escape: false)
-            ->assertDontSee('id="name"', escape: false)
+            // The bird's form is built with the page, so Edit opens at once.
+            ->assertSeeLivewire('broodcocks.form')
             ->call('openForm')
             ->assertSet('showForm', true)
             ->assertSee('Edit Kingpin');

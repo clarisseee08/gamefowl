@@ -40,13 +40,17 @@ final class ExternalParentTest extends TestCase
 
     public function test_a_mating_can_name_a_dam_the_farm_does_not_own(): void
     {
-        $sire = Broodcock::factory()->create(['sex' => Sex::Male]);
+        // A bloodline of its own, so "Sweater" is not already on the list
+        // the dropdown offers - picking "Others" for a listed one clears it.
+        $sire = Broodcock::factory()->create(['sex' => Sex::Male, 'bloodline' => 'Kelso']);
 
         Livewire::actingAs($this->staff())
             ->test(Form::class)
             ->set('sire_id', (string) $sire->id)
             ->set('dam_is_external', true)
             ->set('dam_external_name', 'Ilocos Hen')
+            // A bloodline not yet on record: "Others", then the box.
+            ->set('dam_bloodline_choice', Form::OTHER)
             ->set('dam_external_bloodline', 'Sweater')
             ->set('mating_date', today()->toDateString())
             ->set('eggs_set', 6)

@@ -41,8 +41,11 @@ final class HealthRecordTest extends TestCase
             ->test(Form::class)
             ->set('broodcock_id', (string) $bird->id)
             ->set('record_type', HealthRecordType::Vaccination->value)
+            // A product off the list: "Others", then the box.
+            ->set('product_choice', Form::OTHER)
             ->set('product_name', 'Newcastle B1')
-            ->set('dosage', '0.5 ml')
+            ->set('dosage_amount', '0.5')
+            ->set('dosage_unit', 'ml')
             ->set('checkup_date', today()->toDateString())
             ->set('next_due_date', today()->addDays(30)->toDateString())
             ->call('save')
@@ -52,6 +55,7 @@ final class HealthRecordTest extends TestCase
             'broodcock_id' => $bird->id,
             'record_type' => HealthRecordType::Vaccination->value,
             'product_name' => 'Newcastle B1',
+            'dosage' => '0.5 ml',
         ]);
     }
 

@@ -75,7 +75,7 @@ final class PerformanceAuthorizationTest extends TestCase
 
     public function test_a_customer_can_view_a_birds_timeline(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
         PerformanceRecord::factory()->win()->for($bird)->create();
 
         Livewire::actingAs(User::factory()->customer()->create())
@@ -90,7 +90,7 @@ final class PerformanceAuthorizationTest extends TestCase
 
     public function test_a_customer_never_sees_internal_remarks_on_the_timeline(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
         PerformanceRecord::factory()->win()->for($bird)->create([
             'remarks' => 'Secret internal note about conditioning cost.',
         ]);
@@ -104,7 +104,7 @@ final class PerformanceAuthorizationTest extends TestCase
 
     public function test_staff_do_see_internal_remarks_on_the_timeline(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
         PerformanceRecord::factory()->win()->for($bird)->create([
             'remarks' => 'Secret internal note about conditioning cost.',
         ]);
@@ -148,7 +148,7 @@ final class PerformanceAuthorizationTest extends TestCase
     public function test_an_owner_can_create_a_performance_record(): void
     {
         $owner = User::factory()->owner()->create();
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
 
         Livewire::actingAs($owner)
             ->test(Form::class)
@@ -246,7 +246,7 @@ final class PerformanceAuthorizationTest extends TestCase
 
     public function test_staff_cannot_delete_from_the_timeline_either(): void
     {
-        $bird = Broodcock::factory()->create();
+        $bird = Broodcock::factory()->male()->create();
         $record = PerformanceRecord::factory()->for($bird)->create();
 
         Livewire::actingAs(User::factory()->staff()->create())

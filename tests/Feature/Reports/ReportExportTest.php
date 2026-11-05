@@ -272,8 +272,8 @@ final class ReportExportTest extends TestCase
         $this->actingAs($owner)
             ->get(route('reports.index'))
             ->assertOk()
-            ->assertSeeInOrder(['2', 'reports generated'])
-            ->assertSee('Covering all records');
+            // The KPI tile: its label, then the count.
+            ->assertSeeInOrder(['Reports generated', '>2<'], escape: false);
     }
 
     // -----------------------------------------------------------------

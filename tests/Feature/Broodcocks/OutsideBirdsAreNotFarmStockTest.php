@@ -132,10 +132,17 @@ final class OutsideBirdsAreNotFarmStockTest extends TestCase
         Broodcock::factory()->create(['name' => 'Bagwis']);
         Broodcock::factory()->external()->create(['name' => 'Borrowed Hen']);
 
-        Livewire::actingAs($this->staff())
+        // Read from the list itself, not the page: the Add form built with
+        // the page offers every bird as a possible parent, outside ones too.
+        $listed = Livewire::actingAs($this->staff())
             ->test(Index::class)
-            ->assertSee('Bagwis')
-            ->assertDontSee('Borrowed Hen');
+            ->instance()
+            ->broodcocks
+            ->pluck('name')
+            ->all();
+
+        $this->assertContains('Bagwis', $listed);
+        $this->assertNotContains('Borrowed Hen', $listed);
     }
 
     public function test_outside_birds_remain_reachable_through_the_ownership_filter(): void

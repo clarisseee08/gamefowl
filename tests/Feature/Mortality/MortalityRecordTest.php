@@ -104,7 +104,7 @@ final class MortalityRecordTest extends TestCase
 
         $component = Livewire::actingAs($staff)->test(Index::class)->assertOk();
 
-        $this->assertCount(15, $component->instance()->rows->items());
+        $this->assertCount(10, $component->instance()->rows->items());
         $this->assertSame(20, $component->instance()->rows->total());
         $this->assertSame(2, $component->instance()->rows->lastPage());
     }

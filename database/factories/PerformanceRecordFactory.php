@@ -26,7 +26,8 @@ class PerformanceRecordFactory extends Factory
         $type = fake()->randomElement([PerformanceEventType::Sparring, PerformanceEventType::Derby]);
 
         return [
-            'broodcock_id' => Broodcock::factory(),
+            // Cocks only: a hen has no fights, and the form refuses one.
+            'broodcock_id' => Broodcock::factory()->male(),
             'event_date' => fake()->dateTimeBetween('-2 years', 'now')->format('Y-m-d'),
             'event_type' => $type,
             'weight' => fake()->randomFloat(2, 1.6, 3.2),
