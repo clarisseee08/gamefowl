@@ -7,11 +7,19 @@
     $state = fn (bool $ok) => $ok ? 'd-badge d-badge-soft d-badge-success' : 'd-badge d-badge-soft d-badge-error';
 
     // The headline is counted from the same arrays the rows below render -
-    // nothing is probed twice and nothing is invented.
+    // nothing is probed twice and nothing is invented. A failing row is
+    // flagged with the same red badge it is counted under, so the number and
+    // the page always agree. Debug mode is only a fault in production: on a
+    // developer's machine it is meant to be on.
+    $uploadFailed = fn (string $value) => $value === 'NO';
+    $debugIsFault = app()->isProduction() && ($php['Debug mode'] ?? null) === 'ON';
+
     $failing = count(array_filter($extensions, fn ($loaded) => ! $loaded))
         + count(array_filter($paths, fn ($info) => ! $info['exists'] || ! $info['writable']))
         + count(array_filter($disks, fn ($result) => $result !== 'reachable'))
-        + count(array_filter($services, fn ($value) => $value === 'MISSING'));
+        + count(array_filter($services, fn ($value) => $value === 'MISSING'))
+        + count(array_filter($uploads, $uploadFailed))
+        + ($debugIsFault ? 1 : 0);
 
     $headingClass = 'font-display text-[19px] font-semibold tracking-[-0.015em] text-foreground';
     $noteClass = 'mt-1 max-w-[60ch] text-[14px] leading-relaxed text-muted-foreground';
@@ -55,7 +63,13 @@
                 @foreach ($uploads as $label => $value)
                     <div class="{{ $rowClass }}">
                         <dt class="text-[15px] text-muted-foreground">{{ $label }}</dt>
-                        <dd class="datum text-right text-[15px] text-foreground">{{ $value }}</dd>
+                        <dd class="datum text-right text-[15px] text-foreground">
+                            @if ($uploadFailed($value))
+                                <span class="{{ $state(false) }}">{{ $value }}</span>
+                            @else
+                                {{ $value }}
+                            @endif
+                        </dd>
                     </div>
                 @endforeach
             </dl>
@@ -126,7 +140,13 @@
                 @foreach ($php as $label => $value)
                     <div class="{{ $rowClass }}">
                         <dt class="text-[15px] text-muted-foreground">{{ $label }}</dt>
-                        <dd class="datum text-right text-[15px] text-foreground">{{ $value }}</dd>
+                        <dd class="datum text-right text-[15px] text-foreground">
+                            @if ($label === 'Debug mode' && $debugIsFault)
+                                <span class="{{ $state(false) }}">{{ $value }}</span>
+                            @else
+                                {{ $value }}
+                            @endif
+                        </dd>
                     </div>
                 @endforeach
             </dl>
