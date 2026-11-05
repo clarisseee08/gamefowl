@@ -173,6 +173,146 @@
         </div>
     </div>
 
+    {{-- BADGES, COUNTS, AVATARS --}}
+    <div class="space-y-4">
+        <h3 class="{{ $sectionTitle }}">Status badge, count, avatar</h3>
+
+        <div class="space-y-3">
+            <div class="flex flex-wrap items-center gap-2">
+                <x-ui.status-badge tone="success">Active</x-ui.status-badge>
+                <x-ui.status-badge tone="info">Breeding</x-ui.status-badge>
+                <x-ui.status-badge tone="warning">Sold</x-ui.status-badge>
+                <x-ui.status-badge tone="danger">Deceased</x-ui.status-badge>
+                <x-ui.status-badge tone="neutral">Retired</x-ui.status-badge>
+                <x-ui.status-badge tone="primary">Class A</x-ui.status-badge>
+                <x-ui.status-badge :tone="\App\Enums\BroodcockStatus::Active->badgeClasses()" :dot="true">From the enum</x-ui.status-badge>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <x-ui.status-badge tone="success" size="sm">Small</x-ui.status-badge>
+                <x-ui.status-badge tone="success" size="lg" :dot="true">Large</x-ui.status-badge>
+                <x-ui.status-badge tone="danger" :solid="true">Solid</x-ui.status-badge>
+                <x-ui.count :value="7" />
+                <x-ui.count :value="140" tone="alert" />
+            </div>
+            <div class="flex items-center gap-3">
+                <x-ui.avatar name="Salvador Guadalupe" />
+                <x-ui.avatar name="Salvador Guadalupe" size="header" tone="primary" />
+                <x-ui.avatar name="Maria Clara Santos" size="hero" />
+            </div>
+        </div>
+    </div>
+
+    {{-- TABS --}}
+    <div class="space-y-4">
+        <h3 class="{{ $sectionTitle }}">Tabs</h3>
+
+        @php
+            $gallerySegments = [
+                ['key' => 'overview', 'label' => 'Overview'],
+                ['key' => 'health', 'label' => 'Health', 'count' => 4],
+                ['key' => 'overdue', 'label' => 'Overdue', 'count' => 2, 'tone' => 'danger'],
+                ['key' => 'pedigree', 'label' => 'Family tree'],
+            ];
+        @endphp
+        <div class="max-w-2xl space-y-5">
+            <x-ui.tabs :segments="$gallerySegments" active="health" model="galleryTab" label="Underline tabs" id="gallery-underline" />
+            <x-ui.tabs :segments="$gallerySegments" active="overview" model="galleryTab" label="Segmented tabs" variant="segmented" id="gallery-segmented" />
+            <x-ui.tabs :segments="$gallerySegments" active="pedigree" model="galleryTab" label="Boxed tabs" variant="boxed" id="gallery-boxed" />
+        </div>
+    </div>
+
+    {{-- ACCORDION --}}
+    <div class="space-y-4">
+        <h3 class="{{ $sectionTitle }}">Accordion</h3>
+        <div class="max-w-2xl">
+            <x-ui.accordion-item title="Why does a bird need a band number?" :open="true">
+                The band is how a bird is told apart in the yard and on paper. Birds are banded at an age, not at hatch.
+            </x-ui.accordion-item>
+            <x-ui.accordion-item title="Who can see the catalogue?">
+                Anyone. The catalogue lists the birds on the farm; internal records stay inside the console.
+            </x-ui.accordion-item>
+        </div>
+    </div>
+
+    {{-- MENUS AND OVERLAYS --}}
+    <div class="space-y-4" x-data>
+        <h3 class="{{ $sectionTitle }}">Dropdown menu, popover, tooltip</h3>
+
+        <div class="flex flex-wrap items-center gap-3">
+            <x-ui.dropdown-menu align="end" label="Actions for Tandang">
+                <x-slot:trigger aria-label="Actions for Tandang"><x-ui.icon name="ellipsis-vertical" /></x-slot:trigger>
+                <x-ui.dropdown-menu.item icon="eye">View</x-ui.dropdown-menu.item>
+                <x-ui.dropdown-menu.item icon="pencil">Edit</x-ui.dropdown-menu.item>
+                <x-ui.dropdown-menu.separator />
+                <x-ui.dropdown-menu.item icon="trash-2" :destructive="true">Delete</x-ui.dropdown-menu.item>
+            </x-ui.dropdown-menu>
+
+            <x-ui.dropdown-menu label="Theme" trigger-variant="button">
+                <x-slot:trigger><x-ui.icon name="sun" /> Theme</x-slot:trigger>
+                <x-ui.dropdown-menu.label>Theme</x-ui.dropdown-menu.label>
+                <x-ui.dropdown-menu.item type="radio" :checked="true">Light</x-ui.dropdown-menu.item>
+                <x-ui.dropdown-menu.item type="radio">Dark</x-ui.dropdown-menu.item>
+                <x-ui.dropdown-menu.item type="radio">System</x-ui.dropdown-menu.item>
+            </x-ui.dropdown-menu>
+
+            <x-ui.popover label="About bloodlines">
+                <x-slot:trigger><x-ui.icon name="info" /> About bloodlines</x-slot:trigger>
+                <p class="text-xs text-foreground">A bloodline is the family a bird is bred from. Its colour on a band tag is the only colour in the console that means anything other than a status.</p>
+            </x-ui.popover>
+
+            <x-ui.tooltip text="Edit this record">
+                <x-ui.button size="icon-sm" variant="ghost" aria-label="Edit this record"><x-ui.icon name="pencil" /></x-ui.button>
+            </x-ui.tooltip>
+        </div>
+    </div>
+
+    {{-- DIALOGS AND TOASTS --}}
+    <div class="space-y-4" x-data>
+        <h3 class="{{ $sectionTitle }}">Dialogs and toasts</h3>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <x-ui.button variant="outline" x-on:click="$dispatch('ems-dialog', 'gallery-form')">Form dialog</x-ui.button>
+            <x-ui.button variant="outline" x-on:click="$dispatch('ems-dialog', 'gallery-sheet')">Sheet</x-ui.button>
+            <x-ui.button variant="outline" x-on:click="$dispatch('ems-dialog', 'gallery-info')">Info dialog</x-ui.button>
+            <x-ui.button variant="outline-destructive"
+                         x-on:click="$dispatch('ems-confirm', { title: 'Delete this health record?', description: 'The vaccination is removed from Tandang’s history. This cannot be undone.', confirmLabel: 'Delete', tone: 'danger', run: () => new Promise((done) => setTimeout(done, 900)) })">Confirm dialog</x-ui.button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <x-ui.button variant="ghost" x-on:click="$dispatch('toast', { message: 'Health record saved.', tone: 'success' })">Success toast</x-ui.button>
+            <x-ui.button variant="ghost" x-on:click="$dispatch('toast', { message: 'Could not save the record. Try again.', tone: 'error' })">Error toast</x-ui.button>
+            <x-ui.button variant="ghost" x-on:click="$dispatch('toast', { message: 'Two birds have no band number yet.', tone: 'warning' })">Warning toast</x-ui.button>
+            <x-ui.button variant="ghost" x-on:click="$dispatch('toast', { message: 'The report includes birds on the farm only.', tone: 'info' })">Info toast</x-ui.button>
+            <x-ui.button variant="ghost" x-on:click="$dispatch('toast', { message: 'Link copied', tone: 'default' })">Plain toast</x-ui.button>
+        </div>
+
+        <x-ui.form-dialog id="gallery-form" title="Edit health record" :submit="null" size="lg"
+                          description="Changes are saved to the bird's health history.">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <x-ui.input id="gallery_dialog_product" label="Product" required placeholder="e.g. Newcastle Disease vaccine" wrapper-class="sm:col-span-2" />
+                <x-ui.input id="gallery_dialog_date" label="Check-up date" type="date" />
+                <x-ui.input id="gallery_dialog_next" label="Next due" type="date" help="Leave empty when no follow-up is needed." />
+                <x-ui.textarea id="gallery_dialog_remarks" label="Remarks" wrapper-class="sm:col-span-2" />
+            </div>
+        </x-ui.form-dialog>
+
+        <x-ui.sheet id="gallery-sheet" title="Edit gamefowl" description="Five sections and the bird's photos." :submit="null">
+            <div class="space-y-4">
+                <x-ui.input id="gallery_sheet_name" label="Name" required />
+                <x-ui.input id="gallery_sheet_band" label="Band number" />
+                <x-ui.native-select id="gallery_sheet_sex" label="Sex" :options="['male' => 'Cock', 'female' => 'Hen']" />
+            </div>
+            <x-slot:footer>
+                <x-ui.button variant="outline" x-on:click="requestClose()">Cancel</x-ui.button>
+                <x-ui.button type="submit">Save</x-ui.button>
+            </x-slot:footer>
+        </x-ui.sheet>
+
+        <x-ui.dialog id="gallery-info" title="How compliance is counted">
+            <p>Every follow-up scheduled in the warning window counts once. One that is past its date counts against the figure until it is recorded.</p>
+        </x-ui.dialog>
+    </div>
+
     {{-- SMALL PIECES --}}
     <div class="space-y-4">
         <h3 class="{{ $sectionTitle }}">Skeleton, progress, separator</h3>

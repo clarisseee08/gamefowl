@@ -143,7 +143,7 @@ final class DashboardTest extends TestCase
         $this->actingAs(User::factory()->staff()->create())
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Today on the farm')
+            ->assertDontSee('Today on the farm')
             ->assertSeeInOrder(['3', 'birds on the farm'])
             ->assertSee('Add gamefowl')
             ->assertSee(route('broodcocks.create'), escape: false);

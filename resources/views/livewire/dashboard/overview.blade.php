@@ -64,7 +64,7 @@
     {{-- Headline figures: EMS KPI tiles (Part B §6.6). The overdue tile is the
          one alarm on the row, so it is the one that turns red and the one
          that drills down. --}}
-    <x-ui.kpi-row class="mt-10" role="group" aria-label="Headline figures">
+    <x-ui.kpi-row class="mt-6" role="group" aria-label="Headline figures">
         <x-ui.kpi-tile label="Birds on record" icon="clipboard-list"
                        :value="number_format($flock['total'])"
                        :caption="$onFarmShare !== null ? $onFarmShare.'% still on the farm, excluding sold and deceased' : 'Every bird ever recorded'" />

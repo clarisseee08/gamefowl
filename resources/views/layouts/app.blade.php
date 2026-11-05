@@ -88,47 +88,21 @@
         </div>
 
         <x-command-palette />
+
+        {{-- The one confirm dialog on the page, opened by an `ems-confirm` event. --}}
+        <x-ui.confirm-dialog />
     </div>
 
     {{--
-        TOASTS. Every save, delete and upload says what happened, bottom right
-        (bottom centre on a phone), and leaves on its own after five seconds.
+        TOASTS. Every save, delete and upload says what happened - top right,
+        four seconds, with a close button (EMS, Part B §8.1).
 
-        Two sources feed one stack: the session flash a redirect carries
-        (rendered into the page, so it is in the HTML a test reads), and a
-        Livewire `toast` event for saves that do not redirect:
+        Two sources feed it: the session flash a redirect carries (written
+        into the page, so it is in the HTML a test reads), and a Livewire
+        `toast` event for saves that do not redirect:
         $this->dispatch('toast', message: 'Saved.', tone: 'ok').
     --}}
-    <div class="d-toast d-toast-bottom d-toast-center z-[60] sm:d-toast-end" aria-live="polite"
-         x-data="{
-             toasts: [],
-             push(message, tone = 'ok') {
-                 if (! message) return;
-                 const id = Date.now() + Math.random();
-                 this.toasts.push({ id, message, tone });
-                 setTimeout(() => this.drop(id), 5000);
-             },
-             drop(id) { this.toasts = this.toasts.filter(t => t.id !== id); },
-         }"
-         x-on:toast.window="push($event.detail.message ?? $event.detail[0]?.message, $event.detail.tone ?? $event.detail[0]?.tone ?? 'ok')">
-        @if (session('success'))
-            <div class="d-alert d-alert-soft d-alert-success text-base-content" role="status" x-data="{ open: true }" x-show="open"
-                 x-init="setTimeout(() => open = false, 5000)"
-                 x-transition:enter="toast-enter-active" x-transition:enter-start="toast-enter"
-                 x-transition:leave="toast-leave-active">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="d-alert d-alert-soft d-alert-error text-base-content" role="alert" x-data="{ open: true }" x-show="open"
-                 x-init="setTimeout(() => open = false, 8000)"
-                 x-transition:enter="toast-enter-active" x-transition:enter-start="toast-enter"
-                 x-transition:leave="toast-leave-active">{{ session('error') }}</div>
-        @endif
-        <template x-for="t in toasts" :key="t.id">
-            <div class="d-alert d-alert-soft text-base-content" :class="t.tone === 'bad' ? 'd-alert-error' : 'd-alert-success'" role="status"
-                 x-transition:enter="toast-enter-active" x-transition:enter-start="toast-enter"
-                 x-transition:leave="toast-leave-active" x-text="t.message"></div>
-        </template>
-    </div>
+    <x-ui.toaster />
 
     {{-- Livewire auto-injects its scripts (and Alpine, which it bundles), so
          no @livewireScripts directive is needed here. --}}

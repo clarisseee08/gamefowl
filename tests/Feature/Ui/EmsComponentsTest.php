@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Ui;
 
+use App\Enums\BroodcockStatus;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -193,6 +194,119 @@ final class EmsComponentsTest extends TestCase
         $this->blade('<x-ui.progress :value="140" label="Over" />')
             ->assertSee('value="100"', escape: false)
             ->assertSee('aria-label="Over"', escape: false);
+    }
+
+    public function test_a_status_badge_takes_an_enums_badge_class_as_its_tone(): void
+    {
+        $this->blade('<x-ui.status-badge :tone="$tone">Deceased</x-ui.status-badge>', ['tone' => BroodcockStatus::Deceased->badgeClasses()])
+            ->assertSee('Deceased')
+            ->assertSee('text-destructive', escape: false);
+    }
+
+    public function test_a_count_over_ninety_nine_reads_ninety_nine_plus(): void
+    {
+        $this->blade('<x-ui.count :value="140" />')->assertSee('99+');
+        $this->blade('<x-ui.count :value="7" />')->assertSee('7')->assertDontSee('99+');
+    }
+
+    public function test_an_avatar_without_a_photo_shows_the_initials(): void
+    {
+        $this->blade('<x-ui.avatar name="Salvador Santos Guadalupe" />')->assertSee('SG');
+        $this->blade('<x-ui.avatar name="Owner" />')->assertSee('O');
+    }
+
+    public function test_tabs_are_a_tablist_with_one_selected_tab_in_the_tab_order(): void
+    {
+        $segments = [
+            ['key' => 'overview', 'label' => 'Overview'],
+            ['key' => 'health', 'label' => 'Health', 'count' => 140],
+        ];
+
+        $this->blade('<x-ui.tabs :segments="$segments" active="health" model="tab" label="Bird record sections" />', ['segments' => $segments])
+            ->assertSee('role="tablist"', escape: false)
+            ->assertSee('aria-label="Bird record sections"', escape: false)
+            ->assertSee('id="tabs-tab-health" aria-controls="tabs-tab-panel"', escape: false)
+            ->assertSeeInOrder(['id="tabs-tab-overview"', 'aria-selected="false" tabindex="-1"', 'id="tabs-tab-health"', 'aria-selected="true" tabindex="0"'], escape: false)
+            ->assertSee("wire:click=\"\$set('tab', 'overview')\"", escape: false)
+            ->assertSee('99+');
+    }
+
+    public function test_a_dropdown_menu_announces_itself_and_its_items(): void
+    {
+        $this->blade(<<<'BLADE'
+            <x-ui.dropdown-menu label="Actions for Tandang">
+                <x-slot:trigger aria-label="Actions for Tandang">More</x-slot:trigger>
+                <x-ui.dropdown-menu.item icon="pencil">Edit</x-ui.dropdown-menu.item>
+                <x-ui.dropdown-menu.separator />
+                <x-ui.dropdown-menu.item icon="trash-2" :destructive="true">Delete</x-ui.dropdown-menu.item>
+                <x-ui.dropdown-menu.item type="radio" :checked="true">Light</x-ui.dropdown-menu.item>
+            </x-ui.dropdown-menu>
+            BLADE)
+            ->assertSee('aria-haspopup="menu"', escape: false)
+            ->assertSee('role="menu"', escape: false)
+            ->assertSee('aria-label="Actions for Tandang"', escape: false)
+            ->assertSeeInOrder(['role="menuitem"', 'Edit', 'role="separator"', 'role="menuitem"', 'Delete'], escape: false)
+            ->assertSee('role="menuitemradio"', escape: false)
+            ->assertSee('aria-checked="true"', escape: false);
+    }
+
+    public function test_a_tooltip_is_a_tooltip(): void
+    {
+        $this->blade('<x-ui.tooltip text="Edit this record"><button aria-label="Edit this record">E</button></x-ui.tooltip>')
+            ->assertSee('role="tooltip"', escape: false)
+            ->assertSee('Edit this record');
+    }
+
+    public function test_a_form_dialog_is_a_labelled_native_dialog_that_submits_to_livewire(): void
+    {
+        $this->blade('<x-ui.form-dialog title="Edit health record" model="showForm" submit="save" submit-label="Save">Fields</x-ui.form-dialog>')
+            ->assertSee('<dialog', escape: false)
+            ->assertSee('wire:ignore.self', escape: false)
+            ->assertSee('aria-labelledby="dialog-showForm-title"', escape: false)
+            ->assertSee('<h2 id="dialog-showForm-title"', escape: false)
+            ->assertSee("\$wire.entangle('showForm')", escape: false)
+            ->assertSee('wire:submit="save"', escape: false)
+            ->assertSeeInOrder(['Edit health record', 'Fields', 'Cancel', 'Save', 'Saving...']);
+    }
+
+    public function test_a_sheet_is_a_native_dialog_from_the_side(): void
+    {
+        $this->blade('<x-ui.sheet title="Edit gamefowl" model="showSheet" submit="save">Fields</x-ui.sheet>')
+            ->assertSee('data-side="right"', escape: false)
+            ->assertSee('aria-labelledby="sheet-showSheet-title"', escape: false)
+            ->assertSee('wire:submit="save"', escape: false)
+            ->assertSeeInOrder(['Edit gamefowl', 'Fields', 'Cancel', 'Save']);
+    }
+
+    public function test_the_confirm_dialog_is_an_alert_dialog_opened_by_an_event(): void
+    {
+        $this->blade('<x-ui.confirm-dialog />')
+            ->assertSee('role="alertdialog"', escape: false)
+            ->assertSee('x-on:ems-confirm.window="ask($event.detail)"', escape: false);
+    }
+
+    public function test_the_toaster_carries_a_redirects_flash_into_the_page(): void
+    {
+        session()->flash('success', 'Health record saved.');
+
+        $this->blade('<x-ui.toaster />')
+            ->assertSee('data-flash="success"', escape: false)
+            ->assertSee('Health record saved.')
+            ->assertSee('aria-live="polite"', escape: false);
+    }
+
+    public function test_the_page_header_opens_on_a_small_title_and_its_figure(): void
+    {
+        $this->blade('<x-ui.page-header title="Gamefowl" figure="30" figure-label="birds on record"><x-slot:actions><a href="/broodcocks/create">Add gamefowl</a></x-slot:actions></x-ui.page-header>')
+            ->assertSeeInOrder(['<h1', 'Gamefowl', '30', 'birds on record', 'Add gamefowl'], escape: false);
+    }
+
+    public function test_the_old_anchor_block_renders_the_ems_header_without_its_eyebrow(): void
+    {
+        $this->blade('<x-anchor-block eyebrow="Manage" title="Health Records" figure="12" figure-label="records on file" />')
+            ->assertSee('Health Records')
+            ->assertSeeInOrder(['12', 'records on file'])
+            ->assertDontSee('Manage');
     }
 
     public function test_the_design_page_shows_the_ems_components_to_staff(): void

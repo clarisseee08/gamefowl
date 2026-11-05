@@ -653,6 +653,39 @@
         box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-ring) 50%, transparent);
     }
     .ems-range:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Status toasts (Part B §8.1): a 135-degree gradient card with white text
+       and a glow in its own colour. EMS's own stops put white on mid-tones -
+       its success green measures about 3.3:1 - so each ramp here is EMS's hue
+       taken deep enough that white clears the console's 7:1 floor at the
+       LIGHTEST stop (measured: 7.3, 7.3, 7.7, 7.5). Theme-independent on
+       purpose: a toast is the same vivid card in light and in dark. */
+    .ems-toast-success {
+        background-image: linear-gradient(135deg, #27613c 0%, #1f5232 50%, #163f26 100%);
+        box-shadow: 0 20px 25px -5px rgb(22 63 38 / 0.5), 0 8px 10px -6px rgb(22 63 38 / 0.5);
+    }
+    .ems-toast-info {
+        background-image: linear-gradient(135deg, #1f5a8a 0%, #194c76 50%, #133c5e 100%);
+        box-shadow: 0 20px 25px -5px rgb(19 60 94 / 0.5), 0 8px 10px -6px rgb(19 60 94 / 0.5);
+    }
+    .ems-toast-warning {
+        background-image: linear-gradient(135deg, #7f4407 0%, #6e3a06 50%, #5c3005 100%);
+        box-shadow: 0 20px 25px -5px rgb(92 48 5 / 0.5), 0 8px 10px -6px rgb(92 48 5 / 0.5);
+    }
+    .ems-toast-error {
+        background-image: linear-gradient(135deg, #a51f1f 0%, #921b1b 50%, #7c1616 100%);
+        box-shadow: 0 20px 25px -5px rgb(124 22 22 / 0.5), 0 8px 10px -6px rgb(124 22 22 / 0.5);
+    }
+
+    /* The glyph inside each toast's white disc, and its timer strip. */
+    .ems-toast-success .ems-toast-glyph { color: #1f5232; }
+    .ems-toast-info .ems-toast-glyph { color: #194c76; }
+    .ems-toast-warning .ems-toast-glyph { color: #6e3a06; }
+    .ems-toast-error .ems-toast-glyph { color: #921b1b; }
+    .ems-toast-success .ems-toast-bar { background-color: rgb(187 247 208 / 0.95); }
+    .ems-toast-info .ems-toast-bar { background-color: rgb(186 230 253 / 0.95); }
+    .ems-toast-warning .ems-toast-bar { background-color: rgb(253 230 138 / 0.95); }
+    .ems-toast-error .ems-toast-bar { background-color: rgb(254 202 202 / 0.95); }
 }
 
 @layer base {
