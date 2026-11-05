@@ -77,8 +77,8 @@
     another panel.
 --}}
 <aside
-    class="flex h-full shrink-0 flex-col border-r border-border bg-muted transition-[width] duration-200"
-    :class="collapsed ? 'w-14' : 'w-60'"
+    class="flex h-full shrink-0 flex-col border-r border-border bg-background transition-[width] duration-200 ease-linear"
+    :class="collapsed ? 'w-14' : 'w-60 lg:w-[17.5rem]'"
     aria-label="Main navigation"
 >
     {{-- Pinned top: workspace identity. --}}
@@ -96,7 +96,7 @@
         Collapse now has its own labelled control beside it, which also makes it
         discoverable: a toggle hidden inside the logo is a toggle nobody finds.
     --}}
-    <div class="flex h-14 shrink-0 items-center gap-2 px-3"
+    <div class="flex h-14 shrink-0 items-center gap-2 border-b border-border px-3 lg:h-[52px]"
          style="border-bottom: 1px solid var(--color-border)"
          :class="collapsed ? 'justify-center px-2' : ''">
         <a href="{{ route('dashboard') }}" wire:navigate
@@ -112,7 +112,7 @@
             </span>
 
             <span x-show="! collapsed" x-cloak class="min-w-0">
-                <span class="block truncate font-display text-[15px] font-semibold leading-tight tracking-[-0.015em] text-foreground">
+                <span class="block truncate text-[15px] font-semibold leading-tight text-foreground lg:text-[13px]">
                     {{ config('gfms.farm.name') }}
                 </span>
             </span>
@@ -154,27 +154,27 @@
     {{-- d-menu with its active pair pointed back at the card ground and ink:
          daisyUI's default active fill is the neutral (solid ink), which on a
          --muted rail reads as a selected button rather than "you are here". --}}
-    <nav class="scroll-slim min-h-0 flex-1 overflow-y-auto px-2 py-2">
-        <ul class="d-menu w-full p-0 [--d-menu-active-bg:var(--color-card)] [--d-menu-active-fg:var(--color-foreground)]">
+    <nav class="scroll-slim min-h-0 flex-1 overflow-y-auto px-2 pt-1 pb-2 lg:px-3">
+        <ul class="flex w-full flex-col gap-1">
             @foreach ($visible as $groupName => $items)
-                <li class="d-menu-title px-3 pb-1 pt-5 text-[13px] text-muted-foreground" x-show="! collapsed" x-cloak>{{ $groupName }}</li>
+                <li class="mt-4 mb-1 flex h-5 items-center border-b border-muted-foreground/10 px-4 pb-2 text-[11px] font-medium tracking-widest text-muted-foreground uppercase" x-show="! collapsed" x-cloak>{{ $groupName }}</li>
                 @if (! $loop->first)
                     <li class="mx-0 my-2 h-px bg-border opacity-100" x-show="collapsed" x-cloak aria-hidden="true"></li>
                 @endif
 
                 @foreach ($items as $item)
-                    <li class="mb-0.5">
+                    <li>
                         <a href="{{ route($item['route']) }}" wire:navigate
                            @class([
-                               'relative min-h-11 gap-3 text-[15px] font-medium',
-                               'd-menu-active before:absolute before:left-0 before:top-1/2 before:h-5 before:w-[3px] before:-translate-y-1/2 before:rounded-full before:bg-primary' => $isActive($item['route']),
-                               'text-muted-foreground hover:text-foreground' => ! $isActive($item['route']),
+                               'relative flex min-h-11 w-full items-center gap-3 overflow-hidden rounded-lg border px-4 text-sm font-medium outline-none transition-[transform,box-shadow,border-color,background-color] duration-200 ease-out focus-visible:ring-2 focus-visible:ring-ring/50 lg:h-8 lg:min-h-0 lg:text-[12.5px]',
+                               'border-primary/20 bg-linear-to-r from-primary to-primary/80 text-primary-foreground shadow-[0_4px_8px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.2)] hover:shadow-[0_6px_12px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.3)]' => $isActive($item['route']),
+                               'border-transparent text-muted-foreground hover:bg-muted hover:text-foreground' => ! $isActive($item['route']),
                            ])
                            :class="collapsed ? 'justify-center px-0' : ''"
                            title="{{ $item['label'] }}"
                            @if ($isActive($item['route'])) aria-current="page" @endif>
-                            <svg class="h-[18px] w-[18px] shrink-0" fill="none" stroke="currentColor"
-                                 stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
+                            <svg class="size-[18px] shrink-0 lg:size-4" fill="none" stroke="currentColor"
+                                 stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="{{ $item['icon'] }}"/>
                             </svg>
                             <span x-show="! collapsed" x-cloak class="truncate">{{ $item['label'] }}</span>
@@ -191,16 +191,16 @@
              click is a more obvious affordance than a separate icon beside it. --}}
         <a href="{{ route('profile.edit') }}" wire:navigate
            @class(['flex items-center gap-2.5 rounded-[var(--radius-sm)] px-2 py-1.5 transition-colors hover:bg-background',
-                   'bg-card elev-1' => request()->routeIs('profile.*')])>
+                   'bg-muted' => request()->routeIs('profile.*')])>
             @if ($user?->hasProfilePhoto() && $user->profilePhotoUrl())
                 <img src="{{ $user->profilePhotoUrl() }}" alt=""
                      class="h-8 w-8 shrink-0 rounded-full object-cover"
                      style="box-shadow: inset 0 0 0 1px var(--color-border)">
             @else
-                <x-icon.user class="h-8 w-8 shrink-0" />
+                <x-ui.avatar :name="$user?->full_name ?? ''" tone="primary" />
             @endif
             <div x-show="! collapsed" x-cloak class="min-w-0 flex-1">
-                <p class="truncate text-[13px] font-medium leading-tight text-foreground">{{ $user?->full_name }}</p>
+                <p class="truncate text-[13px] font-medium leading-tight text-foreground lg:text-[12px]">{{ $user?->full_name }}</p>
                 <p class="truncate text-[11px] leading-tight text-muted-foreground">{{ $user?->role->label() }}</p>
             </div>
         </a>
