@@ -273,6 +273,43 @@ new MutationObserver((mutations) => {
 }).observe(document.documentElement, { childList: true, subtree: true });
 
 /**
+ * Keep revealed cards revealed through Livewire updates.
+ *
+ * A search, sort or page change on the catalogue redraws the grid from the
+ * server's HTML, which never carries `is-in`. Without this, every card that had
+ * faded in was reset to opacity 0 and nothing re-armed it - no node was added -
+ * so the page read "14 birds found" above an empty grid.
+ *
+ * Cards that are new to the grid show at once instead of fading: the entrance is
+ * for a page's first paint, and replaying it on every keystroke is noise.
+ */
+const keepRevealsThroughUpdates = () => {
+    window.Livewire.hook('morph.updating', ({ el, toEl }) => {
+        if (el.classList?.contains('is-in') && toEl.classList) {
+            toEl.classList.add('is-in');
+        }
+    });
+
+    window.Livewire.hook('morph.added', ({ el }) => {
+        if (el.nodeType !== Node.ELEMENT_NODE) {
+            return;
+        }
+
+        if (el.matches('[data-reveal]')) {
+            el.classList.add('is-in');
+        }
+
+        el.querySelectorAll('[data-reveal]').forEach((card) => card.classList.add('is-in'));
+    });
+};
+
+if (window.Livewire) {
+    keepRevealsThroughUpdates();
+} else {
+    document.addEventListener('livewire:init', keepRevealsThroughUpdates);
+}
+
+/**
  * PAGE TRANSITIONS. On a soft navigation the header and the sidebar are
  * re-rendered identically and so appear to stay; only <main> fades up into
  * place. The class is removed when the animation ends so it can run again.

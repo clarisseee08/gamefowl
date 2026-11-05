@@ -131,7 +131,9 @@
     @else
         <ul class="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-12">
             @foreach ($this->birds as $bird)
-                <li>
+                {{-- Keyed so a new search swaps cards whole instead of reusing a
+                     card's element for a different bird. --}}
+                <li wire:key="bird-{{ $bird->id }}">
                     <x-bird-card :bird="$bird" heading="h2" :details="true" :delay="($loop->index % 4) * 60" />
                 </li>
             @endforeach

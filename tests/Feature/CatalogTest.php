@@ -319,4 +319,18 @@ final class CatalogTest extends TestCase
             ->assertSet('sort', 'oldest')
             ->assertSet('bloodline', '');
     }
+
+    /**
+     * Keyed cards are what let a new search swap the grid whole. Without the key
+     * a card's element was reused for another bird, and with the reveal reset
+     * the grid went blank under "14 birds found".
+     */
+    public function test_each_catalogue_card_is_keyed_to_its_bird(): void
+    {
+        $bird = Broodcock::factory()->create();
+
+        $this->get(route('catalog.index'))
+            ->assertOk()
+            ->assertSee('wire:key="bird-'.$bird->id.'"', escape: false);
+    }
 }
