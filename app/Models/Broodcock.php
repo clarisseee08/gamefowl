@@ -7,7 +7,7 @@ namespace App\Models;
 use App\Enums\BroodcockClass;
 use App\Enums\BroodcockStatus;
 use App\Enums\Sex;
-use App\Support\RecordCache;
+use App\Models\Concerns\InvalidatesRecordCache;
 use Database\Factories\BroodcockFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -30,6 +30,7 @@ class Broodcock extends Model
     /** @use HasFactory<BroodcockFactory> */
     use HasFactory;
 
+    use InvalidatesRecordCache;
     use LogsActivity;
     use SoftDeletes;
 
@@ -87,28 +88,6 @@ class Broodcock extends Model
             'date_acquired' => 'date',
             'weight' => 'decimal:2',
         ];
-    }
-
-    /**
-     * Any change to a bird orphans every cached read of the farm's records.
-     *
-     * Registered here rather than through an Observer because the rule is three
-     * lines long, and a dedicated observer class - plus the new
-     * directory to put it in - would be more machinery than it needs.
-     *
-     * `saved` covers both creation and update; `deleted` covers the soft delete
-     * this model uses, and `restored` the undo of one. Miss any of them and the
-     * catalogue keeps advertising a bird that is no longer for sale.
-     */
-    protected static function booted(): void
-    {
-        $forget = static function (): void {
-            RecordCache::invalidate();
-        };
-
-        static::saved($forget);
-        static::deleted($forget);
-        static::restored($forget);
     }
 
     public function getActivitylogOptions(): LogOptions

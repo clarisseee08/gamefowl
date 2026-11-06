@@ -13,6 +13,7 @@ use App\Http\Requests\StorePerformanceRecordRequest;
 use App\Models\Broodcock;
 use App\Models\PerformanceRecord;
 use App\Models\User;
+use App\Support\RecordCache;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
@@ -222,17 +223,19 @@ final class Form extends Component
     #[Computed]
     public function birdOptions(): Collection
     {
-        return Broodcock::query()
-            ->where(function ($query): void {
-                // Broodcocks only - hens do not fight, so they have no performance.
-                $query->onFarm()->where('sex', Sex::Male->value);
+        return RecordCache::remember('pickers:performance-birds:keep-'.($this->broodcock_id ?: 'none'), function () {
+            return Broodcock::query()
+                ->where(function ($query): void {
+                    // Broodcocks only - hens do not fight, so they have no performance.
+                    $query->onFarm()->where('sex', Sex::Male->value);
 
-                if ($this->broodcock_id !== null && $this->broodcock_id !== '') {
-                    $query->orWhere('id', $this->broodcock_id);
-                }
-            })
-            ->orderBy('name')
-            ->get(['id', 'name', 'band_number']);
+                    if ($this->broodcock_id !== null && $this->broodcock_id !== '') {
+                        $query->orWhere('id', $this->broodcock_id);
+                    }
+                })
+                ->orderBy('name')
+                ->get(['id', 'name', 'band_number']);
+        });
     }
 
     /** @return array<int, PerformanceEventType> */

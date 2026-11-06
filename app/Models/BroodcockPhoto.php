@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\InvalidatesRecordCache;
 use App\Support\RecordCache;
 use Database\Factories\BroodcockPhotoFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,6 +19,7 @@ class BroodcockPhoto extends Model
     /** @use HasFactory<BroodcockPhotoFactory> */
     use HasFactory;
 
+    use InvalidatesRecordCache;
     use LogsActivity;
 
     /** @var list<string> */
@@ -36,26 +38,6 @@ class BroodcockPhoto extends Model
         return [
             'is_primary' => 'boolean',
         ];
-    }
-
-    /**
-     * A photo change alters the catalogue grid, so it invalidates the same
-     * cache a change to the bird itself does.
-     *
-     * Setting a different primary photo does not touch the broodcocks table at
-     * all - it writes is_primary here - so without this the grid would keep
-     * serving the old picture until the cache aged out on its own.
-     *
-     * No `restored`: this model is not soft-deleted.
-     */
-    protected static function booted(): void
-    {
-        $forget = static function (): void {
-            RecordCache::invalidate();
-        };
-
-        static::saved($forget);
-        static::deleted($forget);
     }
 
     public function getActivitylogOptions(): LogOptions
@@ -93,6 +75,27 @@ class BroodcockPhoto extends Model
     public function broodcock(): BelongsTo
     {
         return $this->belongsTo(Broodcock::class);
+    }
+
+    /**
+     * /photos/{photo}, resolved from the cache, with its bird.
+     *
+     * Every <img> on a page is a request that resolves its photo here and then
+     * asks BroodcockPhotoPolicy::view(), which for a visitor reads the bird
+     * too: two round trips to Tokyo per thumbnail, ahead of the picture
+     * itself. The row and its bird change only through a write, which clears
+     * RecordCache, so the policy still decides on current data.
+     *
+     * The bird is loaded whole and in advance: the policy reads it for every
+     * visitor, and Model::shouldBeStrict() would refuse a lazy load.
+     */
+    public function resolveRouteBinding($value, $field = null): ?Model
+    {
+        if ($field !== null || ! ctype_digit((string) $value)) {
+            return parent::resolveRouteBinding($value, $field);
+        }
+
+        return RecordCache::remember('photo:'.$value, fn (): ?self => static::query()->with('broodcock')->find((int) $value));
     }
 
     /** @return BelongsTo<User, $this> */

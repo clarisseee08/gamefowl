@@ -7,6 +7,7 @@ namespace App\Livewire\Broodcocks;
 use App\Enums\Sex;
 use App\Livewire\Concerns\ChoosesShellByViewer;
 use App\Models\Broodcock;
+use App\Support\RecordCache;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -84,24 +85,29 @@ final class Show extends Component
     #[Computed]
     public function bird(): Broodcock
     {
-        return Broodcock::query()
-            ->with([
-                // Parents carry their own sire_id and dam_id so the
-                // grandparents below can load in the same pass - one query per
-                // generation, never one per ancestor.
-                'sire:id,name,band_number,bloodline,sex,is_external,sire_id,dam_id',
-                'dam:id,name,band_number,bloodline,sex,is_external,sire_id,dam_id',
-                'sire.sire:id,name,band_number,bloodline,sex,is_external',
-                'sire.dam:id,name,band_number,bloodline,sex,is_external',
-                'dam.sire:id,name,band_number,bloodline,sex,is_external',
-                'dam.dam:id,name,band_number,bloodline,sex,is_external',
-                'pen:id,code,name',
-                'primaryPhoto',
-                // The gallery at the top of the page: the main photograph first.
-                'photos' => fn ($query) => $query->orderByDesc('is_primary')->orderBy('id'),
-                'mortalityRecord',
-            ])
-            ->findOrFail($this->broodcock->id);
+        // Cached: the bird, its two generations, pen, photos and death record
+        // took ten round trips to Tokyo on every open and every tab change.
+        // Any write to a farm record clears it (InvalidatesRecordCache).
+        return RecordCache::remember('bird:'.$this->broodcock->id, function () {
+            return Broodcock::query()
+                ->with([
+                    // Parents carry their own sire_id and dam_id so the
+                    // grandparents below can load in the same pass - one query per
+                    // generation, never one per ancestor.
+                    'sire:id,name,band_number,bloodline,sex,is_external,sire_id,dam_id',
+                    'dam:id,name,band_number,bloodline,sex,is_external,sire_id,dam_id',
+                    'sire.sire:id,name,band_number,bloodline,sex,is_external',
+                    'sire.dam:id,name,band_number,bloodline,sex,is_external',
+                    'dam.sire:id,name,band_number,bloodline,sex,is_external',
+                    'dam.dam:id,name,band_number,bloodline,sex,is_external',
+                    'pen:id,code,name',
+                    'primaryPhoto',
+                    // The gallery at the top of the page: the main photograph first.
+                    'photos' => fn ($query) => $query->orderByDesc('is_primary')->orderBy('id'),
+                    'mortalityRecord',
+                ])
+                ->findOrFail($this->broodcock->id);
+        });
     }
 
     /**

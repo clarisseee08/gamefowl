@@ -9,6 +9,7 @@ use App\Enums\Sex;
 use App\Http\Requests\StoreBreedingRecordRequest;
 use App\Models\BreedingRecord;
 use App\Models\Broodcock;
+use App\Support\RecordCache;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -206,13 +207,15 @@ final class Form extends Component
     #[Computed]
     public function bloodlineOptions(): array
     {
-        return Broodcock::query()
-            ->whereNotNull('bloodline')
-            ->where('bloodline', '!=', '')
-            ->distinct()
-            ->orderBy('bloodline')
-            ->pluck('bloodline')
-            ->all();
+        return RecordCache::remember('pickers:bloodlines', function () {
+            return Broodcock::query()
+                ->whereNotNull('bloodline')
+                ->where('bloodline', '!=', '')
+                ->distinct()
+                ->orderBy('bloodline')
+                ->pluck('bloodline')
+                ->all();
+        });
     }
 
     /** The chosen sire with its photograph, shown under the picker. */
@@ -354,20 +357,22 @@ final class Form extends Component
     /** @return Collection<int, Broodcock> */
     private function parentOptions(Sex $sex, ?string $selected): Collection
     {
-        return Broodcock::query()
-            ->where('sex', $sex->value)
-            ->where(function ($query) use ($selected): void {
-                $query->breedingEligible();
+        return RecordCache::remember('pickers:mating-parents:'.$sex->value.':keep-'.($selected ?: 'none'), function () use ($sex, $selected) {
+            return Broodcock::query()
+                ->where('sex', $sex->value)
+                ->where(function ($query) use ($selected): void {
+                    $query->breedingEligible();
 
-                // Keep the currently-selected bird in the list even if it has
-                // since been retired, or editing an old record would silently
-                // blank its parent.
-                if ($selected !== null && $selected !== '') {
-                    $query->orWhere('id', $selected);
-                }
-            })
-            ->orderBy('name')
-            ->get(['id', 'name', 'band_number', 'bloodline']);
+                    // Keep the currently-selected bird in the list even if it has
+                    // since been retired, or editing an old record would silently
+                    // blank its parent.
+                    if ($selected !== null && $selected !== '') {
+                        $query->orWhere('id', $selected);
+                    }
+                })
+                ->orderBy('name')
+                ->get(['id', 'name', 'band_number', 'bloodline']);
+        });
     }
 
     public function render(): View

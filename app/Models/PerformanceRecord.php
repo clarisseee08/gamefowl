@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\PerformanceEventType;
 use App\Enums\PerformanceResult;
+use App\Models\Concerns\InvalidatesRecordCache;
 use Database\Factories\PerformanceRecordFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,6 +21,7 @@ class PerformanceRecord extends Model
     /** @use HasFactory<PerformanceRecordFactory> */
     use HasFactory;
 
+    use InvalidatesRecordCache;
     use LogsActivity;
     use SoftDeletes;
 

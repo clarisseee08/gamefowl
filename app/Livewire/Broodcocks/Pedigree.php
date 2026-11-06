@@ -6,6 +6,7 @@ namespace App\Livewire\Broodcocks;
 
 use App\Livewire\Concerns\ChoosesShellByViewer;
 use App\Models\Broodcock;
+use App\Support\RecordCache;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
@@ -64,48 +65,52 @@ final class Pedigree extends Component
     #[Computed]
     public function ancestors(): array
     {
-        $root = Broodcock::query()->findOrFail($this->broodcock->id);
+        // Cached, like the bird page: a family tree changes only when a
+        // record is written, and every write clears this.
+        return RecordCache::remember('pedigree:'.$this->broodcock->id.':'.(int) config('gfms.pedigree_generations'), function () {
+            $root = Broodcock::query()->findOrFail($this->broodcock->id);
 
-        /** @var array<int, Broodcock> $map */
-        $map = [$root->id => $root];
-        $frontier = [$root];
+            /** @var array<int, Broodcock> $map */
+            $map = [$root->id => $root];
+            $frontier = [$root];
 
-        for ($generation = 0; $generation < (int) config('gfms.pedigree_generations'); $generation++) {
-            $parentIds = [];
+            for ($generation = 0; $generation < (int) config('gfms.pedigree_generations'); $generation++) {
+                $parentIds = [];
 
-            foreach ($frontier as $bird) {
-                // Read the FK columns directly rather than the sire/dam
-                // relations - Model::shouldBeStrict() would (correctly) throw
-                // on an un-eager-loaded relation, and the whole point here is
-                // to avoid per-bird relation queries.
-                if ($bird->sire_id !== null) {
-                    $parentIds[] = $bird->sire_id;
+                foreach ($frontier as $bird) {
+                    // Read the FK columns directly rather than the sire/dam
+                    // relations - Model::shouldBeStrict() would (correctly) throw
+                    // on an un-eager-loaded relation, and the whole point here is
+                    // to avoid per-bird relation queries.
+                    if ($bird->sire_id !== null) {
+                        $parentIds[] = $bird->sire_id;
+                    }
+                    if ($bird->dam_id !== null) {
+                        $parentIds[] = $bird->dam_id;
+                    }
                 }
-                if ($bird->dam_id !== null) {
-                    $parentIds[] = $bird->dam_id;
+
+                $parentIds = array_values(array_unique($parentIds));
+
+                if ($parentIds === []) {
+                    break;   // pedigree ends here; no query needed
                 }
+
+                $level = Broodcock::query()->whereIn('id', $parentIds)->get();
+
+                foreach ($level as $bird) {
+                    $map[$bird->id] = $bird;
+                }
+
+                $frontier = $level->all();
             }
 
-            $parentIds = array_values(array_unique($parentIds));
+            // Every card in the tree shows its bird's photograph: one query for
+            // the whole tree, not one per card.
+            (new Collection(array_values($map)))->load('primaryPhoto');
 
-            if ($parentIds === []) {
-                break;   // pedigree ends here; no query needed
-            }
-
-            $level = Broodcock::query()->whereIn('id', $parentIds)->get();
-
-            foreach ($level as $bird) {
-                $map[$bird->id] = $bird;
-            }
-
-            $frontier = $level->all();
-        }
-
-        // Every card in the tree shows its bird's photograph: one query for
-        // the whole tree, not one per card.
-        (new Collection(array_values($map)))->load('primaryPhoto');
-
-        return $map;
+            return $map;
+        });
     }
 
     /**

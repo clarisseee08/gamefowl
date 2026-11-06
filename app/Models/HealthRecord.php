@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\HealthRecordType;
+use App\Models\Concerns\InvalidatesRecordCache;
 use Database\Factories\HealthRecordFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,6 +20,7 @@ class HealthRecord extends Model
     /** @use HasFactory<HealthRecordFactory> */
     use HasFactory;
 
+    use InvalidatesRecordCache;
     use LogsActivity;
     use SoftDeletes;
 
