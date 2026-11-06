@@ -12,6 +12,7 @@ use App\Http\Requests\UpdateHealthRecordRequest;
 use App\Models\Broodcock;
 use App\Models\HealthRecord;
 use App\Models\User;
+use App\Support\RecordCache;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -307,17 +308,19 @@ final class Form extends Component
     #[Computed]
     public function birds(): Collection
     {
-        return Broodcock::query()
-            ->select(['id', 'name', 'band_number'])
-            ->where(function (Builder $query): void {
-                $query->onFarm();
+        return RecordCache::remember('pickers:health-birds:keep-'.($this->broodcock_id ?: 'none'), function () {
+            return Broodcock::query()
+                ->select(['id', 'name', 'band_number'])
+                ->where(function (Builder $query): void {
+                    $query->onFarm();
 
-                if ($this->broodcock_id !== '') {
-                    $query->orWhere('id', (int) $this->broodcock_id);
-                }
-            })
-            ->orderBy('name')
-            ->get();
+                    if ($this->broodcock_id !== '') {
+                        $query->orWhere('id', (int) $this->broodcock_id);
+                    }
+                })
+                ->orderBy('name')
+                ->get();
+        });
     }
 
     /** @return array<int, HealthRecordType> */

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\InvalidatesRecordCache;
 use Database\Factories\PenFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,6 +19,7 @@ class Pen extends Model
     /** @use HasFactory<PenFactory> */
     use HasFactory;
 
+    use InvalidatesRecordCache;
     use LogsActivity;
     use SoftDeletes;
 

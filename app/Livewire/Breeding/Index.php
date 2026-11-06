@@ -7,6 +7,7 @@ namespace App\Livewire\Breeding;
 use App\Livewire\Concerns\ChoosesPageSize;
 use App\Models\BreedingRecord;
 use App\Models\Broodcock;
+use App\Support\RecordCache;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
@@ -198,38 +199,42 @@ final class Index extends Component
     #[Computed]
     public function summary(): array
     {
-        $totals = BreedingRecord::query()
-            ->between($this->from ?: null, $this->to ?: null)
-            ->selectRaw('count(*) as matings')
-            ->selectRaw('coalesce(sum(eggs_set), 0) as eggs_set')
-            ->selectRaw('coalesce(sum(eggs_fertile), 0) as eggs_fertile')
-            ->selectRaw('coalesce(sum(eggs_hatched), 0) as eggs_hatched')
-            ->first();
+        return RecordCache::remember('breeding:summary:'.($this->from ?: 'start').':'.($this->to ?: 'end'), function () {
+            $totals = BreedingRecord::query()
+                ->between($this->from ?: null, $this->to ?: null)
+                ->selectRaw('count(*) as matings')
+                ->selectRaw('coalesce(sum(eggs_set), 0) as eggs_set')
+                ->selectRaw('coalesce(sum(eggs_fertile), 0) as eggs_fertile')
+                ->selectRaw('coalesce(sum(eggs_hatched), 0) as eggs_hatched')
+                ->first();
 
-        $set = (int) ($totals->eggs_set ?? 0);
-        $fertile = (int) ($totals->eggs_fertile ?? 0);
-        $hatched = (int) ($totals->eggs_hatched ?? 0);
+            $set = (int) ($totals->eggs_set ?? 0);
+            $fertile = (int) ($totals->eggs_fertile ?? 0);
+            $hatched = (int) ($totals->eggs_hatched ?? 0);
 
-        return [
-            'matings' => (int) ($totals->matings ?? 0),
-            'eggs_set' => $set,
-            'eggs_fertile' => $fertile,
-            'eggs_hatched' => $hatched,
-            'fertility' => $set > 0 ? round(($fertile / $set) * 100, 1) : null,
-            'hatch' => $fertile > 0 ? round(($hatched / $fertile) * 100, 1) : null,
-        ];
+            return [
+                'matings' => (int) ($totals->matings ?? 0),
+                'eggs_set' => $set,
+                'eggs_fertile' => $fertile,
+                'eggs_hatched' => $hatched,
+                'fertility' => $set > 0 ? round(($fertile / $set) * 100, 1) : null,
+                'hatch' => $fertile > 0 ? round(($hatched / $fertile) * 100, 1) : null,
+            ];
+        });
     }
 
     /** @return array<int, string> */
     #[Computed]
     public function bloodlineOptions(): array
     {
-        return Broodcock::query()
-            ->whereNotNull('bloodline')
-            ->distinct()
-            ->orderBy('bloodline')
-            ->pluck('bloodline')
-            ->all();
+        return RecordCache::remember('pickers:bloodlines-all', function () {
+            return Broodcock::query()
+                ->whereNotNull('bloodline')
+                ->distinct()
+                ->orderBy('bloodline')
+                ->pluck('bloodline')
+                ->all();
+        });
     }
 
     public function render(): View

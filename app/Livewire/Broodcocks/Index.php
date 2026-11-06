@@ -9,6 +9,7 @@ use App\Enums\BroodcockStatus;
 use App\Enums\Sex;
 use App\Livewire\Concerns\ChoosesPageSize;
 use App\Models\Broodcock;
+use App\Support\RecordCache;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -335,15 +336,17 @@ final class Index extends Component
     #[Computed]
     public function bloodlineOptions(): array
     {
-        return Broodcock::query()
-            // Scoped the same way as the list, so the filter never offers a
-            // bloodline that only exists on birds the current view excludes.
-            ->tap(fn ($query) => $this->applyOwnership($query))
-            ->whereNotNull('bloodline')
-            ->distinct()
-            ->orderBy('bloodline')
-            ->pluck('bloodline')
-            ->all();
+        return RecordCache::remember('pickers:bloodlines:'.$this->ownership, function () {
+            return Broodcock::query()
+                // Scoped the same way as the list, so the filter never offers a
+                // bloodline that only exists on birds the current view excludes.
+                ->tap(fn ($query) => $this->applyOwnership($query))
+                ->whereNotNull('bloodline')
+                ->distinct()
+                ->orderBy('bloodline')
+                ->pluck('bloodline')
+                ->all();
+        });
     }
 
     /**

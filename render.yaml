@@ -10,13 +10,11 @@ services:
     healthCheckPath: /up
     autoDeploy: true
 
-    # Pinned explicitly. Render follows the repository's DEFAULT branch when
-    # this is omitted, and GitHub's default here is still `main`, which sits 57
-    # commits behind - an early schema commit with no Dockerfile and no
-    # render.yaml at all. Without this line the Blueprint finds nothing to
-    # build, and the closest failure mode is worse: a deploy that succeeds and
-    # serves a version of the system from before the app existed.
-    branch: gfms-laravel
+    # Pinned explicitly to the branch the work is merged into. It used to
+    # name `gfms-laravel` on the original repository; the project now lives
+    # at clarisseee08/gamefowl, where `main` is the integration branch and
+    # `gfms-laravel` does not exist.
+    branch: main
 
     envVars:
       - key: APP_NAME

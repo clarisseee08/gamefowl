@@ -8,6 +8,7 @@ use App\Actions\Mortality\DeleteMortality;
 use App\Livewire\Concerns\ChoosesPageSize;
 use App\Models\Broodcock;
 use App\Models\MortalityRecord;
+use App\Support\RecordCache;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -238,25 +239,27 @@ final class Index extends Component
     #[Computed]
     public function summary(): array
     {
-        $now = Carbon::now();
+        return RecordCache::remember('mortality:summary:'.today()->toDateString(), function () {
+            $now = Carbon::now();
 
-        $row = MortalityRecord::query()
-            ->selectRaw('count(*) as total_all')
-            ->selectRaw('sum(case when date_of_death between ? and ? then 1 else 0 end) as month_count', [
-                $now->copy()->startOfMonth()->toDateString(),
-                $now->copy()->endOfMonth()->toDateString(),
-            ])
-            ->selectRaw('sum(case when date_of_death between ? and ? then 1 else 0 end) as year_count', [
-                $now->copy()->startOfYear()->toDateString(),
-                $now->copy()->endOfYear()->toDateString(),
-            ])
-            ->first();
+            $row = MortalityRecord::query()
+                ->selectRaw('count(*) as total_all')
+                ->selectRaw('sum(case when date_of_death between ? and ? then 1 else 0 end) as month_count', [
+                    $now->copy()->startOfMonth()->toDateString(),
+                    $now->copy()->endOfMonth()->toDateString(),
+                ])
+                ->selectRaw('sum(case when date_of_death between ? and ? then 1 else 0 end) as year_count', [
+                    $now->copy()->startOfYear()->toDateString(),
+                    $now->copy()->endOfYear()->toDateString(),
+                ])
+                ->first();
 
-        return [
-            'this_month' => (int) ($row?->month_count ?? 0),
-            'this_year' => (int) ($row?->year_count ?? 0),
-            'total' => (int) ($row?->total_all ?? 0),
-        ];
+            return [
+                'this_month' => (int) ($row?->month_count ?? 0),
+                'this_year' => (int) ($row?->year_count ?? 0),
+                'total' => (int) ($row?->total_all ?? 0),
+            ];
+        });
     }
 
     /**
@@ -287,13 +290,15 @@ final class Index extends Component
     #[Computed]
     public function causeOptions(): array
     {
-        return MortalityRecord::query()
-            ->select('cause_of_death')
-            ->distinct()
-            ->orderBy('cause_of_death')
-            ->get()
-            ->map(fn (MortalityRecord $record): string => (string) $record->cause_of_death)
-            ->all();
+        return RecordCache::remember('mortality:causes', function () {
+            return MortalityRecord::query()
+                ->select('cause_of_death')
+                ->distinct()
+                ->orderBy('cause_of_death')
+                ->get()
+                ->map(fn (MortalityRecord $record): string => (string) $record->cause_of_death)
+                ->all();
+        });
     }
 
     #[Computed]

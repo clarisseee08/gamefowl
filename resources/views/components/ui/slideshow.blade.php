@@ -21,9 +21,11 @@
     someone who has asked for reduced motion - they still get the arrows, the
     dots and a swipe. One slide renders as a plain photograph, no controls.
 
-    Every slide's image is in the DOM from the start (they are small WebPs),
-    so a fade never waits on a download; only the first is fetched with
-    priority when `priority` is set, as the hero's is.
+    Only the first photograph is downloaded with the page. The next one is
+    fetched once the page has finished loading, and each later one as the
+    slide before it comes up - so a fade never waits on a download, and a
+    visitor who never sees slide five never pays for it. (Hidden slides used
+    to load up front: some 400 KB on the front page alone.)
 --}}
 @php
     $slides = array_values(array_filter($slides, fn ($slide) => filled($slide['src'] ?? null)));
@@ -36,10 +38,15 @@
          x-data="{
              at: 0,
              count: {{ $count }},
+             ready: { 0: true },
              held: false,
              timer: null,
              startX: null,
-             go(n) { this.at = (n + this.count) % this.count },
+             go(n) {
+                 this.at = (n + this.count) % this.count;
+                 this.ready[this.at] = true;
+                 this.ready[(this.at + 1) % this.count] = true;
+             },
              next() { this.go(this.at + 1) },
              prev() { this.go(this.at - 1) },
              play() {
@@ -56,7 +63,7 @@
                  this.play();
              },
          }"
-         x-init="play()"
+         x-init="play(); window.addEventListener('load', () => setTimeout(() => { ready[1] = true }, 800), { once: true }); if (document.readyState === 'complete') { setTimeout(() => { ready[1] = true }, 800) }"
          x-on:mouseenter="held = true"
          x-on:mouseleave="held = false"
          x-on:focusin="held = true"
@@ -83,7 +90,8 @@
                 x-bind:aria-hidden="at !== {{ $index }}"
                 @if ($index > 0) aria-hidden="true" @endif
             @endif>
-            <img src="{{ $slide['src'] }}" alt="{{ $slide['alt'] ?? '' }}"
+            <img @if ($index === 0 || $count === 1) src="{{ $slide['src'] }}" @else x-bind:src="ready[{{ $index }}] ? @js($slide['src']) : null" @endif
+                 alt="{{ $slide['alt'] ?? '' }}"
                  @if ($index === 0 && $priority) fetchpriority="high" @else loading="lazy" @endif
                  decoding="async"
                  @if (filled($slide['position'] ?? null)) style="object-position: {{ $slide['position'] }}" @endif

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\InvalidatesRecordCache;
 use Database\Factories\MortalityRecordFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,6 +24,7 @@ class MortalityRecord extends Model
     /** @use HasFactory<MortalityRecordFactory> */
     use HasFactory;
 
+    use InvalidatesRecordCache;
     use LogsActivity;
     use SoftDeletes;
 

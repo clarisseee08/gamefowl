@@ -8,6 +8,7 @@ use App\Enums\HealthRecordType;
 use App\Livewire\Concerns\ChoosesPageSize;
 use App\Models\Broodcock;
 use App\Models\HealthRecord;
+use App\Support\RecordCache;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -249,10 +250,12 @@ final class Index extends Component
     #[Computed]
     public function birds(): Collection
     {
-        return Broodcock::query()
-            ->select(['id', 'name', 'band_number'])
-            ->orderBy('name')
-            ->get();
+        return RecordCache::remember('pickers:all-birds', function () {
+            return Broodcock::query()
+                ->select(['id', 'name', 'band_number'])
+                ->orderBy('name')
+                ->get();
+        });
     }
 
     /** @return array<int, HealthRecordType> */

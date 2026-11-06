@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Actions\Photos\StorePhoto;
 use App\Enums\UserRole;
+use App\Support\CachedUserProvider;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -56,6 +57,22 @@ class User extends Authenticatable
             'role' => UserRole::class,
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * The cached copy of the signed-in user goes the moment the row changes,
+     * so a deactivation, a role change or a new password applies on that
+     * person's very next request (see CachedUserProvider).
+     */
+    protected static function booted(): void
+    {
+        $forget = static function (User $user): void {
+            CachedUserProvider::forget($user->getKey());
+        };
+
+        static::saved($forget);
+        static::deleted($forget);
+        static::restored($forget);
     }
 
     public function getActivitylogOptions(): LogOptions

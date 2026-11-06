@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Support\CachedUserProvider;
 use App\Support\FarmProfile;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
@@ -67,6 +70,12 @@ class AppServiceProvider extends ServiceProvider
         //    Tokyo), and
         //  - assigning to a non-existent attribute throws.
         Model::shouldBeStrict(! $this->app->isProduction());
+
+        // The signed-in user from the cache rather than a database round trip
+        // on every request. config/auth.php selects it; see the class.
+        Auth::provider('cached-eloquent', function (Application $app, array $config): CachedUserProvider {
+            return new CachedUserProvider($app['hash'], $config['model']);
+        });
     }
 
     /**

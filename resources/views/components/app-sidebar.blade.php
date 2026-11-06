@@ -100,7 +100,7 @@
     <div class="flex h-14 shrink-0 items-center gap-2 border-b border-border px-3 lg:h-[52px]"
          style="border-bottom: 1px solid var(--color-border)"
          :class="collapsed ? 'justify-center px-2' : ''">
-        <a href="{{ route('dashboard') }}" wire:navigate
+        <a href="{{ route('dashboard') }}" wire:navigate.hover
            class="flex min-w-0 flex-1 items-center gap-2.5 rounded-[var(--radius-sm)] p-1 hover:bg-background"
            :class="collapsed ? 'flex-none justify-center' : ''"
            title="{{ config('gfms.system.name') }}">
@@ -138,7 +138,10 @@
 
                 @foreach ($items as $item)
                     <li>
-                        <a href="{{ route($item['route']) }}" wire:navigate
+                        {{-- .hover: the next screen starts loading after 60ms over the
+                             link, so on the slow free server it is often already here
+                             when the click lands. --}}
+                        <a href="{{ route($item['route']) }}" wire:navigate.hover
                            @class([
                                'relative flex min-h-11 w-full items-center gap-3 overflow-hidden rounded-lg border px-4 text-sm font-medium outline-none transition-[transform,box-shadow,border-color,background-color] duration-200 ease-out focus-visible:ring-2 focus-visible:ring-ring/50 lg:h-8 lg:min-h-0 lg:text-[12.5px]',
                                'border-primary/20 bg-linear-to-r from-primary to-primary/80 text-primary-foreground shadow-[0_4px_8px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.2)] hover:shadow-[0_6px_12px_rgba(0,0,0,0.2),0_3px_6px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.3)]' => $isActive($item['route']),

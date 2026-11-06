@@ -62,8 +62,10 @@ return [
     */
 
     'providers' => [
+        // Eloquent, with the by-id lookup that runs on every request cached
+        // (App\Support\CachedUserProvider, registered in AppServiceProvider).
         'users' => [
-            'driver' => 'eloquent',
+            'driver' => 'cached-eloquent',
             'model' => env('AUTH_MODEL', User::class),
         ],
 

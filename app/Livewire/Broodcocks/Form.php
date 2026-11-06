@@ -14,6 +14,7 @@ use App\Http\Requests\StoreBroodcockRequest;
 use App\Livewire\Concerns\ChoosesFromPresets;
 use App\Models\Broodcock;
 use App\Models\BroodcockPhoto;
+use App\Support\RecordCache;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -472,18 +473,20 @@ final class Form extends Component
     /** @return Collection<int, Broodcock> */
     private function parentOptions(Sex $sex, ?string $currentlySelected): Collection
     {
-        return Broodcock::query()
-            ->where('sex', $sex->value)
-            ->when($this->broodcock?->exists, fn ($q) => $q->whereKeyNot($this->broodcock->id))
-            ->where(function ($q) use ($currentlySelected): void {
-                $q->breedingEligible();
+        return RecordCache::remember('pickers:parents:'.$sex->value.':not-'.($this->broodcock?->id ?? 'new').':keep-'.($currentlySelected ?: 'none'), function () use ($sex, $currentlySelected) {
+            return Broodcock::query()
+                ->where('sex', $sex->value)
+                ->when($this->broodcock?->exists, fn ($q) => $q->whereKeyNot($this->broodcock->id))
+                ->where(function ($q) use ($currentlySelected): void {
+                    $q->breedingEligible();
 
-                if ($currentlySelected !== null && $currentlySelected !== '') {
-                    $q->orWhere('id', $currentlySelected);
-                }
-            })
-            ->orderBy('name')
-            ->get(['id', 'name', 'band_number', 'bloodline']);
+                    if ($currentlySelected !== null && $currentlySelected !== '') {
+                        $q->orWhere('id', $currentlySelected);
+                    }
+                })
+                ->orderBy('name')
+                ->get(['id', 'name', 'band_number', 'bloodline']);
+        });
     }
 
     /** @return array<int, BroodcockClass> */

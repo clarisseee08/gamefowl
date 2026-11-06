@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\BroodcockPhoto;
+use App\Support\LocalPhotoCopy;
 use App\Support\Thumbnail;
 use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Filesystem\AwsS3V3Adapter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -32,10 +34,11 @@ final class BroodcockPhotoController extends Controller
      * `private` is load-bearing: the response is authorized per user, so a
      * shared cache (proxy, CDN) must never keep a copy and hand it to the next
      * person. Photos are immutable once written - a replacement gets a new
-     * UUID path - so an hour in the user's own cache is safe and spares the
-     * farm's mobile data on every gallery revisit.
+     * UUID path - so thirty days in the user's own cache is safe. It was an
+     * hour, which sent every returning visitor back to Tokyo for the same
+     * pictures each morning.
      */
-    private const CACHE_CONTROL = 'private, max-age=3600';
+    private const CACHE_CONTROL = 'private, max-age=2592000, immutable';
 
     public function show(Request $request, BroodcockPhoto $photo): StreamedResponse
     {
@@ -52,11 +55,11 @@ final class BroodcockPhotoController extends Controller
 
         $path = $wantsThumbnail ? Thumbnail::pathFor($photo->path) : $photo->path;
 
-        $stream = $this->open($disk, $path);
+        $stream = $this->open($disk, $photo->disk, $path);
 
         if ($stream === null && $wantsThumbnail) {
             $path = $photo->path;
-            $stream = $this->open($disk, $path);
+            $stream = $this->open($disk, $photo->disk, $path);
         }
 
         abort_if($stream === null, 404, 'This photo is no longer available.');
@@ -79,14 +82,22 @@ final class BroodcockPhotoController extends Controller
     }
 
     /**
-     * Opens a file on the disk, or null if it is not there.
+     * Opens a file, or null if it is not there.
+     *
+     * A photo in the remote bucket is read through LocalPhotoCopy, which keeps
+     * the first download on this server so later views skip the trip to
+     * Tokyo. A photo already on a local disk is simply opened.
      *
      * The supabase disk is configured with `throw => true`, so a missing object
      * raises rather than returning false - and a missing thumbnail is an
      * ordinary, expected condition here rather than a fault.
      */
-    private function open(Filesystem $disk, string $path): mixed
+    private function open(Filesystem $disk, string $diskName, string $path): mixed
     {
+        if ($disk instanceof AwsS3V3Adapter) {
+            return LocalPhotoCopy::make()->open($disk, $diskName, $path);
+        }
+
         try {
             $stream = $disk->readStream($path);
         } catch (Throwable) {
