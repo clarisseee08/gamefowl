@@ -6,6 +6,7 @@ namespace App\Support;
 
 use Closure;
 use Illuminate\Support\Facades\Cache;
+use Throwable;
 
 /**
  * Cached reads of farm records, invalidated as a whole on any write.
@@ -52,6 +53,18 @@ final class RecordCache
     private const TTL_SECONDS = 3600;
 
     /**
+     * The cached value, or the callback's own result when the cache is not
+     * there to hold it.
+     *
+     * A CACHE FAILURE NEVER FAILS THE PAGE. This is a speed-up, not the
+     * record: if the cache cannot be read or written - an unwritable folder,
+     * a full disk - the reader gets the same answer from the database, a
+     * little slower, and the failure goes to the log. It used to be
+     * Cache::remember() straight through, and the day a cache folder belonged
+     * to root, the dashboard was a 500 for every signed-in user.
+     *
+     * A cached null reads as a miss, as it does in Cache::remember().
+     *
      * @template TValue
      *
      * @param  Closure(): TValue  $callback
@@ -59,23 +72,69 @@ final class RecordCache
      */
     public static function remember(string $key, Closure $callback): mixed
     {
-        return Cache::remember(
-            'farm-records:'.self::version().':'.$key,
-            self::TTL_SECONDS,
-            $callback,
-        );
+        $version = self::version();
+
+        if ($version === null) {
+            return $callback();
+        }
+
+        $cacheKey = 'farm-records:'.$version.':'.$key;
+
+        try {
+            $cached = Cache::get($cacheKey);
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return $callback();
+        }
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $value = $callback();
+
+        try {
+            Cache::put($cacheKey, $value, self::TTL_SECONDS);
+        } catch (Throwable $exception) {
+            report($exception);
+        }
+
+        return $value;
     }
 
     /**
      * Orphan every cached read. Called from model events on any farm record.
+     *
+     * Not allowed to throw: it runs after the record has been written, so an
+     * exception here would report a save as failed that had in fact
+     * succeeded. The cost of swallowing it is stated plainly: if the bump
+     * cannot be written, entries cached before the write keep being served
+     * until their TTL (an hour) runs out. The failure is logged so it is seen;
+     * an unwritable cache is a deployment fault (see docker/entrypoint.sh).
      */
     public static function invalidate(): void
     {
-        Cache::forever(self::VERSION_KEY, self::version() + 1);
+        try {
+            Cache::forever(self::VERSION_KEY, (self::version() ?? 0) + 1);
+        } catch (Throwable $exception) {
+            report($exception);
+        }
     }
 
-    private static function version(): int
+    /**
+     * The current version, or null when the cache cannot be reached - in
+     * which case remember() skips the cache altogether rather than guess a
+     * version and risk reading entries from before the last write.
+     */
+    private static function version(): ?int
     {
-        return (int) Cache::rememberForever(self::VERSION_KEY, fn (): int => 1);
+        try {
+            return (int) Cache::rememberForever(self::VERSION_KEY, fn (): int => 1);
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return null;
+        }
     }
 }

@@ -85,6 +85,22 @@ fi
 # them from. Run seeders by hand, locally, never from a boot script.
 
 # ---------------------------------------------------------------
-# 5. Hand off to supervisor (php-fpm + nginx)
+# 5. Give storage back to the web server - AFTER every artisan command.
+#
+#    Everything above runs as root, and booting the app writes to the
+#    file cache: FarmProfile caches the farm's details on every boot.
+#    So step 3 leaves root-owned folders under
+#    storage/framework/cache/data. The file cache spreads its entries
+#    across two levels of folders named by hash, and php-fpm (www-data)
+#    cannot create a folder inside a root-owned one - so any later key
+#    that happens to hash into one of those folders fails to write, and
+#    the page that wrote it returns a 500. The dashboard's figures did
+#    exactly that the day they started being cached. The chown in step
+#    2 runs too early to catch any of it.
+# ---------------------------------------------------------------
+chown -R www-data:www-data storage bootstrap/cache
+
+# ---------------------------------------------------------------
+# 6. Hand off to supervisor (php-fpm + nginx)
 # ---------------------------------------------------------------
 exec supervisord -c /etc/supervisord.conf
