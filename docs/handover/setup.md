@@ -185,9 +185,7 @@ php artisan key:generate
 
 ### 4b. Point it at your local database
 
-`.env.example` still shows the Supabase settings the deployed site uses. For
-development, replace them with your local PostgreSQL 17 database. Open `.env` in
-Notepad and set:
+`.env.example` already points at your local PostgreSQL 17 database:
 
 ```
 DB_CONNECTION=pgsql
@@ -198,7 +196,7 @@ DB_USERNAME=gfms
 DB_PASSWORD=<choose one>
 ```
 
-You choose `DB_PASSWORD` yourself. In §5 you give the `gfms` database role the
+Open `.env` in Notepad and replace the `DB_PASSWORD` placeholder. You choose it yourself. In §5 you give the `gfms` database role the
 same password. It only protects the database on your own machine, but still
 never commit it: `.env` is gitignored, keep it that way.
 
@@ -212,11 +210,11 @@ GFMS_PHOTO_DISK=public     # storage/app/public on your machine
 GFMS_PHOTO_DISK=supabase   # the LIVE bucket the deployed site uses
 ```
 
-`.env.example` ships `supabase`. **With `supabase`, a test upload goes to the
-farm's real photo bucket**, even though the database is local: the file lands
-in the live `broodcocks/<id>/` folder of whichever real bird has that id, and
-nothing ever references it. Use `public` unless you have a reason to test
-against the bucket. `php artisan config:show gfms.photo_disk` shows what your
+`.env.example` ships `public`; keep it. **With `supabase`, a test upload goes
+to the farm's real photo bucket**, even though the database is local: the file
+lands in the live `broodcocks/<id>/` folder of whichever real bird has that id,
+and nothing ever references it. Only switch to `supabase` if you have a reason
+to test against the bucket. `php artisan config:show gfms.photo_disk` shows what your
 machine is using.
 
 ---
