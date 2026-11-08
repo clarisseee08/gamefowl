@@ -292,9 +292,18 @@ The short version:
   thumbnail failure must never fail an upload. `php artisan
   photos:backfill-thumbnails` fills in older photos. Needs `gd` (and `exif` for
   rotation); both are in the Dockerfile.
-- **`migrate:fresh` is refused on every machine**, not just production — the
-  dev and production databases are the same Supabase project. Set
-  `GFMS_ALLOW_DESTRUCTIVE_DB=true` deliberately if you really mean it.
+- **Development has its own database** (since 5 Nov 2026): PostgreSQL 17 on
+  the laptop (`127.0.0.1`, database and role `gfms`), test data only. Only the
+  deployed site uses Supabase. Copying it between machines is
+  `docs/handover/project-context.md` 10.7.
+- **Photos are the one thing that can still reach production.** Uploads follow
+  `GFMS_PHOTO_DISK`, not the database. Locally it should be `public`;
+  with `supabase` a test upload (or `photos:backfill-thumbnails`) writes into
+  the LIVE bucket. Check with `php artisan config:show gfms.photo_disk`.
+- **`migrate:fresh` is still refused on every machine** unless
+  `GFMS_ALLOW_DESTRUCTIVE_DB=true` is set deliberately. Keep it that way: a
+  `.env` can still be pointed at Supabase. Check `DB_HOST` is `127.0.0.1`
+  before any destructive command.
 - **daisyUI 5 is installed, prefixed `d-`** (`d-btn`, `d-input`, `d-modal`).
   Its docs and the `daisyui` skill write unprefixed names; always add the
   prefix (its internal CSS variables are prefixed too: `--d-menu-active-bg`).
@@ -313,8 +322,10 @@ The short version:
 
 ## Constraints that are not negotiable
 
-- **Never commit `.env`.** It holds a live Supabase password. It is gitignored;
-  keep it that way. `.env.example` carries placeholders only.
+- **Never commit `.env`.** It holds the local database password, `APP_KEY`, and
+  possibly the Supabase Storage keys for the live bucket. It is gitignored;
+  keep it that way. `.env.example` carries placeholders only, and the repo
+  is public.
 - **Laravel migrations own the schema.** Never create or alter a table in the
   Supabase Studio editor.
 - **Do not install the Supabase CLI. Do not use Docker.**

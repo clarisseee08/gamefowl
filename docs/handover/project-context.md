@@ -58,15 +58,14 @@ server; views never hide things with CSS alone.
 > the deployed site reads and writes them.
 >
 > **Photos are the exception.** Where an upload goes is decided by
-> `GFMS_PHOTO_DISK`, not by the database. `.env.example` ships `supabase`, the
-> **live** bucket the deployed site uses: with that setting, a test upload from
-> your laptop goes to the real bucket, and `photos:backfill-thumbnails` writes
-> there. The file can't overwrite a real photo (every name has a UUID in it), but
-> it lands in the real bird folder with the same id (`broodcocks/<id>/`), where
-> nothing references it and nobody can tell it from the farm's own files. Set
-> `GFMS_PHOTO_DISK=public` to keep uploads on your laptop
-> (`storage/app/public`). Check what your machine uses with
-> `php artisan config:show gfms.photo_disk`.
+> `GFMS_PHOTO_DISK`, not by the database. Locally it should be `public`
+> (`storage/app/public`, what `.env.example` ships). With `supabase`, the
+> **live** bucket the deployed site uses, a test upload from your laptop goes to
+> the real bucket, and so does `photos:backfill-thumbnails`. The file can't
+> overwrite a real photo (every name has a UUID in it), but it lands in the real
+> bird folder with the same id (`broodcocks/<id>/`), where nothing references it
+> and nobody can tell it from the farm's own files. Check what your machine uses
+> with `php artisan config:show gfms.photo_disk`.
 >
 > `migrate:fresh` is still refused on every machine unless
 > `GFMS_ALLOW_DESTRUCTIVE_DB=true` is set deliberately. Keep that guard: a `.env`
