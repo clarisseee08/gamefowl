@@ -10,65 +10,78 @@ use InvalidArgumentException;
 use Tests\TestCase;
 
 /**
- * The farm's own photographs, dealt out across the public slideshows.
+ * The farm's own photographs, in every public slideshow.
  *
- * THE RULE the owner set: no photograph appears on two pages, and which page
- * gets which is random. A visitor who goes Home -> About -> Visit -> Sign in
- * should never meet the same bird twice, and the next visitor should get a
- * different deal. The deal is seeded from the session, so it holds steady for
- * one visit - a page does not reshuffle on Back, and the front page's
- * Livewire re-renders do not swap the hero photograph mid-look.
+ * THE RULE the owner set: every slideshow shows every photograph, each in its
+ * own random order, and the pages never look alike - so no two slideshows
+ * open on the same photograph, or on two shots of the same bird. The order is
+ * seeded from the session, so it holds steady for one visit - a page does not
+ * reshuffle on Back, and the front page's Livewire re-renders do not swap the
+ * hero photograph mid-look - and the next visitor gets a different one.
  *
- * Near-identical shots of one bird are tagged with a shared `look` and are
- * never dealt into the same slideshow, so two slides in a row never show what
- * reads as the same picture.
+ * Near-identical shots of one bird share a `look`, and two of them are never
+ * shown back to back (counting the wrap from the last slide to the first),
+ * so a slideshow never seems to show the same picture twice.
  */
 final class FarmPhotosTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_every_photograph_is_dealt_exactly_once_across_the_slideshows(): void
+    public function test_every_slideshow_shows_every_photograph_exactly_once(): void
     {
+        $all = array_column(FarmPhotos::PHOTOS, 'file');
+        sort($all);
+
         foreach ([1, 2, 3, 99, 123456] as $seed) {
             $deal = FarmPhotos::deal($seed);
 
-            $this->assertSame(array_keys(FarmPhotos::SLOTS), array_keys($deal));
+            $this->assertSame(FarmPhotos::SLOTS, array_keys($deal));
 
-            foreach (FarmPhotos::SLOTS as $slot => $size) {
-                $this->assertCount($size, $deal[$slot], "slot {$slot}, seed {$seed}");
+            foreach ($deal as $slot => $photos) {
+                $files = array_column($photos, 'file');
+                sort($files);
+
+                $this->assertSame($all, $files, "slot {$slot}, seed {$seed}");
             }
-
-            $dealt = array_merge(...array_values(array_map(
-                fn (array $photos): array => array_column($photos, 'file'),
-                $deal,
-            )));
-
-            sort($dealt);
-            $all = array_column(FarmPhotos::PHOTOS, 'file');
-            sort($all);
-
-            $this->assertSame($all, $dealt, "seed {$seed}");
         }
     }
 
-    public function test_the_slots_hold_exactly_as_many_photographs_as_there_are(): void
+    public function test_no_two_slideshows_open_on_the_same_photograph_or_the_same_look(): void
     {
-        $this->assertSame(count(FarmPhotos::PHOTOS), array_sum(FarmPhotos::SLOTS));
+        foreach (range(1, 200) as $seed) {
+            $openers = array_map(fn (array $photos): array => $photos[0], FarmPhotos::deal($seed));
+
+            $files = array_column($openers, 'file');
+            $this->assertSame(array_values(array_unique($files)), $files, "seed {$seed}");
+
+            $looks = array_values(array_filter(array_column($openers, 'look')));
+            $this->assertSame(array_values(array_unique($looks)), $looks, "seed {$seed}");
+        }
     }
 
-    public function test_lookalike_photographs_never_share_a_slideshow(): void
+    public function test_lookalike_photographs_are_never_shown_back_to_back(): void
     {
         foreach (range(1, 200) as $seed) {
             foreach (FarmPhotos::deal($seed) as $slot => $photos) {
-                $looks = array_filter(array_column($photos, 'look'));
+                $count = count($photos);
 
-                $this->assertSame(
-                    array_values(array_unique($looks)),
-                    array_values($looks),
-                    "slot {$slot}, seed {$seed}",
-                );
+                foreach ($photos as $index => $photo) {
+                    $next = $photos[($index + 1) % $count];
+
+                    $this->assertFalse(
+                        $photo['look'] !== null && $photo['look'] === $next['look'],
+                        "slot {$slot}, seed {$seed}: {$photo['file']} then {$next['file']}",
+                    );
+                }
             }
         }
+    }
+
+    public function test_the_slideshows_are_not_all_in_the_same_order(): void
+    {
+        $orders = array_map(fn (array $photos): string => implode(',', array_column($photos, 'file')), FarmPhotos::deal(5));
+
+        $this->assertCount(count(FarmPhotos::SLOTS), array_unique($orders));
     }
 
     public function test_the_same_seed_always_gives_the_same_deal(): void
@@ -135,10 +148,11 @@ final class FarmPhotosTest extends TestCase
     }
 
     /**
-     * The four pages, rendered in one visit, show four disjoint sets of the
-     * farm's photographs - and none of the old stock photographs.
+     * The four pages, rendered in one visit, each carry every farm photograph,
+     * open their slideshows on five different ones, and show none of the old
+     * stock photographs.
      */
-    public function test_the_public_pages_never_repeat_a_photograph_within_one_visit(): void
+    public function test_every_page_shows_every_photograph_and_no_two_slideshows_open_alike(): void
     {
         $this->withSession([FarmPhotos::SESSION_KEY => 314159]);
 
@@ -149,7 +163,9 @@ final class FarmPhotosTest extends TestCase
             'sign-in' => route('login'),
         ];
 
-        $seen = [];
+        $all = array_column(FarmPhotos::PHOTOS, 'file');
+        sort($all);
+        $openers = [];
 
         foreach ($pages as $page => $url) {
             $html = $this->get($url)->assertOk()->getContent();
@@ -158,18 +174,21 @@ final class FarmPhotosTest extends TestCase
             // @js(), which escapes the slashes (photos\/farm\/...).
             preg_match_all('#photos(?:\\\\)?/farm(?:\\\\)?/([a-z0-9-]+\.webp)#', $html, $matches);
             $files = array_values(array_unique($matches[1]));
+            sort($files);
 
-            $this->assertNotEmpty($files, "{$page} shows no farm photographs");
-            $this->assertSame([], array_intersect($files, $seen), "{$page} repeats a photograph");
+            $this->assertSame($all, $files, "{$page} is missing a farm photograph");
             $this->assertDoesNotMatchRegularExpression(
                 '#photos(?:\\\\)?/(hero-farm|rooster-walking|rooster-portrait|rooster-profile|rooster-crowing|hens-fence|visit-field)\.webp#',
                 $html,
                 "{$page} still shows a stock photograph",
             );
 
-            $seen = [...$seen, ...$files];
+            // Only each slideshow's opening photograph is a plain src.
+            preg_match_all('#src="[^"]*/photos/farm/([a-z0-9-]+\.webp)"#', $html, $plain);
+            $openers = [...$openers, ...$plain[1]];
         }
 
-        $this->assertCount(count(FarmPhotos::PHOTOS), $seen);
+        $this->assertCount(count(FarmPhotos::SLOTS), $openers);
+        $this->assertSame(array_values(array_unique($openers)), $openers, 'two slideshows open on the same photograph');
     }
 }

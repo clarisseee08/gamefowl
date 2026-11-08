@@ -7,9 +7,9 @@
         /*
          * The farm's registered birds lead the slideshow, in a stable order so
          * the page does not reshuffle between visits. Each carries its band
-         * and links to the bird. The farm photographs after them are dealt
-         * per visit so no page repeats another's (App\Support\FarmPhotos), and
-         * carry no caption, so none could be read as a particular bird.
+         * and links to the bird. All of the farm's photographs follow, in this
+         * slideshow's own random order (App\Support\FarmPhotos), and carry no
+         * caption, so none could be read as a particular bird.
          */
         $pictured = \App\Support\PublicFarm::photographedBirds(4);
 

@@ -31,7 +31,7 @@
 
     $pedigree = $this->pedigreeBird;
 
-    /* The farm's photographs, dealt per visit so no page repeats another's
+    /* All of the farm's photographs, in this slideshow's own random order
        (App\Support\FarmPhotos). In the hero they carry the place. */
     $farmSlide = fn (array $slide): array => [...$slide, 'caption' => $place, 'icon' => 'map-pin'];
 

@@ -107,8 +107,8 @@
                 @endif
             </div>
 
-            {{-- The farm, as a slideshow: the farm's photographs, dealt per
-                 visit so no page repeats another's (App\Support\FarmPhotos).
+            {{-- The farm, as a slideshow: all of the farm's photographs, in
+                 this slideshow's own random order (App\Support\FarmPhotos).
                  No slide carries a caption, so none could be read as a
                  particular bird. --}}
             <div class="sb-photo-in lg:sticky lg:top-24">

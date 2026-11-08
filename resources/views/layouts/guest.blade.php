@@ -24,8 +24,8 @@
     every account (Fortify registration is off).
 --}}
 @php
-    /* The farm's photographs, dealt per visit so the sign-in screen never
-       repeats a public page's (App\Support\FarmPhotos). */
+    /* All of the farm's photographs, in this slideshow's own random order,
+       opening on one no public page opens on (App\Support\FarmPhotos). */
     $authSlides = \App\Support\FarmPhotos::slides('sign-in');
 @endphp
 <body class="h-full bg-background text-foreground">

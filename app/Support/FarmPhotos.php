@@ -10,24 +10,23 @@ use Random\Engine\Mt19937;
 use Random\Randomizer;
 
 /**
- * The farm's own photographs, dealt out across the public slideshows.
+ * The farm's own photographs, in every public slideshow.
  *
- * The owner's rule: no photograph appears on two pages, and which page gets
- * which is random. So the photographs are not listed per page. They are
- * shuffled and dealt, like cards, into SLOTS - one slot per slideshow - and
- * every photograph lands in exactly one.
+ * The owner's rule: every slideshow shows every photograph, in its own random
+ * order, and no two pages look alike. So each slideshow - one SLOT each - gets
+ * its own shuffle, and the five open on five different photographs, never two
+ * shots of the same bird.
  *
- * THE SHUFFLE IS SEEDED FROM THE SESSION. One visit keeps one deal: going
- * Home -> About -> Visit -> Sign in never shows the same bird twice, a page
+ * THE SHUFFLE IS SEEDED FROM THE SESSION. One visit keeps one order: a page
  * does not reshuffle on Back, and the front page's Livewire re-renders do not
  * swap the hero photograph while someone is looking at it. The next visitor
- * gets a new seed, and with it a different deal.
+ * gets a new seed, and with it new orders.
  *
  * LOOK-ALIKES. A `look` marks shots of the same bird in nearly the same pose.
- * Two of them in one slideshow would read as the same picture twice, so they
- * are dealt first, while every slot still has room, and never into the same
- * one. (Two shots that were near-identical outright - imgs/gamefowl picture
- * 5033abe1 and 6c65f2a2 - were left out altogether.)
+ * Two of them back to back would read as the same picture twice, so they are
+ * never neighbours - counting the wrap from the last slide to the first. (Two
+ * shots that were near-identical outright - imgs/gamefowl picture 5033abe1
+ * and 6c65f2a2 - were left out altogether.)
  *
  * The files are WebP, at most 1200px wide, with their camera metadata (GPS
  * included) stripped. They are served publicly and committed to a public
@@ -38,18 +37,11 @@ final class FarmPhotos
     public const SESSION_KEY = 'farm_photos_seed';
 
     /**
-     * How many photographs each slideshow receives. They add up to the number
-     * of photographs, so every one is shown somewhere.
+     * The slideshows that show the farm's photographs.
      *
-     * @var array<string, int>
+     * @var list<string>
      */
-    public const SLOTS = [
-        'home' => 3,
-        'home-visit' => 2,
-        'about' => 2,
-        'visit' => 2,
-        'sign-in' => 2,
-    ];
+    public const SLOTS = ['home', 'home-visit', 'about', 'visit', 'sign-in'];
 
     /**
      * `position` is the object-position for the crop. Every photograph is
@@ -79,7 +71,7 @@ final class FarmPhotos
      */
     public static function slides(string $slot): array
     {
-        if (! array_key_exists($slot, self::SLOTS)) {
+        if (! in_array($slot, self::SLOTS, true)) {
             throw new InvalidArgumentException("There is no farm slideshow called [{$slot}].");
         }
 
@@ -91,38 +83,86 @@ final class FarmPhotos
     }
 
     /**
-     * Deal every photograph into a slot. The same seed always gives the same
-     * deal.
+     * Every slideshow's order. The same seed always gives the same orders.
+     *
+     * Each slideshow opens on its own photograph - five different ones, no
+     * two of the same look - followed by the rest in a fresh shuffle,
+     * reshuffled until no two look-alikes are neighbours.
      *
      * @return array<string, list<array{file: string, alt: string, position: string, look: ?string}>>
      */
     public static function deal(int $seed): array
     {
         $randomizer = new Randomizer(new Mt19937($seed));
-        $shuffled = $randomizer->shuffleArray(self::PHOTOS);
+        $openers = self::openers($randomizer);
+        $deal = [];
 
-        $ordered = [
-            ...array_values(array_filter($shuffled, fn (array $photo): bool => $photo['look'] !== null)),
-            ...array_values(array_filter($shuffled, fn (array $photo): bool => $photo['look'] === null)),
-        ];
+        foreach (self::SLOTS as $index => $slot) {
+            $opener = $openers[$index];
+            $rest = array_values(array_filter(self::PHOTOS, fn (array $photo): bool => $photo['file'] !== $opener['file']));
 
-        $deal = array_fill_keys(array_keys(self::SLOTS), []);
+            for ($attempt = 1; ; $attempt++) {
+                $order = [$opener, ...$randomizer->shuffleArray($rest)];
 
-        foreach ($ordered as $photo) {
-            $open = array_values(array_filter(
-                array_keys(self::SLOTS),
-                fn (string $slot): bool => count($deal[$slot]) < self::SLOTS[$slot]
-                    && ($photo['look'] === null || ! in_array($photo['look'], array_column($deal[$slot], 'look'), true)),
-            ));
+                if (! self::hasNeighbouringLookalikes($order)) {
+                    break;
+                }
 
-            if ($open === []) {
-                throw new LogicException("No slideshow has room for {$photo['file']}: SLOTS no longer fits PHOTOS.");
+                if ($attempt === 200) {
+                    throw new LogicException("Could not order the {$slot} slideshow without look-alikes side by side.");
+                }
             }
 
-            $deal[$open[$randomizer->getInt(0, count($open) - 1)]][] = $photo;
+            $deal[$slot] = $order;
         }
 
         return $deal;
+    }
+
+    /**
+     * One opening photograph per slideshow: all different, and no two of the
+     * same look, so no two pages greet a visitor with what reads as the same
+     * picture.
+     *
+     * @return list<array{file: string, alt: string, position: string, look: ?string}>
+     */
+    private static function openers(Randomizer $randomizer): array
+    {
+        $openers = [];
+        $looks = [];
+
+        foreach ($randomizer->shuffleArray(self::PHOTOS) as $photo) {
+            if ($photo['look'] !== null && in_array($photo['look'], $looks, true)) {
+                continue;
+            }
+
+            $openers[] = $photo;
+            $looks[] = $photo['look'];
+
+            if (count($openers) === count(self::SLOTS)) {
+                return $openers;
+            }
+        }
+
+        throw new LogicException('There are fewer distinct photographs than slideshows.');
+    }
+
+    /**
+     * @param  list<array{file: string, alt: string, position: string, look: ?string}>  $order
+     */
+    private static function hasNeighbouringLookalikes(array $order): bool
+    {
+        $count = count($order);
+
+        foreach ($order as $index => $photo) {
+            $next = $order[($index + 1) % $count];
+
+            if ($photo['look'] !== null && $photo['look'] === $next['look']) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** This visit's seed, chosen on its first slideshow and kept for the rest of it. */
