@@ -164,16 +164,34 @@ final class DiagnosticsController extends Controller
     }
 
     /**
+     * Laravel's own fallbacks in config/mail.php. A value equal to one of these
+     * means the environment never set it - which a plain "is it filled?" check
+     * cannot see, because the placeholder IS filled.
+     */
+    private const MAIL_HOST_PLACEHOLDERS = ['127.0.0.1', 'localhost'];
+
+    private const MAIL_FROM_PLACEHOLDER = 'hello@example.com';
+
+    /**
      * Configuration that is easy to get wrong and silent when it is.
      *
      * Credentials are reported as configured/missing ONLY. Never the value,
      * and never the length.
+     *
+     * The mail host, port and sender are NOT credentials (the host is the
+     * provider's public relay, and every email carries the sender), so they
+     * are shown as values. "configured" was the wrong answer for them: MAIL_HOST
+     * was never set on Render, Laravel fell back to 127.0.0.1, and this page
+     * said "configured" while every reset email failed.
      *
      * @return array<string, string>
      */
     private function services(): array
     {
         $configured = static fn (mixed $value): string => filled($value) ? 'configured' : 'MISSING';
+
+        $mailHost = (string) config('mail.mailers.smtp.host');
+        $mailFrom = (string) config('mail.from.address');
 
         return [
             'Database driver' => (string) config('database.default'),
@@ -183,8 +201,12 @@ final class DiagnosticsController extends Controller
             // `log` here means password reset writes the link to stderr and
             // the user never receives anything.
             'Mail mailer' => (string) config('mail.default'),
-            'Mail host' => $configured(config('mail.mailers.smtp.host')),
-            'Mail from address' => $configured(config('mail.from.address')),
+            'Mail host' => $mailHost === '' || in_array($mailHost, self::MAIL_HOST_PLACEHOLDERS, true) ? 'MISSING' : $mailHost,
+            // Render's free plan blocks 25, 465 and 587; production uses 2525.
+            'Mail port' => (string) config('mail.mailers.smtp.port'),
+            'Mail login' => $configured(config('mail.mailers.smtp.username')),
+            'Mail key' => $configured(config('mail.mailers.smtp.password')),
+            'Mail from address' => $mailFrom === '' || $mailFrom === self::MAIL_FROM_PLACEHOLDER ? 'MISSING' : $mailFrom,
             'Supabase endpoint' => $configured(config('filesystems.disks.supabase.endpoint')),
             'Supabase key' => $configured(config('filesystems.disks.supabase.key')),
             'Supabase secret' => $configured(config('filesystems.disks.supabase.secret')),

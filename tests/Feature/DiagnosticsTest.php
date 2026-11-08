@@ -153,6 +153,89 @@ final class DiagnosticsTest extends TestCase
             ->assertSee('exif');
     }
 
+    /** The value in one Services row, as rendered. */
+    private function serviceRow(string $html, string $label): ?string
+    {
+        preg_match('#<dt[^>]*>'.preg_quote($label, '#').'</dt>\s*<dd[^>]*>\s*<span[^>]*>([^<]*)</span>#', $html, $m);
+
+        return isset($m[1]) ? trim($m[1]) : null;
+    }
+
+    private function diagnosticsHtml(): string
+    {
+        return $this->actingAs(User::factory()->owner()->create())
+            ->get(route('diagnostics'))
+            ->assertOk()
+            ->getContent();
+    }
+
+    /**
+     * The row that hid a broken password reset for weeks. MAIL_HOST was never
+     * set on Render, so Laravel fell back to its own placeholder, 127.0.0.1 -
+     * and the old check asked only "is there a value?", which a placeholder
+     * answers yes. The page said "configured" while every reset email went to
+     * the container itself and failed.
+     */
+    public function test_laravels_placeholder_mail_host_is_reported_as_missing(): void
+    {
+        foreach (['127.0.0.1', 'localhost', null] as $placeholder) {
+            config(['mail.mailers.smtp.host' => $placeholder]);
+
+            $this->assertSame('MISSING', $this->serviceRow($this->diagnosticsHtml(), 'Mail host'), var_export($placeholder, true));
+        }
+    }
+
+    /** The same trap for the sender: hello@example.com is Laravel's, not the farm's. */
+    public function test_laravels_placeholder_from_address_is_reported_as_missing(): void
+    {
+        config(['mail.from.address' => 'hello@example.com']);
+
+        $this->assertSame('MISSING', $this->serviceRow($this->diagnosticsHtml(), 'Mail from address'));
+    }
+
+    /**
+     * Host, port and sender are not secrets - every email carries the sender,
+     * and the host is the provider's public relay - so the page shows them.
+     * "configured" was the wrong answer for these: it cannot tell the real
+     * relay from a placeholder, and the port is the other thing that breaks.
+     */
+    public function test_the_real_mail_host_port_and_sender_are_shown(): void
+    {
+        config([
+            'mail.mailers.smtp.host' => 'smtp-relay.brevo.com',
+            'mail.mailers.smtp.port' => 2525,
+            'mail.from.address' => 'farm@ssguad.test',
+        ]);
+
+        $html = $this->diagnosticsHtml();
+
+        $this->assertSame('smtp-relay.brevo.com', $this->serviceRow($html, 'Mail host'));
+        $this->assertSame('2525', $this->serviceRow($html, 'Mail port'));
+        $this->assertSame('farm@ssguad.test', $this->serviceRow($html, 'Mail from address'));
+    }
+
+    /** The SMTP login and key are credentials: configured or MISSING, never the value. */
+    public function test_the_mail_login_and_key_are_reported_without_their_values(): void
+    {
+        config([
+            'mail.mailers.smtp.username' => 'login-do-not-print@smtp-brevo.com',
+            'mail.mailers.smtp.password' => 'smtp-key-do-not-print',
+        ]);
+
+        $html = $this->diagnosticsHtml();
+
+        $this->assertSame('configured', $this->serviceRow($html, 'Mail login'));
+        $this->assertSame('configured', $this->serviceRow($html, 'Mail key'));
+        $this->assertStringNotContainsString('login-do-not-print', $html);
+        $this->assertStringNotContainsString('smtp-key-do-not-print', $html);
+
+        config(['mail.mailers.smtp.username' => null, 'mail.mailers.smtp.password' => null]);
+        $html = $this->diagnosticsHtml();
+
+        $this->assertSame('MISSING', $this->serviceRow($html, 'Mail login'));
+        $this->assertSame('MISSING', $this->serviceRow($html, 'Mail key'));
+    }
+
     public function test_it_reports_the_mail_transport(): void
     {
         // `log` here is the silent password-reset failure, so it is worth
