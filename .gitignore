@@ -36,8 +36,9 @@ Thumbs.db
 
 # Agent tooling installed via npx (skills, design presets) - developer
 # environment, not thesis source. Remove these lines to commit them.
+# .claude/skills/ IS committed (the daisyUI skill the EMS work relies on),
+# so it travels with a fresh clone. settings.local.json above stays local.
 /.agents/
-/.claude/skills/
 /skills-lock.json
 /apple/
 
@@ -45,7 +46,6 @@ Thumbs.db
 /.cursor/
 /.codex/
 /opencode.json
-/.claude/web-redesign-brief.md
 /audit/
 /.playwright-mcp/
 /.taste-skill/
