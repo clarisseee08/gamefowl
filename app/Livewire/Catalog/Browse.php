@@ -89,7 +89,7 @@ final class Browse extends Component
      * THE REASON THIS IS A PROP. Browse is routed at /catalog, where "Our
      * Gamefowl" is genuinely the page's heading - and it is ALSO embedded in
      * the front page below the farm's nameplate, where it is not. Hard-coding
-     * <h1> gave / two of them, which docs/redesign/gaps.md recorded during the
+     * <h1> gave / two of them, which docs/archive/redesign-2026-09/gaps.md recorded during the
      * migration and left standing.
      *
      * Two h1s is not a tidiness complaint. A screen-reader user listing a

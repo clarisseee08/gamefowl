@@ -13,7 +13,7 @@ Audited 2026-09-14, branch `redesign/ui-system`. Facts only, no proposals;
 > **Snapshot warning.** This branch is **under active edit by other agents.**
 > `resources/css/app.css` was rewritten mid-audit (643 → 846 lines, +217/−14 vs
 > HEAD); every `app.css` citation below is re-anchored to the **846-line state**,
-> verified stable by md5. `DESIGN.md` and `livewire/landing/index.blade.php`
+> verified stable by md5. `docs/archive/design-tokens-2026-09.md` and `livewire/landing/index.blade.php`
 > changed after their sections were written. Re-anchor by selector or class name
 > rather than trusting a line number that no longer resolves.
 
@@ -152,7 +152,7 @@ Every left-hand name compiles to **no CSS and no warning**.
 | `bg-pearl` | 35 | `bg-muted` `:85` | **dead — shipped, §8 #1** |
 | `text-ink` | 36 | `text-foreground` `:90` | **dead** |
 | `text-ink-80` | 37 | `text-muted-foreground` `:91` | **dead — shipped, §8 #1** |
-| `text-ink-48` | 38, 39-40 | none; the two-step ink scale collapsed (`docs/redesign-progress.md:51-53`) | **dead** |
+| `text-ink-48` | 38, 39-40 | none; the two-step ink scale collapsed (`docs/archive/redesign-progress-2026-08.md:51-53`) | **dead** |
 | `border-hairline` | 41 | `border-border` `:87` | **dead** (already known) |
 | `border-rule-strong` | 42 | `border-print-rule-strong` — print only | **dead** |
 | `text-action`/`bg-action` `#16324f` | 43 | `text-primary`/`bg-primary` `#8b2626` `:136` | **dead + wrong hex** |
@@ -167,10 +167,10 @@ Every left-hand name compiles to **no CSS and no warning**.
 **Note:** `text-ink-80` is *not* rescued by the new ink ramp — that ramp is
 `ink-50…ink-950` (`:110-120`) and `ink-80` is not a step in it. Verified absent
 from the 61-token list and from the compiled bundle.
-`docs/design-brief.md` — which SKILL.md:12 cites as the full rationale — carries
+`docs/design/design-brief.md` — which SKILL.md:12 cites as the full rationale — carries
 the same stale direction (`:105-155`) **and asserts at `:6-8` that "where it and
 the code disagree, the code is wrong."** That is now false;
-`docs/redesign-progress.md:1-12` records the actual current direction.
+`docs/archive/redesign-progress-2026-08.md:1-12` records the actual current direction.
 Accurate in SKILL.md and worth keeping: `.badge-info`/`.badge-neutral` (`:64-68`),
 the `.table-hairline` descendant rule (`:70-71`), the band-tag contract
 (`:93-107`), `.datum` (`:82-87`), the two-surface table (`:111-118`).
@@ -235,8 +235,8 @@ opacity + `scale(0.97)` `--dur-slow` · `.drawer` `:781-786` `translateX`
 `:816-821` no motion, by design · `.breadcrumb-link` `:831-834` and `.page-link`
 `:839-844` colour/background `--dur-instant`.
 
-`app.css:671` cites **`docs/redesign/01-system.md`** as the motion whitelist.
-**That file does not exist** — `docs/redesign/` contains only this audit.
+`app.css:671` cites **`docs/archive/redesign-2026-09/01-system.md`** as the motion whitelist.
+**That file does not exist** — `docs/archive/redesign-2026-09/` contains only this audit.
 
 ### Hits in Blade views (16 lines)
 - `app-sidebar.blade.php:78` `transition-[width] duration-200` — **animates `width`**; `:180` `transition-colors`
@@ -329,7 +329,7 @@ selects nothing and the users table ships with **no row separators**.
 SKILL.md:70-71 calls this out by name. Correct usages: `mortality/index:234`,
 `performance/index:195`, `appointments/index:42`, `design/gallery:240`.
 
-**3. `docs/design-brief.md` claims primacy while being out of date.** `:6-8` —
+**3. `docs/design/design-brief.md` claims primacy while being out of date.** `:6-8` —
 *"It is the source of truth; where it and the code disagree, the code is wrong."*
 Its palette (`:105-155`) is the field-ledger set: `--color-paper`, `--color-ink`,
 `--color-action #16324F`, bands `crimson`/`forest`/`slate`. SKILL.md:12 sends
@@ -337,7 +337,7 @@ every agent to it. Anyone obeying it writes offender #1 again.
 
 **4. `app.css:671` points at a whitelist that does not exist.** The new primitives
 block says each rule "implements exactly one row of the Motion whitelist in
-`docs/redesign/01-system.md`" and calls it "the contract". `docs/redesign/`
+`docs/archive/redesign-2026-09/01-system.md`" and calls it "the contract". `docs/archive/redesign-2026-09/`
 contains only this audit — 26 new classes governed by an unreadable document,
 none used by a view yet.
 

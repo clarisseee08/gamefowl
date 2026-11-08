@@ -145,7 +145,7 @@ and most Philippine connections are IPv4, where it fails with a timeout that
 looks like the database being down.
 
 Credentials live in `.env`, which is **never committed**. See
-`docs/handover-setup.md`.
+`docs/handover/setup.md`.
 
 ---
 
@@ -402,10 +402,10 @@ top of the real records.
 
 | File | What it covers |
 |---|---|
-| `docs/handover-setup.md` | Installing and running the system on a new machine |
-| `docs/tech-stack.md` | Login accounts and the stack summary |
-| `docs/architecture.md` | Deeper structural notes |
-| `docs/conventions.md` | Coding conventions used throughout |
-| `docs/thesis-defensibility.md` | What the paper still needs |
-| `docs/deviations.md` | Where the build departed from the original spec, and why |
+| `docs/handover/setup.md` | Installing and running the system on a new machine |
+| `docs/reference/tech-stack.md` | Login accounts and the stack summary |
+| `docs/reference/architecture.md` | Deeper structural notes |
+| `docs/reference/conventions.md` | Coding conventions used throughout |
+| `docs/thesis/thesis-defensibility.md` | What the paper still needs |
+| `docs/thesis/deviations.md` | Where the build departed from the original spec, and why |
 | `/design` (in the app) | The live interface reference |

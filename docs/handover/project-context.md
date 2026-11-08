@@ -66,7 +66,7 @@ server; views never hide things with CSS alone.
   themes are off.
 - UI follows the **EMS design system**: wrappers in
   `resources/views/components/ui/`, live reference at `/design`, decisions in
-  `docs/design-audit.md`. Font: Inter. Palette: forest green. Colour means
+  `docs/design/design-audit.md`. Font: Inter. Palette: forest green. Colour means
   bloodline and nothing else.
 - Fortify for auth (no self-registration; the owner creates accounts).
 - dompdf for PDF reports. It is a CSS 2.1 engine: no custom properties, flex or
@@ -75,7 +75,7 @@ server; views never hide things with CSS alone.
   You never run Docker locally.
 
 The project's own rules for AI assistants and contributors are in `CLAUDE.md`.
-Code conventions are in `docs/conventions.md`. Read both before changing code.
+Code conventions are in `docs/reference/conventions.md`. Read both before changing code.
 
 ## 4. Current state (8 November 2026)
 
@@ -128,9 +128,9 @@ Do these in order. Each step says how to tell it worked.
 
 ### B. On your laptop: tools
 
-4. **Install the tools** by following `docs/handover-setup.md` section 1:
+4. **Install the tools** by following `docs/handover/setup.md` section 1:
    - XAMPP for PHP **8.2**, then enable `pdo_pgsql`, `pgsql`, `zip`, `gd`,
-     `intl` and `exif` in `php.ini` (handover-setup 1b explains this; do not
+     `intl` and `exif` in `php.ini` (`docs/handover/setup.md` section 1b explains this; do not
      skip it).
    - Composer 2.
    - Node 20 or newer.
@@ -496,13 +496,13 @@ as the first message. Replace the `<…>` parts first.
 ```text
 I've just moved this project (GFMS, my capstone gamefowl farm record system)
 from a borrowed laptop to my own. Before anything else, read these in full:
-PROJECT-CONTEXT.md, CLAUDE.md, docs/conventions.md, and docs/handover-setup.md.
-PROJECT-CONTEXT.md is the handover: what the system is, where it runs, current
+docs/handover/project-context.md, CLAUDE.md, docs/reference/conventions.md, and docs/handover/setup.md.
+docs/handover/project-context.md is the handover: what the system is, where it runs, current
 state, the committing rules, and how this repo pushes as clarisseee08 with a
 token.
 
 Then help me finish setting up this laptop by working through section 5 of
-PROJECT-CONTEXT.md, from part B onwards, one step at a time:
+docs/handover/project-context.md, from part B onwards, one step at a time:
 - Check what's already installed (php -v, php -m, composer -V, node -v,
   git --version) and tell me what's missing. Check that PHP is 8.2 and that
   pdo_pgsql is enabled.
@@ -518,7 +518,7 @@ PROJECT-CONTEXT.md, from part B onwards, one step at a time:
 Rules for this whole project, always:
 - Commit as clarisseee08 <clarisseee08@gmail.com>. Put no AI credit anywhere:
   no Co-Authored-By, no "Generated with Claude Code", in commits, PR titles or
-  PR bodies. Check with the grep in PROJECT-CONTEXT.md 7.2 before every push.
+  PR bodies. Check with the grep in docs/handover/project-context.md 7.2 before every push.
 - Never commit straight to main. Branch, push, open a PR, and merge only when I
   say so. Merging deploys to production on Render.
 - The local .env points at the LIVE database the farm uses. Read-only queries
@@ -528,6 +528,6 @@ Rules for this whole project, always:
   the d- prefix, copy is the test API, PHPUnit not Pest).
 
 When setup is done, give me a short status: what passed, what I still need to
-do by hand, and anything in PROJECT-CONTEXT.md that no longer matches the code.
+do by hand, and anything in docs/handover/project-context.md that no longer matches the code.
 Then wait. My next task is: <what you want to work on>.
 ```

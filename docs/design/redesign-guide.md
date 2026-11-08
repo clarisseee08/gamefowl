@@ -56,7 +56,7 @@ npm run dev                       # Vite: CSS/JS/Blade changes appear live
 ## 4. The redesign (Part B, EMS design system)
 
 The owner's decisions and every departure from the EMS spec are recorded in
-`docs/design-audit.md`. Where they differ from the EMS spec, the decisions
+`docs/design/design-audit.md`. Where they differ from the EMS spec, the decisions
 win. In short:
 - The forest-green palette stays.
 - Inter is the one typeface.

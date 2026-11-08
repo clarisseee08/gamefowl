@@ -247,7 +247,7 @@ The bucket is **private**. Photos are streamed through an authorized controller,
 so a Policy is consulted on every request rather than relying on an unguessable
 URL. Each upload is also resized once to a ~400px thumbnail, which is what the
 grids request — a page of cards should not pull full-size phone photographs.
-See `docs/storage-setup.md`.
+See `docs/handover/storage-setup.md`.
 
 ---
 
@@ -385,12 +385,16 @@ must be the bucket rather than local disk.
 
 ## Documentation
 
+Everything is indexed in [`docs/README.md`](docs/README.md). The most-used:
+
 | File | Contents |
 |---|---|
-| `docs/architecture.md` | Why Supabase without Supabase Auth, the data model, connection topology, known limitations |
-| `docs/conventions.md` | Coding conventions — where each kind of code lives, and why |
-| `docs/deviations.md` | Every departure from the original specification, and the reasoning for each |
-| `docs/storage-setup.md` | Switching photo storage between local disk and Supabase |
+| [`docs/handover/project-context.md`](docs/handover/project-context.md) | The handover: where everything runs, current state, committing and pushing rules, moving to a new machine |
+| [`docs/handover/setup.md`](docs/handover/setup.md) | Installing the tools and running the project on Windows |
+| [`docs/reference/architecture.md`](docs/reference/architecture.md) | Why Supabase without Supabase Auth, the data model, connection topology, known limitations |
+| [`docs/reference/conventions.md`](docs/reference/conventions.md) | Coding conventions — where each kind of code lives, and why |
+| [`docs/design/design-audit.md`](docs/design/design-audit.md) | The EMS design system: the owner's decisions and every screen's status |
+| [`docs/thesis/`](docs/thesis/) | Thesis chapters, figures, the diagram kit, and where the system differs from the written thesis |
 
 `CLAUDE.md` carries the standing rules for anyone — or anything — working in
 this repository.

@@ -25,10 +25,10 @@ and nothing anywhere reports it.
 | Document | What it claimed | What the code had |
 |---|---|---|
 | `.claude/skills/…/SKILL.md` | 16 token names | none of them defined |
-| `DESIGN.md` | primary = peacock `#0d6e75` | deep red `#8b2626` since the direction change |
-| `DESIGN.md` | headings = Inter | Poppins since the type swap |
-| `DESIGN.md` | no 17px step | the body size of the entire public surface, 18 views |
-| `docs/design-brief.md` | "where it and the code disagree, the code is wrong" | the inverse |
+| `docs/archive/design-tokens-2026-09.md` | primary = peacock `#0d6e75` | deep red `#8b2626` since the direction change |
+| `docs/archive/design-tokens-2026-09.md` | headings = Inter | Poppins since the type swap |
+| `docs/archive/design-tokens-2026-09.md` | no 17px step | the body size of the entire public surface, 18 views |
+| `docs/design/design-brief.md` | "where it and the code disagree, the code is wrong" | the inverse |
 
 `bg-pearl` and `text-ink-80` had already shipped dead into real views on the
 strength of those documents.
@@ -217,7 +217,7 @@ styles, which is a browser's job rather than a unit test's.
 **`.claude/skills/` is gitignored.** The corrections made to the design skill's
 16 dead token names exist only on one machine and are not in this repository.
 `CLAUDE.md` was updated to say so and to point at `/design` and
-`docs/design-brief.md` as the real references.
+`docs/design/design-brief.md` as the real references.
 
 **The remaining entries in `gaps.md` are still open** — the missing date
 primitive, `x-filter-bar`'s plain-string summary losing `.datum`, and the

@@ -194,7 +194,7 @@ these can be cited as objective evidence alongside the user-survey results:
 | **Performance efficiency** | Tests asserting **query counts do not grow with data volume** on the broodcock list, pedigree, dashboard, pen list, catalogue and every report. The pedigree loads a full 3-generation tree in 4 queries. |
 | **Security** | One test per role per protected action, asserting both the HTTP status *and* that the data did not change — including that a Record Keeper cannot delete by calling the action directly rather than merely having the button hidden |
 | **Reliability** | Tests proving multi-table writes are atomic — recording a death sets the bird's status in the same transaction, and a forced failure leaves neither behind |
-| **Maintainability** | Enforced conventions (`docs/conventions.md`), automatic formatting, thin components with business logic in Action classes |
+| **Maintainability** | Enforced conventions (`docs/reference/conventions.md`), automatic formatting, thin components with business logic in Action classes |
 | **Usability** | Empty states, plain-language errors, confirmation dialogs naming the record — best evidenced by the user survey rather than by tests |
 
 Run `php artisan test` to reproduce the count.

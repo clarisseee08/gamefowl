@@ -17,7 +17,7 @@ Every visual decision in this codebase is measured against this document.
 > utility it does not know, so using one renders as nothing and fails no test.
 >
 > For tokens and primitives, **`resources/css/app.css` is the source of truth**,
-> and `docs/redesign/01-system.md` is its written contract. What remains
+> and `docs/archive/redesign-2026-09/01-system.md` is its written contract. What remains
 > authoritative here is the *reasoning* — who the user is, what the two surfaces
 > are for, and why colour means bloodline — not the hex values.
 

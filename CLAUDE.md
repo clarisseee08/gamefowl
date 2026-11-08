@@ -214,16 +214,16 @@ It is functionally complete. Treat it as production code someone's grade depends
 
 **Live component reference at `/design`** — every component in every state on one
 page, with measured contrast ratios beside the swatches. Open it before touching
-any UI. Full rationale in `docs/design-brief.md`; the tokens themselves are
+any UI. Full rationale in `docs/design/design-brief.md`; the tokens themselves are
 `@theme{}` in `resources/css/app.css`, mirrored from `config/gfms-brand.php`.
 
 (`.claude/` is committed except `settings.local.json`: the daisyUI skill, the
 route-migrator / ui-auditor / ui-reviewer agents, and the web redesign brief.
-`/design` and `docs/design-brief.md` remain the real design references.)
+`/design` and `docs/design/design-brief.md` remain the real design references.)
 
 **The UI is moving to the EMS design system (Part B, branch `redesign/ems`).**
 The owner's decisions on it — and every screen's status — are in
-`docs/design-audit.md`; where EMS and this file disagree, those decisions win.
+`docs/design/design-audit.md`; where EMS and this file disagree, those decisions win.
 
 **Any UI work uses the EMS design system** — the owner's standing instruction.
 Build from the wrappers in `resources/views/components/ui/` (shown on `/design`),
@@ -306,8 +306,10 @@ The short version:
   they beat daisyUI's own shadows. A modal kept in the DOM with `x-show` must
   bind `d-modal-open`, never hard-code it — daisyUI locks page scroll while
   any `.d-modal-open` exists.
-- `docs/` predates all of this and still describes the pen screens. Treat it as
-  historical unless it agrees with the code.
+- Docs are indexed in `docs/README.md`. `docs/reference/` (August 2026) predates
+  most of this and still describes the pen screens, and `docs/archive/` is
+  superseded. Treat both as historical unless they agree with the code. The
+  handover, including the committing rules, is `docs/handover/project-context.md`.
 
 ## Constraints that are not negotiable
 

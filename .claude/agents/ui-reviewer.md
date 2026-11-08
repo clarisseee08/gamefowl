@@ -12,7 +12,7 @@ praise, no summary paragraph.
 **Laravel 12 + Livewire 4 + Blade + Tailwind v4 (CSS-first).** No React, no
 TypeScript, no `src/`. You are reviewing **Blade templates**. Tokens live in
 `@theme { }` in `resources/css/app.css`. Read
-`docs/redesign/01-system.md` and `.claude/skills/gamefowl-design-system/SKILL.md`
+`docs/archive/redesign-2026-09/01-system.md` and `.claude/skills/gamefowl-design-system/SKILL.md`
 before reviewing.
 
 ## Check the named route for each of these
@@ -36,7 +36,7 @@ before reviewing.
   percentages, phone numbers.
 - Any type below 11px.
 
-**Motion** — check against the whitelist table in `docs/redesign/01-system.md`
+**Motion** — check against the whitelist table in `docs/archive/redesign-2026-09/01-system.md`
 - A raw duration or easing instead of a `--dur-*` / `--ease-*` token.
 - Animation of any property other than `transform` and `opacity`, except the
   three whitelisted exceptions (accordion `grid-template-rows`, tab indicator

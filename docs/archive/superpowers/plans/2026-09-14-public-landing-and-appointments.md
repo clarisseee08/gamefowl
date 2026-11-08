@@ -8,7 +8,7 @@
 
 **Tech Stack:** Laravel 12, Livewire 4 (class components in `config/livewire.php`, `Route::livewire()`), Tailwind v4 CSS-first (`@theme{}` in `resources/css/app.css`, no config file), PHPUnit 11, SQLite in tests / Postgres in production.
 
-**Spec:** `docs/superpowers/specs/2026-09-14-public-landing-and-appointments-design.md`
+**Spec:** `docs/archive/superpowers/specs/2026-09-14-public-landing-and-appointments-design.md`
 
 ## Global Constraints
 
