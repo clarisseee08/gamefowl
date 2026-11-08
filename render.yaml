@@ -141,29 +141,37 @@ services:
       # writes the link to the container's stderr. The user waits for an email
       # that was never sent.
       #
-      # ANY SMTP PROVIDER WORKS. Resend and Brevo both have free tiers large
-      # enough for a farm of this size; a Gmail account with an App Password
-      # also works but is rate-limited and easy to get locked out of.
+      # THE FARM USES BREVO (since 8 November 2026), free tier, with
+      # clarisseee08@gmail.com verified as a single sender - no domain needed.
+      # Brevo rewrites a free-mail sender to its own domain
+      # (…@…brevosend.com), so that is what the "from" shows. Other SMTP
+      # providers work the same way if it ever changes.
       #
-      # Whichever you use, the FROM address must be at a domain that provider
-      # has verified. An unverified sender is accepted by the API and then
-      # silently dropped, which looks identical to this misconfiguration.
+      # PORT 2525, NOT 587. Render's free plan blocks outbound SMTP on 25, 465
+      # and 587: the connection hangs for 60 seconds and the forgot-password
+      # page then fails with a 500. Brevo also listens on 2525, which Render
+      # does not block. tests/Unit/DeploymentMailSettingsTest.php pins it.
+      #
+      # Whichever provider, the FROM address must be one it has verified. An
+      # unverified sender is accepted and then silently dropped, which looks
+      # identical to having no mail settings at all.
       - key: MAIL_MAILER
         value: smtp
       - key: MAIL_HOST
-        sync: false           # e.g. smtp.resend.com
+        sync: false           # smtp-relay.brevo.com
       - key: MAIL_PORT
-        value: "587"
-      # STARTTLS on 587. Use "smtps" with MAIL_PORT 465 if your provider wants
-      # implicit TLS instead; the two must agree or the connection just hangs.
+        value: "2525"
+      # STARTTLS, as on 587. "smtps" is only for implicit TLS on 465, which
+      # Render blocks anyway; scheme and port must agree or the connection
+      # just hangs.
       - key: MAIL_SCHEME
         value: smtp
       - key: MAIL_USERNAME
-        sync: false
+        sync: false           # Brevo's SMTP login, e.g. xxxxxx@smtp-brevo.com
       - key: MAIL_PASSWORD
-        sync: false           # an API key or App Password, never a login password
+        sync: false           # a Brevo SMTP key, never an account password
       - key: MAIL_FROM_ADDRESS
-        sync: false           # must be at the domain verified with the provider
+        sync: false           # the sender verified on Brevo
       - key: MAIL_FROM_NAME
         value: "SSGuad Game Farm"
 
