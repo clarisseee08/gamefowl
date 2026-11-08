@@ -8,8 +8,10 @@ use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -36,6 +38,30 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::requestPasswordResetLinkView(fn () => view('auth.forgot-password'));
         Fortify::resetPasswordView(fn (Request $request) => view('auth.reset-password', ['request' => $request]));
         Fortify::confirmPasswordView(fn () => view('auth.confirm-password'));
+
+        /*
+         * The reset email, from the farm by name rather than Laravel's stock
+         * "Reset Password Notification" signed with APP_NAME. The views carry
+         * inline hex from config/gfms-brand.php, because email clients strip
+         * stylesheets. The link is built the way the stock notification builds
+         * it, so it opens the same reset screen.
+         */
+        ResetPassword::toMailUsing(function (User $user, string $token): MailMessage {
+            $farm = config('gfms.farm');
+
+            return (new MailMessage)
+                ->subject('Reset your password · '.$farm['name'])
+                ->view(['html' => 'mail.password-reset', 'text' => 'mail.password-reset-text'], [
+                    'farm' => $farm,
+                    'email' => $user->getEmailForPasswordReset(),
+                    'url' => url(route('password.reset', [
+                        'token' => $token,
+                        'email' => $user->getEmailForPasswordReset(),
+                    ], false)),
+                    'minutes' => (int) config('auth.passwords.'.config('auth.defaults.passwords').'.expire'),
+                    'brand' => config('gfms-brand'),
+                ]);
+        });
 
         /*
          * Custom authentication.
