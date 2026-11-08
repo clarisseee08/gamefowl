@@ -9,7 +9,8 @@ Written 8 November 2026, when the project moved off a borrowed laptop.
 **Moving machines? Follow section 5 in order, then paste the starter prompt
 in section 12 into Claude Code.**
 
-**This file contains no passwords, tokens or keys, and never should.**
+**This file contains no passwords, tokens or keys, and never should. The repo
+is public, so anything committed here can be read by anyone.**
 Secrets travel separately (section 9).
 
 ---
@@ -41,12 +42,12 @@ server; views never hide things with CSS alone.
 
 | Thing | Where | Notes |
 |---|---|---|
-| Main repo | `github.com/clarisseee08/gamefowl` (remote `origin`) | `main` is the integration branch. Work arrives as PRs. |
+| Main repo | `github.com/clarisseee08/gamefowl` (remote `origin`) | **Public** (anyone can clone or read it; checked 8 Nov 2026). `main` is the integration branch. Work arrives as PRs. |
 | Old mirror | `github.com/CernieCriz/gamefowlms` (remote `old-origin`) | Rewritten history. See 7.6 before pushing anything there. |
 | Production | `https://gamefowl.onrender.com` | Render free plan, Singapore, service `gfms-laravel` (`render.yaml`). Auto-deploys every push to `main`. Health check `/up`. |
 | Database | Supabase Postgres, region ap-northeast-1 (Tokyo) | Reached through the **session pooler, port 5432**. The direct `db.<ref>.supabase.co` host is IPv6-only and times out from most Philippine connections and from GitHub. |
 | Photos | Supabase Storage via its S3 API (`supabase` disk, bucket `gfms-laravel`) | Thumbnails are written beside each original at upload. |
-| CI | GitHub Actions, `.github/workflows/ci.yml` | Runs the tests, `pint --test` and `npm run build` on every push to `main` and every PR. The repo is private, so minutes are metered. |
+| CI | GitHub Actions, `.github/workflows/ci.yml` | Runs the tests, `pint --test` and `npm run build` on every push to `main` and every PR. Standard minutes are free while the repo is public and metered if it goes private. |
 | Keep-alive jobs | `keep-render-warm.yml`, `keep-supabase-awake.yml` | Supabase pauses a free project after 7 idle days. The daily job needs the `SUPABASE_DB_URL` repo secret. |
 
 > **Local development and production share ONE Supabase database.** Anything
@@ -107,10 +108,12 @@ Do these in order. Each step says how to tell it worked.
 2. **Copy the files git doesn't carry** (full list in section 11) onto a USB
    stick, or into a password manager for `.env`:
    - `gamefowlms\.env`
-   - `gamefowlms\.claude\`
    - `gamefowlms\docs\frontend-analysis\` (only if you want it)
-   - the thesis files in `Downloads`
+   - the reference paper PDF in `Downloads`
    - `C:\Users\Westy\.claude\skills\`
+
+   The thesis documents, diagrams and the project's `.claude\` folder are in the
+   repo now (section 11).
 3. **Leave the borrowed laptop clean.** It is not yours, and it still holds your
    access:
    - **Windows Credential Manager:** open *Credential Manager → Windows
@@ -169,9 +172,10 @@ Do these in order. Each step says how to tell it worked.
 ### D. On your laptop: the extras
 
 11. **Put the copied local-only files back in place:**
-    - `.claude\` into `gamefowlms\`
-    - skills into `C:\Users\<you>\.claude\skills\`
-    - thesis files wherever you keep them
+    - personal skills into `C:\Users\<you>\.claude\skills\`
+    - the reference paper PDF wherever you keep it
+
+    The project's `.claude\` and `docs\thesis\` arrive with the clone.
 12. **Set up Claude Code** (optional):
     - Install the plugins with `/plugin` (`superpowers`, `frontend-design`,
       `playwright`, `ux`).
@@ -410,9 +414,8 @@ day, or production goes down:
 - `DB_PASSWORD` in your local `.env`
 - the password inside the `SUPABASE_DB_URL` GitHub secret
 
-Use letters and digits only, so it never needs URL-encoding. The password was
-pasted into an AI chat on 28 October 2026; consider resetting it once more
-and updating those three.
+Use letters and digits only, so it never needs URL-encoding. If you think
+the password has been exposed anywhere, reset it and update those three.
 
 ## 10. Operations notes and lessons already learned
 
@@ -452,17 +455,28 @@ the original (up to 800px, sharpened), so a small original stays soft.
 - No bird is marked for sale yet. To mark one: edit the bird and tick
   "This bird is for sale".
 
-## 11. Files that were never in git, to copy from the old laptop
+## 11. What travels with the clone, and what you copy by hand
+
+**In the repo** (arrives with `git clone`):
+
+| What | Where in the repo |
+|---|---|
+| Thesis design-specification chapter | `docs/thesis/Design Specifications - GFMS.docx` |
+| System architecture chapter | `docs/thesis/System Architecture - GFMS.docx` |
+| Figures 3–12 (use case, activity, class, architecture, ERD) | `docs/thesis/GFMS Diagrams/` |
+| Thesis Diagram Kit (reusable prompt and drawing scripts) | `docs/thesis/Thesis Diagram Kit/` |
+| Claude Code project folder: daisyUI skill, the `route-migrator`, `ui-auditor` and `ui-reviewer` agents, and the redesign brief | `.claude/` (all except `settings.local.json`) |
+
+**Not in the repo; copy by hand:**
 
 | What | Old laptop path | Why |
 |---|---|---|
-| `.env` | `C:\Users\Westy\gamefowlms\.env` | Section 9. |
-| Local AI briefs and agents | `C:\Users\Westy\gamefowlms\.claude\` (`web-redesign-brief.md`, `agents\route-migrator.md`, `ui-auditor.md`, `ui-reviewer.md`, `skills\daisyui\`) | The redesign brief and the helper agents and skill used for UI work. Untracked; put them in the same place on the new laptop. |
+| `.env` | `C:\Users\Westy\gamefowlms\.env` | Holds the live secrets (section 9). Never commit it. |
+| Reference paper | `C:\Users\Westy\Downloads\(Lague et al., 2025) Online Personal Grooming with a Subscription Based-Based Salon Services App.pdf` | The earlier approved paper the thesis chapters copy the structure of. Kept off GitHub because the repo is public and the paper has co-authors. |
 | Frontend analysis | `C:\Users\Westy\gamefowlms\docs\frontend-analysis\` (`REPORT.md`, `screens\`) | An untracked analysis report. Copy it if you still want it. |
-| Thesis documents | `C:\Users\Westy\Downloads\Design Specifications - GFMS.docx`, `System Architecture - GFMS.docx`, `GFMS Diagrams\`, `Thesis Diagram Kit\` | The design-specification chapter and diagrams (Figures 3–12, Tables IV–VII), numbered to match the reference paper below. |
-| Reference paper | `C:\Users\Westy\Downloads\(Lague et al., 2025) Online Personal Grooming with a Subscription Based-Based Salon Services App.pdf` | The earlier approved paper the thesis chapters copy the structure of. |
-| Claude Code skills | `C:\Users\Westy\.claude\skills\` (`better-ui`, `design-taste-frontend`, `high-end-visual-design`, `impeccable`, `redesign-existing-projects`, `web-animation-design`) | Personal skills; copy the folder to the same path. |
-| Claude Code plugins | enabled: `superpowers`, `frontend-design`, `playwright` (claude-plugins-official), `ux` (ux-skill) | Reinstall them with `/plugin` on the new machine. |
+| Claude Code personal skills | `C:\Users\Westy\.claude\skills\` (`better-ui`, `design-taste-frontend`, `high-end-visual-design`, `impeccable`, `redesign-existing-projects`, `web-animation-design`) | Personal skills; copy the folder to the same path on your laptop. |
+| Claude Code plugins | enabled: `superpowers`, `frontend-design`, `playwright` (claude-plugins-official), `ux` (ux-skill) | Reinstall them with `/plugin`. |
+| `.claude/settings.local.json` | this machine only | Personal Claude Code settings; your laptop creates its own. |
 
 ### Working preferences the assistant had learned (from its memory notes)
 - During UI redesign work, check changes in the browser, and write or run the
@@ -471,7 +485,8 @@ the original (up to 800px, sharpened), so a small original stays soft.
 - Thesis chapters are produced to match the earlier paper's order, numbering
   and style (Times 12, double-spaced). Every actor, use case, class and table
   comes from the real code (roles, policies, routes, migrations), never
-  invented. Reusable prompts and drawing scripts are in the Thesis Diagram Kit.
+  invented. Reusable prompts and drawing scripts are in
+  `docs/thesis/Thesis Diagram Kit/`.
 
 ## 12. Starter prompt for Claude Code on the new laptop
 

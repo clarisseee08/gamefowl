@@ -217,9 +217,9 @@ page, with measured contrast ratios beside the swatches. Open it before touching
 any UI. Full rationale in `docs/design-brief.md`; the tokens themselves are
 `@theme{}` in `resources/css/app.css`, mirrored from `config/gfms-brand.php`.
 
-(There is no `.claude/skills/` directory in this repo — `.gitignore` excludes it,
-so anything that lived there was never committed and is not available to a fresh
-clone. `/design` and `docs/design-brief.md` are the real references.)
+(`.claude/` is committed except `settings.local.json`: the daisyUI skill, the
+route-migrator / ui-auditor / ui-reviewer agents, and the web redesign brief.
+`/design` and `docs/design-brief.md` remain the real design references.)
 
 **The UI is moving to the EMS design system (Part B, branch `redesign/ems`).**
 The owner's decisions on it — and every screen's status — are in
@@ -324,8 +324,9 @@ The short version:
 - `php artisan test` must stay green. 593 tests at last count — treat that as a
   floor, not a target, and re-check it rather than trusting this line.
 - CI runs the suite, `pint --test` and `npm run build` on every push to `main`
-  and every PR (`.github/workflows/ci.yml`). Actions minutes are metered on this
-  private repo, so narrow the trigger before weakening any of the three checks.
+  and every PR (`.github/workflows/ci.yml`). The repo is public (checked
+  8 Nov 2026); minutes are metered whenever it is private, so narrow the trigger
+  before weakening any of the three checks.
 - **Visible copy is the test API** — ~126 assertions target copy and data, zero
   target CSS class names. Restyling is safe; *rewording* breaks tests. Change
   copy and its test in the same commit.

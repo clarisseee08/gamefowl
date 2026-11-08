@@ -1,0 +1,30 @@
+HOW TO USE
+1. Put "Thesis Diagram Kit.zip" in your Downloads folder (or on the Desktop). You don't need to unzip it.
+2. Open Claude Code in the project folder of the system you're documenting.
+3. Copy everything below the dashed line and paste it in. That's all.
+
+------------------------------------------------------------------------------
+
+Make the Design Specifications chapter of my capstone thesis for the system in this project folder, as a Word document (.docx) that matches my earlier approved paper exactly.
+
+1. Find "Thesis Diagram Kit.zip". Look in my Downloads folder, then on my Desktop, then in this project folder; search my user folder if it isn't in any of those. Extract it to a scratch or temp folder, not into this project. Then read "PROMPT.md" and "README.md" inside the extracted "Thesis Diagram Kit" folder.
+
+2. Follow PROMPT.md completely, from Step 1 to Step 5. Fill in its three <...> values yourself:
+   - SYSTEM TITLE: take the system's official title from this codebase (README, config such as APP_NAME, the title page of any thesis document in the project). If it's unclear or there are several candidates, ask me before drawing anything.
+   - Reference paper: the PDF inside the extracted kit's "reference" folder.
+   - Thesis Diagram Kit: the extracted folder. Its "scripts" are templates from another system; reuse the layout code, but replace all the content with this system's facts.
+
+3. Every actor, use case, activity, class, attribute, method, table and relationship must come from this system's code. Invent nothing.
+
+4. Look at every diagram PNG you render, and at every page of the finished document after exporting it to PDF through Microsoft Word. Fix anything that overlaps, crosses or runs outside its box before you finish.
+
+5. Save to my Downloads folder:
+   - the .docx, named "Design Specifications - <system short name>.docx";
+   - a folder of the figures, named "<system short name> Diagrams", with files named "Figure N - ...".
+   If a file or folder with those names already exists, ask me before overwriting it.
+
+6. At the end, list:
+   - every value you assumed rather than found in the code (the development hardware in Table IV is always one);
+   - anything the code permits that the user interface doesn't offer.
+
+Don't install anything into this project or change its code. The PDF and Word tooling goes in a scratch folder.
