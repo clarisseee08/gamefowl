@@ -14,7 +14,7 @@ the application will run locally exactly as it does on the developer's machine.
 | PHP | The language the system is written in | **8.2** (not 8.1, not 8.3+) |
 | Composer | Installs the PHP libraries | 2.x |
 | Node.js + npm | Builds the CSS and JavaScript | Node 20 or newer |
-| PostgreSQL | The database | Supplied by Supabase — nothing to install |
+| PostgreSQL | The database you develop against, on your own machine | **17** |
 | Git | Fetches the code | any recent version |
 
 **PHP 8.2 specifically.** The test framework in this project (PHPUnit 11) is
@@ -44,7 +44,7 @@ known-good bundle.
    take — reopen the terminal, or reboot.
 
 > You do **not** need to start Apache or MySQL from the XAMPP control panel. This
-> project uses PHP's own built-in server and a hosted database. Leave XAMPP's
+> project uses PHP's own built-in server and PostgreSQL 17 (§1f). Leave XAMPP's
 > panel closed.
 
 ### 1b. Enable the PostgreSQL extensions — do not skip this
@@ -81,10 +81,16 @@ mention the real cause.
 
    The list must contain `pdo_pgsql`, `pgsql`, `fileinfo` and `gd`.
 
+6. Check the list also contains **`intl`**, **`zip`** and **`exif`**. If one is
+   missing, remove the `;` from its line too (`;extension=intl`,
+   `;extension=zip`, `;extension=exif`). In XAMPP 8.2.12, `intl` is the one
+   that ships disabled.
+
 **What each is for:** `pdo_pgsql`/`pgsql` connect to the database — without them
 the app cannot start. `fileinfo` validates uploaded photos. `gd` generates image
 sizes. Missing `gd` produces a confusing "class not found" much later, during a
-photo upload, rather than at startup.
+photo upload, rather than at startup. `exif` turns phone photos the right way
+up. `intl` formats numbers and percentages, `zip` is used by Composer.
 
 ### 1c. Composer
 
@@ -108,21 +114,44 @@ npm -v
 
 Install from <https://git-scm.com/download/win>, defaults are fine.
 
+### 1f. PostgreSQL 17
+
+Development runs against a PostgreSQL 17 database on your own machine. The
+farm's real records live in Supabase, and only the deployed site uses them.
+
+```
+winget install --id PostgreSQL.PostgreSQL.17 --exact --interactive
+```
+
+or download the Windows installer from
+<https://www.postgresql.org/download/windows/>. In the setup wizard:
+
+- **Password:** choose the password for the `postgres` superuser. Keep it; you
+  need it once, in §5.
+- **Port:** keep **5432**.
+- **Components:** Stack Builder is not needed. pgAdmin is optional.
+
+The installer registers a Windows service, `postgresql-x64-17`, that starts
+with Windows. Check it:
+
+```
+Get-Service postgresql-x64-17
+```
+
+It must say `Running`. The tools (`psql`, `pg_dump`, `pg_restore`) are in
+`C:\Program Files\PostgreSQL\17\bin`, which is **not** added to `PATH`. Add it,
+or type the full path in front of each command in §5.
+
 ---
 
 ## 2. Get the code
 
 ```
-git clone https://github.com/CernieCriz/gamefowlms.git
+git clone https://github.com/clarisseee08/gamefowl.git gamefowlms
 cd gamefowlms
-git checkout gfms-laravel
 ```
 
-`gfms-laravel` is the working branch. Confirm you are on it:
-
-```
-git branch --show-current
-```
+`main` is the working branch, and the clone starts on it.
 
 ---
 
@@ -154,59 +183,82 @@ php artisan key:generate
 `key:generate` writes a unique `APP_KEY`. It encrypts sessions and cookies. It is
 **not** shared between machines and must never be committed.
 
-### 4b. Fill in the database credentials
+### 4b. Point it at your local database
 
-**The credentials are not in the repository, and they never will be.** A database
-password committed to git is recoverable from the history forever, even after the
-file is deleted — so they are handed over separately (see §7).
-
-Open `.env` in Notepad and set:
+`.env.example` still shows the Supabase settings the deployed site uses. For
+development, replace them with your local PostgreSQL 17 database. Open `.env` in
+Notepad and set:
 
 ```
 DB_CONNECTION=pgsql
-DB_HOST=aws-0-<region>.pooler.supabase.com
+DB_HOST=127.0.0.1
 DB_PORT=5432
-DB_DATABASE=postgres
-DB_USERNAME=postgres.<project-ref>
-DB_PASSWORD=<the password you were given>
+DB_DATABASE=gfms
+DB_USERNAME=gfms
+DB_PASSWORD=<choose one>
 ```
 
-> **Use the session pooler host**, the one containing `pooler.supabase.com`.
-> Supabase also publishes a direct host (`db.<ref>.supabase.co`) which is
-> **IPv6-only**. Most Philippine home and office connections are IPv4, where the
-> direct host fails with a connection timeout that looks exactly like the
-> database being down. Find it in Supabase under
-> **Project Settings → Database → Connection string → Session pooler**.
+You choose `DB_PASSWORD` yourself. In §5 you give the `gfms` database role the
+same password. It only protects the database on your own machine, but still
+never commit it: `.env` is gitignored, keep it that way.
 
-### 4c. Check the connection before going further
+### 4c. Photos: decide where test uploads go
+
+Where photos are stored is set by `GFMS_PHOTO_DISK`, separately from the
+database:
 
 ```
-php artisan migrate:status
+GFMS_PHOTO_DISK=public     # storage/app/public on your machine
+GFMS_PHOTO_DISK=supabase   # the LIVE bucket the deployed site uses
 ```
 
-A table of migrations means you are connected. An error means stop and fix it
-here — everything after this depends on it. See §8.
+`.env.example` ships `supabase`. **With `supabase`, a test upload goes to the
+farm's real photo bucket**, even though the database is local: the file lands
+in the live `broodcocks/<id>/` folder of whichever real bird has that id, and
+nothing ever references it. Use `public` unless you have a reason to test
+against the bucket. `php artisan config:show gfms.photo_disk` shows what your
+machine is using.
 
 ---
 
 ## 5. Set up the database
 
-### If you were given access to the existing shared database
+### 5a. Create the role and the database
 
-The tables and data already exist. **Run nothing.** Skip to §6.
+Sign in to PostgreSQL as the `postgres` superuser. It asks for the password you
+chose when installing (§1f):
 
-> ### ⚠ Never run `migrate:fresh` on a shared database
->
-> `php artisan migrate:fresh` **drops every table and deletes all data**. On a
-> shared database it wipes it for everyone, instantly, with no confirmation and
-> no undo.
->
-> This is not hypothetical — it happened during development, when two processes
-> ran it against the same database at the same time and each destroyed the
-> other's work. If you only ever need one command from this document, it is the
-> one you must not run.
+```
+psql -h 127.0.0.1 -U postgres -d postgres
+```
 
-### If you are setting up your own fresh database
+Then, inside `psql`:
+
+```
+CREATE ROLE gfms LOGIN;
+\password gfms
+CREATE DATABASE gfms OWNER gfms ENCODING 'UTF8' TEMPLATE template0;
+\q
+```
+
+`\password` asks for the new password twice: type the `DB_PASSWORD` you put in
+`.env`. It doesn't show what you type, and it keeps the password out of psql's
+history file (`CREATE ROLE ... PASSWORD '...'` would not).
+`TEMPLATE template0` makes the database UTF-8 whatever Windows' own language
+setting is.
+
+### 5b. Fill it
+
+**If you were given a copy of the development database** (a `.dump` file):
+
+```
+pg_restore -h 127.0.0.1 -U gfms -d gfms --no-owner --no-privileges --exit-on-error gfms-local.dump
+```
+
+It asks for the `gfms` password. This gives you the same test birds and test
+accounts as the developer's machine.
+
+**If you are starting from nothing:**
 
 ```
 php artisan migrate
@@ -215,6 +267,41 @@ php artisan db:seed
 
 `migrate` creates the tables. `db:seed` loads sample birds, pens, health and
 breeding records so the system has something to show.
+
+### 5c. Check the connection
+
+```
+php artisan config:clear
+php artisan migrate:status
+```
+
+Every migration must say `Ran`. An error means stop and fix it here,
+because everything after this depends on it. See §8.
+
+### 5d. Making a copy for someone else
+
+On the machine that has the data (it asks for the `gfms` password):
+
+```
+pg_dump -h 127.0.0.1 -U gfms -d gfms -Fc --no-owner --no-privileges -f gfms-local.dump
+```
+
+`-Fc` is the compressed format `pg_restore` reads. `--no-owner
+--no-privileges` leave out the old machine's role names, so the copy restores
+anywhere. Keep the file **out of the project folder**. The repository is public,
+and the dump contains the test accounts' password hashes.
+
+> ### ⚠ Never run `migrate:fresh` against Supabase
+>
+> `php artisan migrate:fresh` **drops every table and deletes all data**, with
+> no confirmation and no undo. Against your local database that only costs you
+> your test data (restore the dump again). Against Supabase it wipes the farm's
+> real records.
+>
+> It is refused on every machine unless `GFMS_ALLOW_DESTRUCTIVE_DB=true` is
+> set. To start over locally, drop and recreate the `gfms` database (5a) and
+> restore again instead. Before any destructive command, check that `DB_HOST`
+> is `127.0.0.1`.
 
 ---
 
@@ -242,24 +329,19 @@ design. Every account is created by the farm owner from **Admin → Users**.
 
 ## 7. Getting the credentials safely
 
-You need two secrets that are not in the repository:
+For local development you need **no shared secrets**: you choose the local
+database password yourself (§4b).
 
-1. The **database password**
-2. The **storage keys** (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) if you are
-   using the hosted photo storage
+The one secret you might be given is the **Supabase Storage keys**
+(`SUPABASE_S3_ACCESS_KEY_ID`, `SUPABASE_S3_SECRET_ACCESS_KEY`), and only if
+you set `GFMS_PHOTO_DISK=supabase` (§4c). Those keys reach the farm's live photo
+bucket. Ask the developer for them **through a private channel**: a direct
+message or a password manager share, not a group chat, not email, and never by
+pasting them into a document that gets shared around.
 
-Ask the developer for these **through a private channel** — a direct message or
-a password manager share, not a group chat, not email, and never by pasting them
-into a document that gets shared around.
-
-If you would rather not deal with hosted storage at first, set:
-
-```
-FILESYSTEM_DISK=local
-```
-
-Photos are then stored in the project's own `storage` folder on your machine, and
-the AWS keys can be left blank. This is fine for local use and for a demo.
+With `GFMS_PHOTO_DISK=public`, photos are stored in the project's own `storage`
+folder on your machine and the keys can be left blank. This is fine for local
+use and for a demo.
 
 ---
 
@@ -268,8 +350,9 @@ the AWS keys can be left blank. This is fine for local use and for a demo.
 | What you see | What it actually means | Fix |
 |---|---|---|
 | `could not find driver` | The Postgres extensions are still disabled | Redo §1b, then **reopen the terminal** |
-| Connection times out | You are using the IPv6-only direct host | Switch to the session pooler host (§4b) |
-| `SQLSTATE… password authentication failed` | Wrong password, **or** wrong username — the username includes the project ref, e.g. `postgres.abcdefgh` | Recheck both against Supabase |
+| `Connection refused` on `127.0.0.1:5432` | PostgreSQL isn't installed or its service isn't running | §1f; `Start-Service postgresql-x64-17` |
+| `SQLSTATE… password authentication failed for user "gfms"` | `DB_PASSWORD` in `.env` doesn't match the `gfms` role's password | Make them match: `\password gfms` as `postgres` (§5a) |
+| `database "gfms" does not exist` | §5a was skipped | Run §5a |
 | Page loads with no styling | `npm run build` has not been run | Run it |
 | `Unable to locate file in Vite manifest` | Same cause | Run `npm run build` |
 | `No application encryption key` | `.env` has no `APP_KEY` | `php artisan key:generate` |
@@ -294,7 +377,7 @@ None of these touch your data.
 php artisan test
 ```
 
-**492 tests should pass.** This is the real proof the setup is right: it exercises
+**Every test should pass** (812 on 8 November 2026). This is the real proof the setup is right: it exercises
 the database, the models, the permission rules and the reports. If they pass,
 the system is working — regardless of how the screens look on your machine.
 
@@ -327,5 +410,5 @@ Worth knowing, because it is what makes this reproducible rather than hopeful:
 - **The `.env` file is deliberately excluded from git.** That is why credentials
   are a separate step — it is the one thing that legitimately differs per
   machine, and the one thing that must never be shared through the repository.
-- **`php artisan test` is the acceptance check.** If 492 tests pass on your
+- **`php artisan test` is the acceptance check.** If every test passes on your
   machine, your environment matches.

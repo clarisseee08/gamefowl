@@ -45,16 +45,33 @@ server; views never hide things with CSS alone.
 | Main repo | `github.com/clarisseee08/gamefowl` (remote `origin`) | **Public** (anyone can clone or read it; checked 8 Nov 2026). `main` is the integration branch. Work arrives as PRs. |
 | Old mirror | `github.com/CernieCriz/gamefowlms` (remote `old-origin`) | Rewritten history. See 7.6 before pushing anything there. |
 | Production | `https://gamefowl.onrender.com` | Render free plan, Singapore, service `gfms-laravel` (`render.yaml`). Auto-deploys every push to `main`. Health check `/up`. |
-| Database | Supabase Postgres, region ap-northeast-1 (Tokyo) | Reached through the **session pooler, port 5432**. The direct `db.<ref>.supabase.co` host is IPv6-only and times out from most Philippine connections and from GitHub. |
-| Photos | Supabase Storage via its S3 API (`supabase` disk, bucket `gfms-laravel`) | Thumbnails are written beside each original at upload. |
+| Production database | Supabase Postgres, region ap-northeast-1 (Tokyo) | Used by Render (and the keep-awake job) only. Reached through the **session pooler, port 5432**. The direct `db.<ref>.supabase.co` host is IPv6-only and times out from most Philippine connections and from GitHub. |
+| Development database | **PostgreSQL 17 on your own laptop**: `127.0.0.1:5432`, database `gfms`, role `gfms` | Since 5 November 2026. Test data only (30 birds, 3 users, no photos), carried between laptops with `pg_dump`/`pg_restore` (10.7). The Windows service is `postgresql-x64-17` and starts with Windows. |
+| Photos | Supabase Storage via its S3 API (`supabase` disk, bucket `gfms-laravel`) | Thumbnails are written beside each original at upload. Production always uses this bucket. Locally, `GFMS_PHOTO_DISK` decides (see the warning below). |
 | CI | GitHub Actions, `.github/workflows/ci.yml` | Runs the tests, `pint --test` and `npm run build` on every push to `main` and every PR. Standard minutes are free while the repo is public and metered if it goes private. |
 | Keep-alive jobs | `keep-render-warm.yml`, `keep-supabase-awake.yml` | Supabase pauses a free project after 7 idle days. The daily job needs the `SUPABASE_DB_URL` repo secret. |
 
-> **Local development and production share ONE Supabase database.** Anything
-> you save, delete or upload while testing locally happens to the farm's real
-> records. `migrate:fresh` is refused on every machine unless
-> `GFMS_ALLOW_DESTRUCTIVE_DB=true` is set deliberately. The test suite uses
-> SQLite in memory and is always safe.
+> **Local development no longer touches production data.** Since 5 November
+> 2026 the local `.env` points at the PostgreSQL 17 database on your own laptop,
+> not at Supabase. Saving, editing or deleting records while testing locally
+> changes only that local copy. The farm's real records are in Supabase and only
+> the deployed site reads and writes them.
+>
+> **Photos are the exception.** Where an upload goes is decided by
+> `GFMS_PHOTO_DISK`, not by the database. `.env.example` ships `supabase`, the
+> **live** bucket the deployed site uses: with that setting, a test upload from
+> your laptop goes to the real bucket, and `photos:backfill-thumbnails` writes
+> there. The file can't overwrite a real photo (every name has a UUID in it), but
+> it lands in the real bird folder with the same id (`broodcocks/<id>/`), where
+> nothing references it and nobody can tell it from the farm's own files. Set
+> `GFMS_PHOTO_DISK=public` to keep uploads on your laptop
+> (`storage/app/public`). Check what your machine uses with
+> `php artisan config:show gfms.photo_disk`.
+>
+> `migrate:fresh` is still refused on every machine unless
+> `GFMS_ALLOW_DESTRUCTIVE_DB=true` is set deliberately. Keep that guard: a `.env`
+> can still be pointed back at Supabase. The test suite uses SQLite in memory
+> and is always safe.
 
 ## 3. Stack
 
@@ -108,6 +125,9 @@ Do these in order. Each step says how to tell it worked.
 2. **Copy the files git doesn't carry** (full list in section 11) onto a USB
    stick, or into a password manager for `.env`:
    - `gamefowlms\.env`
+   - **a dump of the local development database**, made as in 10.7
+     (`gfms-local.dump`). It's test data, but it's what makes the console
+     sign-in and the catalogue work on the new laptop. Never put it in the repo.
    - `gamefowlms\docs\frontend-analysis\` (only if you want it)
    - the reference paper PDF in `Downloads`
    - `C:\Users\Westy\.claude\skills\`
@@ -121,7 +141,8 @@ Do these in order. Each step says how to tell it worked.
      clarisseee08's GitHub login, and anyone using this laptop can push as you
      while it's there.
    - **Local `.env`:** after you have safely copied it, delete
-     `gamefowlms\.env`. It holds the live database password.
+     `gamefowlms\.env`. It holds the Supabase Storage keys (live photo bucket)
+     and `APP_KEY`.
    - **Claude Code:** sign out (`/logout`).
    - **Browsers:** sign out of GitHub, Render and Supabase.
    - **Optional:** delete the `gamefowlms` folder once everything is copied.
@@ -135,10 +156,13 @@ Do these in order. Each step says how to tell it worked.
    - Composer 2.
    - Node 20 or newer.
    - Git for Windows.
+   - **PostgreSQL 17** (`docs/handover/setup.md` section 1f). You choose the `postgres`
+     superuser password during the install. Keep it; you need it once, in step 7.
    - Claude Code, if you want the assistant.
 
-   Check with `php -v` (must say 8.2), `php -m` (must list `pdo_pgsql`),
-   `composer -V`, `node -v` and `git --version`.
+   Check with `php -v` (must say 8.2), `php -m` (must list `pdo_pgsql` and
+   `intl`), `composer -V`, `node -v`, `git --version`, and
+   `Get-Service postgresql-x64-17` (must say `Running`).
 
 ### C. On your laptop: the project
 
@@ -150,10 +174,14 @@ Do these in order. Each step says how to tell it worked.
    ```
    No login is needed to clone.
 6. **Install the libraries:** `composer install`, then `npm ci`.
-7. **Put the copied `.env` in `gamefowlms\`**, then run
-   `php artisan config:clear`.
-   **Check it worked:** `php artisan migrate:status` lists migrations instead
-   of a connection error. It only reads; it changes nothing.
+7. **Put the copied `.env` in `gamefowlms\`**, then **create the local
+   database and restore the dump** you brought (10.7: the `gfms` role with
+   the same password as `DB_PASSWORD` in `.env`, the `gfms` database, then
+   `pg_restore`). Then run `php artisan config:clear`.
+   **Check it worked:** `php artisan migrate:status` lists every migration as
+   `Ran` (20 as of 8 November 2026) instead of a connection error. It only
+   reads; it changes nothing. If any say `Pending`, stop and find out why
+   before running anything.
 8. **Commit and push as clarisseee08 with a token** by following section 6 in
    full: make the token, run the four `git config --local` lines, create the
    credentials file.
@@ -166,8 +194,9 @@ Do these in order. Each step says how to tell it worked.
    ```
    **Check it worked:** the build succeeds and every test passes.
 10. **Run it:** `composer run dev`, or `php artisan serve`. Open the URL it
-    prints, check the public pages, then sign in to the console with your
-    existing account.
+    prints, check the public pages, then sign in to the console with one of
+    the accounts in the restored local database. These are test accounts,
+    not the production ones.
 
 ### D. On your laptop: the extras
 
@@ -403,16 +432,18 @@ php artisan photos:backfill-thumbnails # writes to the LIVE photo bucket
 
 | Secret | Where it lives | Move it by |
 |---|---|---|
-| `.env` (DB password, Supabase S3 keys, mail password, `APP_KEY`) | `gamefowlms/.env` on the old laptop | Copy the file itself: USB stick, password manager or encrypted archive. Not chat, email or git. |
+| `.env` (local DB password, Supabase S3 keys, mail password, `APP_KEY`) | `gamefowlms/.env` on the old laptop | Copy the file itself: USB stick, password manager or encrypted archive. Not chat, email or git. |
 | GitHub token (clarisseee08) | your credentials file (section 6) | Don't move it. Make a new one on your laptop and revoke tokens you no longer use. |
 | Render environment | Render dashboard → service → Environment | Lives on Render; nothing to move. |
 | GitHub Actions secret `SUPABASE_DB_URL` | repo → Settings → Secrets and variables → Actions | Lives on GitHub. The Supabase session-pooler URI with the current DB password in it. |
 
-**If the database password ever changes**, update all three places the same
-day, or production goes down:
+**If the Supabase database password ever changes**, update both places the
+same day, or production goes down:
 - `DB_PASSWORD` on Render (then **Save, rebuild and deploy**)
-- `DB_PASSWORD` in your local `.env`
 - the password inside the `SUPABASE_DB_URL` GitHub secret
+
+Your local `.env` doesn't hold it any more. Its `DB_PASSWORD` is the local
+`gfms` role's password (10.7).
 
 Use letters and digits only, so it never needs URL-encoding. If you think
 the password has been exposed anywhere, reset it and update those three.
@@ -454,6 +485,77 @@ the original (up to 800px, sharpened), so a small original stays soft.
 - Bird 0113's photo is only 640px wide.
 - No bird is marked for sale yet. To mark one: edit the bird and tick
   "This bird is for sale".
+
+### 10.7 The local development database
+Since 5 November 2026, development runs against **PostgreSQL 17 on the
+laptop itself**, not Supabase. The local `.env` has:
+
+```
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=gfms
+DB_USERNAME=gfms
+DB_PASSWORD=<the gfms role's password; your choice, never committed>
+```
+
+It holds **test data only** (30 birds, 3 users, no photos as of 8 November
+2026). Production's data never comes down to the laptop, and nothing done
+locally goes up. The one exception is photos (see the warning in section 2).
+
+The PostgreSQL tools are in `C:\Program Files\PostgreSQL\17\bin`, which the
+installer does not add to `PATH`. Either add it, or type the full path in
+front of `psql`, `pg_dump` and `pg_restore` below.
+
+**Copy it off a laptop** (asks for the `gfms` password, i.e. `DB_PASSWORD`):
+
+```
+pg_dump -h 127.0.0.1 -U gfms -d gfms -Fc --no-owner --no-privileges -f gfms-local.dump
+```
+
+`-Fc` is pg_dump's compressed custom format, which `pg_restore` reads.
+`--no-owner --no-privileges` leave out who owned what on the old machine, so
+the restore works whatever the roles are called on the new one. Save the file
+**outside the repo**. The repo is public, and the dump holds the test
+accounts' password hashes.
+
+**Restore it on a laptop** that has PostgreSQL 17 running. First, as the
+`postgres` superuser (asks for the password you chose at install):
+
+```
+psql -h 127.0.0.1 -U postgres -d postgres
+```
+
+then, inside `psql`:
+
+```
+CREATE ROLE gfms LOGIN;
+\password gfms
+CREATE DATABASE gfms OWNER gfms ENCODING 'UTF8' TEMPLATE template0;
+\q
+```
+
+`\password` asks for the new password twice; type `DB_PASSWORD` from `.env`.
+It doesn't echo, and unlike `CREATE ROLE ... PASSWORD '...'` it keeps the
+password out of psql's history file. `TEMPLATE template0` with UTF8 avoids
+inheriting the Windows locale's WIN1252 encoding.
+
+Then restore as `gfms` (asks for `DB_PASSWORD`):
+
+```
+pg_restore -h 127.0.0.1 -U gfms -d gfms --no-owner --no-privileges --exit-on-error gfms-local.dump
+```
+
+**Check:** `php artisan config:clear`, then `php artisan migrate:status` shows
+every migration as `Ran`.
+
+**Starting over:** restore into a fresh database instead of running
+`migrate:fresh`. As `postgres`, run `DROP DATABASE gfms;`, then the
+`CREATE DATABASE` line above, then `pg_restore` again. Running
+`php artisan migrate` and `php artisan db:seed` against an *empty* local
+database also works, but gives you the seeders' sample data, not this copy.
+**Before any of that, check that `DB_HOST` is `127.0.0.1`.** The same
+commands against Supabase would hit the farm's real records.
 
 ## 11. What travels with the clone, and what you copy by hand
 
@@ -521,9 +623,11 @@ Rules for this whole project, always:
   PR bodies. Check with the grep in docs/handover/project-context.md 7.2 before every push.
 - Never commit straight to main. Branch, push, open a PR, and merge only when I
   say so. Merging deploys to production on Render.
-- The local .env points at the LIVE database the farm uses. Read-only queries
-  only. Never save, delete or upload real records, never run migrate:fresh or
-  seeders, and never run photos:backfill-thumbnails unless I say so.
+- The local .env points at a local PostgreSQL 17 database with test data
+  (docs/handover/project-context.md 10.7), not the farm's live one. Still: never run
+  migrate:fresh or seeders, and never upload photos or run
+  photos:backfill-thumbnails unless I say so. If GFMS_PHOTO_DISK is supabase,
+  those write to the LIVE photo bucket.
 - Follow CLAUDE.md for all code and UI work (EMS design system, daisyUI with
   the d- prefix, copy is the test API, PHPUnit not Pest).
 
