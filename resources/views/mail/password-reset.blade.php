@@ -9,7 +9,9 @@
      * hairline border, one primary button, and a celery well for the note.
      *
      * $message is reserved here (Laravel puts its mail message in every mail
-     * view), which is why nothing below is called that.
+     * view), which is why nothing below is called that. $url and $logoUrl are
+     * built from APP_URL, never the request - see
+     * FortifyServiceProvider::emailRootUrl().
      *
      * @var array{name: string, address: ?string, phone: ?string} $farm
      */
@@ -44,7 +46,7 @@
                             <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                                 <tr>
                                     <td style="padding-right: 12px; vertical-align: middle;">
-                                        <img src="{{ asset('images/brand/logo-128.png') }}" width="40" height="40" alt=""
+                                        <img src="{{ $logoUrl }}" width="40" height="40" alt=""
                                              style="display: block; width: 40px; height: 40px; border-radius: 999px; border: 0;">
                                     </td>
                                     <td style="vertical-align: middle; font-family: {{ $font }}; font-size: 16px; line-height: 20px; font-weight: 700; color: {{ $ink }};">

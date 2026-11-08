@@ -116,6 +116,47 @@ final class PasswordResetEmailTest extends TestCase
         $this->assertStringNotContainsString('<', $text);
     }
 
+    /**
+     * Password-reset poisoning. trustProxies(at: '*') means a request's
+     * X-Forwarded-Host decides what url() thinks the site is called. Built
+     * from the request, the link in someone ELSE's reset email would follow
+     * whatever host the person asking for it chose - a genuine farm email
+     * whose button carries a real token to another site. Outside local
+     * development the link is built from APP_URL alone.
+     *
+     * This sends a real request and reads the email actually produced: a faked
+     * notification never builds the link, so it could not catch this.
+     */
+    public function test_a_forged_forwarded_host_cannot_change_the_link(): void
+    {
+        config(['app.url' => 'https://gamefowl.onrender.com', 'mail.default' => 'array']);
+        User::factory()->create(['email' => 'keeper@ssguad.test']);
+
+        $this->withHeaders(['X-Forwarded-Host' => 'attacker.example', 'X-Forwarded-Proto' => 'https'])
+            ->post(route('password.email'), ['email' => 'keeper@ssguad.test'])
+            ->assertSessionHasNoErrors();
+
+        $sent = app('mailer')->getSymfonyTransport()->messages();
+        $this->assertCount(1, $sent);
+
+        $email = $sent->first()->getOriginalMessage();
+
+        foreach ([$email->getHtmlBody(), $email->getTextBody()] as $body) {
+            $this->assertStringContainsString('https://gamefowl.onrender.com/reset-password/', $body);
+            $this->assertStringNotContainsString('attacker.example', $body);
+        }
+    }
+
+    /** render.yaml asks for https://, but a bare host must still give a working link. */
+    public function test_an_app_url_without_a_scheme_still_gives_an_https_link(): void
+    {
+        config(['app.url' => 'gamefowl.onrender.com']);
+
+        $html = (string) $this->mailFor(User::factory()->create(['email' => 'keeper@ssguad.test']), 'abc123token')->render();
+
+        $this->assertStringContainsString('https://gamefowl.onrender.com/reset-password/abc123token?email=keeper%40ssguad.test', $html);
+    }
+
     public function test_requesting_a_reset_sends_the_farm_email(): void
     {
         Notification::fake();
