@@ -162,7 +162,7 @@ the properties that made it read as a printed document rather than a product. It
 is preserved at the tag `design/field-ledger-v1`.
 
 The full record of what changed, why, and what was measured lives in
-**`docs/redesign-progress.md`**. Colour values are owned by
+**`docs/archive/redesign-progress-2026-08.md`**. Colour values are owned by
 **`config/gfms-brand.php`** so the PDF reports (dompdf, CSS 2.1 only) can read
 them without a stylesheet; `resources/css/app.css` mirrors that config and
 `tests/Unit/BrandTokensAreMirroredTest.php` fails if the two drift.

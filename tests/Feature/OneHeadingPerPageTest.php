@@ -17,7 +17,7 @@ use Tests\TestCase;
  * "Our Gamefowl" h1 - correct when Browse is routed on its own at /catalog, and
  * wrong when it is a section of a larger page.
  *
- * docs/redesign/gaps.md recorded this during the migration and left it standing,
+ * docs/archive/redesign-2026-09/gaps.md recorded this during the migration and left it standing,
  * which is how it survived: written down is not fixed.
  *
  * It is not a tidiness complaint. Listing a page's headings is how a screen

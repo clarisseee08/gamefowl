@@ -235,7 +235,7 @@ Re-run `npm run build` only after someone changes the CSS or JavaScript.
 
 ### Sign in
 
-Accounts are listed in `docs/tech-stack.md`. There is **no public sign-up** — by
+Accounts are listed in `docs/reference/tech-stack.md`. There is **no public sign-up** — by
 design. Every account is created by the farm owner from **Admin → Users**.
 
 ---

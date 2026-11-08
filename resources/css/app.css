@@ -1142,7 +1142,7 @@
    =====================================================================
 
    Each block below implements exactly one row of the Motion whitelist in
-   docs/redesign/01-system.md and no more. The whitelist is the contract: if
+   docs/archive/redesign-2026-09/01-system.md and no more. The whitelist is the contract: if
    an effect is not a row there, it is not implemented here, however good it
    would look.
 

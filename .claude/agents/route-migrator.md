@@ -21,7 +21,7 @@ Verification is `php artisan test --compact`, `vendor/bin/pint --dirty`, and
 1. Read `~/.claude/skills/frontend-design/SKILL.md`.
 2. Read `.claude/skills/gamefowl-design-system/SKILL.md` IN FULL. It is this
    project's binding design law and it overrules your taste.
-3. Read `resources/css/app.css` and `docs/redesign/01-system.md` IN FULL,
+3. Read `resources/css/app.css` and `docs/archive/redesign-2026-09/01-system.md` IN FULL,
    including the Motion whitelist section.
 
 That system is **FROZEN**. You consume it. You never add a token, never add a
@@ -30,7 +30,7 @@ animate anything absent from the whitelist, never touch a logo or brand-mark
 asset.
 
 If the route needs something the system lacks, use the closest existing
-primitive and append one line to `docs/redesign/gaps.md` describing the gap. Do
+primitive and append one line to `docs/archive/redesign-2026-09/gaps.md` describing the gap. Do
 not improvise a new pattern.
 
 ## The rules that fail the build if you break them
@@ -90,7 +90,7 @@ Then commit: `refactor(ui): redesign <route>`
 
 Change API calls, routing, auth, state shape, business logic, or data
 contracts. Presentation only. If a redesign would require a logic change, leave
-the logic alone and log it to `docs/redesign/gaps.md`.
+the logic alone and log it to `docs/archive/redesign-2026-09/gaps.md`.
 
 Report back in under 10 lines: files changed, test count before/after, whether
 build and Pint passed, and any gap you logged.

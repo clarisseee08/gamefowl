@@ -131,7 +131,7 @@ Three decisions are load-bearing:
   The correct host was confirmed by test connection, not by copying docs.
 
 **Every query is a network round trip to Tokyo.** That single fact drives the
-performance rules in `docs/conventions.md`: every list is paginated, every
+performance rules in `docs/reference/conventions.md`: every list is paginated, every
 relation is eager-loaded, and `Model::shouldBeStrict()` is enabled outside
 production so an accidental lazy load throws during development instead of
 quietly costing a round trip per row.

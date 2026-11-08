@@ -5,7 +5,7 @@ tools: Read, Grep, Glob, Bash
 ---
 
 You audit only. You NEVER edit a file. Your entire output is one markdown report
-written to `docs/redesign/00-audit.md`.
+written to `docs/archive/redesign-2026-09/00-audit.md`.
 
 ## The stack you are auditing — read this before assuming anything
 
@@ -28,7 +28,7 @@ Read `~/.claude/skills/frontend-design/SKILL.md` and
 `.claude/skills/gamefowl-design-system/SKILL.md` in full. The second is this
 project's binding design law; your report must be accurate about it.
 
-## Produce `docs/redesign/00-audit.md` with these sections
+## Produce `docs/archive/redesign-2026-09/00-audit.md` with these sections
 
 1. **Stack and styling approach** — confirmed versions, where tokens live, how
    views are composed (layouts, `x-` components, Livewire views).

@@ -114,7 +114,7 @@ a source-level grep of `resources/views`.
 
 **The rule was generating the violation.** After every view was clean, the
 production bundle still contained `bg-gray-100` and `border-slate-200`. The
-source was `docs/design-brief.md` — the document whose anti-pattern list names
+source was `docs/design/design-brief.md` — the document whose anti-pattern list names
 those exact classes as forbidden. Tailwind v4 auto-detects the whole project and
 cannot tell prose from markup. Fixed with `source(none)` plus explicit sources;
 bundle went 52.7KB → 45.9KB.

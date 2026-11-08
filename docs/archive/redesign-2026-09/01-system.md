@@ -6,7 +6,7 @@ No new token. No new primitive. No hex value in a view. No raw duration or
 easing. No animation absent from the whitelist below. No edit to a logo asset.
 
 If a screen needs something this document does not contain, use the closest
-primitive here and append one line to `docs/redesign/gaps.md`. Do not improvise
+primitive here and append one line to `docs/archive/redesign-2026-09/gaps.md`. Do not improvise
 a pattern — a pattern invented once per route is how thirty routes end up
 looking like thirty products.
 
@@ -38,7 +38,7 @@ into `config/gfms-brand.php` because dompdf cannot read a stylesheet;
 ### 1.1 Names that DO NOT EXIST
 
 These appear in `.claude/skills/gamefowl-design-system/SKILL.md` and in
-`docs/design-brief.md`. **Every one produces no CSS and no warning.** Tailwind
+`docs/design/design-brief.md`. **Every one produces no CSS and no warning.** Tailwind
 emits nothing for a utility it does not know and fails no build, so using one
 renders as nothing at all and no test catches it.
 
@@ -59,7 +59,7 @@ renders as nothing at all and no test catches it.
 | `band-slate` | `band-rose` |
 | `.frosted` | nothing — it is defined nowhere and used nowhere |
 
-`docs/design-brief.md` states that "where it and the code disagree, the code is
+`docs/design/design-brief.md` states that "where it and the code disagree, the code is
 wrong." **That sentence is false.** The stylesheet is the source of truth.
 
 ### 1.2 Surfaces and text
