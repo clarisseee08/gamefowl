@@ -24,13 +24,9 @@
     every account (Fortify registration is off).
 --}}
 @php
-    $authSlides = [
-        ['src' => asset('photos/hero-farm.webp'), 'alt' => 'Gamefowl on grass beside a shed in evening light', 'position' => '40% 50%'],
-        ['src' => asset('photos/rooster-walking.webp'), 'alt' => 'A red rooster with green tail feathers walking on bare ground', 'position' => '35% 50%'],
-        ['src' => asset('photos/rooster-portrait.webp'), 'alt' => 'A rooster in low light, close up', 'position' => '50% 35%'],
-        ['src' => asset('photos/hens-fence.webp'), 'alt' => 'Free-range hens on grass behind a wire fence', 'position' => '55% 50%'],
-        ['src' => asset('photos/rooster-profile.webp'), 'alt' => 'A speckled rooster in profile', 'position' => '50% 30%'],
-    ];
+    /* The farm's photographs, dealt per visit so the sign-in screen never
+       repeats a public page's (App\Support\FarmPhotos). */
+    $authSlides = \App\Support\FarmPhotos::slides('sign-in');
 @endphp
 <body class="h-full bg-background text-foreground">
     <div class="flex min-h-full">

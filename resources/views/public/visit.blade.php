@@ -107,17 +107,13 @@
                 @endif
             </div>
 
-            {{-- The farm, as a slideshow. Licensed stock, credited in
-                 public/photos/CREDITS.md - atmosphere, never presented as a
-                 bird the farm owns, so no slide carries a caption. --}}
+            {{-- The farm, as a slideshow: the farm's photographs, dealt per
+                 visit so no page repeats another's (App\Support\FarmPhotos).
+                 No slide carries a caption, so none could be read as a
+                 particular bird. --}}
             <div class="sb-photo-in lg:sticky lg:top-24">
-                <x-ui.slideshow priority label="The farm" class="aspect-[4/5] rounded-xl bg-muted shadow-sm lg:aspect-[5/6]" :slides="[
-                    ['src' => asset('photos/hero-farm.webp'), 'alt' => 'Gamefowl on grass beside a shed in evening light', 'position' => '38% 50%'],
-                    ['src' => asset('photos/rooster-walking.webp'), 'alt' => 'A red rooster with green tail feathers walking on bare ground', 'position' => '35% 50%'],
-                    ['src' => asset('photos/visit-field.webp'), 'alt' => 'Pasture at first light'],
-                    ['src' => asset('photos/hens-fence.webp'), 'alt' => 'Free-range hens on grass behind a wire fence', 'position' => '55% 50%'],
-                    ['src' => asset('photos/rooster-profile.webp'), 'alt' => 'A speckled rooster in profile', 'position' => '50% 30%'],
-                ]" />
+                <x-ui.slideshow priority label="The farm" class="aspect-[4/5] rounded-xl bg-muted shadow-sm lg:aspect-[5/6]"
+                                :slides="\App\Support\FarmPhotos::slides('visit')" />
             </div>
         </div>
 

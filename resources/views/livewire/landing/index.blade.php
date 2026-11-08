@@ -31,13 +31,9 @@
 
     $pedigree = $this->pedigreeBird;
 
-    $farmSlide = fn (string $file, string $alt, ?string $position = null): array => [
-        'src' => asset('photos/'.$file),
-        'alt' => $alt,
-        'position' => $position,
-        'caption' => $place,
-        'icon' => 'map-pin',
-    ];
+    /* The farm's photographs, dealt per visit so no page repeats another's
+       (App\Support\FarmPhotos). In the hero they carry the place. */
+    $farmSlide = fn (array $slide): array => [...$slide, 'caption' => $place, 'icon' => 'map-pin'];
 
     $heroSlides = array_values(array_filter([
         $hero ? [
@@ -48,17 +44,10 @@
             'meta' => $hero->bloodline,
             'dot' => \App\Support\BandTag::hex($hero->bloodline),
         ] : null,
-        $farmSlide('hero-farm.webp', 'Gamefowl on grass beside a shed in evening light', '40% 50%'),
-        $farmSlide('rooster-walking.webp', 'A red rooster with green tail feathers walking on bare ground'),
-        $farmSlide('hens-fence.webp', 'Free-range hens on grass behind a wire fence'),
-        $farmSlide('rooster-crowing.webp', 'A rooster crowing against a green background', '60% 40%'),
+        ...array_map($farmSlide, \App\Support\FarmPhotos::slides('home')),
     ]));
 
-    $visitSlides = [
-        ['src' => asset('photos/visit-field.webp'), 'alt' => 'Pasture at first light'],
-        ['src' => asset('photos/rooster-profile.webp'), 'alt' => 'A speckled rooster in profile', 'position' => '50% 30%'],
-        ['src' => asset('photos/rooster-portrait.webp'), 'alt' => 'A rooster in low light, close up', 'position' => '50% 35%'],
-    ];
+    $visitSlides = \App\Support\FarmPhotos::slides('home-visit');
 @endphp
 
 {{--
@@ -132,7 +121,7 @@
 
             {{-- A slideshow: the hero bird first, when it has a photograph,
                  then the farm. A bird's slide links to its page and carries
-                 its band; a stock slide carries only the place, never
+                 its band; a farm photograph carries only the place, never
                  anything that could be read as naming a bird. --}}
             <div class="sb-photo-in">
                 <x-ui.slideshow :slides="$heroSlides" :interval="5500" priority label="Photographs from the farm"

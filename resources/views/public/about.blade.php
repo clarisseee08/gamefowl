@@ -5,11 +5,11 @@
         $stockCount = \App\Support\PublicFarm::stockCount();
 
         /*
-         * The farm's own photographs lead the slideshow, in a stable order so
+         * The farm's registered birds lead the slideshow, in a stable order so
          * the page does not reshuffle between visits. Each carries its band
-         * and links to the bird. The stock photographs after them are
-         * atmosphere (public/photos/CREDITS.md) and carry no caption, so
-         * nothing could read one as a bird the farm holds.
+         * and links to the bird. The farm photographs after them are dealt
+         * per visit so no page repeats another's (App\Support\FarmPhotos), and
+         * carry no caption, so none could be read as a particular bird.
          */
         $pictured = \App\Support\PublicFarm::photographedBirds(4);
 
@@ -27,9 +27,7 @@
 
         $slides = [
             ...$slides,
-            ['src' => asset('photos/rooster-portrait.webp'), 'alt' => 'A rooster in low light, close up', 'position' => '50% 35%'],
-            ['src' => asset('photos/hens-fence.webp'), 'alt' => 'Free-range hens on grass behind a wire fence', 'position' => '55% 50%'],
-            ['src' => asset('photos/rooster-walking.webp'), 'alt' => 'A red rooster with green tail feathers walking on bare ground', 'position' => '35% 50%'],
+            ...\App\Support\FarmPhotos::slides('about'),
         ];
     @endphp
 
