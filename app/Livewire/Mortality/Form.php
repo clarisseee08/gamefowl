@@ -105,7 +105,7 @@ final class Form extends Component
 
         $broodcock = Broodcock::findOrFail((int) $this->broodcock_id);
 
-        // The real gate. Refuses customers, deactivated accounts, and any bird
+        // The real gate. Refuses deactivated accounts, and any bird
         // that is already deceased.
         $this->authorize('recordMortality', $broodcock);
 

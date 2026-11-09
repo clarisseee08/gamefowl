@@ -66,30 +66,28 @@ final class MortalityAuthorizationTest extends TestCase
             ->assertOk();
     }
 
-    /** The whole point of the policy: a customer must not see mortality at all. */
-    public function test_a_customer_cannot_view_the_mortality_register(): void
+    /** The whole point of the policy: the public must not see mortality at all. */
+    public function test_a_guest_cannot_view_the_mortality_register(): void
     {
-        $customer = User::factory()->customer()->create();
         $bird = $this->makeBroodcock(['name' => 'Kalabaw']);
         MortalityRecord::factory()->forBroodcock($bird)
             ->recordedBy(User::factory()->staff()->create())
             ->cause('Disease')
             ->create();
 
-        $response = $this->actingAs($customer)->get(route('mortality.index'));
+        $response = $this->get(route('mortality.index'));
 
-        $response->assertForbidden();
+        $response->assertRedirect(route('login'));
         $response->assertDontSee('Kalabaw');
         $response->assertDontSee('Disease');
     }
 
-    public function test_a_customer_cannot_reach_the_register_component_directly(): void
+    public function test_a_guest_cannot_reach_the_register_component_directly(): void
     {
         // Livewire converts an authorization failure into a 403 RESPONSE
         // rather than letting AuthorizationException bubble out, so the
         // assertion is assertForbidden() - not expectException().
-        Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Index::class)
+        Livewire::test(Index::class)
             ->assertForbidden();
     }
 
@@ -109,27 +107,24 @@ final class MortalityAuthorizationTest extends TestCase
             ->assertOk();
     }
 
-    public function test_a_customer_cannot_open_the_recording_form(): void
+    public function test_a_guest_cannot_open_the_recording_form(): void
     {
-        $this->actingAs(User::factory()->customer()->create())
-            ->get(route('mortality.create'))
-            ->assertForbidden();
+        $this->get(route('mortality.create'))
+            ->assertRedirect(route('login'));
     }
 
     /**
-     * A customer cannot record a death even by posting straight at the
+     * A guest cannot record a death even by posting straight at the
      * component - the button they never saw is not the protection.
      */
-    public function test_a_customer_cannot_record_a_death(): void
+    public function test_a_guest_cannot_record_a_death(): void
     {
-        $customer = User::factory()->customer()->create();
         $bird = $this->makeBroodcock();
 
-        // The component refuses at mount(), so a customer cannot even reach
-        // the point of setting fields - which is the strongest possible
-        // outcome here.
-        Livewire::actingAs($customer)
-            ->test(Form::class)
+        // The component refuses at mount(), so a guest cannot even reach the
+        // point of setting fields - which is the strongest possible outcome
+        // here.
+        Livewire::test(Form::class)
             ->assertForbidden();
 
         $this->assertDatabaseCount('mortality_records', 0);

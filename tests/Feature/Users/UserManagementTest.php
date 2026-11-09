@@ -40,12 +40,6 @@ final class UserManagementTest extends TestCase
             ->get(route('users.index'))->assertForbidden();
     }
 
-    public function test_a_customer_cannot_view_the_user_list(): void
-    {
-        $this->actingAs(User::factory()->customer()->create())
-            ->get(route('users.index'))->assertForbidden();
-    }
-
     public function test_a_guest_cannot_view_the_user_list(): void
     {
         $this->get(route('users.index'))->assertRedirect(route('login'));
@@ -82,6 +76,53 @@ final class UserManagementTest extends TestCase
         // The password must be hashed, never stored in the clear.
         $this->assertNotSame('secret-password', $created->password);
         $this->assertTrue(Hash::check('secret-password', $created->password));
+    }
+
+    /**
+     * Customer accounts were removed: the catalogue and every bird's page are
+     * public, so an account gave a customer nothing a guest does not see.
+     */
+    public function test_the_add_user_form_offers_only_the_two_roles(): void
+    {
+        Livewire::actingAs(User::factory()->owner()->create())
+            ->test(Form::class)
+            ->assertSee('Owner (Admin)')
+            ->assertSee('Record Keeper')
+            ->assertDontSee('Customer');
+    }
+
+    /** The form only offers two roles, but the server is what refuses a third. */
+    public function test_a_customer_account_can_no_longer_be_created(): void
+    {
+        Livewire::actingAs(User::factory()->owner()->create())
+            ->test(Form::class)
+            ->set('full_name', 'Ricardo Villanueva')
+            ->set('email', 'ricardo@example.test')
+            ->set('role', 'customer')
+            ->set('password', 'secret-password')
+            ->set('password_confirmation', 'secret-password')
+            ->call('save')
+            ->assertHasErrors('role');
+
+        $this->assertDatabaseMissing('users', ['email' => 'ricardo@example.test']);
+    }
+
+    public function test_the_user_list_counts_each_role(): void
+    {
+        $owner = User::factory()->owner()->create();
+        User::factory()->staff()->count(2)->create();
+
+        $component = Livewire::actingAs($owner)
+            ->test(Index::class)
+            ->assertSee('Owners (Admin)')
+            ->assertSee('Record Keepers')
+            ->assertDontSee('Customers');
+
+        $stats = $component->instance()->stats;
+
+        $this->assertSame(1, $stats['owners']);
+        $this->assertSame(2, $stats['staff']);
+        $this->assertSame(3, $stats['total']);
     }
 
     public function test_a_record_keeper_cannot_create_an_account(): void
@@ -148,15 +189,15 @@ final class UserManagementTest extends TestCase
 
     public function test_an_owner_can_change_someone_elses_role(): void
     {
-        $target = User::factory()->customer()->create();
+        $target = User::factory()->staff()->create();
 
         Livewire::actingAs(User::factory()->owner()->create())
             ->test(Form::class, ['user' => $target])
-            ->set('role', UserRole::Staff->value)
+            ->set('role', UserRole::Owner->value)
             ->call('save')
             ->assertHasNoErrors();
 
-        $this->assertSame(UserRole::Staff, $target->fresh()->role);
+        $this->assertSame(UserRole::Owner, $target->fresh()->role);
     }
 
     // -----------------------------------------------------------------
@@ -169,7 +210,7 @@ final class UserManagementTest extends TestCase
 
         Livewire::actingAs($owner)
             ->test(Form::class, ['user' => $owner])
-            ->set('role', UserRole::Customer->value)
+            ->set('role', UserRole::Staff->value)
             ->call('save')
             ->assertHasErrors('role');
 

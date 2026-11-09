@@ -48,12 +48,12 @@ final class EditOpensInADialogTest extends TestCase
             ->assertSee('Edit Breeding Record');
     }
 
-    public function test_a_customer_gets_no_edit_dialog_and_cannot_open_one(): void
+    /** A bird's page is public, so a guest is on the very screen that holds the dialog. */
+    public function test_a_guest_gets_no_edit_dialog_and_cannot_open_one(): void
     {
         $bird = Broodcock::factory()->create();
 
-        Livewire::actingAs(User::factory()->customer()->create())
-            ->test(BirdShow::class, ['broodcock' => $bird])
+        Livewire::test(BirdShow::class, ['broodcock' => $bird])
             ->assertDontSee('broodcocks-form-title', escape: false)
             ->call('openForm')
             ->assertForbidden();

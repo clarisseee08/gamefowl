@@ -146,20 +146,17 @@ final class GenerateOffspringTest extends TestCase
         $this->assertSame(2, $record->fresh()->offspring_count);
     }
 
-    public function test_a_customer_cannot_even_view_a_breeding_record(): void
+    public function test_a_guest_cannot_even_view_a_breeding_record(): void
     {
         $record = BreedingRecord::factory()->create();
-
-        $this->actingAs(User::factory()->customer()->create());
 
         Livewire::test(Show::class, ['record' => $record])->assertForbidden();
     }
 
-    public function test_a_customer_cannot_reach_the_breeding_list(): void
+    public function test_a_guest_cannot_reach_the_breeding_list(): void
     {
-        $this->actingAs(User::factory()->customer()->create())
-            ->get(route('breeding.index'))
-            ->assertForbidden();
+        $this->get(route('breeding.index'))
+            ->assertRedirect(route('login'));
     }
 
     // ---------------------------------------------------------------

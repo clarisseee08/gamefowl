@@ -165,7 +165,7 @@ class ReportController extends Controller
     {
         abort_unless($this->registry->has($report), 404, 'That report does not exist.');
 
-        // Reports aggregate breeding and mortality data customers must never
+        // Reports aggregate breeding and mortality data the public must never
         // see, so generation is gated by ReportPolicy::create().
         $this->authorize('create', Report::class);
 

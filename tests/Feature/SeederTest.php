@@ -32,7 +32,7 @@ final class SeederTest extends TestCase
 
     /** @var array<class-string, int> */
     private const EXPECTED_COUNTS = [
-        User::class => 3,
+        User::class => 2,
         Pen::class => 4,
         Broodcock::class => 30,
         HealthRecord::class => 60,
@@ -54,14 +54,14 @@ final class SeederTest extends TestCase
         }
     }
 
-    public function test_the_three_demo_accounts_exist_with_the_right_roles(): void
+    /** One per role - and no customer account, because the public side needs no sign-in. */
+    public function test_the_two_demo_accounts_exist_with_the_right_roles(): void
     {
         $this->seed();
 
         $expected = [
             UserSeeder::OWNER_EMAIL => UserRole::Owner,
             UserSeeder::STAFF_EMAIL => UserRole::Staff,
-            UserSeeder::CUSTOMER_EMAIL => UserRole::Customer,
         ];
 
         foreach ($expected as $email => $role) {
@@ -74,13 +74,12 @@ final class SeederTest extends TestCase
         }
     }
 
-    public function test_the_two_internal_accounts_have_a_position_recorded(): void
+    public function test_both_demo_accounts_have_a_position_recorded(): void
     {
         $this->seed();
 
         $this->assertNotNull(User::query()->where('email', UserSeeder::OWNER_EMAIL)->value('position'));
         $this->assertNotNull(User::query()->where('email', UserSeeder::STAFF_EMAIL)->value('position'));
-        $this->assertNull(User::query()->where('email', UserSeeder::CUSTOMER_EMAIL)->value('position'));
     }
 
     public function test_every_demo_account_can_authenticate_with_the_documented_password(): void
@@ -90,7 +89,6 @@ final class SeederTest extends TestCase
         $emails = [
             UserSeeder::OWNER_EMAIL,
             UserSeeder::STAFF_EMAIL,
-            UserSeeder::CUSTOMER_EMAIL,
         ];
 
         foreach ($emails as $email) {

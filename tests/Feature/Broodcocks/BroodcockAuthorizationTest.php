@@ -25,7 +25,7 @@ final class BroodcockAuthorizationTest extends TestCase
     use RefreshDatabase;
 
     // ---------------------------------------------------------------
-    // Viewing - all three roles may browse the catalogue
+    // Viewing - both roles may browse the record list
     // ---------------------------------------------------------------
 
     public static function allRoles(): array
@@ -33,7 +33,6 @@ final class BroodcockAuthorizationTest extends TestCase
         return [
             'owner' => ['owner'],
             'staff' => ['staff'],
-            'customer' => ['customer'],
         ];
     }
 
@@ -115,17 +114,14 @@ final class BroodcockAuthorizationTest extends TestCase
             ->assertOk();
     }
 
-    public function test_a_customer_cannot_open_the_create_form(): void
+    public function test_a_guest_cannot_open_the_create_form(): void
     {
-        $this->actingAs(User::factory()->customer()->create())
-            ->get(route('broodcocks.create'))
-            ->assertForbidden();
+        $this->get(route('broodcocks.create'))
+            ->assertRedirect(route('login'));
     }
 
-    public function test_a_customer_cannot_create_a_broodcock_through_the_component(): void
+    public function test_a_guest_cannot_create_a_broodcock_through_the_component(): void
     {
-        $this->actingAs(User::factory()->customer()->create());
-
         Livewire::test(Form::class)->assertForbidden();
 
         $this->assertDatabaseCount('broodcocks', 0);
@@ -149,13 +145,12 @@ final class BroodcockAuthorizationTest extends TestCase
         $this->assertSame('Renamed', $bird->fresh()->name);
     }
 
-    public function test_a_customer_cannot_update_a_broodcock(): void
+    public function test_a_guest_cannot_update_a_broodcock(): void
     {
         $bird = Broodcock::factory()->create(['name' => 'Original']);
 
-        $this->actingAs(User::factory()->customer()->create())
-            ->get(route('broodcocks.edit', $bird))
-            ->assertForbidden();
+        $this->get(route('broodcocks.edit', $bird))
+            ->assertRedirect(route('login'));
 
         $this->assertSame('Original', $bird->fresh()->name);
     }
@@ -194,11 +189,10 @@ final class BroodcockAuthorizationTest extends TestCase
         $this->assertNotSoftDeleted($bird);
     }
 
-    public function test_a_customer_cannot_delete_a_broodcock(): void
+    /** A bird's page is public, so the guest really is on the screen that holds delete. */
+    public function test_a_guest_cannot_delete_a_broodcock(): void
     {
         $bird = Broodcock::factory()->create();
-
-        $this->actingAs(User::factory()->customer()->create());
 
         Livewire::test(Show::class, ['broodcock' => $bird])
             ->call('delete')
@@ -219,18 +213,17 @@ final class BroodcockAuthorizationTest extends TestCase
     }
 
     // ---------------------------------------------------------------
-    // Data hiding - customers must not see internal remarks
+    // Data hiding - guests must not see internal remarks
     // ---------------------------------------------------------------
 
-    public function test_a_customer_does_not_see_internal_notes(): void
+    public function test_a_guest_does_not_see_internal_notes(): void
     {
         $bird = Broodcock::factory()->create([
             'name' => 'Bruno',
             'notes' => 'SECRET-INTERNAL-COST-DATA',
         ]);
 
-        $this->actingAs(User::factory()->customer()->create())
-            ->get(route('broodcocks.show', $bird))
+        $this->get(route('broodcocks.show', $bird))
             ->assertOk()
             ->assertSee('Bruno')
             ->assertDontSee('SECRET-INTERNAL-COST-DATA');

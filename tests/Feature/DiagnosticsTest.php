@@ -63,13 +63,6 @@ final class DiagnosticsTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_a_customer_cannot_open_it(): void
-    {
-        $this->actingAs(User::factory()->customer()->create())
-            ->get(route('diagnostics'))
-            ->assertForbidden();
-    }
-
     /** Especially not now that parts of this site are public. */
     public function test_a_guest_cannot_open_it(): void
     {

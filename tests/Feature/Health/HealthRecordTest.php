@@ -328,13 +328,12 @@ final class HealthRecordTest extends TestCase
             ->assertSee(route('health.edit', $record), escape: false);
     }
 
-    public function test_a_customer_sees_no_edit_link_on_the_health_panel(): void
+    public function test_a_guest_sees_no_edit_link_on_the_health_panel(): void
     {
         $bird = Broodcock::factory()->create();
         $record = HealthRecord::factory()->for($bird)->create();
 
-        Livewire::actingAs(User::factory()->customer()->create())
-            ->test(BroodcockHealthHistory::class, ['broodcock' => $bird])
+        Livewire::test(BroodcockHealthHistory::class, ['broodcock' => $bird])
             ->assertDontSee(route('health.edit', $record), escape: false);
     }
 }

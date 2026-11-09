@@ -8,8 +8,8 @@ use App\Models\BroodcockPhoto;
 use App\Models\User;
 
 /**
- * Photos are part of the customer-facing catalogue, so anyone signed in may
- * view them; only farm staff may upload or change them.
+ * Photos are part of the public catalogue, so anyone may view them, signed in
+ * or not; only farm staff may upload or change them.
  */
 final class BroodcockPhotoPolicy
 {

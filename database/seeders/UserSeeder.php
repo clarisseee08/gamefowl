@@ -10,8 +10,9 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * The three demo accounts, one per role, documented in the README so the panel
- * can sign in as each of them during the defense.
+ * The two demo accounts, one per role, documented in the README so the panel
+ * can sign in as each of them during the defense. There is no customer
+ * account: the public side of the site needs no sign-in.
  *
  * Keyed on `email` through updateOrCreate(), so re-running the seeder resets
  * the demo passwords rather than colliding with the UNIQUE index.
@@ -22,14 +23,12 @@ final class UserSeeder extends Seeder
 
     public const STAFF_EMAIL = 'staff@ssguad.test';
 
-    public const CUSTOMER_EMAIL = 'customer@ssguad.test';
-
     /** Documented in the README. Demo data only - never a production password. */
     public const DEMO_PASSWORD = 'password';
 
     public function run(): void
     {
-        // Hash once: bcrypt is deliberately slow, and all three share a password.
+        // Hash once: bcrypt is deliberately slow, and both share a password.
         $password = Hash::make(self::DEMO_PASSWORD);
 
         $accounts = [
@@ -48,14 +47,6 @@ final class UserSeeder extends Seeder
                 'position' => 'Farm Record Keeper',
                 'contact_number' => '09284567890',
                 'address' => 'Barangay Bangad, Cabanatuan City, Nueva Ecija',
-            ],
-            [
-                'email' => self::CUSTOMER_EMAIL,
-                'full_name' => 'Ricardo B. Villanueva',
-                'role' => UserRole::Customer,
-                'position' => null,
-                'contact_number' => '09399876543',
-                'address' => 'Barangay Sto. Domingo, Sta. Rosa, Nueva Ecija',
             ],
         ];
 

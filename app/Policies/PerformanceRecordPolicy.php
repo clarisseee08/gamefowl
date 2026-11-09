@@ -8,8 +8,9 @@ use App\Models\PerformanceRecord;
 use App\Models\User;
 
 /**
- * Customers are promised visibility of performance history, so viewing is open
- * to all active accounts; internal remarks are filtered at the view layer.
+ * The public are promised visibility of performance history, so viewing is
+ * open to guests and all active accounts; internal remarks are filtered at the
+ * view layer.
  */
 final class PerformanceRecordPolicy
 {

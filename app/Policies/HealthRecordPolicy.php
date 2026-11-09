@@ -8,9 +8,9 @@ use App\Models\HealthRecord;
 use App\Models\User;
 
 /**
- * Customers are explicitly promised visibility of "health status", so they may
- * view health records - but the internal `remarks` field is filtered out for
- * them at the view layer.
+ * The public are explicitly promised visibility of "health status", so a bird's
+ * health records show on its public page - but the internal `remarks` field is
+ * filtered out for guests at the view layer.
  */
 final class HealthRecordPolicy
 {
@@ -55,7 +55,7 @@ final class HealthRecordPolicy
         return $user->is_active && $user->isInternal();
     }
 
-    /** Internal remarks are never shown to customers. */
+    /** Internal remarks are never shown to guests. */
     public function viewRemarks(?User $user, HealthRecord $record): bool
     {
         return $user !== null && $user->is_active && $user->isInternal();

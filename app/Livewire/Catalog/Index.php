@@ -10,10 +10,10 @@ use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 /**
- * The customer-facing catalogue, as a page of its own.
+ * The public catalogue, as a page of its own.
  *
  * Deliberately a separate screen from the staff broodcock index rather than a
- * role-switched version of it. A customer browsing available stock and a
+ * role-switched version of it. A buyer browsing available stock and a
  * record keeper doing data entry want genuinely different things: the
  * catalogue is photo-led, hides farm-internal vocabulary (pens, statuses like
  * "resting"), and only ever shows birds that are actually on the farm.
@@ -35,8 +35,7 @@ use Livewire\Component;
  * BroodcockPolicy::viewAny() accepts a null user.
  *
  * THE SHELL DEPENDS ON WHO IS LOOKING - see ChoosesShellByViewer. Staff get
- * the console shell so they keep their sidebar; a customer gets the public
- * one.
+ * the console shell so they keep their sidebar; a guest gets the public one.
  */
 final class Index extends Component
 {

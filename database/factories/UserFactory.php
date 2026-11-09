@@ -28,7 +28,8 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
-            'role' => UserRole::Customer,
+            // The least-privileged real role. A test about the owner says so.
+            'role' => UserRole::Staff,
             'contact_number' => fake()->numerify('09#########'),
             'address' => fake()->address(),
             'position' => null,
@@ -58,14 +59,6 @@ class UserFactory extends Factory
         return $this->state(fn () => [
             'role' => UserRole::Staff,
             'position' => 'Record Keeper',
-        ]);
-    }
-
-    public function customer(): static
-    {
-        return $this->state(fn () => [
-            'role' => UserRole::Customer,
-            'position' => null,
         ]);
     }
 

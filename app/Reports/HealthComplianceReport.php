@@ -28,7 +28,7 @@ use InvalidArgumentException;
  * follow-up scheduled for today has not been missed yet.
  *
  * REMARKS ARE INCLUDED. `health_records.remarks` is internal-only, and so is
- * this report - ReportPolicy::create() denies customers outright, and the
+ * this report - ReportPolicy::create() admits farm staff only, and the
  * controller authorizes before the query runs. The remark is usually the reason
  * a follow-up matters ("reacted to the first dose", "re-dose after moult"), so
  * handing a keeper an overdue list without it would strip the one piece of
