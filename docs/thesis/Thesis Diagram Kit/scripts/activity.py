@@ -200,8 +200,8 @@ VISITOR = [
     ("Browse the Catalogue", ["Search and Filter Birds", "Open a Bird's Page", "View Photos and Details", "View Health and Performance", "View Family Tree"]),
     ("View the About Page", ["Read About the Farm", "View Bloodlines"]),
     ("View the Visit Page", ["View Contact Details", "Call or Email the Farm", "Open the Map"]),
-    ("Sign In (Customers)", ["Enter Login Credentials", "Browse as a Customer"]),
-    ("Logout", []),
+    # No sign-in: the public side of the system has no accounts.
+    ("Leave the Website", []),
 ]
 
 

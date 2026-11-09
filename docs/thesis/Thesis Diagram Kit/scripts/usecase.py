@@ -119,13 +119,11 @@ diagram("uc-staff", "Farm Staff", [
     ("Logout", []),
 ])
 
-diagram("uc-visitor", "Customer /\nPublic Visitor", [
+diagram("uc-visitor", "Public\nVisitor", [
     ("View Home Page", []),
     ("Browse Catalogue", [(E, "Search and Filter Birds"), (E, "Show Birds for Sale")]),
     ("View Bird Details", [(I, "View Photos"), (E, "View Health Records"), (E, "View Performance Records")]),
     ("View Family Tree", []),
     ("View About Page", [(E, "View Bloodlines")]),
     ("View Visit Page", [(I, "View Contact Details"), (E, "Call or Email the Farm"), (E, "Open Map")]),
-    ("Login (Customer)", [(E, "Reset Password")]),
-    ("Logout (Customer)", []),
 ])
