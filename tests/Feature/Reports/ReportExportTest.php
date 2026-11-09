@@ -187,30 +187,10 @@ final class ReportExportTest extends TestCase
             ->assertOk();
     }
 
-    /**
-     * Reports aggregate breeding and mortality figures a customer must never
-     * see, so the export endpoints are closed to them outright.
-     */
-    public function test_a_customer_cannot_generate_a_report(): void
+    public function test_a_guest_cannot_view_the_reports_screen(): void
     {
-        $this->seedSomething();
-
-        $this->actingAs(User::factory()->customer()->create())
-            ->get(route('reports.csv', 'mortality'))
-            ->assertForbidden();
-
-        $this->actingAs(User::factory()->customer()->create())
-            ->get(route('reports.pdf', 'mortality'))
-            ->assertForbidden();
-
-        $this->assertSame(0, Report::count(), 'A refused export must not write an audit row.');
-    }
-
-    public function test_a_customer_cannot_view_the_reports_screen(): void
-    {
-        $this->actingAs(User::factory()->customer()->create())
-            ->get(route('reports.index'))
-            ->assertForbidden();
+        $this->get(route('reports.index'))
+            ->assertRedirect(route('login'));
     }
 
     public function test_a_guest_cannot_generate_a_report(): void
@@ -218,7 +198,10 @@ final class ReportExportTest extends TestCase
         $this->get(route('reports.csv', 'broodcock_inventory'))
             ->assertRedirect(route('login'));
 
-        $this->assertSame(0, Report::count());
+        $this->get(route('reports.pdf', 'mortality'))
+            ->assertRedirect(route('login'));
+
+        $this->assertSame(0, Report::count(), 'A refused export must not write an audit row.');
     }
 
     public function test_a_deactivated_owner_cannot_generate_a_report(): void

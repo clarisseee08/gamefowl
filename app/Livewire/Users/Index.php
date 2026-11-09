@@ -230,9 +230,9 @@ final class Index extends Component
 
     /**
      * The KPI tiles, from one grouped count: every account, how many can sign
-     * in, the farm's own people (owner and staff) and the customers.
+     * in, and how many hold each role.
      *
-     * @return array{total: int, active: int, internal: int, customers: int}
+     * @return array{total: int, active: int, owners: int, staff: int}
      */
     #[Computed]
     public function stats(): array
@@ -248,8 +248,8 @@ final class Index extends Component
         return [
             'total' => $sum(fn (): bool => true),
             'active' => $sum(fn (User $row): bool => (bool) $row->is_active),
-            'internal' => $sum(fn (User $row): bool => $role($row) !== UserRole::Customer->value),
-            'customers' => $sum(fn (User $row): bool => $role($row) === UserRole::Customer->value),
+            'owners' => $sum(fn (User $row): bool => $role($row) === UserRole::Owner->value),
+            'staff' => $sum(fn (User $row): bool => $role($row) === UserRole::Staff->value),
         ];
     }
 

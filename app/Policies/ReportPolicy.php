@@ -9,7 +9,7 @@ use App\Models\User;
 
 /**
  * Reports aggregate farm-wide data, including breeding and mortality figures
- * customers must never see. Generation and history are internal-only.
+ * the public must never see. Generation and history are internal-only.
  */
 final class ReportPolicy
 {

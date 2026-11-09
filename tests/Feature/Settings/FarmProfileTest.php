@@ -81,13 +81,6 @@ final class FarmProfileTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_a_customer_cannot_open_the_farm_profile(): void
-    {
-        $this->actingAs(User::factory()->customer()->create())
-            ->get(route('settings.edit'))
-            ->assertForbidden();
-    }
-
     public function test_a_guest_is_sent_to_sign_in(): void
     {
         $this->get(route('settings.edit'))->assertRedirect(route('login'));

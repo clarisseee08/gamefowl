@@ -13,7 +13,7 @@ CLASSES = {
               "enum role", "string contact_number", "string address", "string position", "string profile_photo_path",
               "string profile_photo_disk", "boolean is_active", "string remember_token", "timestamps timestamps",
               "timestamp deleted_at"],
-             ["isOwner()", "isStaff()", "isCustomer()", "isInternal()", "profilePhotoUrl()", "hasProfilePhoto()"]),
+             ["isOwner()", "isStaff()", "isInternal()","profilePhotoUrl()", "hasProfilePhoto()"]),
     "Broodcock": (["bigint id", "string band_number", "string name", "string breed", "string bloodline", "enum class",
                    "enum sex", "date date_hatched", "date date_acquired", "decimal weight", "string color",
                    "string comb_type", "string leg_color", "text distinguishing_marks", "enum status",

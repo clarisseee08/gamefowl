@@ -44,10 +44,10 @@
                        caption="Everyone who has an account" />
         <x-ui.kpi-tile label="Active" icon="user-check" :value="number_format($stats['active'])"
                        :caption="number_format($stats['total'] - $stats['active']).' deactivated'" />
-        <x-ui.kpi-tile label="Farm staff" icon="shield-check" :value="number_format($stats['internal'])"
-                       caption="The owner and staff who keep the records" />
-        <x-ui.kpi-tile label="Customers" icon="eye" :value="number_format($stats['customers'])"
-                       caption="Can browse the catalogue" />
+        <x-ui.kpi-tile label="Owners (Admin)" icon="shield-check" :value="number_format($stats['owners'])"
+                       caption="Full access, including user accounts" />
+        <x-ui.kpi-tile label="Record Keepers" icon="clipboard-list" :value="number_format($stats['staff'])"
+                       caption="Add and edit the farm's records" />
     </x-ui.kpi-row>
 
     <div class="mt-5 overflow-x-auto" data-scroll-x>

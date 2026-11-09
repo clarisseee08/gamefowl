@@ -7,8 +7,8 @@ namespace App\Policies;
 use App\Models\User;
 
 /**
- * User management is owner-only, in full. Record keepers and customers cannot
- * see the account list at all, let alone change roles.
+ * User management is owner-only, in full. Record keepers cannot see the
+ * account list at all, let alone change roles.
  */
 final class UserPolicy
 {

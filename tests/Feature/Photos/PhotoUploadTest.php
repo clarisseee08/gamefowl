@@ -361,14 +361,12 @@ final class PhotoUploadTest extends TestCase
         $this->assertDatabaseMissing('broodcock_photos', ['id' => $photo->id]);
     }
 
-    public function test_a_customer_cannot_open_the_delete_dialog(): void
+    public function test_a_guest_cannot_open_the_delete_dialog(): void
     {
-        $customer = User::factory()->customer()->create();
         $bird = Broodcock::factory()->create();
         $photo = BroodcockPhoto::factory()->forBroodcock($bird)->create();
 
-        Livewire::actingAs($customer)
-            ->test(Gallery::class, ['broodcock' => $bird])
+        Livewire::test(Gallery::class, ['broodcock' => $bird])
             ->call('confirmDelete', $photo->id)
             ->assertForbidden();
     }

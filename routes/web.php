@@ -70,11 +70,11 @@ Route::livewire('/', Landing\Index::class)->name('home')->middleware('active');
 | mid-session is still signed out even while browsing a public page, rather
 | than the public pages being a place where deactivation does not take effect.
 |
-| WHAT A GUEST SEES is not a new visibility tier. The Policies treat a null
-| user as the equivalent of an active customer, and the views were already
-| written to hide internal fields from that role - see $canSeeInternal in
-| broodcocks/show.blade.php. So this opens up who can reach these screens
-| without changing what the screens render.
+| WHAT A GUEST SEES. The public have no accounts at all (the customer role
+| was removed); a guest is simply anyone not signed in. The views hide every
+| internal field from a guest - see $canSeeInternal in
+| broodcocks/show.blade.php - so these screens are reachable without changing
+| what they render.
 |
 | BroodcockPolicy::view() additionally restricts a guest to birds the
 | catalogue itself would list: ids in URLs are guessable, and a dead bird or
@@ -108,7 +108,7 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         Route::livewire('/{broodcock}/edit', Broodcocks\Index::class)->name('edit');
     });
 
-    /* Health records - customers may view, only staff may write. */
+    /* Health records - farm staff only. The public see a bird's health on its own page. */
     Route::prefix('health')->name('health.')->group(function (): void {
         Route::livewire('/', Health\Index::class)->name('index');
         Route::livewire('/schedule', Health\Schedule::class)->name('schedule');
@@ -116,7 +116,7 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         Route::livewire('/{record}/edit', Health\Index::class)->name('edit');
     });
 
-    /* Performance records - customers may view, only staff may write. */
+    /* Performance records - farm staff only. The public see a bird's history on its own page. */
     Route::prefix('performance')->name('performance.')->group(function (): void {
         Route::livewire('/', Performance\Index::class)->name('index');
         Route::livewire('/create', Performance\Index::class)->name('create');
@@ -179,7 +179,7 @@ Route::middleware(['auth', 'active'])->group(function (): void {
      * User management - OWNER ONLY.
      *
      * There is no self-registration anywhere in this system; every account is
-     * created here. UserPolicy denies staff and customers outright.
+     * created here. UserPolicy denies record keepers outright.
      */
     Route::prefix('users')->name('users.')->group(function (): void {
         Route::livewire('/', Users\Index::class)->name('index');

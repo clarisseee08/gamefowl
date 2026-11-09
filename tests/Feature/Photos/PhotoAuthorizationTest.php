@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Photos;
 
 use App\Enums\BroodcockStatus;
-use App\Enums\UserRole;
 use App\Http\Controllers\BroodcockPhotoController;
 use App\Livewire\Photos\Gallery;
 use App\Livewire\Photos\Upload;
@@ -51,9 +50,9 @@ final class PhotoAuthorizationTest extends TestCase
         $this->assertUploadAllowedFor(User::factory()->staff()->create());
     }
 
-    public function test_a_customer_cannot_upload_photos(): void
+    public function test_a_guest_cannot_upload_photos(): void
     {
-        $this->assertUploadDeniedFor(User::factory()->customer()->create());
+        $this->assertUploadDeniedFor(null);
     }
 
     public function test_a_deactivated_staff_member_cannot_upload_photos(): void
@@ -74,8 +73,8 @@ final class PhotoAuthorizationTest extends TestCase
             ->test(Upload::class, ['broodcock' => $bird])
             ->set('photos', [UploadedFile::fake()->image('bird.jpg')]);
 
-        // The owner demotes them while the upload form is still open.
-        $staff->update(['role' => UserRole::Customer]);
+        // The owner deactivates them while the upload form is still open.
+        $staff->update(['is_active' => false]);
 
         $component->call('save')->assertForbidden();
 
@@ -86,14 +85,12 @@ final class PhotoAuthorizationTest extends TestCase
     // Deleting
     // -----------------------------------------------------------------
 
-    public function test_a_customer_cannot_delete_a_photo(): void
+    public function test_a_guest_cannot_delete_a_photo(): void
     {
-        $customer = User::factory()->customer()->create();
         $bird = Broodcock::factory()->create();
         $photo = BroodcockPhoto::factory()->forBroodcock($bird)->create();
 
-        Livewire::actingAs($customer)
-            ->test(Gallery::class, ['broodcock' => $bird])
+        Livewire::test(Gallery::class, ['broodcock' => $bird])
             ->call('delete', $photo->id)
             ->assertForbidden();
 
@@ -117,15 +114,13 @@ final class PhotoAuthorizationTest extends TestCase
     // Changing the main photo and the caption
     // -----------------------------------------------------------------
 
-    public function test_a_customer_cannot_change_the_main_photo(): void
+    public function test_a_guest_cannot_change_the_main_photo(): void
     {
-        $customer = User::factory()->customer()->create();
         $bird = Broodcock::factory()->create();
         $primary = BroodcockPhoto::factory()->forBroodcock($bird)->primary()->create();
         $other = BroodcockPhoto::factory()->forBroodcock($bird)->create();
 
-        Livewire::actingAs($customer)
-            ->test(Gallery::class, ['broodcock' => $bird])
+        Livewire::test(Gallery::class, ['broodcock' => $bird])
             ->call('setPrimary', $other->id)
             ->assertForbidden();
 
@@ -133,14 +128,12 @@ final class PhotoAuthorizationTest extends TestCase
         $this->assertFalse($other->fresh()->is_primary);
     }
 
-    public function test_a_customer_cannot_edit_a_caption(): void
+    public function test_a_guest_cannot_edit_a_caption(): void
     {
-        $customer = User::factory()->customer()->create();
         $bird = Broodcock::factory()->create();
         $photo = BroodcockPhoto::factory()->forBroodcock($bird)->withCaption('Untouched')->create();
 
-        Livewire::actingAs($customer)
-            ->test(Gallery::class, ['broodcock' => $bird])
+        Livewire::test(Gallery::class, ['broodcock' => $bird])
             ->call('startEditingCaption', $photo->id)
             ->assertForbidden();
 
@@ -151,14 +144,12 @@ final class PhotoAuthorizationTest extends TestCase
     // Viewing - the gallery
     // -----------------------------------------------------------------
 
-    public function test_a_customer_can_view_the_gallery(): void
+    public function test_a_guest_can_view_the_gallery(): void
     {
-        $customer = User::factory()->customer()->create();
         $bird = Broodcock::factory()->create();
         BroodcockPhoto::factory()->forBroodcock($bird)->withCaption('Visible to buyers')->create();
 
-        Livewire::actingAs($customer)
-            ->test(Gallery::class, ['broodcock' => $bird])
+        Livewire::test(Gallery::class, ['broodcock' => $bird])
             ->assertOk()
             ->assertSee('Visible to buyers')
             // The management buttons are a courtesy, not the gate - but they
@@ -185,11 +176,11 @@ final class PhotoAuthorizationTest extends TestCase
     // Viewing - the private file itself
     // -----------------------------------------------------------------
 
-    public function test_a_signed_in_customer_can_load_a_photo_file(): void
+    public function test_a_signed_in_user_can_load_a_photo_file(): void
     {
         $photo = $this->photoWithFile();
 
-        $response = $this->actingAs(User::factory()->customer()->create())
+        $response = $this->actingAs(User::factory()->staff()->create())
             ->get(route('photos.show', $photo));
 
         $response->assertOk();
@@ -264,13 +255,17 @@ final class PhotoAuthorizationTest extends TestCase
         $this->assertSame(1, $bird->photos()->count());
     }
 
-    private function assertUploadDeniedFor(User $user): void
+    /** A null user is a guest. */
+    private function assertUploadDeniedFor(?User $user): void
     {
         $bird = Broodcock::factory()->create();
 
+        if ($user !== null) {
+            Livewire::actingAs($user);
+        }
+
         // The Policy is consulted in mount(), so the screen never even renders.
-        Livewire::actingAs($user)
-            ->test(Upload::class, ['broodcock' => $bird])
+        Livewire::test(Upload::class, ['broodcock' => $bird])
             ->assertForbidden();
 
         $this->assertSame(0, $bird->photos()->count());

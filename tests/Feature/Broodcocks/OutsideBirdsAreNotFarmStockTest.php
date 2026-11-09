@@ -50,8 +50,7 @@ final class OutsideBirdsAreNotFarmStockTest extends TestCase
         Broodcock::factory()->create(['name' => 'Bagwis']);
         Broodcock::factory()->external()->create(['name' => 'Borrowed Hen']);
 
-        Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Catalog::class)
+        Livewire::test(Catalog::class)
             ->assertSee('Bagwis')
             ->assertDontSee('Borrowed Hen');
     }
@@ -60,8 +59,7 @@ final class OutsideBirdsAreNotFarmStockTest extends TestCase
     {
         Broodcock::factory()->external()->create(['bloodline' => 'Borrowed Line']);
 
-        $options = Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Catalog::class)
+        $options = Livewire::test(Catalog::class)
             ->instance()
             ->bloodlineOptions;
 

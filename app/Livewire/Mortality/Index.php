@@ -26,7 +26,8 @@ use Livewire\WithPagination;
  * The mortality register.
  *
  * Mortality is internal farm data - MortalityRecordPolicy::viewAny() keeps
- * customers out, and it is checked in mount() before anything is queried.
+ * everyone but farm staff out, and it is checked in mount() before anything is
+ * queried.
  */
 #[Title('Mortality')]
 final class Index extends Component

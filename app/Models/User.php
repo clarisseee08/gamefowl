@@ -99,11 +99,6 @@ class User extends Authenticatable
         return $this->role === UserRole::Staff;
     }
 
-    public function isCustomer(): bool
-    {
-        return $this->role === UserRole::Customer;
-    }
-
     /** Owner or staff - i.e. someone who works at the farm. */
     public function isInternal(): bool
     {

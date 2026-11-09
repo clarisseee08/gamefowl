@@ -51,14 +51,6 @@ final class LandingTest extends TestCase
             ->assertRedirect(route('dashboard'));
     }
 
-    public function test_a_customer_account_sees_the_landing_page(): void
-    {
-        $this->actingAs(User::factory()->customer()->create())
-            ->get(route('home'))
-            ->assertOk()
-            ->assertSee(config('gfms.farm.name'));
-    }
-
     public function test_the_stock_is_on_the_front_page(): void
     {
         Broodcock::factory()->create(['name' => 'Bagwis']);

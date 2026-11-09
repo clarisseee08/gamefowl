@@ -8,9 +8,9 @@ use App\Models\BreedingRecord;
 use App\Models\User;
 
 /**
- * Breeding data is internal farm information. Customers browsing the catalogue
- * have no business seeing mating records or fertility figures, so viewAny and
- * view are restricted to owners and record keepers.
+ * Breeding data is internal farm information. The public browsing the
+ * catalogue have no business seeing mating records or fertility figures, so
+ * viewAny and view are restricted to owners and record keepers.
  */
 final class BreedingRecordPolicy
 {

@@ -10,7 +10,7 @@ use App\Models\User;
 /**
  * Authorization for the central entity.
  *
- * Customers may browse the catalogue, but only owners and record keepers may
+ * The public may browse the catalogue, but only owners and record keepers may
  * change anything, and only owners may delete. Every check here runs
  * server-side on every action - hiding a button in Blade is not authorization.
  */
@@ -20,10 +20,10 @@ final class BroodcockPolicy
      * Everyone can see the catalogue, including visitors who are not signed in.
      *
      * The farm advertises itself publicly, so $user is NULLABLE here and
-     * throughout the read side of this policy. A null user is a guest, and a
-     * guest is treated as the equivalent of an active customer - the surface
-     * that role was already designed and tested against. This changes who can
-     * reach a screen, never what the screen shows.
+     * throughout the read side of this policy. A null user is a guest - the
+     * public side of the farm, which has no accounts. The views hide every
+     * internal field from a guest ($canSeeInternal), so being public changes
+     * who can reach a screen, never what the screen shows.
      *
      * Laravel will not even call a policy method for a guest unless the User
      * parameter is nullable; without the `?` it silently denies instead.
@@ -80,7 +80,7 @@ final class BroodcockPolicy
         return false;
     }
 
-    /** Internal remarks and notes are hidden from customers - and from guests. */
+    /** Internal remarks and notes are hidden from guests. */
     public function viewInternalNotes(?User $user, Broodcock $broodcock): bool
     {
         return $user !== null && $user->is_active && $user->isInternal();

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Health;
 
 use App\Enums\HealthRecordType;
+use App\Livewire\Health\BroodcockHealthHistory;
 use App\Livewire\Health\Form;
 use App\Livewire\Health\Index;
 use App\Models\Broodcock;
@@ -41,11 +42,18 @@ final class HealthAuthorizationTest extends TestCase
             ->get(route('health.index'))->assertOk();
     }
 
-    /** Customers are promised visibility of health status. */
-    public function test_a_customer_can_view_the_health_list(): void
+    /**
+     * The public are promised visibility of health status - on each bird's own
+     * page, not through the farm-wide list, which is a staff screen.
+     */
+    public function test_the_public_see_a_birds_health_on_its_page(): void
     {
-        $this->actingAs(User::factory()->customer()->create())
-            ->get(route('health.index'))->assertOk();
+        $bird = Broodcock::factory()->create();
+        HealthRecord::factory()->for($bird)->create(['product_name' => 'Newcastle Disease vaccine']);
+
+        Livewire::test(BroodcockHealthHistory::class, ['broodcock' => $bird])
+            ->assertOk()
+            ->assertSee('Newcastle Disease vaccine');
     }
 
     public function test_a_guest_cannot_view_health_records(): void
@@ -55,12 +63,11 @@ final class HealthAuthorizationTest extends TestCase
 
     /**
      * The vaccination schedule is a farm-management screen, not part of the
-     * customer catalogue.
+     * public catalogue.
      */
-    public function test_a_customer_cannot_view_the_vaccination_schedule(): void
+    public function test_a_guest_cannot_view_the_vaccination_schedule(): void
     {
-        $this->actingAs(User::factory()->customer()->create())
-            ->get(route('health.schedule'))->assertForbidden();
+        $this->get(route('health.schedule'))->assertRedirect(route('login'));
     }
 
     public function test_staff_can_view_the_vaccination_schedule(): void
@@ -70,21 +77,21 @@ final class HealthAuthorizationTest extends TestCase
     }
 
     // -----------------------------------------------------------------
-    // Internal remarks must never reach a customer
+    // Internal remarks must never reach the public
     // -----------------------------------------------------------------
 
-    public function test_a_customer_does_not_see_internal_remarks(): void
+    public function test_a_guest_does_not_see_internal_remarks(): void
     {
         $bird = Broodcock::factory()->create(['name' => 'Tala']);
         HealthRecord::factory()->for($bird)->create([
             'record_type' => HealthRecordType::Treatment,
+            'product_name' => 'Ivermectin',
             'remarks' => 'INTERNAL-ONLY-REMARK',
         ]);
 
-        $this->actingAs(User::factory()->customer()->create())
-            ->get(route('health.index'))
+        Livewire::test(BroodcockHealthHistory::class, ['broodcock' => $bird])
             ->assertOk()
-            ->assertSee('Tala')
+            ->assertSee('Ivermectin')
             ->assertDontSee('INTERNAL-ONLY-REMARK');
     }
 
@@ -102,18 +109,14 @@ final class HealthAuthorizationTest extends TestCase
     // Creating and editing - internal only
     // -----------------------------------------------------------------
 
-    public function test_a_customer_cannot_open_the_health_form(): void
+    public function test_a_guest_cannot_open_the_health_form(): void
     {
-        $this->actingAs(User::factory()->customer()->create())
-            ->get(route('health.create'))->assertForbidden();
+        $this->get(route('health.create'))->assertRedirect(route('login'));
     }
 
-    public function test_a_customer_cannot_record_a_health_record_through_the_component(): void
+    public function test_a_guest_cannot_record_a_health_record_through_the_component(): void
     {
-        $bird = Broodcock::factory()->create();
-
-        Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Form::class)
+        Livewire::test(Form::class)
             ->assertForbidden();
 
         $this->assertDatabaseCount('health_records', 0);
@@ -171,12 +174,11 @@ final class HealthAuthorizationTest extends TestCase
         $this->assertNotSoftDeleted('health_records', ['id' => $record->id]);
     }
 
-    public function test_a_customer_cannot_delete_a_health_record(): void
+    public function test_a_guest_cannot_delete_a_health_record(): void
     {
         $record = HealthRecord::factory()->create();
 
-        Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Index::class)
+        Livewire::test(Index::class)
             ->call('confirmDelete', $record->id)
             ->call('delete')
             ->assertForbidden();

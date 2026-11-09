@@ -6,7 +6,6 @@ namespace Tests\Feature;
 
 use App\Livewire\Catalog\Browse;
 use App\Models\Broodcock;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
@@ -34,13 +33,13 @@ final class CatalogCacheTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** Count queries touching the broodcock tables during one catalogue render. */
-    private function birdQueriesForOneRender(User $viewer): int
+    /** Count queries touching the broodcock tables during one catalogue render, as a guest. */
+    private function birdQueriesForOneRender(): int
     {
         DB::flushQueryLog();
         DB::enableQueryLog();
 
-        Livewire::actingAs($viewer)->test(Browse::class)->html();
+        Livewire::test(Browse::class)->html();
 
         $queries = collect(DB::getQueryLog())
             ->filter(fn (array $query): bool => str_contains($query['query'], 'broodcock'))
@@ -53,11 +52,10 @@ final class CatalogCacheTest extends TestCase
 
     public function test_a_repeat_catalogue_render_does_not_touch_the_broodcock_tables(): void
     {
-        $customer = User::factory()->customer()->create();
         Broodcock::factory()->count(3)->create();
 
-        $cold = $this->birdQueriesForOneRender($customer);
-        $warm = $this->birdQueriesForOneRender($customer);
+        $cold = $this->birdQueriesForOneRender();
+        $warm = $this->birdQueriesForOneRender();
 
         $this->assertGreaterThan(0, $cold, 'The first render should read the database.');
         $this->assertSame(0, $warm, 'The second render should be served entirely from cache.');
@@ -74,57 +72,53 @@ final class CatalogCacheTest extends TestCase
 
     public function test_a_newly_registered_bird_appears_in_an_already_cached_catalogue(): void
     {
-        $customer = User::factory()->customer()->create();
         Broodcock::factory()->create(['name' => 'Old Timer']);
 
-        Livewire::actingAs($customer)->test(Browse::class)->assertSee('Old Timer');
+        Livewire::test(Browse::class)->assertSee('Old Timer');
 
         Broodcock::factory()->create(['name' => 'New Arrival']);
 
-        Livewire::actingAs($customer)->test(Browse::class)
+        Livewire::test(Browse::class)
             ->assertSee('New Arrival')
             ->assertSee('Old Timer');
     }
 
     public function test_renaming_a_bird_updates_an_already_cached_catalogue(): void
     {
-        $customer = User::factory()->customer()->create();
         $bird = Broodcock::factory()->create(['name' => 'Wrong Name']);
 
-        Livewire::actingAs($customer)->test(Browse::class)->assertSee('Wrong Name');
+        Livewire::test(Browse::class)->assertSee('Wrong Name');
 
         $bird->update(['name' => 'Corrected Name']);
 
-        Livewire::actingAs($customer)->test(Browse::class)
+        Livewire::test(Browse::class)
             ->assertSee('Corrected Name')
             ->assertDontSee('Wrong Name');
     }
 
     public function test_removing_a_bird_drops_it_from_an_already_cached_catalogue(): void
     {
-        $customer = User::factory()->customer()->create();
         $bird = Broodcock::factory()->create(['name' => 'Departed Bird']);
         Broodcock::factory()->create(['name' => 'Remaining Bird']);
 
-        Livewire::actingAs($customer)->test(Browse::class)->assertSee('Departed Bird');
+        Livewire::test(Browse::class)->assertSee('Departed Bird');
 
         $bird->delete();
 
-        Livewire::actingAs($customer)->test(Browse::class)
+        Livewire::test(Browse::class)
             ->assertSee('Remaining Bird')
             ->assertDontSee('Departed Bird');
     }
 
     public function test_a_new_bloodline_appears_in_the_cached_filter_options(): void
     {
-        $customer = User::factory()->customer()->create();
         Broodcock::factory()->create(['bloodline' => 'Sweater']);
 
-        Livewire::actingAs($customer)->test(Browse::class)->assertSee('Sweater');
+        Livewire::test(Browse::class)->assertSee('Sweater');
 
         Broodcock::factory()->create(['bloodline' => 'Hatch']);
 
-        Livewire::actingAs($customer)->test(Browse::class)->assertSee('Hatch');
+        Livewire::test(Browse::class)->assertSee('Hatch');
     }
 
     /**
@@ -136,15 +130,14 @@ final class CatalogCacheTest extends TestCase
      */
     public function test_a_filtered_catalogue_is_cached_separately_from_the_full_one(): void
     {
-        $customer = User::factory()->customer()->create();
         Broodcock::factory()->create(['name' => 'Sweaterbird', 'bloodline' => 'Sweater']);
         Broodcock::factory()->create(['name' => 'Kelsobird', 'bloodline' => 'Kelso']);
 
-        Livewire::actingAs($customer)->test(Browse::class)
+        Livewire::test(Browse::class)
             ->assertSee('Sweaterbird')
             ->assertSee('Kelsobird');
 
-        Livewire::actingAs($customer)->test(Browse::class)
+        Livewire::test(Browse::class)
             ->set('bloodline', 'Sweater')
             ->assertSee('Sweaterbird')
             ->assertDontSee('Kelsobird');

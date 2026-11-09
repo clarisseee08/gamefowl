@@ -34,23 +34,15 @@ final class DashboardTest extends TestCase
             ->get(route('dashboard'))->assertOk();
     }
 
-    /**
-     * The dashboard is entirely internal figures, so a customer is sent to the
-     * catalogue instead. The Policy is what protects the data; this is the
-     * courtesy redirect on top of it.
-     */
-    public function test_a_customer_is_redirected_to_the_catalogue(): void
+    /** The dashboard is entirely internal figures; the public use the catalogue instead. */
+    public function test_a_guest_is_sent_to_sign_in(): void
     {
-        $this->actingAs(User::factory()->customer()->create())
-            ->get(route('dashboard'))
-            ->assertRedirect(route('catalog.index'));
+        $this->get(route('dashboard'))->assertRedirect(route('login'));
     }
 
-    public function test_a_customer_cannot_reach_the_dashboard_component_directly(): void
+    public function test_a_guest_cannot_reach_the_dashboard_component_directly(): void
     {
-        Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Overview::class)
-            ->assertForbidden();
+        Livewire::test(Overview::class)->assertForbidden();
     }
 
     // -----------------------------------------------------------------

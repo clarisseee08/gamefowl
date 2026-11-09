@@ -13,6 +13,7 @@ use App\Models\Broodcock;
 use App\Models\PerformanceRecord;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -55,13 +56,10 @@ final class PerformanceAuthorizationTest extends TestCase
             ->assertOk();
     }
 
-    public function test_a_customer_can_view_the_performance_list(): void
+    /** The farm-wide list is a staff screen; the public see each bird's own timeline. */
+    public function test_a_guest_cannot_reach_the_performance_list(): void
     {
-        PerformanceRecord::factory()->create();
-
-        Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Index::class)
-            ->assertOk();
+        $this->get(route('performance.index'))->assertRedirect(route('login'));
     }
 
     public function test_a_deactivated_user_cannot_view_the_performance_list(): void
@@ -73,30 +71,28 @@ final class PerformanceAuthorizationTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_a_customer_can_view_a_birds_timeline(): void
+    public function test_a_guest_can_view_a_birds_timeline(): void
     {
         $bird = Broodcock::factory()->male()->create();
         PerformanceRecord::factory()->win()->for($bird)->create();
 
-        Livewire::actingAs(User::factory()->customer()->create())
-            ->test(BroodcockTimeline::class, ['broodcock' => $bird])
+        Livewire::test(BroodcockTimeline::class, ['broodcock' => $bird])
             ->assertOk()
             ->assertSee('Win Rate');
     }
 
     // -----------------------------------------------------------------
-    // Internal remarks must never reach a customer
+    // Internal remarks must never reach the public
     // -----------------------------------------------------------------
 
-    public function test_a_customer_never_sees_internal_remarks_on_the_timeline(): void
+    public function test_a_guest_never_sees_internal_remarks_on_the_timeline(): void
     {
         $bird = Broodcock::factory()->male()->create();
         PerformanceRecord::factory()->win()->for($bird)->create([
             'remarks' => 'Secret internal note about conditioning cost.',
         ]);
 
-        Livewire::actingAs(User::factory()->customer()->create())
-            ->test(BroodcockTimeline::class, ['broodcock' => $bird])
+        Livewire::test(BroodcockTimeline::class, ['broodcock' => $bird])
             ->assertOk()
             ->assertDontSee('Secret internal note')
             ->assertDontSee('Remarks (staff only)');
@@ -120,17 +116,16 @@ final class PerformanceAuthorizationTest extends TestCase
 
         $this->assertTrue(User::factory()->owner()->create()->can('viewRemarks', $record));
         $this->assertTrue(User::factory()->staff()->create()->can('viewRemarks', $record));
-        $this->assertFalse(User::factory()->customer()->create()->can('viewRemarks', $record));
+        $this->assertFalse(Gate::forUser(null)->allows('viewRemarks', $record));
     }
 
     // -----------------------------------------------------------------
     // Creating - internal staff only
     // -----------------------------------------------------------------
 
-    public function test_a_customer_cannot_open_the_create_form(): void
+    public function test_a_guest_cannot_open_the_create_form(): void
     {
-        Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Form::class)
+        Livewire::test(Form::class)
             ->assertForbidden();
 
         $this->assertDatabaseCount('performance_records', 0);
@@ -166,12 +161,11 @@ final class PerformanceAuthorizationTest extends TestCase
     // Updating - internal staff only
     // -----------------------------------------------------------------
 
-    public function test_a_customer_cannot_open_the_edit_form(): void
+    public function test_a_guest_cannot_open_the_edit_form(): void
     {
         $record = PerformanceRecord::factory()->loss()->create();
 
-        Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Form::class, ['record' => $record])
+        Livewire::test(Form::class, ['record' => $record])
             ->assertForbidden();
 
         $this->assertSame(PerformanceResult::Loss, $record->refresh()->result);
@@ -220,12 +214,11 @@ final class PerformanceAuthorizationTest extends TestCase
         $this->assertNotSoftDeleted($record);
     }
 
-    public function test_a_customer_cannot_delete_a_performance_record(): void
+    public function test_a_guest_cannot_delete_a_performance_record(): void
     {
         $record = PerformanceRecord::factory()->create();
 
-        Livewire::actingAs(User::factory()->customer()->create())
-            ->test(Index::class)
+        Livewire::test(Index::class)
             ->call('confirmDelete', $record->id)
             ->assertForbidden();
 
@@ -264,7 +257,7 @@ final class PerformanceAuthorizationTest extends TestCase
 
         $this->assertFalse(User::factory()->owner()->create()->can('forceDelete', $record));
         $this->assertFalse(User::factory()->staff()->create()->can('forceDelete', $record));
-        $this->assertFalse(User::factory()->customer()->create()->can('forceDelete', $record));
+        $this->assertFalse(Gate::forUser(null)->allows('forceDelete', $record));
     }
 
     /**

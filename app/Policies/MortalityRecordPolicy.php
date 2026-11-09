@@ -8,7 +8,7 @@ use App\Models\MortalityRecord;
 use App\Models\User;
 
 /**
- * Mortality is internal farm information - customers do not see it.
+ * Mortality is internal farm information - the public do not see it.
  */
 final class MortalityRecordPolicy
 {

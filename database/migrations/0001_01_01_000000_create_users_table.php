@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\UserRole;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,10 +17,13 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
 
-            // Only three fixed roles, so an enum column plus Laravel Policies is
+            // A few fixed roles, so an enum column plus Laravel Policies is
             // enough - spatie/laravel-permission would be more machinery than
-            // this domain needs.
-            $table->enum('role', UserRole::values())->default(UserRole::Customer->value);
+            // this domain needs. The values are the ones this table was first
+            // built with, written out so the migration does not move when
+            // UserRole does: 'customer' was later removed by
+            // 2026_11_09_232637_remove_customer_role_from_users.
+            $table->enum('role', ['owner', 'staff', 'customer'])->default('customer');
 
             $table->string('contact_number', 40)->nullable();
             $table->string('address')->nullable();

@@ -69,12 +69,14 @@ count upwards through every record the farm has ever kept.
 
 ### Roles
 
-Three, enforced by Laravel Policies on every action rather than by hiding
+Two, enforced by Laravel Policies on every action rather than by hiding
 buttons:
 
 - **Owner** — everything, including deleting records and managing accounts.
 - **Record Keeper** — add and edit; cannot delete, cannot manage users.
-- **Customer** — the read-only catalogue.
+
+The public — buyers included — need no account: the catalogue, every bird's
+page and its family tree are open to anyone, with internal fields hidden.
 
 Nothing is ever hard-deleted. Records soft-delete and the activity log keeps the
 history, because an audit trail that can be erased is not an audit trail.
@@ -253,13 +255,12 @@ See `docs/handover/storage-setup.md`.
 
 ## Accounts
 
-`php artisan db:seed` creates three. **All use the password `password`.**
+`php artisan db:seed` creates two. **Both use the password `password`.**
 
 | Role | Email |
 |---|---|
 | Owner (Admin) | `owner@ssguad.test` |
 | Record Keeper | `staff@ssguad.test` |
-| Customer | `customer@ssguad.test` |
 
 > Change these before any real deployment. There is no self-registration
 > anywhere in the system; the owner creates every account.

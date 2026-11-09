@@ -123,7 +123,7 @@
                         </td>
                         <td{!! $cell !!}>{{ $row['recorded_by'] }}</td>
                         {{-- Internal remarks. This report is internal-only:
-                             ReportPolicy::create() denies customers, and the
+                             ReportPolicy::create() admits farm staff only, and the
                              controller authorizes before the query runs. --}}
                         <td{!! $cell !!}>{{ $row['remarks'] }}</td>
                     </tr>
