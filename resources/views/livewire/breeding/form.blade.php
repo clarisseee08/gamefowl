@@ -158,8 +158,7 @@
                     @foreach ([
                         ['eggs_set', 'Eggs Set', 'Total eggs put in the incubator.'],
                         ['eggs_fertile', 'Fertile Eggs', 'Of those, how many were fertile.'],
-                        ['eggs_hatched', 'Eggs Hatched', 'How many chicks actually hatched.'],
-                        ['offspring_count', 'Offspring Registered', 'Leave at 0 — you can add the chicks as bird records afterwards.'],
+                        ['eggs_hatched', 'Eggs Hatched', 'How many chicks actually hatched. After saving, use Register chicks on the next page to add them as birds.'],
                     ] as [$field, $label, $help])
                         <div>
                             <label for="{{ $field }}" class="d-fieldset-legend">{{ $label }}</label>

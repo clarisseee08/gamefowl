@@ -80,7 +80,9 @@ final class Form extends Component
 
     public int $eggs_hatched = 0;
 
-    public int $offspring_count = 0;
+    // No offspring_count here. How many chicks are registered is counted by
+    // GenerateOffspring as it creates the birds; a typed number hid the
+    // Register chicks button and left the sire's Offspring tab empty.
 
     public ?string $notes = null;
 
@@ -99,7 +101,6 @@ final class Form extends Component
                 'eggs_set' => $record->eggs_set,
                 'eggs_fertile' => $record->eggs_fertile,
                 'eggs_hatched' => $record->eggs_hatched,
-                'offspring_count' => $record->offspring_count,
                 'notes' => $record->notes,
             ]);
 

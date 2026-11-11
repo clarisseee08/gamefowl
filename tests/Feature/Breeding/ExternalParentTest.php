@@ -56,7 +56,6 @@ final class ExternalParentTest extends TestCase
             ->set('eggs_set', 6)
             ->set('eggs_fertile', 5)
             ->set('eggs_hatched', 4)
-            ->set('offspring_count', 0)
             ->call('save')
             ->assertHasNoErrors();
 
@@ -90,7 +89,6 @@ final class ExternalParentTest extends TestCase
             ->set('eggs_set', 3)
             ->set('eggs_fertile', 2)
             ->set('eggs_hatched', 1)
-            ->set('offspring_count', 0)
             ->call('save')
             ->assertHasNoErrors();
 
@@ -113,7 +111,6 @@ final class ExternalParentTest extends TestCase
             ->set('eggs_set', 2)
             ->set('eggs_fertile', 2)
             ->set('eggs_hatched', 2)
-            ->set('offspring_count', 0)
             ->call('save')
             ->assertHasNoErrors();
 
@@ -140,7 +137,6 @@ final class ExternalParentTest extends TestCase
                 ->set('eggs_set', 1)
                 ->set('eggs_fertile', 1)
                 ->set('eggs_hatched', 1)
-                ->set('offspring_count', 0)
                 ->call('save')
                 ->assertHasNoErrors();
         }
@@ -166,7 +162,6 @@ final class ExternalParentTest extends TestCase
                 ->set('eggs_set', 1)
                 ->set('eggs_fertile', 1)
                 ->set('eggs_hatched', 1)
-                ->set('offspring_count', 0)
                 ->call('save')
                 ->assertHasNoErrors();
         }
@@ -296,7 +291,6 @@ final class ExternalParentTest extends TestCase
             ->set('eggs_set', 6)
             ->set('eggs_fertile', 5)
             ->set('eggs_hatched', 4)
-            ->set('offspring_count', 0)
             ->call('save')
             ->assertHasNoErrors();
 
