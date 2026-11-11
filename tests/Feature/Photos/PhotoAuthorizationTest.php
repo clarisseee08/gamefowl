@@ -94,10 +94,10 @@ final class PhotoAuthorizationTest extends TestCase
             ->call('delete', $photo->id)
             ->assertForbidden();
 
-        $this->assertDatabaseHas('broodcock_photos', ['id' => $photo->id]);
+        $this->assertNotSoftDeleted('broodcock_photos', ['id' => $photo->id]);
     }
 
-    public function test_staff_can_delete_a_photo(): void
+    public function test_staff_can_archive_a_photo(): void
     {
         $staff = User::factory()->staff()->create();
         $bird = Broodcock::factory()->create();
@@ -107,7 +107,7 @@ final class PhotoAuthorizationTest extends TestCase
             ->test(Gallery::class, ['broodcock' => $bird])
             ->call('delete', $photo->id);
 
-        $this->assertDatabaseMissing('broodcock_photos', ['id' => $photo->id]);
+        $this->assertSoftDeleted('broodcock_photos', ['id' => $photo->id]);
     }
 
     // -----------------------------------------------------------------
@@ -154,7 +154,7 @@ final class PhotoAuthorizationTest extends TestCase
             ->assertSee('Visible to buyers')
             // The management buttons are a courtesy, not the gate - but they
             // should not be dangled in front of someone who cannot use them.
-            ->assertDontSee('Delete photo')
+            ->assertDontSee('Archive photo')
             ->assertDontSee('Make this the main photo');
     }
 
@@ -168,7 +168,7 @@ final class PhotoAuthorizationTest extends TestCase
         Livewire::actingAs($staff)
             ->test(Gallery::class, ['broodcock' => $bird])
             ->assertOk()
-            ->assertSee('Delete photo')
+            ->assertSee('Archive photo')
             ->assertSee('Make this the main photo');
     }
 

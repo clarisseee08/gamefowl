@@ -10,6 +10,7 @@ use Database\Factories\BroodcockPhotoFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -21,6 +22,10 @@ class BroodcockPhoto extends Model
 
     use InvalidatesRecordCache;
     use LogsActivity;
+
+    // Archived, never erased: a removed photo keeps its row and file and can
+    // be restored from the Archive.
+    use SoftDeletes;
 
     /** @var list<string> */
     protected $fillable = [

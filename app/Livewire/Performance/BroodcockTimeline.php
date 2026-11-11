@@ -186,7 +186,7 @@ final class BroodcockTimeline extends Component
         // means the stats above the timeline reflect the deletion immediately.
         unset($this->summary, $this->events, $this->totalEvents);
 
-        $this->statusMessage = "The {$type} record for {$this->broodcock->displayName()} on {$date} has been removed.";
+        $this->statusMessage = "The {$type} record for {$this->broodcock->displayName()} on {$date} has been archived.";
     }
 
     public function dismissStatus(): void

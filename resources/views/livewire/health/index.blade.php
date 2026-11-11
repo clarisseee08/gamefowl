@@ -237,7 +237,7 @@
                                     <x-ui.row-action icon="pencil" :label="'Edit the '.$what" wire:click="openForm({{ $record->id }})" x-on:click="$dispatch('ems-dialog', { id: 'health-form', wait: true })" />
                                 @endcan
                                 @can('delete', $record)
-                                    <x-ui.row-action icon="trash-2" :label="'Delete the '.$what" :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
+                                    <x-ui.row-action icon="trash-2" :label="'Archive the '.$what" :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
                                 @endcan
                             </div>
                         </td>
@@ -266,7 +266,7 @@
              role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title">
             <div class="d-modal-box elev-3 max-w-md">
                 <h2 id="delete-dialog-title" class="font-display text-[22px] lg:text-base font-semibold leading-snug tracking-[-0.015em] text-foreground">
-                    Delete the {{ Str::lower($pending->record_type->label()) }} record for
+                    Archive the {{ Str::lower($pending->record_type->label()) }} record for
                     <span class="datum">{{ $pendingBird }}</span> on
                     <span class="datum">{{ $pending->checkup_date->format('j M Y') }}</span>?
                 </h2>
@@ -277,7 +277,7 @@
                         (Band Number: <span class="datum text-foreground">{{ $pending->broodcock->displayBand() }}</span>),
                     @endif
                     {{ $pending->record_type->label() }}@if ($pending->product_name) &middot; {{ $pending->product_name }}@endif.
-                    The record is kept in the farm's history and can be restored by the owner,
+                    The record is kept in the Archive, where the farm owner can restore it,
                     but it will no longer appear in lists or reports.
                 </p>
 
@@ -287,7 +287,7 @@
                     </button>
                     <button type="button" wire:click="delete" class="d-btn d-btn-error" wire:loading.attr="disabled" wire:target="delete">
                         <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="delete"></span>
-                        Yes, delete this record
+                        Yes, archive this record
                     </button>
                 </div>
             </div>

@@ -18,7 +18,7 @@
         <p class="text-[15px] lg:text-xs text-muted-foreground">
             @if ($this->isFull)
                 This bird already has the most photos allowed (<span class="datum">{{ $maxPerBird }}</span>).
-                Delete one below before adding another.
+                Archive one below before adding another.
             @else
                 {{-- The remaining-slot sentence is asserted verbatim by
                      PhotoUploadTest, so no markup may be interleaved with it. --}}

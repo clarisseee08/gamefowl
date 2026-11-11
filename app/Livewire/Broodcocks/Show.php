@@ -141,11 +141,12 @@ final class Show extends Component
 
         $name = $this->broodcock->name;
 
-        // Soft delete - nothing is ever removed permanently from a system
-        // whose selling point is a complete audit trail.
+        // Archived (soft-deleted) - nothing is ever removed permanently from a
+        // system whose selling point is a complete audit trail. The owner can
+        // restore it from the Archive.
         DB::transaction(fn () => $this->broodcock->delete());
 
-        session()->flash('success', "{$name} has been removed from the active records. The history is kept.");
+        session()->flash('success', "{$name} has been archived. The history is kept, and the bird can be restored from the Archive.");
 
         $this->redirectRoute('broodcocks.index', navigate: true);
     }

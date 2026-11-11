@@ -200,7 +200,7 @@ final class Index extends Component
 
         $this->confirmingDeleteId = null;
 
-        $this->statusMessage = "The {$record->event_type->label()} record for {$name} on {$date} has been removed.";
+        $this->statusMessage = "The {$record->event_type->label()} record for {$name} on {$date} has been archived.";
 
         $this->resetPage();
     }

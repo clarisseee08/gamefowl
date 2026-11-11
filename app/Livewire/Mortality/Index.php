@@ -188,7 +188,7 @@ final class Index extends Component
         $action->handle($record);
 
         $this->confirmingDeleteId = null;
-        $this->status = "The death record for {$name} was removed. The bird is back on the active list.";
+        $this->status = "The death record for {$name} was archived. The bird is back on the active list.";
 
         // Recompute every derived value - the totals and the page both changed.
         unset($this->rows, $this->summary, $this->causeBreakdown, $this->causeOptions);

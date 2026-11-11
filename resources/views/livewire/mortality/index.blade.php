@@ -167,7 +167,7 @@
                         <button type="button"
                                 wire:click="confirmDelete({{ $record->id }})"
                                 class="d-btn d-btn-ghost mt-3 -ml-3 text-destructive">
-                            Delete Record
+                            Archive Record
                         </button>
                     @endif
                 </li>
@@ -242,7 +242,7 @@
                         <td class="hidden border-b border-border px-4 py-3 text-muted-foreground lg:table-cell">{{ $record->recordedBy?->full_name ?? 'Not recorded' }}</td>
                         @if ($canDelete)
                             <td class="border-b border-border py-1.5 pl-4 pr-0 text-right">
-                                <x-ui.row-action icon="trash-2" :label="'Delete the death record for '.($record->broodcock?->name ?? 'this bird')"
+                                <x-ui.row-action icon="trash-2" :label="'Archive the death record for '.($record->broodcock?->name ?? 'this bird')"
                                                  :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
                             </td>
                         @endif
@@ -257,7 +257,7 @@
     @endif
 
     {{-- ---------------------------------------------------------------
-         Delete confirmation. Names the bird and the date, and says exactly
+         Archive confirmation. Names the bird and the date, and says exactly
          what will happen - never "Are you sure?".
     ---------------------------------------------------------------- --}}
     @if ($this->confirmingRecord)
@@ -268,7 +268,7 @@
              role="dialog" aria-modal="true" aria-labelledby="delete-mortality-title">
             <div class="d-modal-box elev-3 max-w-md">
                 <h2 id="delete-mortality-title" class="font-display text-[22px] lg:text-base font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
-                    Delete the death record for
+                    Archive the death record for
                     {{ $confirming->broodcock?->displayName() ?? 'this bird' }}?
                 </h2>
 
@@ -276,7 +276,7 @@
                     <p>
                         The death recorded on
                         <strong class="datum font-semibold text-foreground">{{ $confirming->date_of_death->format('d M Y') }}</strong>
-                        ({{ $confirming->cause_of_death }}) will be removed from the register.
+                        ({{ $confirming->cause_of_death }}) leaves the register and is kept in the Archive.
                     </p>
                     <p class="d-alert d-alert-soft d-alert-error block px-3 py-2.5 text-[15px] lg:text-xs leading-relaxed text-base-content">
                         {{ $confirming->broodcock?->name ?? 'The bird' }}
@@ -291,7 +291,7 @@
                     </button>
                     <button type="button" wire:click="delete" class="d-btn d-btn-error" wire:loading.attr="disabled" wire:target="delete">
                         <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="delete"></span>
-                        Yes, Delete This Record
+                        Yes, Archive This Record
                     </button>
                 </div>
             </div>

@@ -61,6 +61,13 @@ final class BroodcockPhotoPolicy
         return $user->is_active && $user->isInternal();
     }
 
+    /** Archived photos come back only through the owner, like every archived record. */
+    public function restore(User $user, BroodcockPhoto $photo): bool
+    {
+        return $user->is_active && $user->isOwner();
+    }
+
+    /** Nothing is ever erased. */
     public function forceDelete(User $user, BroodcockPhoto $photo): bool
     {
         return false;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Photos;
 
-use App\Actions\Photos\DeletePhoto;
+use App\Actions\Photos\ArchivePhoto;
 use App\Actions\Photos\StorePhoto;
 use App\Enums\BroodcockStatus;
 use App\Models\Broodcock;
@@ -280,7 +280,8 @@ final class ThumbnailTest extends TestCase
     // Cleanup
     // -----------------------------------------------------------------
 
-    public function test_deleting_a_photo_removes_its_thumbnail_too(): void
+    /** Archiving keeps the files, so a restored photo comes back with its thumbnail. */
+    public function test_archiving_a_photo_keeps_its_file_and_thumbnail(): void
     {
         $bird = Broodcock::factory()->create();
         $photo = $this->upload($bird, UploadedFile::fake()->image('cock.jpg'));
@@ -288,12 +289,10 @@ final class ThumbnailTest extends TestCase
         $thumb = Thumbnail::pathFor($photo->path);
         Storage::disk($photo->disk)->assertExists($thumb);
 
-        app(DeletePhoto::class)->handle($photo);
+        app(ArchivePhoto::class)->handle($photo);
 
-        // The thumbnail path is derived, not stored, so nothing would ever find
-        // an orphan left behind here.
-        Storage::disk($photo->disk)->assertMissing($thumb);
-        Storage::disk($photo->disk)->assertMissing($photo->path);
+        Storage::disk($photo->disk)->assertExists($thumb);
+        Storage::disk($photo->disk)->assertExists($photo->path);
     }
 
     // -----------------------------------------------------------------

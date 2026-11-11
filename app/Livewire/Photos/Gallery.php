@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Photos;
 
-use App\Actions\Photos\DeletePhoto;
+use App\Actions\Photos\ArchivePhoto;
 use App\Actions\Photos\SetPrimaryPhoto;
 use App\Http\Requests\StoreBroodcockPhotoRequest;
 use App\Models\Broodcock;
@@ -84,13 +84,14 @@ final class Gallery extends Component
         $this->dispatch('toast', message: $this->status, tone: 'ok');
     }
 
-    public function delete(int $photoId, DeletePhoto $deletePhoto): void
+    /** Archives the photo - it is kept, never erased. */
+    public function delete(int $photoId, ArchivePhoto $archivePhoto): void
     {
         $photo = $this->findPhoto($photoId);
 
         $this->authorize('delete', $photo);
 
-        $deletePhoto->handle($photo);
+        $archivePhoto->handle($photo);
 
         unset($this->photos);
 
@@ -99,12 +100,12 @@ final class Gallery extends Component
 
         $this->confirmingDeletionOf = null;
 
-        $this->status = 'Photo deleted.';
+        $this->status = 'Photo archived.';
 
         $this->dispatch('toast', message: $this->status, tone: 'ok');
     }
 
-    /** Opens the confirmation for one photo. Deletes nothing. */
+    /** Opens the confirmation for one photo. Archives nothing. */
     public function confirmDelete(int $photoId): void
     {
         $photo = $this->findPhoto($photoId);

@@ -37,13 +37,20 @@
             @endif
         </span>
 
-        @can('update', $breeding)
+        @canany(['update', 'delete'], $breeding)
             <x-slot:actions>
-                <x-ui.button :href="route('breeding.edit', $breeding)" x-on:click.prevent="$dispatch('ems-dialog', 'breeding-form')">
-                    <x-ui.icon name="pencil" /> Edit
-                </x-ui.button>
+                @can('delete', $breeding)
+                    <button type="button" wire:click="confirmArchive" class="d-btn d-btn-outline text-destructive">
+                        Archive
+                    </button>
+                @endcan
+                @can('update', $breeding)
+                    <x-ui.button :href="route('breeding.edit', $breeding)" x-on:click.prevent="$dispatch('ems-dialog', 'breeding-form')">
+                        <x-ui.icon name="pencil" /> Edit
+                    </x-ui.button>
+                @endcan
             </x-slot:actions>
-        @endcan
+        @endcanany
     </x-ui.page-header>
 
     {{-- THE HATCH, as the funnel it is: set, then fertile, then hatched, each
@@ -307,6 +314,32 @@
             @endif
         </div>
     </x-ui.card>
+
+    @if ($confirmingArchive)
+        <div class="d-modal d-modal-open" x-data x-trap.noscroll="true"
+             x-on:keydown.escape.window="$wire.cancelArchive()"
+             role="dialog" aria-modal="true" aria-labelledby="archive-mating-title">
+            <div class="d-modal-box elev-3 w-full max-w-md">
+                <h2 id="archive-mating-title" class="font-display text-[22px] lg:text-base font-semibold tracking-[-0.015em] text-foreground">
+                    Archive this breeding record?
+                </h2>
+                <p class="mt-3 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
+                    The mating of
+                    <strong class="font-medium text-foreground">{{ $breeding->sire?->name ?? 'a removed bird' }} &times; {{ $breeding->dam?->name ?? 'a removed bird' }}</strong>
+                    on <span class="datum">{{ $breeding->mating_date->format('j M Y') }}</span>
+                    leaves the breeding list, the dashboard and the reports. Chicks already registered from it stay
+                    as birds. The farm owner can restore it from the Archive at any time.
+                </p>
+                <div class="d-modal-action flex-col-reverse gap-3 sm:flex-row">
+                    <button type="button" wire:click="cancelArchive" class="d-btn d-btn-outline">Cancel</button>
+                    <button type="button" wire:click="archive" class="d-btn d-btn-error" wire:loading.attr="disabled" wire:target="archive">
+                        <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="archive"></span>
+                        Yes, archive this record
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
 
     @can('update', $this->record)
         {{-- Edit opens here, in a dialog over this page. --}}

@@ -203,7 +203,7 @@
                                                  :href="route('performance.edit', $event)" wire:click.prevent="openForm({{ $event->id }})" x-on:click="$dispatch('ems-dialog', { id: 'bird-performance-form', wait: true })" />
                             @endcan
                             @can('delete', $event)
-                                <x-ui.row-action icon="trash-2" :destructive="true" :label="'Delete '.$event->event_type->label().' on '.$event->event_date->format('d M Y')"
+                                <x-ui.row-action icon="trash-2" :destructive="true" :label="'Archive '.$event->event_type->label().' on '.$event->event_date->format('d M Y')"
                                                  wire:click="confirmDelete({{ $event->id }})" />
                             @endcan
                         </div>
@@ -225,7 +225,7 @@
              role="dialog" aria-modal="true" aria-labelledby="timeline-delete-title" aria-describedby="timeline-delete-body">
             <div class="d-modal-box elev-3 max-w-md">
                 <h2 id="timeline-delete-title" class="font-display text-[22px] lg:text-base font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
-                    Delete the {{ $pending->event_type->label() }} record for {{ $broodcock->displayName() }}?
+                    Archive the {{ $pending->event_type->label() }} record for {{ $broodcock->displayName() }}?
                 </h2>
 
                 <div id="timeline-delete-body">
@@ -234,7 +234,7 @@
                         will disappear from this timeline and stop counting towards the win rate.
                     </p>
                     <p class="mt-2 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
-                        The farm owner can restore it later if this was a mistake.
+                        It is kept in the Archive, where the farm owner can restore it if this was a mistake.
                     </p>
                 </div>
 
@@ -242,7 +242,7 @@
                     <button type="button" wire:click="cancelDelete" class="d-btn d-btn-outline">Cancel</button>
                     <button type="button" wire:click="delete" class="d-btn d-btn-error" wire:loading.attr="disabled" wire:target="delete">
                         <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="delete"></span>
-                        Yes, delete this record
+                        Yes, archive this record
                     </button>
                 </div>
             </div>
