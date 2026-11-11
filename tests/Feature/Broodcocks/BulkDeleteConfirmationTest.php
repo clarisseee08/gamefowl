@@ -41,6 +41,20 @@ final class BulkDeleteConfirmationTest extends TestCase
         $this->assertNotSoftDeleted($second);
     }
 
+    /** One bird reads as one bird: "SW-1002 leaves", not "SW-1002 leave". */
+    public function test_the_dialog_speaks_of_a_single_bird_in_the_singular(): void
+    {
+        $bird = Broodcock::factory()->create(['band_number' => 'SW-1002']);
+
+        Livewire::actingAs(User::factory()->owner()->create())
+            ->test(Index::class)
+            ->set('selected', [$bird->id])
+            ->call('confirmDeleteSelected')
+            ->assertSee('leaves the gamefowl list')
+            ->assertSee('restore it from the Archive')
+            ->assertDontSee('Birds your role cannot');
+    }
+
     public function test_confirming_archives_the_selection_and_says_so(): void
     {
         $birds = Broodcock::factory()->count(2)->create();

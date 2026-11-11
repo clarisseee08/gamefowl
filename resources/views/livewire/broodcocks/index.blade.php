@@ -510,9 +510,14 @@
                 </h2>
                 <p id="bulk-delete-body" class="mt-3 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                     <strong class="font-semibold text-foreground">{{ implode(', ', $named) }}@if ($more > 0) and <span class="datum">{{ $more }}</span> more @endif</strong>
-                    leave the gamefowl list, the catalogue and the reports. Their health, breeding and performance
-                    history is kept, and the farm owner can restore them from the Archive. Birds your role cannot
-                    archive are left as they are.
+                    @if (count($selected) === 1)
+                        leaves the gamefowl list, the catalogue and the reports. Its health, breeding and performance
+                        history is kept, and the farm owner can restore it from the Archive.
+                    @else
+                        leave the gamefowl list, the catalogue and the reports. Their health, breeding and performance
+                        history is kept, and the farm owner can restore them from the Archive. Birds your role cannot
+                        archive are left as they are.
+                    @endif
                 </p>
                 <div class="d-modal-action flex-col-reverse gap-3 sm:flex-row">
                     <button type="button" wire:click="cancelDeleteSelected" class="d-btn d-btn-outline">Cancel</button>
