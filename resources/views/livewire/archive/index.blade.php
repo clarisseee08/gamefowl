@@ -18,9 +18,6 @@
         Everything that was archived. Nothing here is ever erased; restore a record to bring it back exactly as it was.
     </x-ui.page-header>
 
-    @if ($statusMessage)
-        <div class="d-alert d-alert-soft d-alert-success mt-5 text-[15px] lg:text-xs" role="status">{{ $statusMessage }}</div>
-    @endif
     @if ($errorMessage)
         <div class="d-alert d-alert-soft d-alert-error mt-5 text-[15px] lg:text-xs" role="alert">{{ $errorMessage }}</div>
     @endif
@@ -127,7 +124,9 @@
                     </tbody>
                 </table>
             </div>
-            <x-ui.table-pagination :paginator="$rows" />
+            <div class="px-5 pb-5">
+                <x-ui.table-pagination :paginator="$rows" />
+            </div>
         </x-ui.card>
     @endif
 

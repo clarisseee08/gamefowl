@@ -58,9 +58,6 @@ final class Index extends Component
     #[Locked]
     public ?int $restoringId = null;
 
-    /** Shown after a restore. A component property, not a session flash: this page does not reload. */
-    public ?string $statusMessage = null;
-
     public ?string $errorMessage = null;
 
     public function mount(): void
@@ -183,8 +180,7 @@ final class Index extends Component
         }
 
         $this->cancelRestore();
-        $this->statusMessage = "{$name} has been restored.";
-        $this->dispatch('toast', message: $this->statusMessage, tone: 'ok');
+        $this->dispatch('toast', message: "{$name} has been restored.", tone: 'ok');
 
         unset($this->rows, $this->counts, $this->archivedBy);
     }

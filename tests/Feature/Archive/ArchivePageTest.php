@@ -142,7 +142,8 @@ final class ArchivePageTest extends TestCase
             ->call('confirmRestore', 'gamefowl', $bird->id)
             ->call('restore')
             ->assertSet('restoringId', null)
-            ->assertSee('Reyna has been restored.');
+            ->assertDispatched('toast', message: 'Reyna has been restored.', tone: 'ok')
+            ->assertDontSee('Reyna has been restored.');
 
         $this->assertNotSoftDeleted($bird);
     }
