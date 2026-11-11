@@ -39,22 +39,31 @@
 # being ignored - the scheduler is.
 #
 # ---------------------------------------------------------------------------
-# THE ACTUAL FIX: AN EXTERNAL PINGER. Five minutes, free, no card.
+# THE ACTUAL FIX: AN EXTERNAL PINGER. In place since November 2026.
 # ---------------------------------------------------------------------------
+#
+# A cron-job.org job pings https://gamefowl.onrender.com/up and is what keeps
+# the site awake. If the site is slow to open, check that job's execution
+# history first, not this workflow.
+#
+# THE HOSTNAME. Production is gamefowl.onrender.com. Until 12 November 2026
+# this file, and the steps below, named gfms-laravel.onrender.com - an older,
+# separate Render service. It kept THAT service awake, never production, and
+# spent the account's shared free instance-hours doing it.
 #
 # These services exist to do exactly this, are not subject to GitHub's
 # throttling or its per-minute billing, and hold the schedule they are given.
 #
 #   cron-job.org  (no card, intervals down to 1 minute)
 #     1. Sign up, then Cronjobs -> Create cronjob
-#     2. URL      https://gfms-laravel.onrender.com/up
+#     2. URL      https://gamefowl.onrender.com/up
 #     3. Schedule "Every 5 minutes"
 #     4. Save. The execution history shows whether it is holding.
 #
 #   UptimeRobot  (alternative; also emails when the site is actually down)
 #     1. Sign up, then + New monitor
 #     2. Type     HTTP(s)
-#     3. URL      https://gfms-laravel.onrender.com/up
+#     3. URL      https://gamefowl.onrender.com/up
 #     4. Interval 5 minutes
 #
 # ONE THING TO CHECK AFTER SETTING IT UP. Render's free tier allows 750
@@ -104,7 +113,7 @@ jobs:
           # /up is Laravel's health route. It is the cheapest endpoint that
           # still proves the PHP process is actually serving, rather than the
           # platform returning a holding page.
-          URL: https://gfms-laravel.onrender.com/up
+          URL: https://gamefowl.onrender.com/up
         run: |
           set -uo pipefail
 

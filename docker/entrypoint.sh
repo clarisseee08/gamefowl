@@ -47,10 +47,13 @@ chown -R www-data:www-data /var/lib/nginx
 #    config:cache freezes the values env() returns at the moment it
 #    runs. During the Docker build none of Render's variables exist,
 #    so caching then would bake in an app with no database.
+#
+#    `optimize` is config:cache, route:cache and view:cache - which
+#    this used to run one by one - plus event:cache, which they
+#    missed. Without it Laravel scans app/Listeners for event
+#    listeners on every request instead of reading a cached list.
 # ---------------------------------------------------------------
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+php artisan optimize
 echo "[entrypoint] caches warmed"
 
 # ---------------------------------------------------------------

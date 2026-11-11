@@ -29,12 +29,16 @@ services:
       # Entered in Render's UI, never committed.
       - key: APP_KEY
         sync: false
-      # Must be https and must match the real Render hostname. Update both of
-      # these after the first deploy, once the hostname is known.
+      # Must be https and must match the real Render hostname: the farm's site
+      # is https://gamefowl.onrender.com. The service is still NAMED
+      # gfms-laravel (see `name:` above), but gfms-laravel.onrender.com is an
+      # older, separate service, not this one. Password-reset links and asset
+      # URLs are built from these, so pointing them there sends people to the
+      # wrong site. tests/Unit/DeploymentHostTest.php pins both.
       - key: APP_URL
-        value: https://gfms-laravel.onrender.com
+        value: https://gamefowl.onrender.com
       - key: ASSET_URL
-        value: https://gfms-laravel.onrender.com
+        value: https://gamefowl.onrender.com
 
       - key: LOG_CHANNEL
         value: stderr
