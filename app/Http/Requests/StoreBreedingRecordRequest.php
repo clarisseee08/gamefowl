@@ -82,8 +82,19 @@ class StoreBreedingRecordRequest extends FormRequest
             // the rule even if a future code path forgets to validate.
             'eggs_set' => ['required', 'integer', 'min:0', 'max:1000'],
             'eggs_fertile' => ['required', 'integer', 'min:0', 'lte:eggs_set'],
-            'eggs_hatched' => ['required', 'integer', 'min:0', 'lte:eggs_fertile'],
-            'offspring_count' => ['required', 'integer', 'min:0', 'lte:eggs_hatched'],
+            'eggs_hatched' => [
+                'required', 'integer', 'min:0', 'lte:eggs_fertile',
+                // Chicks already registered are birds on record; the hatch
+                // they came from cannot shrink below them. The count itself
+                // is not an input - only GenerateOffspring moves it.
+                function (string $attribute, mixed $value, \Closure $fail) use ($record): void {
+                    $registered = (int) ($record?->offspring_count ?? 0);
+
+                    if ($registered > 0 && (int) $value < $registered) {
+                        $fail("{$registered} chicks from this hatch are already registered as birds, so eggs hatched cannot be lower than {$registered}.");
+                    }
+                },
+            ],
 
             'notes' => ['nullable', 'string', 'max:5000'],
         ];
@@ -158,7 +169,6 @@ class StoreBreedingRecordRequest extends FormRequest
             'eggs_set' => 'eggs set',
             'eggs_fertile' => 'fertile eggs',
             'eggs_hatched' => 'eggs hatched',
-            'offspring_count' => 'offspring registered',
             'notes' => 'notes',
         ];
     }
@@ -182,7 +192,6 @@ class StoreBreedingRecordRequest extends FormRequest
             'dam_external_name.required' => 'Please enter the name of the outside dam.',
             'eggs_fertile.lte' => 'Fertile eggs cannot be more than the number of eggs set.',
             'eggs_hatched.lte' => 'Eggs hatched cannot be more than the number of fertile eggs.',
-            'offspring_count.lte' => 'You cannot register more offspring than the number of eggs that hatched.',
             'mating_date.before_or_equal' => 'The mating date cannot be in the future.',
         ];
     }
