@@ -448,7 +448,7 @@ final class MortalityRecordTest extends TestCase
         Livewire::actingAs($owner)
             ->test(Index::class)
             ->call('confirmDelete', $record->id)
-            ->assertSee('Delete the death record for')
+            ->assertSee('Archive the death record for')
             // The dialog names the bird - never a bare "Are you sure?".
             ->assertSee('Kalabaw (GF-7777)?')
             ->assertSee('will be put back on the');
@@ -457,7 +457,7 @@ final class MortalityRecordTest extends TestCase
         $this->assertNotSoftDeleted('mortality_records', ['id' => $record->id]);
     }
 
-    public function test_deleting_a_record_soft_deletes_it_and_reactivates_the_bird(): void
+    public function test_archiving_a_record_soft_deletes_it_and_reactivates_the_bird(): void
     {
         $owner = User::factory()->owner()->create();
         $bird = $this->makeBroodcock([
@@ -471,7 +471,7 @@ final class MortalityRecordTest extends TestCase
             ->test(Index::class)
             ->call('confirmDelete', $record->id)
             ->call('delete')
-            ->assertSee('The death record for Kalabaw (GF-8888) was removed.')
+            ->assertSee('The death record for Kalabaw (GF-8888) was archived.')
             ->assertSet('confirmingDeleteId', null);
 
         $this->assertSoftDeleted('mortality_records', ['id' => $record->id]);

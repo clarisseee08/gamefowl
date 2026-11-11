@@ -445,7 +445,7 @@
                                         <x-ui.row-action icon="pencil" :label="'Edit '.$bird->name" :href="route('broodcocks.edit', $bird)" wire:click.prevent="openForm({{ $bird->id }})" x-on:click="$dispatch('ems-dialog', { id: 'broodcocks-form', wait: true })" />
                                     @endcan
                                     @can('delete', $bird)
-                                        <x-ui.row-action icon="trash-2" :label="'Delete '.$bird->name" :destructive="true"
+                                        <x-ui.row-action icon="trash-2" :label="'Archive '.$bird->name" :destructive="true"
                                                          x-on:click="const w = $wire; w.$set('selected', [{{ \Illuminate\Support\Js::from((string) $bird->id) }}]).then(() => w.confirmDeleteSelected())" />
                                     @endcan
                                 </span>
@@ -478,7 +478,7 @@
 
                 @if ($this->canDeleteSelection)
                     <button type="button" wire:click="confirmDeleteSelected" class="d-btn d-btn-outline text-destructive">
-                        Delete selected
+                        Archive selected
                     </button>
                 @endif
 
@@ -506,18 +506,19 @@
              role="dialog" aria-modal="true" aria-labelledby="bulk-delete-title" aria-describedby="bulk-delete-body">
             <div class="d-modal-box elev-3 w-full max-w-md">
                 <h2 id="bulk-delete-title" class="font-display text-[22px] lg:text-base font-semibold tracking-[-0.015em] text-foreground">
-                    Delete <span class="datum">{{ count($selected) }}</span> {{ Str::plural('bird', count($selected)) }}?
+                    Archive <span class="datum">{{ count($selected) }}</span> {{ Str::plural('bird', count($selected)) }}?
                 </h2>
                 <p id="bulk-delete-body" class="mt-3 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
-                    This removes <strong class="font-semibold text-foreground">{{ implode(', ', $named) }}@if ($more > 0) and <span class="datum">{{ $more }}</span> more @endif</strong>
-                    from the active records. Their health, breeding and performance history is kept and the
-                    deletion is recorded in the activity log. Birds your role cannot delete are left as they are.
+                    <strong class="font-semibold text-foreground">{{ implode(', ', $named) }}@if ($more > 0) and <span class="datum">{{ $more }}</span> more @endif</strong>
+                    leave the gamefowl list, the catalogue and the reports. Their health, breeding and performance
+                    history is kept, and the farm owner can restore them from the Archive. Birds your role cannot
+                    archive are left as they are.
                 </p>
                 <div class="d-modal-action flex-col-reverse gap-3 sm:flex-row">
                     <button type="button" wire:click="cancelDeleteSelected" class="d-btn d-btn-outline">Cancel</button>
                     <button type="button" wire:click="deleteSelected" wire:loading.attr="disabled" wire:target="deleteSelected" class="d-btn d-btn-error">
                         <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="deleteSelected"></span>
-                        Yes, delete {{ count($selected) === 1 ? 'this bird' : 'these birds' }}
+                        Yes, archive {{ count($selected) === 1 ? 'this bird' : 'these birds' }}
                     </button>
                 </div>
             </div>

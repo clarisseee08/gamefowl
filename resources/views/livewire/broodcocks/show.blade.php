@@ -90,7 +90,7 @@
                 @can('delete', $bird)
                     <x-ui.dropdown-menu align="end" :label="'More actions for '.$bird->name" trigger-variant="button">
                         <x-slot:trigger aria-label="More actions" class="px-2.5 lg:px-2"><x-ui.icon name="ellipsis" /></x-slot:trigger>
-                        <x-ui.dropdown-menu.item icon="trash-2" :destructive="true" wire:click="confirmDeletion">Delete Bird</x-ui.dropdown-menu.item>
+                        <x-ui.dropdown-menu.item icon="trash-2" :destructive="true" wire:click="confirmDeletion">Archive Bird</x-ui.dropdown-menu.item>
                     </x-ui.dropdown-menu>
                 @endcan
             @else
@@ -397,19 +397,18 @@
              not in the test suite. --}}
         <div class="d-modal d-modal-open" x-data x-trap.noscroll="true" @keydown.escape.window="$el.querySelector('.d-btn-outline')?.click()" role="dialog" aria-modal="true" aria-labelledby="delete-bird-title">
             <div class="d-modal-box elev-3 w-full max-w-md">
-                <h2 id="delete-bird-title" class="font-display text-[22px] font-semibold tracking-[-0.015em] text-foreground">Delete {{ $bird->name }}?</h2>
+                <h2 id="delete-bird-title" class="font-display text-[22px] font-semibold tracking-[-0.015em] text-foreground">Archive {{ $bird->name }}?</h2>
                 <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-                    This will remove <strong>{{ $bird->name }} ({{ $bird->displayBand() }})</strong>
-                    from the active records. Its health, breeding and performance history is kept
-                    and the deletion is recorded in the activity log, so this can be undone by
-                    the system administrator.
+                    <strong>{{ $bird->name }} ({{ $bird->displayBand() }})</strong> leaves the gamefowl
+                    list, the catalogue and the reports. Its health, breeding and performance history
+                    is kept, and the farm owner can restore it from the Archive at any time.
                 </p>
                 <div class="d-modal-action flex-col-reverse gap-3 sm:flex-row">
                     <button type="button" wire:click="$set('confirmingDeletion', false)" class="d-btn d-btn-outline">
                         Cancel
                     </button>
                     <button type="button" wire:click="delete" class="d-btn d-btn-error" wire:loading.attr="disabled">
-                        Yes, delete this bird
+                        Yes, archive this bird
                     </button>
                 </div>
             </div>

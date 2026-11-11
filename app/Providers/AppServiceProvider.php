@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\User;
 use App\Support\CachedUserProvider;
 use App\Support\FarmProfile;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -76,6 +78,10 @@ class AppServiceProvider extends ServiceProvider
         Auth::provider('cached-eloquent', function (Application $app, array $config): CachedUserProvider {
             return new CachedUserProvider($app['hash'], $config['model']);
         });
+
+        // The Archive holds every archived record of every kind, so it belongs
+        // to the one role that may archive and restore them all: the owner.
+        Gate::define('view-archive', fn (User $user): bool => $user->is_active && $user->isOwner());
     }
 
     /**

@@ -61,6 +61,37 @@ final class Show extends Component
         $this->showForm = true;
     }
 
+    /** Whether the archive confirmation is open. */
+    public bool $confirmingArchive = false;
+
+    public function confirmArchive(): void
+    {
+        $this->authorize('delete', $this->record);
+
+        $this->confirmingArchive = true;
+    }
+
+    public function cancelArchive(): void
+    {
+        $this->confirmingArchive = false;
+    }
+
+    /**
+     * Archives the mating: it leaves the breeding list, the dashboard and the
+     * reports, and is kept for the owner to restore from the Archive. Chicks
+     * already registered from it are birds in their own right and stay.
+     */
+    public function archive(): void
+    {
+        $this->authorize('delete', $this->record);
+
+        $this->record->delete();
+
+        session()->flash('success', 'The breeding record has been archived. It can be restored from the Archive.');
+
+        $this->redirectRoute('breeding.index', navigate: true);
+    }
+
     public function mount(BreedingRecord $record): void
     {
         $this->authorize('view', $record);

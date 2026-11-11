@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Photos;
 
-use App\Actions\Photos\DeletePhoto;
+use App\Actions\Photos\ArchivePhoto;
 use App\Http\Controllers\BroodcockPhotoController;
 use App\Livewire\Photos\Gallery;
 use App\Livewire\Photos\Upload;
@@ -272,10 +272,10 @@ final class PhotoUploadTest extends TestCase
     }
 
     // -----------------------------------------------------------------
-    // Deleting
+    // Archiving - a removed photo is kept, never erased
     // -----------------------------------------------------------------
 
-    public function test_deleting_a_photo_removes_the_row_and_the_file(): void
+    public function test_archiving_a_photo_hides_it_but_keeps_the_row_and_the_file(): void
     {
         $staff = User::factory()->staff()->create();
         $bird = Broodcock::factory()->create();
@@ -292,41 +292,45 @@ final class PhotoUploadTest extends TestCase
             ->test(Gallery::class, ['broodcock' => $bird])
             ->call('delete', $photo->id);
 
-        $this->assertDatabaseMissing('broodcock_photos', ['id' => $photo->id]);
-        Storage::disk($this->disk())->assertMissing($photo->path);
+        $this->assertSoftDeleted('broodcock_photos', ['id' => $photo->id]);
+        $this->assertSame(0, $bird->photos()->count(), 'The gallery must no longer show it.');
+        Storage::disk($this->disk())->assertExists($photo->path);
     }
 
-    public function test_a_storage_failure_does_not_resurrect_the_deleted_row(): void
-    {
-        $bird = Broodcock::factory()->create();
-        $photo = BroodcockPhoto::factory()->forBroodcock($bird)->create([
-            // Nothing was ever written here, so the disk delete is a no-op at
-            // best and an error at worst - either way the row must stay gone.
-            'path' => 'broodcocks/'.$bird->id.'/never-written.jpg',
-        ]);
-
-        app(DeletePhoto::class)->handle($photo);
-
-        $this->assertDatabaseMissing('broodcock_photos', ['id' => $photo->id]);
-    }
-
-    public function test_deleting_the_main_photo_promotes_another_one(): void
+    public function test_archiving_the_main_photo_promotes_another_one(): void
     {
         $bird = Broodcock::factory()->create();
         $primary = BroodcockPhoto::factory()->forBroodcock($bird)->primary()->create();
         $other = BroodcockPhoto::factory()->forBroodcock($bird)->create();
 
-        app(DeletePhoto::class)->handle($primary);
+        app(ArchivePhoto::class)->handle($primary);
 
         $this->assertTrue($other->fresh()->is_primary);
         $this->assertSame(1, $bird->photos()->where('is_primary', true)->count());
+        // Restoring it later must not make two main photos.
+        $this->assertFalse(BroodcockPhoto::withTrashed()->find($primary->id)->is_primary);
+    }
+
+    /** An archived photo is not served, to the public or to staff. */
+    public function test_an_archived_photo_is_no_longer_served(): void
+    {
+        $bird = Broodcock::factory()->create();
+        $photo = BroodcockPhoto::factory()->forBroodcock($bird)->create();
+        Storage::disk($photo->disk)->put($photo->path, 'bytes');
+
+        app(ArchivePhoto::class)->handle($photo);
+
+        $this->get(route('photos.show', $photo))->assertNotFound();
+        $this->actingAs(User::factory()->staff()->create())
+            ->get(route('photos.show', $photo))
+            ->assertNotFound();
     }
 
     /**
-     * Delete asks first, in a designed dialog that names the bird - not the
-     * browser's confirm(). Opening and cancelling it must delete nothing.
+     * Archive asks first, in a designed dialog that names the bird - not the
+     * browser's confirm(). Opening and cancelling it must archive nothing.
      */
-    public function test_deleting_a_photo_asks_first_and_cancelling_keeps_it(): void
+    public function test_archiving_a_photo_asks_first_and_cancelling_keeps_it(): void
     {
         $staff = User::factory()->staff()->create();
         $bird = Broodcock::factory()->create(['name' => 'Bagwis', 'band_number' => '0113']);
@@ -334,18 +338,19 @@ final class PhotoUploadTest extends TestCase
 
         Livewire::actingAs($staff)
             ->test(Gallery::class, ['broodcock' => $bird])
-            ->assertDontSee('Delete this photo of')
+            ->assertDontSee('Archive this photo of')
             ->call('confirmDelete', $photo->id)
             ->assertSet('confirmingDeletionOf', $photo->id)
-            ->assertSee('Delete this photo of Bagwis (0113)?')
+            ->assertSee('Archive this photo of Bagwis (0113)?')
+            ->assertSee('kept in the Archive')
             ->call('cancelDelete')
             ->assertSet('confirmingDeletionOf', null)
-            ->assertDontSee('Delete this photo of');
+            ->assertDontSee('Archive this photo of');
 
-        $this->assertDatabaseHas('broodcock_photos', ['id' => $photo->id]);
+        $this->assertNotSoftDeleted('broodcock_photos', ['id' => $photo->id]);
     }
 
-    public function test_confirming_the_dialog_deletes_the_photo_and_says_so(): void
+    public function test_confirming_the_dialog_archives_the_photo_and_says_so(): void
     {
         $staff = User::factory()->staff()->create();
         $bird = Broodcock::factory()->create();
@@ -356,9 +361,9 @@ final class PhotoUploadTest extends TestCase
             ->call('confirmDelete', $photo->id)
             ->call('delete', $photo->id)
             ->assertSet('confirmingDeletionOf', null)
-            ->assertDispatched('toast', message: 'Photo deleted.', tone: 'ok');
+            ->assertDispatched('toast', message: 'Photo archived.', tone: 'ok');
 
-        $this->assertDatabaseMissing('broodcock_photos', ['id' => $photo->id]);
+        $this->assertSoftDeleted('broodcock_photos', ['id' => $photo->id]);
     }
 
     public function test_a_guest_cannot_open_the_delete_dialog(): void

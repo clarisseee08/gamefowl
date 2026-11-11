@@ -213,8 +213,8 @@ final class MortalityAuthorizationTest extends TestCase
         $this->assertSame(BroodcockStatus::Deceased, $bird->fresh()->status);
     }
 
-    /** Staff never even see the Delete button - a courtesy, not the gate. */
-    public function test_the_delete_button_is_not_shown_to_staff(): void
+    /** Staff never even see the Archive button - a courtesy, not the gate. */
+    public function test_the_archive_button_is_not_shown_to_staff(): void
     {
         $staff = User::factory()->staff()->create();
         $bird = $this->makeBroodcock(['status' => BroodcockStatus::Deceased]);
@@ -222,7 +222,7 @@ final class MortalityAuthorizationTest extends TestCase
 
         Livewire::actingAs($staff)
             ->test(Index::class)
-            ->assertDontSee('Delete Record')
+            ->assertDontSee('Archive Record')
             ->assertDontSeeHtml('wire:click="confirmDelete');
     }
 

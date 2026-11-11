@@ -206,7 +206,7 @@ final class Index extends Component
 
         // A toast, not a session flash: deleting does not reload the layout
         // that renders session flash messages, so the user would never see it.
-        $this->dispatch('toast', message: "The {$type} record for {$bird} was deleted.", tone: 'ok');
+        $this->dispatch('toast', message: "The {$type} record for {$bird} was archived.", tone: 'ok');
     }
 
     // -----------------------------------------------------------------

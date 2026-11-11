@@ -403,7 +403,7 @@ final class PerformanceRecordTest extends TestCase
 
         $component->call('delete')
             ->assertSet('confirmingDeleteId', null)
-            ->assertSee('has been removed');
+            ->assertSee('has been archived');
 
         $this->assertSoftDeleted($record);
     }

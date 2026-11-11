@@ -299,8 +299,8 @@ final class Index extends Component
         // flash would surface on the NEXT page load, out of context.
         $this->dispatch('toast',
             message: $skipped > 0
-                ? "{$deleted} ".str('bird')->plural($deleted)." removed. {$skipped} could not be removed with your role."
-                : "{$deleted} ".str('bird')->plural($deleted).' removed from the active records.',
+                ? "{$deleted} ".str('bird')->plural($deleted)." archived. {$skipped} could not be archived with your role."
+                : "{$deleted} ".str('bird')->plural($deleted).' archived. They can be restored from the Archive.',
             tone: $skipped > 0 && $deleted === 0 ? 'bad' : 'ok',
         );
     }

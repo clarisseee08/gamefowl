@@ -52,6 +52,23 @@ class StoreBroodcockRequest extends FormRequest
             'band_number' => [
                 'nullable', 'string', 'max:64',
                 Rule::unique('broodcocks', 'band_number')->ignore($selfId)->whereNull('deleted_at'),
+                // The database's UNIQUE index counts archived birds too, so a
+                // number an archived bird still holds would pass the rule above
+                // and then fail on save. Say so plainly instead.
+                function (string $attribute, mixed $value, Closure $fail) use ($selfId): void {
+                    if ($value === null || $value === '') {
+                        return;
+                    }
+
+                    $archived = Broodcock::onlyTrashed()
+                        ->where('band_number', $value)
+                        ->when($selfId, fn ($query) => $query->whereKeyNot($selfId))
+                        ->first(['id', 'name']);
+
+                    if ($archived !== null) {
+                        $fail("The archived bird {$archived->name} still has that band number. Restore it from the Archive, or use another number.");
+                    }
+                },
             ],
             'name' => ['required', 'string', 'max:255'],
             'bloodline' => ['nullable', 'string', 'max:120'],

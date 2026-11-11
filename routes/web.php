@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DesignGalleryController;
 use App\Http\Controllers\DiagnosticsController;
 use App\Http\Controllers\ReportController;
+use App\Livewire\Archive;
 use App\Livewire\Breeding;
 use App\Livewire\Broodcocks;
 use App\Livewire\Catalog;
@@ -92,7 +93,9 @@ Route::middleware('active')->group(function (): void {
      * keeps a guest from paging through photographs of birds the catalogue
      * does not list.
      */
-    Route::get('/photos/{photo}', [BroodcockPhotoController::class, 'show'])->name('photos.show');
+    // withTrashed(): the owner's Archive shows archived photos. The controller
+    // answers 404 for an archived photo to everyone else.
+    Route::get('/photos/{photo}', [BroodcockPhotoController::class, 'show'])->name('photos.show')->withTrashed();
 });
 
 Route::middleware(['auth', 'active'])->group(function (): void {
@@ -181,6 +184,12 @@ Route::middleware(['auth', 'active'])->group(function (): void {
      * There is no self-registration anywhere in this system; every account is
      * created here. UserPolicy denies record keepers outright.
      */
+    /*
+     * The Archive - everything that was archived, kept for good. Owner only;
+     * Archive\Index authorizes 'view-archive' (AppServiceProvider).
+     */
+    Route::livewire('/archive', Archive\Index::class)->name('archive.index');
+
     Route::prefix('users')->name('users.')->group(function (): void {
         Route::livewire('/', Users\Index::class)->name('index');
         Route::livewire('/create', Users\Index::class)->name('create');

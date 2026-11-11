@@ -28,20 +28,20 @@ final class BulkDeleteConfirmationTest extends TestCase
         Livewire::actingAs(User::factory()->owner()->create())
             ->test(Index::class)
             ->set('selected', [$first->id, $second->id])
-            ->assertDontSee('Delete 2 birds?', false)
+            ->assertDontSee('Archive 2 birds?', false)
             ->call('confirmDeleteSelected')
             ->assertSet('confirmingBulkDelete', true)
             ->assertSee('0113, 0114')
-            ->assertSee('Yes, delete these birds')
+            ->assertSee('Yes, archive these birds')
             ->call('cancelDeleteSelected')
             ->assertSet('confirmingBulkDelete', false)
-            ->assertDontSee('Yes, delete these birds');
+            ->assertDontSee('Yes, archive these birds');
 
         $this->assertNotSoftDeleted($first);
         $this->assertNotSoftDeleted($second);
     }
 
-    public function test_confirming_deletes_the_selection_and_says_so(): void
+    public function test_confirming_archives_the_selection_and_says_so(): void
     {
         $birds = Broodcock::factory()->count(2)->create();
 
@@ -52,7 +52,7 @@ final class BulkDeleteConfirmationTest extends TestCase
             ->call('deleteSelected')
             ->assertSet('confirmingBulkDelete', false)
             ->assertSet('selected', [])
-            ->assertDispatched('toast', message: '2 birds removed from the active records.', tone: 'ok');
+            ->assertDispatched('toast', message: '2 birds archived. They can be restored from the Archive.', tone: 'ok');
 
         foreach ($birds as $bird) {
             $this->assertSoftDeleted($bird);
@@ -100,7 +100,7 @@ final class BulkDeleteConfirmationTest extends TestCase
      * owner's choice): view and edit for staff, and delete for the owner,
      * which opens the same confirmation as a bulk delete, for that one bird.
      */
-    public function test_each_row_offers_view_edit_and_for_the_owner_delete(): void
+    public function test_each_row_offers_view_edit_and_for_the_owner_archive(): void
     {
         $bird = Broodcock::factory()->create(['name' => 'Kingpin']);
 
@@ -110,12 +110,12 @@ final class BulkDeleteConfirmationTest extends TestCase
             ->assertSee('Actions')
             ->assertSee('aria-label="View Kingpin"', escape: false)
             ->assertSee('aria-label="Edit Kingpin"', escape: false)
-            ->assertSee('aria-label="Delete Kingpin"', escape: false)
+            ->assertSee('aria-label="Archive Kingpin"', escape: false)
             ->assertSee('confirmDeleteSelected()', escape: false);
 
         $this->actingAs(User::factory()->staff()->create())
             ->get(route('broodcocks.index'))
             ->assertSee('aria-label="Edit Kingpin"', escape: false)
-            ->assertDontSee('aria-label="Delete Kingpin"', escape: false);
+            ->assertDontSee('aria-label="Archive Kingpin"', escape: false);
     }
 }

@@ -326,7 +326,7 @@
                                         <x-ui.row-action icon="pencil" :label="'Edit the '.$record->event_type->label().' record'" :href="route('performance.edit', $record)" wire:click.prevent="openForm({{ $record->id }})" x-on:click="$dispatch('ems-dialog', { id: 'performance-form', wait: true })" />
                                     @endcan
                                     @can('delete', $record)
-                                        <x-ui.row-action icon="trash-2" :label="'Delete the '.$record->event_type->label().' record'" :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
+                                        <x-ui.row-action icon="trash-2" :label="'Archive the '.$record->event_type->label().' record'" :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
                                     @endcan
                                 </span>
                             </td>
@@ -350,7 +350,7 @@
              role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title" aria-describedby="delete-dialog-body">
             <div class="d-modal-box elev-3 max-w-md">
                 <h2 id="delete-dialog-title" class="font-display text-[22px] lg:text-base font-semibold leading-[1.2] tracking-[-0.015em] text-foreground">
-                    Delete the {{ $pending->event_type->label() }} record for {{ $pending->broodcock?->displayName() ?? 'this bird' }}?
+                    Archive the {{ $pending->event_type->label() }} record for {{ $pending->broodcock?->displayName() ?? 'this bird' }}?
                 </h2>
 
                 <div id="delete-dialog-body">
@@ -359,7 +359,7 @@
                         will be removed from the bird's timeline and will stop counting towards its win rate.
                     </p>
                     <p class="mt-2 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
-                        The farm owner can restore it later if this was a mistake.
+                        It is kept in the Archive, where the farm owner can restore it if this was a mistake.
                     </p>
                 </div>
 
@@ -367,7 +367,7 @@
                     <button type="button" wire:click="cancelDelete" class="d-btn d-btn-outline">Cancel</button>
                     <button type="button" wire:click="delete" class="d-btn d-btn-error" wire:loading.attr="disabled" wire:target="delete">
                         <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="delete"></span>
-                        Yes, delete this record
+                        Yes, archive this record
                     </button>
                 </div>
             </div>

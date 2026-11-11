@@ -10,6 +10,7 @@ use App\Support\Thumbnail;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Filesystem\AwsS3V3Adapter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
@@ -42,6 +43,10 @@ final class BroodcockPhotoController extends Controller
 
     public function show(Request $request, BroodcockPhoto $photo): StreamedResponse
     {
+        // The route binds archived photos too, for the owner's Archive. To
+        // anyone else an archived photo simply does not exist.
+        abort_if($photo->trashed() && ! Gate::allows('view-archive'), 404);
+
         $this->authorize('view', $photo);
 
         $disk = Storage::disk($photo->disk);

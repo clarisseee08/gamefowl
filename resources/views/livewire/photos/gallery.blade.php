@@ -125,7 +125,7 @@
                                 <button type="button"
                                         wire:click="confirmDelete({{ $photo->id }})"
                                         class="d-btn d-btn-ghost w-full justify-start px-2 text-destructive hover:bg-destructive-bg">
-                                    Delete photo
+                                    Archive photo
                                 </button>
                             </div>
                         @endif
@@ -135,9 +135,9 @@
         </ul>
     @endif
 
-    {{-- Delete confirmation. Shows the photo and names the bird, and says
-         plainly that the file is gone for good - "Are you sure?" tells a
-         worried keeper nothing. --}}
+    {{-- Archive confirmation. Shows the photo and names the bird, and says
+         plainly where it goes and that it can come back - "Are you sure?"
+         tells a worried keeper nothing. --}}
     @if ($confirming)
         <div class="d-modal d-modal-open"
              x-data x-trap.noscroll="true" x-on:keydown.escape.window="$wire.cancelDelete()"
@@ -150,15 +150,15 @@
                     </span>
                     <div class="min-w-0">
                         <h2 id="delete-photo-title" class="font-display text-[22px] lg:text-base font-semibold tracking-[-0.015em] text-foreground">
-                            Delete this photo of {{ $confirming->broodcock->displayName() }}?
+                            Archive this photo of {{ $confirming->broodcock->displayName() }}?
                         </h2>
                         <p id="delete-photo-body" class="mt-2 text-[15px] lg:text-xs leading-relaxed text-muted-foreground">
                             @if ($confirming->caption)
-                                &ldquo;{{ $confirming->caption }}&rdquo; will be removed for good.
+                                &ldquo;{{ $confirming->caption }}&rdquo; leaves this bird&rsquo;s photos.
                             @else
-                                The picture file is removed for good.
+                                The photo leaves this bird&rsquo;s photos.
                             @endif
-                            It cannot be brought back.
+                            It is kept in the Archive, where the farm owner can restore it.
                             @if ($confirming->is_primary && $photos->count() > 1)
                                 It is the main photo, so choose a new one afterwards.
                             @endif
@@ -171,7 +171,7 @@
                             wire:loading.attr="disabled" wire:target="delete({{ $confirming->id }})"
                             class="d-btn d-btn-error">
                         <span class="d-loading d-loading-spinner d-loading-sm" wire:loading wire:target="delete({{ $confirming->id }})"></span>
-                        Delete photo
+                        Archive photo
                     </button>
                 </div>
             </div>

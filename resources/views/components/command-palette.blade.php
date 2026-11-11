@@ -19,6 +19,7 @@
         ['label' => 'Mortality register', 'hint' => 'Go to', 'route' => 'mortality.index', 'internal' => true],
         ['label' => 'Reports', 'hint' => 'Go to', 'route' => 'reports.index', 'internal' => true],
         ['label' => 'Users', 'hint' => 'Go to', 'route' => 'users.index', 'owner' => true],
+        ['label' => 'Archive', 'hint' => 'Go to', 'route' => 'archive.index', 'owner' => true],
         ['label' => 'Add a broodcock', 'hint' => 'Create', 'route' => 'broodcocks.create', 'internal' => true],
         ['label' => 'Add a health record', 'hint' => 'Create', 'route' => 'health.create', 'internal' => true],
         ['label' => 'Add a breeding record', 'hint' => 'Create', 'route' => 'breeding.create', 'internal' => true],
