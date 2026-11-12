@@ -40,6 +40,19 @@ final class Form extends Component
 
     public ?string $disposal_method = null;
 
+    /**
+     * What the Cause of Death dropdown shows: one of causeOptions()'s keys, or
+     * OTHER. Only cause_of_death is validated and saved - picking an option
+     * copies its short name there, and OTHER clears it for the text box.
+     */
+    public string $cause_choice = '';
+
+    /** The same for How Was the Bird Disposed Of? */
+    public string $disposal_choice = '';
+
+    /** The dropdown value that opens a text box for the user's own answer. */
+    public const OTHER = '__other';
+
     public ?string $remarks = null;
 
     /** Narrows the bird list - a farm with hundreds of birds needs it. */
@@ -172,29 +185,58 @@ final class Form extends Component
             ->find((int) $this->broodcock_id);
     }
 
+    public function updatedCauseChoice(string $choice): void
+    {
+        $this->cause_of_death = $choice === self::OTHER ? '' : $choice;
+    }
+
+    public function updatedDisposalChoice(string $choice): void
+    {
+        $this->disposal_method = match ($choice) {
+            '' => null,
+            self::OTHER => '',
+            default => $choice,
+        };
+    }
+
     /**
-     * Suggestions only - the field stays free text, farms have odd causes.
+     * The causes the farm records most, each with what it covers, so Injury
+     * and Fighting are not used for the same death. The key is what is
+     * saved; the explanation is only shown. Anything else goes under Other.
      *
-     * @return array<int, string>
+     * @return array<string, string>
      */
-    #[Computed]
-    public function causeSuggestions(): array
+    public static function causeOptions(): array
     {
         return [
-            'Disease', 'Injury', 'Predator attack', 'Old age',
-            'Heat stress', 'Fighting', 'Unknown',
+            'Disease' => 'an illness or infection',
+            'Injury' => 'an accident on the farm, not a fight',
+            'Predator attack' => 'killed by a dog, snake, hawk or other animal',
+            'Old age' => 'no illness or injury',
+            'Heat stress' => 'overheated in hot weather',
+            'Fighting' => 'wounds from a fight or sparring',
+            'Unknown' => 'the cause could not be found',
         ];
     }
 
-    /** @return array<int, string> */
-    #[Computed]
-    public function disposalSuggestions(): array
+    /**
+     * How a dead bird is disposed of. "Composted" was dropped: it read too
+     * much like Buried. The key is what is saved.
+     *
+     * @return array<string, string>
+     */
+    public static function disposalOptions(): array
     {
-        return ['Buried', 'Burned', 'Composted', 'Sent for laboratory examination'];
+        return [
+            'Buried' => 'in the ground, on or near the farm',
+            'Burned' => 'in a fire on the farm',
+            'Discarded' => 'thrown out with farm waste',
+            'Sent for laboratory examination' => 'to find the cause of death',
+        ];
     }
 
     public function render(): View
     {
-        return view('livewire.mortality.form');
+        return view('livewire.mortality.form', ['otherChoice' => self::OTHER]);
     }
 }

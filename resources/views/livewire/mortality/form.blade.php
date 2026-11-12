@@ -106,32 +106,30 @@
                 </div>
 
                 <div>
-                    <label for="cause_of_death" class="d-fieldset-legend">Cause of Death <span class="text-destructive">*</span></label>
-                    <input id="cause_of_death"
-                           type="text"
-                           list="cause-suggestions"
-                           wire:model="cause_of_death"
-                           placeholder="For example: Disease"
-                           maxlength="255"
-                           aria-describedby="cause_of_death-help @error('cause_of_death') cause_of_death-error @enderror"
-                           @error('cause_of_death') aria-invalid="true" @enderror
-                           @class(['d-input w-full mt-1', 'd-input-error' => $errors->has('cause_of_death')])
-                           required>
-
-                    <datalist id="cause-suggestions">
-                        @foreach ($this->causeSuggestions as $suggestion)
-                            <option value="{{ $suggestion }}"></option>
+                    {{-- The dropdown sets cause_of_death; "Other" clears it and
+                         opens the text box below, which binds to it directly. --}}
+                    <x-form-select id="cause_choice" label="Cause of Death" required error="cause_of_death"
+                                   wire:model.live="cause_choice"
+                                   :help="$cause_choice === $otherChoice ? null : 'Choose the closest cause, or Other to describe it yourself. Using the same words each time makes the mortality report easier to read.'">
+                        <option value="">-- Choose a cause --</option>
+                        @foreach (\App\Livewire\Mortality\Form::causeOptions() as $cause => $explanation)
+                            <option value="{{ $cause }}">{{ $cause }} ({{ $explanation }})</option>
                         @endforeach
-                    </datalist>
+                        <option value="{{ $otherChoice }}">Other (type your own)</option>
+                    </x-form-select>
 
-                    @error('cause_of_death')
-                        <p id="cause_of_death-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p>
-                    @enderror
-
-                    <p id="cause_of_death-help" class="d-label mt-1">
-                        Pick one of the suggestions or type your own. Using the same words each
-                        time makes the mortality report easier to read.
-                    </p>
+                    @if ($cause_choice === $otherChoice)
+                        <label for="cause_of_death" class="sr-only">Describe the cause of death</label>
+                        <textarea id="cause_of_death"
+                                  rows="2"
+                                  wire:model="cause_of_death"
+                                  maxlength="255"
+                                  placeholder="Describe the cause of death"
+                                  aria-describedby="cause_of_death-help"
+                                  @error('cause_of_death') aria-invalid="true" @enderror
+                                  @class(['d-textarea w-full mt-2', 'd-textarea-error' => $errors->has('cause_of_death')])></textarea>
+                        <p id="cause_of_death-help" class="d-label mt-1">In a few words, as you would want to read it in the report.</p>
+                    @endif
                 </div>
             </section>
 
@@ -142,28 +140,26 @@
                 <h2 id="after-heading" class="border-b border-border pb-3 font-display text-[19px] lg:text-sm font-semibold tracking-[-0.015em] text-foreground">Afterwards</h2>
 
                 <div>
-                    <label for="disposal_method" class="d-fieldset-legend">How Was the Bird Disposed Of?</label>
-                    <input id="disposal_method"
-                           type="text"
-                           list="disposal-suggestions"
-                           wire:model="disposal_method"
-                           placeholder="For example: Buried"
-                           maxlength="120"
-                           aria-describedby="disposal_method-help @error('disposal_method') disposal_method-error @enderror"
-                           @error('disposal_method') aria-invalid="true" @enderror
-                           @class(['d-input w-full mt-1', 'd-input-error' => $errors->has('disposal_method')])>
-
-                    <datalist id="disposal-suggestions">
-                        @foreach ($this->disposalSuggestions as $suggestion)
-                            <option value="{{ $suggestion }}"></option>
+                    <x-form-select id="disposal_choice" label="How Was the Bird Disposed Of?" error="disposal_method"
+                                   wire:model.live="disposal_choice"
+                                   help="You can leave this blank and fill it in later.">
+                        <option value="">-- Not recorded yet --</option>
+                        @foreach (\App\Livewire\Mortality\Form::disposalOptions() as $method => $explanation)
+                            <option value="{{ $method }}">{{ $method }} ({{ $explanation }})</option>
                         @endforeach
-                    </datalist>
+                        <option value="{{ $otherChoice }}">Other (type your own)</option>
+                    </x-form-select>
 
-                    @error('disposal_method')
-                        <p id="disposal_method-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p>
-                    @enderror
-
-                    <p id="disposal_method-help" class="d-label mt-1">You can leave this blank and fill it in later.</p>
+                    @if ($disposal_choice === $otherChoice)
+                        <label for="disposal_method" class="sr-only">Describe how the bird was disposed of</label>
+                        <textarea id="disposal_method"
+                                  rows="2"
+                                  wire:model="disposal_method"
+                                  maxlength="120"
+                                  placeholder="Describe how the bird was disposed of"
+                                  @error('disposal_method') aria-invalid="true" @enderror
+                                  @class(['d-textarea w-full mt-2', 'd-textarea-error' => $errors->has('disposal_method')])></textarea>
+                    @endif
                 </div>
 
                 <div>
