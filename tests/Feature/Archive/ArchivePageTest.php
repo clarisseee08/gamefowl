@@ -17,6 +17,7 @@ use App\Models\MortalityRecord;
 use App\Models\PerformanceRecord;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -111,13 +112,42 @@ final class ArchivePageTest extends TestCase
     public function test_searching_narrows_the_tab(): void
     {
         $this->actingAs($this->owner());
-        Broodcock::factory()->create(['name' => 'Reyna'])->delete();
-        Broodcock::factory()->create(['name' => 'Bagwis'])->delete();
+        // Bloodlines pinned: the factory can pick "Grey", which contains "rey"
+        // and matched the search by bloodline, failing this one run in five.
+        Broodcock::factory()->bloodline('Sweater')->create(['name' => 'Reyna'])->delete();
+        Broodcock::factory()->bloodline('Kelso')->create(['name' => 'Bagwis'])->delete();
 
         Livewire::test(Index::class)
-            ->set('search', 'Rey')
+            ->set('search', 'rey')
             ->assertSee('Reyna')
             ->assertDontSee('Bagwis');
+    }
+
+    /**
+     * The suite runs on SQLite, whose LIKE ignores case whatever the code asks
+     * for, so the test above cannot catch a case-sensitive search. Production
+     * is Postgres, where only ILIKE ignores case. This builds every tab's query
+     * for Postgres, without running it, and reads the SQL.
+     */
+    public function test_the_search_ignores_case_on_postgres(): void
+    {
+        $component = new Index;
+        $component->search = 'reyna';
+        $buildQuery = fn (string $type) => $this->query($type);
+
+        $previous = DB::getDefaultConnection();
+        DB::setDefaultConnection('pgsql');
+
+        try {
+            foreach (array_keys(Index::TABS) as $type) {
+                $sql = strtolower($buildQuery->call($component, $type)->toSql());
+
+                $this->assertStringContainsString('ilike', $sql, "The {$type} tab's search is case-sensitive on Postgres.");
+                $this->assertDoesNotMatchRegularExpression('/(?<!i)like/', $sql, "The {$type} tab still has a case-sensitive LIKE.");
+            }
+        } finally {
+            DB::setDefaultConnection($previous);
+        }
     }
 
     // -----------------------------------------------------------------

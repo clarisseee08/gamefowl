@@ -220,6 +220,11 @@ final class Index extends Component
      * Related birds load with withTrashed(): a record whose bird was archived
      * too must still name it.
      *
+     * The search ignores case, as every other list's does: whereLike(caseSensitive:
+     * false) compiles to ILIKE on Postgres. A plain 'like' is case-sensitive
+     * there, so "reyna" found nothing in production while SQLite, which ignores
+     * case anyway, let every test pass.
+     *
      * @return Builder<Model>
      */
     private function query(string $type): Builder
@@ -228,18 +233,19 @@ final class Index extends Component
         $term = trim($this->search);
         $like = '%'.$term.'%';
         $birdMatches = fn (Builder $query) => $query->withTrashed()
-            ->where(fn (Builder $q) => $q->where('name', 'like', $like)->orWhere('band_number', 'like', $like));
+            ->where(fn (Builder $q) => $q->whereLike('name', $like, caseSensitive: false)
+                ->orWhereLike('band_number', $like, caseSensitive: false));
 
         return match ($type) {
             'gamefowl' => Broodcock::onlyTrashed()
                 ->when($term !== '', fn (Builder $q) => $q->where(fn (Builder $w) => $w
-                    ->where('name', 'like', $like)
-                    ->orWhere('band_number', 'like', $like)
-                    ->orWhere('bloodline', 'like', $like))),
+                    ->whereLike('name', $like, caseSensitive: false)
+                    ->orWhereLike('band_number', $like, caseSensitive: false)
+                    ->orWhereLike('bloodline', $like, caseSensitive: false))),
             'photos' => BroodcockPhoto::onlyTrashed()
                 ->with(['broodcock' => $bird])
                 ->when($term !== '', fn (Builder $q) => $q->where(fn (Builder $w) => $w
-                    ->where('caption', 'like', $like)
+                    ->whereLike('caption', $like, caseSensitive: false)
                     ->orWhereHas('broodcock', $birdMatches))),
             'breeding' => BreedingRecord::onlyTrashed()
                 ->with(['sire' => $bird, 'dam' => $bird])
@@ -249,7 +255,7 @@ final class Index extends Component
             'health' => HealthRecord::onlyTrashed()
                 ->with(['broodcock' => $bird])
                 ->when($term !== '', fn (Builder $q) => $q->where(fn (Builder $w) => $w
-                    ->where('product_name', 'like', $like)
+                    ->whereLike('product_name', $like, caseSensitive: false)
                     ->orWhereHas('broodcock', $birdMatches))),
             'performance' => PerformanceRecord::onlyTrashed()
                 ->with(['broodcock' => $bird])
@@ -257,7 +263,7 @@ final class Index extends Component
             'mortality' => MortalityRecord::onlyTrashed()
                 ->with(['broodcock' => $bird])
                 ->when($term !== '', fn (Builder $q) => $q->where(fn (Builder $w) => $w
-                    ->where('cause_of_death', 'like', $like)
+                    ->whereLike('cause_of_death', $like, caseSensitive: false)
                     ->orWhereHas('broodcock', $birdMatches))),
         };
     }
