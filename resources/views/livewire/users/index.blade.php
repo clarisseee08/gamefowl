@@ -23,7 +23,7 @@
     $loadingTargets = 'search,role,status,sort,perPage,gotoPage,nextPage,previousPage';
 @endphp
 
-<div>
+<div x-data="{ view: $persist('table').as('gfms-view-users') }">
     <x-ui.page-header title="User Accounts"
                       :figure="number_format($total)"
                       :figure-label="Str::plural('account', $total).($filtered ? ' matching your filters' : '')">
@@ -68,6 +68,8 @@
             @endforeach
         </x-filter-select>
 
+        <x-ui.view-toggle />
+
         <x-slot:loading>
             <span wire:loading wire:target="search,role,status">Searching&hellip;</span>
         </x-slot:loading>
@@ -83,7 +85,9 @@
         {{-- Phones: one block per person - name and email, then role and
              status. Read one-handed, so no sideways scroll. The avatar is
              initials only: a photo URL costs a storage round trip per row. --}}
-        <x-ui.card :flush="true">
+        {{-- In cards view the card steps aside from md up only: phones keep
+             their stacked list whichever view was last chosen. --}}
+        <x-ui.card :flush="true" x-bind:class="{ 'md:hidden': view === 'cards' }">
         <ul class="divide-y divide-border px-5 md:hidden"
             wire:loading.class="opacity-60" wire:target="{{ $loadingTargets }}">
             @foreach ($people as $person)
@@ -222,6 +226,58 @@
             <x-ui.table-pagination :paginator="$people" />
         </div>
         </x-ui.card>
+
+        {{-- TABLETS AND UP, AS CARDS: the same people, the same actions. --}}
+        <div class="hidden md:block" x-show="view === 'cards'" x-cloak>
+            <ul class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+                wire:loading.remove wire:target="{{ $loadingTargets }}">
+                @foreach ($people as $person)
+                    <li wire:key="user-tile-{{ $person->id }}">
+                        <x-ui.record-card>
+                            <x-slot:media>
+                                <x-ui.avatar :name="$person->full_name" />
+                            </x-slot:media>
+                            <x-slot:title>
+                                {{ $person->full_name }}
+                                @if ($person->is(auth()->user()))
+                                    <span class="ml-1 text-[13px] lg:text-[11px] font-normal text-muted-foreground">(you)</span>
+                                @endif
+                            </x-slot:title>
+                            <x-slot:subtitle>{{ $person->email }}</x-slot:subtitle>
+                            <x-slot:badge>
+                                <span class="d-badge d-badge-soft d-badge-neutral">{{ $person->role->label() }}</span>
+                                @if ($person->is_active)
+                                    <span class="d-badge d-badge-soft d-badge-success">Active</span>
+                                @else
+                                    <span class="d-badge d-badge-soft d-badge-neutral">Deactivated</span>
+                                @endif
+                            </x-slot:badge>
+
+                            <dl class="grid grid-cols-2 gap-3">
+                                <x-ui.fact label="Position">{{ $person->position ?? 'Not recorded' }}</x-ui.fact>
+                                <x-ui.fact label="Contact">
+                                    <span @class(['datum' => $person->contact_number !== null])>{{ $person->contact_number ?? 'Not recorded' }}</span>
+                                </x-ui.fact>
+                            </dl>
+
+                            <x-slot:actions>
+                                @can('update', $person)
+                                    <x-ui.row-action icon="pencil" :label="'Edit '.$person->full_name" :href="route('users.edit', $person)" wire:click.prevent="openForm({{ $person->id }})" x-on:click="$dispatch('ems-dialog', { id: 'users-form', wait: true })" />
+                                @endcan
+                                @can('deactivate', $person)
+                                    <x-ui.row-action :icon="$person->is_active ? 'user-x' : 'user-check'"
+                                                     :label="($person->is_active ? 'Deactivate ' : 'Reactivate ').$person->full_name"
+                                                     :destructive="$person->is_active" wire:click="confirmToggle({{ $person->id }})" />
+                                @endcan
+                            </x-slot:actions>
+                        </x-ui.record-card>
+                    </li>
+                @endforeach
+            </ul>
+            <x-ui.cards-skeleton class="mt-4" wire:loading.grid wire:target="{{ $loadingTargets }}" />
+
+            <x-ui.table-pagination :paginator="$people" class="mt-4" />
+        </div>
     @endif
 
     {{-- Confirmation. Names the person and says exactly what happens to them

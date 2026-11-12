@@ -53,7 +53,7 @@
     ];
 @endphp
 
-<div>
+<div x-data="{ view: $persist('table').as('gfms-view-performance') }">
     <x-anchor-block eyebrow="Manage" title="Performance Records"
                     :figure="number_format($total)"
                     :figure-label="Str::plural('record', $total).($filtered ? ' matching your filters' : ' on file')">
@@ -116,6 +116,8 @@
             <label for="to" class="d-fieldset-legend mb-0 shrink-0 py-0">To Date</label>
             <input id="to" type="date" wire:model.live="to" class="d-input datum w-full sm:w-auto">
         </div>
+
+        <x-ui.view-toggle class="ml-auto" />
 
         <x-slot:loading>
             <span wire:loading wire:target="search,eventType,result,from,to">Searching&hellip;</span>
@@ -206,7 +208,7 @@
              make its own scroll box and stop the header sticking - so the
              least load-bearing columns drop out below xl and 2xl instead. --}}
         {{-- EMS: a wide table scrolls inside its own container; the page never does. --}}
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto" x-show="view === 'table'">
             <table class="d-table hidden w-full md:table [&_td]:border-border [&_th]:border-border">
                 <thead>
                     <tr>
@@ -336,6 +338,57 @@
 
                 <x-table-skeleton :cols="6" wire:loading wire:target="{{ $loadingTargets }}" />
             </table>
+        </div>
+
+        {{-- TABLETS AND UP, AS CARDS: the same records, the same actions. --}}
+        <div class="hidden md:block" x-show="view === 'cards'" x-cloak>
+            <ul class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+                wire:loading.remove wire:target="{{ $loadingTargets }}">
+                @foreach ($records as $record)
+                    <li wire:key="perf-card-{{ $record->id }}">
+                        <x-ui.record-card :href="$record->broodcock !== null ? route('broodcocks.show', $record->broodcock) : null">
+                            <x-slot:title>{{ $record->broodcock?->name ?? 'Bird removed' }}</x-slot:title>
+                            @if ($record->broodcock !== null)
+                                <x-slot:subtitle>
+                                    <x-band-tag :bloodline="$record->broodcock->bloodline"
+                                                :band="$record->broodcock->band_number" size="xs" />
+                                </x-slot:subtitle>
+                            @endif
+                            <x-slot:badge>
+                                <span class="d-badge d-badge-soft {{ $record->event_type->badgeClasses() }}">{{ $record->event_type->label() }}</span>
+                                <span class="d-badge d-badge-soft {{ $record->result->badgeClasses() }}">{{ $record->result->label() }}</span>
+                            </x-slot:badge>
+
+                            <dl class="grid grid-cols-3 gap-3">
+                                <x-ui.fact label="Weight">
+                                    <span @class(['datum' => $record->weight !== null, 'text-muted-foreground' => $record->weight === null])>{{ $record->weight !== null ? $record->weight.' kg' : 'Not recorded' }}</span>
+                                </x-ui.fact>
+                                <x-ui.fact label="Duration">
+                                    <span @class(['datum' => $record->durationLabel() !== null, 'text-muted-foreground' => $record->durationLabel() === null])>{{ $record->durationLabel() ?? 'Not recorded' }}</span>
+                                </x-ui.fact>
+                                <x-ui.fact label="Rating">
+                                    <span @class(['datum' => $record->rating !== null, 'text-muted-foreground' => $record->rating === null])>{{ $record->rating !== null ? $record->rating.' of 5' : 'Not rated' }}</span>
+                                </x-ui.fact>
+                            </dl>
+
+                            <x-slot:meta>
+                                <span class="datum">{{ $record->event_date->format('d M Y') }}</span>
+                            </x-slot:meta>
+                            <x-slot:actions>
+                                <x-ui.row-action icon="eye" :label="'View the '.$record->event_type->label().' record'"
+                                                 x-on:click="$dispatch('performance-view', {{ Js::from($viewPayload($record)) }}); $dispatch('ems-dialog', 'performance-view')" />
+                                @can('update', $record)
+                                    <x-ui.row-action icon="pencil" :label="'Edit the '.$record->event_type->label().' record'" :href="route('performance.edit', $record)" wire:click.prevent="openForm({{ $record->id }})" x-on:click="$dispatch('ems-dialog', { id: 'performance-form', wait: true })" />
+                                @endcan
+                                @can('delete', $record)
+                                    <x-ui.row-action icon="trash-2" :label="'Archive the '.$record->event_type->label().' record'" :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
+                                @endcan
+                            </x-slot:actions>
+                        </x-ui.record-card>
+                    </li>
+                @endforeach
+            </ul>
+            <x-ui.cards-skeleton wire:loading.grid wire:target="{{ $loadingTargets }}" />
         </div>
 
         <x-ui.table-pagination :paginator="$records" class="mt-4" />

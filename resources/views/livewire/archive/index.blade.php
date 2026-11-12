@@ -12,7 +12,7 @@
     $td = 'px-4 py-3 align-middle text-[15px] lg:text-xs text-foreground';
     $archiveTargets = 'tab,search,perPage,gotoPage,nextPage,previousPage';
 @endphp
-<div>
+<div x-data="{ view: $persist('table').as('gfms-view-archive') }">
     <x-ui.page-header title="Archive"
                       :figure="number_format($total)"
                       :figure-label="Str::plural('archived record', $total)">
@@ -34,6 +34,9 @@
                    placeholder="{{ $tab === 'gamefowl' ? 'Name, band number or bloodline' : 'Bird name or band number' }}"
                    class="d-input w-full">
         </x-slot:search>
+
+        <x-ui.view-toggle />
+
         <x-slot:loading>
             <span wire:loading wire:target="search,tab">Searching&hellip;</span>
         </x-slot:loading>
@@ -42,7 +45,12 @@
     {{-- Switching kind of record, searching or paging waits for the server.
          The old rows - or "Nothing archived here" - leave at once, and the
          shape of a list stands in until the new ones land. --}}
-    <x-ui.rows-skeleton class="mt-5 hidden" :cols="5" wire:loading.block wire:target="{{ $archiveTargets }}" />
+    <div x-bind:class="{ 'md:hidden': view === 'cards' }">
+        <x-ui.rows-skeleton class="mt-5 hidden" :cols="5" wire:loading.block wire:target="{{ $archiveTargets }}" />
+    </div>
+    <div class="hidden md:block" x-show="view === 'cards'" x-cloak>
+        <x-ui.cards-skeleton class="mt-5" wire:loading.grid wire:target="{{ $archiveTargets }}" />
+    </div>
 
     <div wire:loading.remove wire:target="{{ $archiveTargets }}">
     @if ($rows->isEmpty())
@@ -50,7 +58,9 @@
                        :description="$search !== '' ? 'Try another name or band number.' : 'Records you archive appear here, where they can be restored.'"
                        icon="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
     @else
-        <x-ui.card :flush="true" class="mt-5">
+        {{-- The table steps aside in cards view from md up only: below md
+             there is no switch, so a phone always reads the table. --}}
+        <x-ui.card :flush="true" class="mt-5" x-bind:class="{ 'md:hidden': view === 'cards' }">
             <div class="overflow-x-auto" data-scroll-x>
                 <table class="w-full">
                     <thead>
@@ -135,6 +145,77 @@
                 <x-ui.table-pagination :paginator="$rows" />
             </div>
         </x-ui.card>
+
+        {{-- TABLETS AND UP, AS CARDS: the same records, the same Restore. --}}
+        <div class="hidden md:block" x-show="view === 'cards'" x-cloak>
+            <ul class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+                wire:loading.remove wire:target="{{ $archiveTargets }}">
+                @foreach ($rows as $row)
+                    <li wire:key="archive-card-{{ $tab }}-{{ $row->getKey() }}">
+                        <x-ui.record-card>
+                            @switch($tab)
+                                @case('gamefowl')
+                                    <x-slot:title><span class="datum">{{ $row->displayBand() }}</span></x-slot:title>
+                                    <x-slot:subtitle>{{ $row->name }}</x-slot:subtitle>
+                                    <dl class="grid grid-cols-3 gap-3">
+                                        <x-ui.fact label="Bloodline" class="col-span-3">{{ $row->bloodline ?? 'Not recorded' }}</x-ui.fact>
+                                    </dl>
+                                    @break
+                                @case('photos')
+                                    <x-slot:media>
+                                        <img src="{{ route('photos.show', ['photo' => $row, 'size' => 'thumb']) }}" alt=""
+                                             width="48" height="60" loading="lazy" class="h-[60px] w-12 rounded-[6px] bg-muted object-cover">
+                                    </x-slot:media>
+                                    <x-slot:title>{{ $row->broodcock?->displayName() ?? 'A removed bird' }}</x-slot:title>
+                                    <x-slot:subtitle>{{ $row->caption ?? 'No description' }}</x-slot:subtitle>
+                                    @break
+                                @case('breeding')
+                                    <x-slot:title>{{ $row->sire?->name ?? 'A removed bird' }} &times; {{ $row->dam?->name ?? 'A removed bird' }}</x-slot:title>
+                                    <dl class="grid grid-cols-3 gap-3">
+                                        <x-ui.fact label="Mating date"><span class="datum">{{ $row->mating_date->format('j M Y') }}</span></x-ui.fact>
+                                        <x-ui.fact label="Eggs set / hatched" class="col-span-2"><span class="datum">{{ $row->eggs_set }} / {{ $row->eggs_hatched }}</span></x-ui.fact>
+                                    </dl>
+                                    @break
+                                @case('health')
+                                    <x-slot:title>{{ $row->broodcock?->displayName() ?? 'A removed bird' }}</x-slot:title>
+                                    <dl class="grid grid-cols-3 gap-3">
+                                        <x-ui.fact label="Record" class="col-span-2">{{ $row->record_type->label() }}@if ($row->product_name) &middot; {{ $row->product_name }}@endif</x-ui.fact>
+                                        <x-ui.fact label="Check-up date"><span class="datum">{{ $row->checkup_date->format('j M Y') }}</span></x-ui.fact>
+                                    </dl>
+                                    @break
+                                @case('performance')
+                                    <x-slot:title>{{ $row->broodcock?->displayName() ?? 'A removed bird' }}</x-slot:title>
+                                    <dl class="grid grid-cols-3 gap-3">
+                                        <x-ui.fact label="Event" class="col-span-2">{{ $row->event_type->label() }}</x-ui.fact>
+                                        <x-ui.fact label="Date"><span class="datum">{{ $row->event_date->format('j M Y') }}</span></x-ui.fact>
+                                    </dl>
+                                    @break
+                                @case('mortality')
+                                    <x-slot:title>{{ $row->broodcock?->displayName() ?? 'A removed bird' }}</x-slot:title>
+                                    <dl class="grid grid-cols-3 gap-3">
+                                        <x-ui.fact label="Date of death"><span class="datum">{{ $row->date_of_death->format('j M Y') }}</span></x-ui.fact>
+                                        <x-ui.fact label="Cause" class="col-span-2">{{ $row->cause_of_death }}</x-ui.fact>
+                                    </dl>
+                                    @break
+                            @endswitch
+
+                            <x-slot:meta>
+                                Archived <span class="datum">{{ $row->deleted_at->format('j M Y') }}</span>
+                                &middot; {{ $archivedBy[$row->getKey()] ?? 'Unknown' }}
+                            </x-slot:meta>
+                            <x-slot:actions>
+                                <button type="button" wire:click="confirmRestore('{{ $tab }}', {{ $row->getKey() }})"
+                                        class="d-btn d-btn-outline d-btn-sm">
+                                    Restore<span class="sr-only">, {{ $this->describe($row) }}</span>
+                                </button>
+                            </x-slot:actions>
+                        </x-ui.record-card>
+                    </li>
+                @endforeach
+            </ul>
+
+            <x-ui.table-pagination :paginator="$rows" class="mt-4" />
+        </div>
     @endif
     </div>
 

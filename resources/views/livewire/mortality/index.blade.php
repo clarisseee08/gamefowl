@@ -9,7 +9,7 @@
     eager-loaded in the component - Supabase is a network hop away, so an N+1
     would be felt, not measured.
 --}}
-<div>
+<div x-data="{ view: $persist('table').as('gfms-view-mortality') }">
     @php
         /**
          * Age at death, in words. Defined once here rather than repeated in
@@ -100,6 +100,8 @@
             @endforeach
         </x-filter-select>
 
+        <x-ui.view-toggle class="ml-auto" />
+
         <x-slot:loading>
             <span wire:loading wire:target="{{ $loadingTargets }}">Loading&hellip;</span>
         </x-slot:loading>
@@ -188,72 +190,119 @@
 
         {{-- Wider screens: a ledger with a header that stays in view. No
              overflow wrapper - a scrolling ancestor would stop it sticking. --}}
-        <table class="d-table hidden w-full border-separate border-spacing-0 text-[15px] lg:text-xs md:table">
-            <thead class="sticky top-0 z-10 bg-background">
-                <tr>
-                    <x-sort-control field="date_of_death" label="Date of Death"
-                                    :current="$sortBy" :direction="$sortDirection"
-                                    cell="border-b border-border pl-0" wire:click="sort('date_of_death')" />
-                    <th scope="col" class="border-b border-border px-4 py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Bird</th>
-                    <x-sort-control field="cause_of_death" label="Cause of Death"
-                                    :current="$sortBy" :direction="$sortDirection"
-                                    cell="border-b border-border" wire:click="sort('cause_of_death')" />
-                    <th scope="col" class="hidden border-b border-border px-4 py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground lg:table-cell">Disposal method</th>
-                    <th scope="col" class="border-b border-border px-4 py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Age at death</th>
-                    <th scope="col" class="hidden border-b border-border px-4 py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground lg:table-cell">Recorded by</th>
-                    @if ($canDelete)
-                        <th scope="col" class="border-b border-border py-3 pl-4 pr-0 text-right text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Actions</th>
-                    @endif
-                </tr>
-            </thead>
-
-            <tbody wire:loading.remove wire:target="{{ $tableTargets }}">
-                @foreach ($rows as $record)
-                    <tr wire:key="row-{{ $record->id }}" class="row-hover align-top *:align-top"
-                        x-data="{ preview: false, timer: null }"
-                        x-on:mouseenter="if (matchMedia('(hover: hover)').matches) { timer = setTimeout(() => preview = true, 350) }"
-                        x-on:mouseleave="clearTimeout(timer); preview = false">
-                        <td class="datum whitespace-nowrap border-b border-border py-3 pl-0 pr-4 text-foreground">
-                            {{ $record->date_of_death->format('d M Y') }}
-                        </td>
-                        <td class="border-b border-border px-4 py-3">
-                            <p class="relative inline-flex font-medium text-foreground">
-                                {{ $record->broodcock?->name ?? 'Unknown bird' }}
-                                @if ($record->broodcock)
-                                    <x-bird-hover-card :bird="$record->broodcock" />
-                                @endif
-                            </p>
-                            <p class="mt-0.5 inline-flex items-center gap-1.5 text-[13px] lg:text-[11px] text-muted-foreground">
-                                @if ($record->broodcock)
-                                    <x-band-dot :bloodline="$record->broodcock->bloodline" />
-                                    @if ($record->broodcock->band_number)
-                                        <span class="datum">{{ $record->broodcock->band_number }}</span>
-                                    @else
-                                        Not yet banded
-                                    @endif
-                                @else
-                                    Band not recorded
-                                @endif
-                            </p>
-                        </td>
-                        <td class="border-b border-border px-4 py-3 text-foreground">{{ $record->cause_of_death }}</td>
-                        <td class="hidden border-b border-border px-4 py-3 text-muted-foreground lg:table-cell">{{ $record->disposal_method ?: 'Not recorded' }}</td>
-                        <td class="datum whitespace-nowrap border-b border-border px-4 py-3 text-muted-foreground">
-                            {{ $ageLabel($record->ageAtDeathInMonths()) }}
-                        </td>
-                        <td class="hidden border-b border-border px-4 py-3 text-muted-foreground lg:table-cell">{{ $record->recordedBy?->full_name ?? 'Not recorded' }}</td>
+        <div x-show="view === 'table'">
+            <table class="d-table hidden w-full border-separate border-spacing-0 text-[15px] lg:text-xs md:table">
+                <thead class="sticky top-0 z-10 bg-background">
+                    <tr>
+                        <x-sort-control field="date_of_death" label="Date of Death"
+                                        :current="$sortBy" :direction="$sortDirection"
+                                        cell="border-b border-border pl-0" wire:click="sort('date_of_death')" />
+                        <th scope="col" class="border-b border-border px-4 py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Bird</th>
+                        <x-sort-control field="cause_of_death" label="Cause of Death"
+                                        :current="$sortBy" :direction="$sortDirection"
+                                        cell="border-b border-border" wire:click="sort('cause_of_death')" />
+                        <th scope="col" class="hidden border-b border-border px-4 py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground lg:table-cell">Disposal method</th>
+                        <th scope="col" class="border-b border-border px-4 py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Age at death</th>
+                        <th scope="col" class="hidden border-b border-border px-4 py-3 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground lg:table-cell">Recorded by</th>
                         @if ($canDelete)
-                            <td class="border-b border-border py-1.5 pl-4 pr-0 text-right">
-                                <x-ui.row-action icon="trash-2" :label="'Archive the death record for '.($record->broodcock?->name ?? 'this bird')"
-                                                 :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
-                            </td>
+                            <th scope="col" class="border-b border-border py-3 pl-4 pr-0 text-right text-[13px] lg:text-[11px] font-semibold text-muted-foreground">Actions</th>
                         @endif
                     </tr>
-                @endforeach
-            </tbody>
+                </thead>
 
-            <x-table-skeleton :cols="$canDelete ? 7 : 6" wire:loading wire:target="{{ $tableTargets }}" />
-        </table>
+                <tbody wire:loading.remove wire:target="{{ $tableTargets }}">
+                    @foreach ($rows as $record)
+                        <tr wire:key="row-{{ $record->id }}" class="row-hover align-top *:align-top"
+                            x-data="{ preview: false, timer: null }"
+                            x-on:mouseenter="if (matchMedia('(hover: hover)').matches) { timer = setTimeout(() => preview = true, 350) }"
+                            x-on:mouseleave="clearTimeout(timer); preview = false">
+                            <td class="datum whitespace-nowrap border-b border-border py-3 pl-0 pr-4 text-foreground">
+                                {{ $record->date_of_death->format('d M Y') }}
+                            </td>
+                            <td class="border-b border-border px-4 py-3">
+                                <p class="relative inline-flex font-medium text-foreground">
+                                    {{ $record->broodcock?->name ?? 'Unknown bird' }}
+                                    @if ($record->broodcock)
+                                        <x-bird-hover-card :bird="$record->broodcock" />
+                                    @endif
+                                </p>
+                                <p class="mt-0.5 inline-flex items-center gap-1.5 text-[13px] lg:text-[11px] text-muted-foreground">
+                                    @if ($record->broodcock)
+                                        <x-band-dot :bloodline="$record->broodcock->bloodline" />
+                                        @if ($record->broodcock->band_number)
+                                            <span class="datum">{{ $record->broodcock->band_number }}</span>
+                                        @else
+                                            Not yet banded
+                                        @endif
+                                    @else
+                                        Band not recorded
+                                    @endif
+                                </p>
+                            </td>
+                            <td class="border-b border-border px-4 py-3 text-foreground">{{ $record->cause_of_death }}</td>
+                            <td class="hidden border-b border-border px-4 py-3 text-muted-foreground lg:table-cell">{{ $record->disposal_method ?: 'Not recorded' }}</td>
+                            <td class="datum whitespace-nowrap border-b border-border px-4 py-3 text-muted-foreground">
+                                {{ $ageLabel($record->ageAtDeathInMonths()) }}
+                            </td>
+                            <td class="hidden border-b border-border px-4 py-3 text-muted-foreground lg:table-cell">{{ $record->recordedBy?->full_name ?? 'Not recorded' }}</td>
+                            @if ($canDelete)
+                                <td class="border-b border-border py-1.5 pl-4 pr-0 text-right">
+                                    <x-ui.row-action icon="trash-2" :label="'Archive the death record for '.($record->broodcock?->name ?? 'this bird')"
+                                                     :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
+                                </td>
+                            @endif
+                        </tr>
+                    @endforeach
+                </tbody>
+
+                <x-table-skeleton :cols="$canDelete ? 7 : 6" wire:loading wire:target="{{ $tableTargets }}" />
+            </table>
+        </div>
+
+        {{-- TABLETS AND UP, AS CARDS: the same deaths, the same actions. --}}
+        <div class="hidden md:block" x-show="view === 'cards'" x-cloak>
+            <ul class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+                wire:loading.remove wire:target="{{ $tableTargets }}">
+                @foreach ($rows as $record)
+                    <li wire:key="mortality-card-{{ $record->id }}">
+                        <x-ui.record-card>
+                            <x-slot:title>{{ $record->broodcock?->name ?? 'Unknown bird' }}</x-slot:title>
+                            <x-slot:subtitle>
+                                <span class="inline-flex items-center gap-1.5">
+                                    @if ($record->broodcock)
+                                        <x-band-dot :bloodline="$record->broodcock->bloodline" />
+                                        @if ($record->broodcock->band_number)
+                                            <span class="datum">{{ $record->broodcock->band_number }}</span>
+                                        @else
+                                            Not yet banded
+                                        @endif
+                                    @else
+                                        Band not recorded
+                                    @endif
+                                </span>
+                            </x-slot:subtitle>
+
+                            <dl class="grid grid-cols-3 gap-3">
+                                <x-ui.fact label="Cause of Death">{{ $record->cause_of_death }}</x-ui.fact>
+                                <x-ui.fact label="Age at death"><span class="datum">{{ $ageLabel($record->ageAtDeathInMonths()) }}</span></x-ui.fact>
+                                <x-ui.fact label="Disposal method">{{ $record->disposal_method ?: 'Not recorded' }}</x-ui.fact>
+                            </dl>
+
+                            <x-slot:meta>
+                                <span class="datum">{{ $record->date_of_death->format('d M Y') }}</span>
+                            </x-slot:meta>
+                            @if ($canDelete)
+                                <x-slot:actions>
+                                    <x-ui.row-action icon="trash-2" :label="'Archive the death record for '.($record->broodcock?->name ?? 'this bird')"
+                                                     :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
+                                </x-slot:actions>
+                            @endif
+                        </x-ui.record-card>
+                    </li>
+                @endforeach
+            </ul>
+            <x-ui.cards-skeleton wire:loading.grid wire:target="{{ $tableTargets }}" />
+        </div>
 
         <x-ui.table-pagination :paginator="$rows" class="mt-4" />
     @endif

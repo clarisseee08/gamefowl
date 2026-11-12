@@ -17,7 +17,7 @@
     $tableTargets = $loadingTargets.',sort,perPage,gotoPage,nextPage,previousPage';
 @endphp
 
-<div>
+<div x-data="{ view: $persist('table').as('gfms-view-breeding') }">
     <x-anchor-block eyebrow="Manage" title="Breeding Records" :figure="$figure" :figure-label="$figureLabel">
         Matings, egg counts and hatch results. Fertility and hatch rates are worked
         out automatically from the egg numbers.
@@ -72,6 +72,8 @@
                 <option value="{{ $option }}">{{ $option }}</option>
             @endforeach
         </x-filter-select>
+
+        <x-ui.view-toggle />
 
         {{-- The search is debounced and the round trip is to Tokyo, so a
              keystroke and its result are most of a second apart - without this
@@ -168,7 +170,7 @@
              travels with it when it sticks; a collapsed border stays behind.
         --------------------------------------------------------------- --}}
         {{-- EMS: a wide table scrolls inside its own container; the page never does. --}}
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto" x-show="view === 'table'">
             <table class="d-table hidden w-full border-separate border-spacing-0 text-[15px] lg:text-xs md:table">
                 <thead class="sticky top-0 z-10 bg-background">
                     <tr>
@@ -267,6 +269,64 @@
 
                 <x-table-skeleton :cols="8" wire:loading wire:target="{{ $tableTargets }}" />
             </table>
+        </div>
+
+        {{-- WIDER SCREENS, AS CARDS: the same matings, the same action. --}}
+        <div class="hidden md:block" x-show="view === 'cards'" x-cloak>
+            <ul class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+                wire:loading.remove wire:target="{{ $tableTargets }}">
+                @foreach ($records as $record)
+                    @php $pairName = ($record->sire?->name ?? 'Bird removed').' × '.($record->dam?->name ?? 'Bird removed'); @endphp
+                    <li wire:key="m-card-{{ $record->id }}">
+                        <x-ui.record-card :href="route('breeding.show', $record)">
+                            <x-slot:title>{{ $pairName }}</x-slot:title>
+                            <x-slot:subtitle>
+                                @foreach ([$record->sire, $record->dam] as $parent)
+                                    @if (! $loop->first)
+                                        <span aria-hidden="true">&times;</span>
+                                    @endif
+                                    @if ($parent === null)
+                                        Bird removed
+                                    @else
+                                        <span class="inline-flex items-center gap-1">
+                                            <x-band-dot :bloodline="$parent->bloodline" />
+                                            @if ($parent->band_number)
+                                                <span class="datum">{{ $parent->band_number }}</span>
+                                            @else
+                                                Not yet banded
+                                            @endif
+                                        </span>
+                                    @endif
+                                @endforeach
+                            </x-slot:subtitle>
+                            @if ($record->hasUnregisteredOffspring())
+                                <x-slot:badge>
+                                    <span class="d-badge d-badge-soft d-badge-warning">
+                                        <span class="datum">{{ $record->unregisteredOffspring() }}</span>&nbsp;to register
+                                    </span>
+                                </x-slot:badge>
+                            @endif
+
+                            <dl class="grid grid-cols-3 gap-3">
+                                <x-ui.fact label="Eggs Set"><span class="datum">{{ $record->eggs_set }}</span></x-ui.fact>
+                                <x-ui.fact label="Fertile"><span class="datum">{{ $record->eggs_fertile }}</span></x-ui.fact>
+                                <x-ui.fact label="Hatched"><span class="datum">{{ $record->eggs_hatched }}</span></x-ui.fact>
+                                <x-ui.fact label="Fertility"><span class="datum">{{ $record->fertilityRate() !== null ? $record->fertilityRate().'%' : 'No data' }}</span></x-ui.fact>
+                                <x-ui.fact label="Hatch rate"><span class="datum">{{ $record->hatchRate() !== null ? $record->hatchRate().'%' : 'No data' }}</span></x-ui.fact>
+                            </dl>
+
+                            <x-slot:meta>
+                                <span class="datum">{{ $record->mating_date->format('j M Y') }}</span>
+                            </x-slot:meta>
+                            <x-slot:actions>
+                                <x-ui.row-action icon="eye" :label="'View '.$pairName"
+                                                 :href="route('breeding.show', $record)" wire:navigate />
+                            </x-slot:actions>
+                        </x-ui.record-card>
+                    </li>
+                @endforeach
+            </ul>
+            <x-ui.cards-skeleton class="mt-4" wire:loading.grid wire:target="{{ $tableTargets }}" />
         </div>
 
         <x-ui.table-pagination :paginator="$records" class="mt-4" />
