@@ -10,6 +10,7 @@
     $restoring = $this->restoring;
     $th = 'px-4 py-2.5 text-left text-[13px] lg:text-[11px] font-semibold text-muted-foreground';
     $td = 'px-4 py-3 align-middle text-[15px] lg:text-xs text-foreground';
+    $archiveTargets = 'tab,search,perPage,gotoPage,nextPage,previousPage';
 @endphp
 <div>
     <x-ui.page-header title="Archive"
@@ -38,6 +39,12 @@
         </x-slot:loading>
     </x-filter-bar>
 
+    {{-- Switching kind of record, searching or paging waits for the server.
+         The old rows - or "Nothing archived here" - leave at once, and the
+         shape of a list stands in until the new ones land. --}}
+    <x-ui.rows-skeleton class="mt-5 hidden" :cols="5" wire:loading.block wire:target="{{ $archiveTargets }}" />
+
+    <div wire:loading.remove wire:target="{{ $archiveTargets }}">
     @if ($rows->isEmpty())
         <x-empty-state :title="$search !== '' ? 'Nothing archived matches your search' : 'Nothing archived here'"
                        :description="$search !== '' ? 'Try another name or band number.' : 'Records you archive appear here, where they can be restored.'"
@@ -45,7 +52,7 @@
     @else
         <x-ui.card :flush="true" class="mt-5">
             <div class="overflow-x-auto" data-scroll-x>
-                <table class="w-full" wire:loading.class="opacity-60" wire:target="search,tab,gotoPage,nextPage,previousPage">
+                <table class="w-full">
                     <thead>
                         <tr class="border-b border-border">
                             @switch($tab)
@@ -129,6 +136,7 @@
             </div>
         </x-ui.card>
     @endif
+    </div>
 
     {{-- Restore confirmation. Names the record and says what coming back means. --}}
     @if ($restoring)

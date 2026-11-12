@@ -13,6 +13,8 @@
         : Str::plural('mating', $records->total()).' recorded';
 
     $loadingTargets = 'search,from,to,bloodline';
+    // The rows also wait on sorting and paging; the "Searching…" line does not.
+    $tableTargets = $loadingTargets.',sort,perPage,gotoPage,nextPage,previousPage';
 @endphp
 
 <div>
@@ -102,7 +104,7 @@
              sideways on a phone is a table nobody reads.
         --------------------------------------------------------------- --}}
         <ul class="divide-y divide-border border-y border-border md:hidden"
-            wire:loading.remove wire:target="{{ $loadingTargets }}">
+            wire:loading.remove wire:target="{{ $tableTargets }}">
             @foreach ($records as $record)
                 <li class="py-4" wire:key="m-{{ $record->id }}">
                     <a href="{{ route('breeding.show', $record) }}" wire:navigate
@@ -150,7 +152,7 @@
         </ul>
 
         <div class="space-y-5 border-y border-border py-5 md:hidden" aria-hidden="true"
-             wire:loading.block wire:target="{{ $loadingTargets }}">
+             wire:loading.block wire:target="{{ $tableTargets }}">
             @for ($i = 0; $i < 4; $i++)
                 <div>
                     <div class="d-skeleton h-3 {{ ['w-3/4', 'w-2/3', 'w-4/5', 'w-1/2'][$i] }}"></div>
@@ -191,7 +193,7 @@
                     </tr>
                 </thead>
 
-                <tbody wire:loading.remove wire:target="{{ $loadingTargets }}">
+                <tbody wire:loading.remove wire:target="{{ $tableTargets }}">
                     @foreach ($records as $record)
                         <tr class="row-hover align-top *:align-top" wire:key="r-{{ $record->id }}">
                             <td class="datum whitespace-nowrap border-b border-border py-3 pl-0 pr-4 text-foreground">
@@ -263,7 +265,7 @@
                     @endforeach
                 </tbody>
 
-                <x-table-skeleton :cols="8" wire:loading wire:target="{{ $loadingTargets }}" />
+                <x-table-skeleton :cols="8" wire:loading wire:target="{{ $tableTargets }}" />
             </table>
         </div>
 

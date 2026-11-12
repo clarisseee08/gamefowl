@@ -89,11 +89,21 @@
 
             {{-- THE ONLY SCROLL CONTAINER. --}}
             <main class="scroll-slim min-h-0 flex-1 overflow-y-auto">
-                <div class="px-4 py-6 sm:px-6 lg:px-8">
+                {{-- data-page-content: what app.js hides, the moment a link is
+                     pressed, while the next page's skeleton stands in for it. --}}
+                <div data-page-content class="px-4 py-6 sm:px-6 lg:px-8">
                     {{ $slot }}
                 </div>
             </main>
         </div>
+
+        {{-- The shape of each kind of page, for the skeleton above. Templates
+             render nothing until app.js copies one into <main>. --}}
+        @foreach (['list', 'detail', 'form', 'dashboard'] as $skeletonKind)
+            <template data-page-skeleton-template="{{ $skeletonKind }}">
+                <x-ui.page-skeleton :kind="$skeletonKind" />
+            </template>
+        @endforeach
 
         <x-command-palette />
 

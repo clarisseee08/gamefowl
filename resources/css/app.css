@@ -369,8 +369,52 @@
 .d-card-border { border-color: var(--color-border); }
 .d-table :where(th, td, tr) { border-color: var(--color-border); }
 
-/* A button whose Livewire action is in flight: Livewire sets data-loading. */
-.d-btn[data-loading] { pointer-events: none; opacity: 0.75; }
+/* BUSY - anything whose Livewire action is in flight. Livewire puts
+   data-loading on the element that started the request, so every button in
+   the console answers its click at once, with no wiring at the call site.
+
+   A plain d-btn trades its label for a spinner drawn in the label's own
+   colour: fading to 75% alone was invisible in daylight on a phone, which is
+   where the console is used. A button that already shows a spinner of its
+   own - <x-ui.button>, or one with a d-loading span - is left to it. */
+.d-btn[data-loading] { pointer-events: none; opacity: 0.85; }
+.d-btn[data-loading]:not(:has(.d-loading, .animate-spin)) {
+    position: relative;
+    color: transparent;
+}
+.d-btn[data-loading]:not(:has(.d-loading, .animate-spin))::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 9999px;
+    border: 2px solid var(--d-btn-fg, var(--color-foreground));
+    border-right-color: transparent;
+    animation: gfms-spin 0.6s linear infinite;
+}
+
+/* Icon buttons, tabs, menu items, sort headings - anything else that was
+   clicked - dim and stop taking clicks until the answer lands. */
+:is(button, a, [role="menuitem"], [role="tab"]):not(.d-btn)[data-loading] {
+    pointer-events: none;
+    cursor: progress;
+    opacity: 0.55;
+    transition: opacity var(--dur-fast, 150ms) ease-out;
+}
+
+/* The page skeleton (app.js) fades up rather than snapping in, so a page that
+   arrives almost at once does not flash. */
+[data-page-skeleton] { animation: gfms-fade-in 120ms ease-out both; }
+
+@keyframes gfms-spin { to { transform: rotate(360deg); } }
+@keyframes gfms-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .d-btn[data-loading]:not(:has(.d-loading, .animate-spin))::after { animation-duration: 1.5s; }
+    [data-page-skeleton] { animation: none; }
+}
 
 /* ELEVATION - the three steps, as utilities.
 
