@@ -316,4 +316,19 @@ final class CatalogTest extends TestCase
             ->assertOk()
             ->assertSee('wire:key="bird-'.$bird->id.'"', escape: false);
     }
+
+    /**
+     * Filtering, sorting and paging swap the grid for its skeleton at once:
+     * the old birds must not sit there looking like the answer.
+     */
+    public function test_the_grid_has_a_skeleton_for_filters_sorting_and_paging(): void
+    {
+        Broodcock::factory()->create();
+
+        $html = Livewire::test(Browse::class)->html();
+
+        $targets = 'wire:target="search,bloodline,sex,class,forSaleOnly,sort,gotoPage,nextPage,previousPage"';
+        $this->assertStringContainsString('wire:loading.grid '.$targets, $html);
+        $this->assertStringContainsString('wire:loading.remove '.$targets, $html);
+    }
 }

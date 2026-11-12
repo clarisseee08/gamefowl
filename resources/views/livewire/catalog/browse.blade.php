@@ -109,6 +109,35 @@
         @endif
     </div>
 
+    @php
+        // Everything that replaces the grid with a new answer: the filters,
+        // the sort, and paging.
+        $gridTargets = 'search,bloodline,sex,class,forSaleOnly,sort,gotoPage,nextPage,previousPage';
+        $gridClasses = $inConsole
+            ? 'grid grid-cols-2 mt-6 gap-x-3 gap-y-6 md:grid-cols-4 xl:grid-cols-6'
+            : 'grid grid-cols-2 mt-6 gap-3 md:grid-cols-3 lg:grid-cols-4 lg:gap-4';
+    @endphp
+
+    {{-- WHILE THE NEXT BIRDS ARE FETCHED, the shape of the grid stands in for
+         them: the old cards leave at once instead of sitting there looking
+         like the answer to a search that has not come back yet. Same columns
+         and the same 4:3 photo as x-bird-card, so nothing jumps when they land. --}}
+    <ul class="{{ $gridClasses }} hidden" wire:loading.grid wire:target="{{ $gridTargets }}" aria-hidden="true">
+        @for ($i = 0; $i < ($inConsole ? 12 : 8); $i++)
+            <li class="flex flex-col overflow-hidden rounded-md border border-border bg-card">
+                <x-ui.skeleton class="aspect-[4/3] w-full rounded-none" />
+                <div @class(['space-y-2', $inConsole ? 'p-2.5' : 'p-3.5'])>
+                    <div class="flex items-center justify-between gap-3">
+                        <x-ui.skeleton class="h-3.5 {{ ['w-2/3', 'w-1/2', 'w-3/5'][$i % 3] }}" />
+                        <x-ui.skeleton class="h-3 w-8" />
+                    </div>
+                    <x-ui.skeleton class="h-3 w-1/2" />
+                </div>
+            </li>
+        @endfor
+    </ul>
+
+    <div wire:loading.remove wire:target="{{ $gridTargets }}">
     @if ($this->birds->isEmpty())
         {{-- THREE EMPTY STATES, because they are three different facts and only
              one of them is the visitor's doing. The for-sale case was the one
@@ -146,11 +175,7 @@
             @endif
         </div>
     @else
-        <ul @class([
-            'grid grid-cols-2',
-            'mt-6 gap-x-3 gap-y-6 md:grid-cols-4 xl:grid-cols-6' => $inConsole,
-            'mt-6 gap-3 md:grid-cols-3 lg:grid-cols-4 lg:gap-4' => ! $inConsole,
-        ])>
+        <ul class="{{ $gridClasses }}">
             @foreach ($this->birds as $bird)
                 {{-- Keyed so a new search swaps cards whole instead of reusing a
                      card's element for a different bird. --}}
@@ -160,6 +185,10 @@
             @endforeach
         </ul>
 
+    @endif
+    </div>
+
+    @if ($this->birds->isNotEmpty())
         <div @class(['mt-12' => $inConsole, 'mt-8' => ! $inConsole])>{{ $this->birds->links() }}</div>
     @endif
 </div>
