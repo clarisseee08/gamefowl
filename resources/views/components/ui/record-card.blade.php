@@ -16,7 +16,7 @@
     border and lifts it a pixel; colour stays for bloodline and status.
 --}}
 <article data-record-card {{ $attributes->class('group flex h-full flex-col rounded-md border border-border bg-card transition-[border-color,transform] duration-150 ease-out hover:-translate-y-px hover:border-ring/60') }}>
-    <div class="flex flex-1 flex-col p-4">
+    <div class="flex flex-1 flex-col p-3 sm:p-4">
         <div class="flex items-start gap-3">
             @isset($media)
                 <div class="shrink-0">{{ $media }}</div>
@@ -44,12 +44,12 @@
         </div>
 
         @if (trim($slot) !== '')
-            <div class="mt-3 text-[13px] text-foreground lg:text-xs">{{ $slot }}</div>
+            <div class="mt-2.5 text-[13px] text-foreground sm:mt-3 lg:text-xs">{{ $slot }}</div>
         @endif
     </div>
 
     @if (isset($meta) || isset($actions))
-        <div class="flex min-h-11 items-center justify-between gap-2 border-t border-border bg-muted/30 px-4 py-1.5 text-[13px] text-muted-foreground lg:min-h-9 lg:text-[11px]">
+        <div class="flex min-h-11 items-center justify-between gap-2 border-t border-border bg-muted/30 px-3 py-1 sm:px-4 sm:py-1.5 text-[13px] text-muted-foreground lg:min-h-9 lg:text-[11px]">
             <div class="min-w-0 truncate">{{ $meta ?? '' }}</div>
             @isset($actions)
                 <div class="flex shrink-0 items-center gap-0.5">{{ $actions }}</div>

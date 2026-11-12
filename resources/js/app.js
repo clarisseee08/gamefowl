@@ -1065,6 +1065,28 @@ const loadingLine = (() => {
 })();
 
 /**
+ * NO ZOOM WHEN A FIELD IS TAPPED, ON iOS.
+ *
+ * Safari on iPhone and iPad zooms the whole page into any field whose text is
+ * under 16px, and the console's phone fields are 14px since the owner found
+ * 16px too big (12 Nov 2026). `maximum-scale=1` stops that zoom. On iOS it
+ * does NOT stop the reader pinching to zoom - Safari has ignored that part
+ * since iOS 10 - so it is added there only; on Android it would block
+ * pinch-zoom, and Android does not zoom into fields anyway.
+ */
+const keepFieldsFromZoomingOnIos = () => {
+    const isIos = /iP(hone|ad|od)/.test(navigator.userAgent)
+        || (navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1);
+    const viewport = document.querySelector('meta[name="viewport"]');
+
+    if (isIos && viewport && ! viewport.content.includes('maximum-scale')) {
+        viewport.content += ', maximum-scale=1';
+    }
+};
+keepFieldsFromZoomingOnIos();
+document.addEventListener('livewire:navigated', keepFieldsFromZoomingOnIos);
+
+/**
  * TABLE OR CARDS, before anyone has chosen (x-ui.view-toggle).
  *
  * A list opens as cards below lg - phones and tablets, where a wide table is

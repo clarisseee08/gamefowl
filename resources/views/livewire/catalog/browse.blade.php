@@ -37,21 +37,27 @@
          edges, so the panel drew a second border around things already
          edged. A hairline underneath ends the row instead.
     --------------------------------------------------------------- --}}
-    <div @class([
+    <div x-data="{ filtersOpen: false }" @class([
         'flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center',
         'mt-6 border-b border-border pb-4' => $inConsole,
         'mt-8 rounded-md border border-border bg-card p-3' => ! $inConsole,
     ])>
-        <div class="relative min-w-0 flex-1 lg:max-w-md">
-            <label for="search" class="sr-only">Search</label>
-            <x-ui.icon name="search" class="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
-            <input id="search" type="search" wire:model.live.debounce.300ms="search"
-                   placeholder="Name, band number or bloodline" class="d-input w-full pl-9">
+        {{-- On a phone: the search and a Filters button on one line, the
+             dropdowns folded behind it; from md up they sit in the row. --}}
+        <div class="flex items-center gap-3 lg:contents">
+            <div class="relative min-w-0 flex-1 lg:max-w-md">
+                <label for="search" class="sr-only">Search</label>
+                <x-ui.icon name="search" class="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
+                <input id="search" type="search" wire:model.live.debounce.300ms="search"
+                       placeholder="Name, band number or bloodline" class="d-input w-full pl-9">
+            </div>
+            <x-ui.filters-toggle :count="collect([$this->bloodline, $this->sex])->filter(fn ($value) => filled($value))->count()" />
         </div>
 
-        {{-- One filter to a row on a phone: two side by side, each with its
-             label inside, left the chosen value cut to "A..." and "Coc...". --}}
-        <div class="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center">
+        {{-- Folded behind Filters on a phone, one to a row inside the panel
+             (two side by side cut the values to "A..." and "Coc..."). --}}
+        <div class="grid-cols-1 gap-3 sm:grid-cols-2 md:flex md:flex-wrap md:items-center"
+             x-bind:class="filtersOpen ? 'grid' : 'hidden'">
             <x-filter-select id="bloodline" label="Bloodline" wire:model.live="bloodline">
                 <option value="">All bloodlines</option>
                 @foreach ($this->bloodlineOptions as $option)

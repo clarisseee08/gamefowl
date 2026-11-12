@@ -89,7 +89,7 @@
     </div>
 
     {{-- Search, result and date range. --}}
-    <x-filter-bar class="mt-5" :active="$filtered"
+    <x-filter-bar :count="collect([$result, $from, $to])->filter(fn ($value) => filled($value))->count()" class="mt-5" :active="$filtered"
                   clear="clearFilters"
                   :summary="'Showing '.number_format($total).' '.Str::plural('record', $total).' matching your filters.'">
         <x-slot:search>

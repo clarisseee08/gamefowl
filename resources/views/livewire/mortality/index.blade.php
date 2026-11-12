@@ -82,7 +82,7 @@
     {{-- ---------------------------------------------------------------
          Filters
     ---------------------------------------------------------------- --}}
-    <x-filter-bar class="mt-8" :active="$filtering" clear="clearFilters">
+    <x-filter-bar :count="collect([$from, $to, $cause])->filter(fn ($value) => filled($value))->count()" class="mt-8" :active="$filtering" clear="clearFilters">
         {{-- On phones the two dates sit side by side, each label above its
              field; from sm up the wrapper dissolves and each pair is inline. --}}
         <div class="grid w-full grid-cols-2 gap-3 sm:contents">

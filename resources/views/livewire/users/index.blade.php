@@ -54,7 +54,7 @@
         <x-segmented :segments="$statusSegments" :active="$status" model="status" label="Account status" />
     </div>
 
-    <x-filter-bar class="mt-5" :active="$filtered" clear="clearFilters">
+    <x-filter-bar :count="collect([$role])->filter(fn ($value) => filled($value))->count()" class="mt-5" :active="$filtered" clear="clearFilters">
         <x-slot:search>
             <label for="search" class="sr-only">Search</label>
             <input id="search" type="search" wire:model.live.debounce.300ms="search"

@@ -64,6 +64,7 @@
         cols: (() => { try { return JSON.parse(localStorage.getItem('gfms-bc-cols') || 'null'); } catch (e) { return null; } })() ?? @js(array_fill_keys(array_keys($optionalColumns), true)),
         colsOpen: false,
         view: $persist(gfmsDefaultView()).as('gfms-view-gamefowl'),
+        filtersOpen: false,
         save() { try { localStorage.setItem('gfms-bc-cols', JSON.stringify(this.cols)); } catch (e) {} },
     }"
 >
@@ -91,7 +92,7 @@
          containing block for fixed children, and every select's open list
          is fixed-positioned - it would land in the corner of the row. --}}
     <div class="mt-6 flex flex-wrap items-center gap-2" role="search" aria-label="Find a broodcock">
-        <div class="relative min-w-40 flex-1 basis-full min-[76rem]:basis-40">
+        <div class="relative min-w-0 flex-1 basis-0 md:min-w-40 md:basis-full min-[76rem]:basis-40">
             <label for="search" class="sr-only">Search</label>
             <svg class="pointer-events-none absolute left-3 top-1/2 z-[1] h-4 w-4 -translate-y-1/2 text-muted-foreground" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
@@ -105,6 +106,15 @@
             >
         </div>
 
+        @php
+            $setFilters = collect([$status !== '', $class !== '', $sex !== '', $bloodline !== '', $ownership !== 'farm'])->filter()->count();
+        @endphp
+        <x-ui.filters-toggle :count="$setFilters" />
+
+        {{-- On a phone the five filters fold into a panel behind
+             the Filters button; from md up `md:contents` dissolves this
+             wrapper and they sit in the row as they always have. --}}
+        <div class="w-full grid-cols-1 gap-2 sm:grid-cols-2 md:contents" x-bind:class="filtersOpen ? 'grid' : 'hidden'">
         <x-filter-select :compact="true" id="status" label="Status" wire:model.live="status">
             <option value="">All statuses</option>
             @foreach ($this->statusOptions() as $option)
@@ -143,6 +153,7 @@
             <option value="outside">Outside birds only</option>
             <option value="all">Both</option>
         </x-filter-select>
+        </div>
 
         {{-- Column visibility. Which columns matter depends on what you came
              here to do, and a laptop has room for fewer than a monitor. --}}

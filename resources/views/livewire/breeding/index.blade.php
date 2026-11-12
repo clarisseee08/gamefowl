@@ -47,7 +47,7 @@
     {{-- Filters. One row: search takes the space that is left, the date range
          and the bloodline shrink to their own width and wrap when they run out
          of room. --}}
-    <x-filter-bar class="mt-8" :active="$filtering" clear="clearFilters">
+    <x-filter-bar :count="collect([$from, $to, $bloodline])->filter(fn ($value) => filled($value))->count()" class="mt-8" :active="$filtering" clear="clearFilters">
         <x-slot:search>
             <label for="search" class="sr-only">Search by bird</label>
             <input id="search" type="search" wire:model.live.debounce.300ms="search"

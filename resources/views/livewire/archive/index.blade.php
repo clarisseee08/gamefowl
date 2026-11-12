@@ -27,7 +27,7 @@
         <x-segmented :segments="$segments" :active="$tab" model="tab" label="Kind of record" />
     </div>
 
-    <x-filter-bar class="mt-5" :active="$search !== ''" clear="clearSearch">
+    <x-filter-bar class="mt-5" :foldable="false" :active="$search !== ''" clear="clearSearch">
         <x-slot:search>
             <label for="archive-search" class="sr-only">Search</label>
             <input id="archive-search" type="search" wire:model.live.debounce.300ms="search"

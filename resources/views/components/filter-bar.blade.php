@@ -9,6 +9,10 @@
     'search' => null,
     /** An in-flight indicator, e.g. a wire:loading "Searching…". Optional. */
     'loading' => null,
+    /** Below md, fold the filters behind a "Filters" button. Off for a bar with nothing to fold. */
+    'foldable' => true,
+    /** How many of the folded filters are set, shown on the button. */
+    'count' => 0,
 ])
 
 @php
@@ -57,7 +61,15 @@
     row is chrome that never earns its space, and a Clear button that is
     usually disabled teaches people to ignore it.
 --}}
-<div {{ $attributes->merge(['class' => 'mb-4 border-b border-border pb-4 pt-4']) }}>
+{{--
+    ON A PHONE, THE FILTERS FOLD AWAY. Stacked one per row, a list's dropdowns
+    and dates pushed the list itself below the first screen. Below md only the
+    search shows, with a "Filters" button beside it (x-ui.filters-toggle)
+    carrying how many are set; it opens them as a panel. From md up the panel
+    wrapper is `md:contents` - it dissolves, and the controls sit in the row
+    exactly as before.
+--}}
+<div x-data="{ filtersOpen: false }" {{ $attributes->merge(['class' => 'mb-4 border-b border-border pb-4 pt-4']) }}>
     {{-- flex-wrap, not a grid: the controls have genuinely different natural
          widths, and a grid forces them into columns the widest one dictates.
          Wrapping lets the row break where it actually runs out of room. --}}
@@ -66,12 +78,20 @@
             {{-- min-w-0 is load-bearing. Without it a flex child refuses to
                  shrink below its content width and the row overflows instead
                  of wrapping. --}}
-            <div class="min-w-0 flex-1 basis-64">
+            <div class="min-w-0 flex-1 basis-0 md:basis-64">
                 {{ $search }}
             </div>
         @endif
 
-        {{ $slot }}
+        @if ($foldable)
+            <x-ui.filters-toggle :count="$count" @class(['flex-1' => ! $search]) />
+
+            <div class="w-full grid-cols-1 gap-3 sm:grid-cols-2 md:contents" x-bind:class="filtersOpen ? 'grid' : 'hidden'">
+                {{ $slot }}
+            </div>
+        @else
+            {{ $slot }}
+        @endif
 
         {{-- An in-flight indicator belongs beside the controls that caused it,
              not in the footer: the footer only exists once a filter is active,

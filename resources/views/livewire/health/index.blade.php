@@ -56,7 +56,7 @@
 
     {{-- Every filter is optional; leaving a box blank means "all". The count
          only appears once a filter is actually narrowing the list. --}}
-    <x-filter-bar class="mt-1" :active="$isFiltered"
+    <x-filter-bar :count="collect([$broodcockId, $dateFrom, $dateTo])->filter(fn ($value) => filled($value))->count()" class="mt-1" :active="$isFiltered"
                   clear="clearFilters"
                   :summary="'Showing '.number_format($total).' '.Str::plural('record', $total).'.'">
         <x-slot:search>
