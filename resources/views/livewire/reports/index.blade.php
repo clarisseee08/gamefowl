@@ -12,9 +12,9 @@
 {{--
     THE REPORTS HUB (EMS).
 
-    The figures from the audit trail first, then the one option every report
-    shares (the date range) beside the reports themselves, then the history
-    as a table card.
+    The figures from the audit trail first, then the reports - the one option
+    they share, the period, in the card's header - then the history as a
+    table card.
 
     The date range lives in the browser: picking dates rewrites the download
     links at once, with no round trip. The server reads the range from the
@@ -33,9 +33,17 @@
             const query = params.toString();
             return query ? '?' + query : '';
         },
-        preset: '',
+        preset: @js($from || $to ? 'custom' : 'all'),
+        init() { this.$watch('preset', (key) => this.apply(key)); },
+        // A download is built on the server before the browser shows anything,
+        // so the link takes the console's busy spinner for a few seconds and
+        // cannot be pressed twice. There is no 'finished' event for a file.
+        busy(link) {
+            link.setAttribute('data-loading', 'true');
+            setTimeout(() => link.removeAttribute('data-loading'), 4000);
+        },
         iso(date) { return date.toLocaleDateString('en-CA'); },
-        choose(key) {
+        apply(key) {
             const today = new Date();
             const start = new Date(today);
             if (key === 'all') { this.from = ''; this.to = ''; }
@@ -43,7 +51,6 @@
             if (key === 'quarter') { start.setMonth(today.getMonth() - 3); this.from = this.iso(start); this.to = this.iso(today); }
             if (key === 'year') { start.setFullYear(today.getFullYear() - 1); this.from = this.iso(start); this.to = this.iso(today); }
             if (key === 'calendar') { this.from = today.getFullYear() + '-01-01'; this.to = this.iso(today); }
-            this.preset = key;
         },
         get label() {
             const fmt = (value) => new Date(value + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -68,65 +75,63 @@
                        :caption="$stats['latest'] ? Str::headline($stats['latest']->report_type).' by '.($stats['latest']->generatedBy?->full_name ?? 'a deleted account') : 'No reports generated yet'" />
     </x-ui.kpi-row>
 
-    {{-- ONE FLOW, TOP TO BOTTOM: choose the period, then download. The
-         period sits above the reports it applies to, so the eye never has
-         to cross the page between setting it and using it. --}}
+    {{-- DOWNLOAD A REPORT: the period, picked once in the header, then the
+         reports as tiles, each with its two downloads. The period is a
+         dropdown like every other choice in the console; "Custom range"
+         opens the two dates. --}}
     <x-ui.card class="mt-4" :flush="true" aria-labelledby="reports-heading">
-        <div class="px-5 pt-5">
-            <h2 id="reports-heading" class="text-sm font-semibold text-foreground">Download a Report</h2>
-            <p class="mt-0.5 text-[13px] text-muted-foreground lg:text-xs">Choose the period, then download any report as CSV or PDF.</p>
-        </div>
-
-        {{-- Step 1: the period. --}}
-        <div class="mt-4 border-y border-border bg-muted/40 px-5 py-4">
-            <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Period">
-                <span class="mr-1 text-xs font-semibold text-foreground">Period</span>
-                @foreach (['all' => 'All Time', 'month' => 'This Month', 'quarter' => 'Last 3 Months', 'year' => 'Last 12 Months', 'calendar' => 'This Year'] as $key => $chip)
-                    <button type="button" x-on:click="choose(@js($key))"
-                            x-bind:aria-pressed="(preset === @js($key) || (@js($key) === 'all' && ! from && ! to && preset !== 'custom')).toString()"
-                            x-bind:class="(preset === @js($key) || (@js($key) === 'all' && ! from && ! to && preset !== 'custom')) ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-foreground hover:bg-muted'"
-                            class="inline-flex h-11 items-center rounded-full border px-3.5 text-[13px] font-medium transition-colors lg:h-7 lg:px-3 lg:text-xs">
-                        {{ $chip }}
-                    </button>
-                @endforeach
+        <div class="flex flex-col gap-4 border-b border-border px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
+            <div class="min-w-0">
+                <h2 id="reports-heading" class="text-sm font-semibold text-foreground">Download a Report</h2>
+                <p class="mt-0.5 text-[13px] text-muted-foreground lg:text-xs" aria-live="polite">
+                    Covering <span class="datum font-semibold text-foreground" x-text="label">all records</span>
+                </p>
             </div>
 
-            <div class="mt-3 flex flex-wrap items-end gap-3">
+            <div class="w-full sm:w-56">
+                <x-ui.select id="report-period" label="Period" :label-hidden="true" x-model="preset"
+                             :options="['all' => 'All time', 'month' => 'This month', 'quarter' => 'Last 3 months', 'year' => 'Last 12 months', 'calendar' => 'This year', 'custom' => 'Custom range…']" />
+            </div>
+        </div>
+
+        <div x-show="preset === 'custom'" x-cloak x-collapse
+             class="border-b border-border bg-muted/40">
+            <div class="flex flex-wrap items-end gap-3 px-5 py-4">
                 <div>
                     <label for="from" class="d-fieldset-legend">From</label>
-                    <input id="from" type="date" x-model="from" x-on:input="preset = 'custom'" x-bind:max="to || null" class="d-input datum w-44" aria-describedby="range-help">
+                    <input id="from" type="date" x-model="from" x-bind:max="to || null" class="d-input datum w-44">
                 </div>
                 <div>
                     <label for="to" class="d-fieldset-legend">To</label>
-                    <input id="to" type="date" x-model="to" x-on:input="preset = 'custom'" x-bind:min="from || null" class="d-input datum w-44" aria-describedby="range-help">
+                    <input id="to" type="date" x-model="to" x-bind:min="from || null" class="d-input datum w-44">
                 </div>
-                <p id="range-help" class="d-label pb-1.5 sm:max-w-xs">
-                    The period is saved with each report, so anyone can see exactly what was included.
-                </p>
             </div>
         </div>
 
-        {{-- Step 2: the reports, each covering the period chosen above. --}}
-        <p class="px-5 pt-4 text-[13px] text-muted-foreground lg:text-xs" aria-live="polite">
-            Reports below will cover <span class="datum font-semibold text-foreground" x-text="label">all records</span>.
-        </p>
-        <ul class="divide-y divide-border">
+        <ul class="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3">
             @foreach ($this->reports as $report)
-                <li class="grid gap-3 px-5 py-4 sm:grid-cols-[1fr_auto] sm:items-center sm:gap-8">
-                    <div class="min-w-0">
-                        <h3 class="text-sm font-semibold text-foreground lg:text-xs">{{ $report->title() }}</h3>
-                        <p class="mt-0.5 max-w-[70ch] text-[13px] leading-relaxed text-muted-foreground lg:text-xs">{{ $report->description() }}</p>
+                <li class="flex flex-col rounded-md border border-border bg-card p-4">
+                    <div class="flex items-start gap-3">
+                        <span class="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-foreground" aria-hidden="true">
+                            <x-ui.icon name="file-text" class="size-4" />
+                        </span>
+                        <div class="min-w-0">
+                            <h3 class="text-sm font-semibold text-foreground lg:text-xs">{{ $report->title() }}</h3>
+                            <p class="mt-1 text-[13px] leading-relaxed text-muted-foreground lg:text-xs">{{ $report->description() }}</p>
+                        </div>
                     </div>
-                    <div class="flex flex-wrap gap-2">
-                        <a href="{{ route('reports.csv', $report->key()) }}"
-                           x-bind:href="@js(route('reports.csv', $report->key())) + query()"
-                           class="d-btn d-btn-outline">
-                            <x-ui.icon name="download" class="size-4 lg:size-3.5" /> CSV<span class="sr-only">, {{ $report->title() }}</span>
-                        </a>
+                    <div class="mt-auto grid grid-cols-2 gap-2 pt-4">
                         <a href="{{ route('reports.pdf', $report->key()) }}"
                            x-bind:href="@js(route('reports.pdf', $report->key())) + query()"
+                           x-on:click="busy($el)"
                            class="d-btn d-btn-outline">
                             <x-ui.icon name="download" class="size-4 lg:size-3.5" /> PDF<span class="sr-only">, {{ $report->title() }}</span>
+                        </a>
+                        <a href="{{ route('reports.csv', $report->key()) }}"
+                           x-bind:href="@js(route('reports.csv', $report->key())) + query()"
+                           x-on:click="busy($el)"
+                           class="d-btn d-btn-outline">
+                            <x-ui.icon name="download" class="size-4 lg:size-3.5" /> CSV<span class="sr-only">, {{ $report->title() }}</span>
                         </a>
                     </div>
                 </li>
