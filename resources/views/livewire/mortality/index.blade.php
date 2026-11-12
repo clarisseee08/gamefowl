@@ -88,12 +88,12 @@
         <div class="grid w-full grid-cols-2 gap-3 sm:contents">
             <div class="flex min-w-0 flex-col gap-1 sm:min-h-11 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:gap-2">
                 <label for="filter-from" class="d-fieldset-legend mb-0 shrink-0 py-0">Died on or after</label>
-                <input id="filter-from" type="date" wire:model.live="from" class="d-input datum w-full min-w-0 sm:w-auto">
+                <x-ui.date-picker id="filter-from" wire:model.live="from" max-from="$wire.to" class="min-w-0 sm:w-44" />
             </div>
 
             <div class="flex min-w-0 flex-col gap-1 sm:min-h-11 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:gap-2">
                 <label for="filter-to" class="d-fieldset-legend mb-0 shrink-0 py-0">Died on or before</label>
-                <input id="filter-to" type="date" wire:model.live="to" class="d-input datum w-full min-w-0 sm:w-auto">
+                <x-ui.date-picker id="filter-to" wire:model.live="to" min-from="$wire.from" class="min-w-0 sm:w-44" />
             </div>
         </div>
 

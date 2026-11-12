@@ -61,12 +61,12 @@
         <div class="grid w-full grid-cols-2 gap-3 sm:contents">
             <div class="flex min-h-11 min-w-0 flex-col gap-1 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:gap-2">
                 <label for="from" class="d-fieldset-legend mb-0 shrink-0 py-0 lg:text-xs">Mated from</label>
-                <input id="from" type="date" wire:model.live="from" class="d-input datum w-full sm:w-auto">
+                <x-ui.date-picker id="from" wire:model.live="from" max-from="$wire.to" class="min-w-0 sm:w-44" />
             </div>
 
             <div class="flex min-h-11 min-w-0 flex-col gap-1 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:gap-2">
                 <label for="to" class="d-fieldset-legend mb-0 shrink-0 py-0 lg:text-xs">Mated up to</label>
-                <input id="to" type="date" wire:model.live="to" class="d-input datum w-full sm:w-auto">
+                <x-ui.date-picker id="to" wire:model.live="to" min-from="$wire.from" class="min-w-0 sm:w-44" />
             </div>
         </div>
 

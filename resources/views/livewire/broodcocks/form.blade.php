@@ -213,19 +213,17 @@
                     <div class="grid gap-6 sm:grid-cols-2">
                         <div>
                             <label for="date_hatched" class="d-fieldset-legend">Date hatched</label>
-                            <input id="date_hatched" type="date" wire:model="date_hatched" max="{{ today()->toDateString() }}"
-                                   @if ($describedBy('date_hatched')) aria-describedby="{{ $describedBy('date_hatched') }}" @endif
-                                   @error('date_hatched') aria-invalid="true" @enderror
-                                   class="d-input w-full datum mt-1 @error('date_hatched') d-input-error @enderror">
+                            <x-ui.date-picker id="date_hatched" wire:model="date_hatched" max="today"
+                                               :describedby="$describedBy('date_hatched') ?: null"
+                                               class="mt-1" />
                             @error('date_hatched') <p id="date_hatched-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
                             <label for="date_acquired" class="d-fieldset-legend">Date acquired</label>
-                            <input id="date_acquired" type="date" wire:model="date_acquired" max="{{ today()->toDateString() }}"
-                                   aria-describedby="{{ $describedBy('date_acquired', true) }}"
-                                   @error('date_acquired') aria-invalid="true" @enderror
-                                   class="d-input w-full datum mt-1 @error('date_acquired') d-input-error @enderror">
+                            <x-ui.date-picker id="date_acquired" wire:model="date_acquired" max="today"
+                                               :describedby="$describedBy('date_acquired', true)"
+                                               class="mt-1" />
                             <p id="date_acquired-help" class="d-label mt-1">When the farm obtained this bird.</p>
                             @error('date_acquired') <p id="date_acquired-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                         </div>

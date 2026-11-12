@@ -32,11 +32,8 @@
 
                     <div>
                         <label for="event_date" class="d-fieldset-legend">Date of the Event <span class="text-destructive">*</span></label>
-                        <input id="event_date" type="date" wire:model="event_date"
-                               max="{{ now()->toDateString() }}"
-                               aria-describedby="event_date-help @error('event_date') event_date-error @enderror"
-                               @error('event_date') aria-invalid="true" @enderror
-                               class="d-input w-full datum @error('event_date') d-input-error @enderror">
+                        <x-ui.date-picker id="event_date" wire:model="event_date" max="today" :clearable="false"
+                                           :describedby="'event_date-help'.($errors->has('event_date') ? ' event_date-error' : '')" />
                         <p id="event_date-help" class="d-label mt-1">The day the event actually took place. It cannot be a future date.</p>
                         @error('event_date') <p id="event_date-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>

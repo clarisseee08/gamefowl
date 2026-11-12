@@ -79,17 +79,11 @@
 
                 <div>
                     <label for="date_of_death" class="d-fieldset-legend">Date of Death <span class="text-destructive">*</span></label>
-                    <input id="date_of_death"
-                           type="date"
-                           wire:model="date_of_death"
-                           max="{{ now()->toDateString() }}"
-                           @if ($this->selectedBird?->date_hatched)
-                               min="{{ $this->selectedBird->date_hatched->toDateString() }}"
-                           @endif
-                           aria-describedby="date_of_death-help @error('date_of_death') date_of_death-error @enderror"
-                           @error('date_of_death') aria-invalid="true" @enderror
-                           @class(['d-input w-full datum mt-1 sm:max-w-[16rem]', 'd-input-error' => $errors->has('date_of_death')])
-                           required>
+                    <x-ui.date-picker id="date_of_death" wire:model="date_of_death" max="today" :clearable="false"
+                                       :min="$this->selectedBird?->date_hatched?->toDateString()"
+                                       wire:key="date-of-death-{{ $this->selectedBird?->id ?? 'none' }}"
+                                       :describedby="'date_of_death-help'.($errors->has('date_of_death') ? ' date_of_death-error' : '')"
+                                       class="mt-1 sm:max-w-[16rem]" />
 
                     @error('date_of_death')
                         <p id="date_of_death-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p>

@@ -132,9 +132,9 @@
 
                     <div>
                         <label for="mating_date" class="d-fieldset-legend">Mating Date <span class="text-destructive">*</span></label>
-                        <input id="mating_date" type="date" wire:model="mating_date" max="{{ today()->toDateString() }}"
-                               @error('mating_date') aria-invalid="true" aria-describedby="mating_date-error" @enderror
-                               class="d-input w-full datum mt-1 sm:max-w-[16rem] @error('mating_date') d-input-error @enderror">
+                        <x-ui.date-picker id="mating_date" wire:model="mating_date" max="today" :clearable="false"
+                                           :describedby="$errors->has('mating_date') ? 'mating_date-error' : null"
+                                           class="mt-1 sm:max-w-[16rem]" />
                         @error('mating_date') <p id="mating_date-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>

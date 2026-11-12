@@ -153,6 +153,166 @@ document.addEventListener('alpine:init', () => {
      * Focus never leaves the trigger: it is a combobox, and the highlighted
      * option is announced through aria-activedescendant.
      */
+    /**
+     * THE DATE PICKER (x-ui.date-picker) - the EMS DatePicker in Alpine, in
+     * place of the browser's own date field, which looks different on every
+     * phone and cannot be styled.
+     *
+     * `value` is the date as the server stores it, YYYY-MM-DD or ''. It is
+     * x-modelable, so wire:model / wire:model.live / x-model on the
+     * component's root bind to it exactly as they did to the native input,
+     * and nothing server-side changed.
+     *
+     * Dates are compared as YYYY-MM-DD strings, which sort the same way as
+     * the dates, and built with local Date parts - never `new Date('2026-11-12')`,
+     * which is UTC midnight and lands on the day before in Manila's evening.
+     */
+    window.Alpine.data('emsDatePicker', (options = {}) => ({
+        value: '',
+        open: false,
+        mode: 'days',
+        viewYear: 0,
+        viewMonth: 0,
+        panelYear: 0,
+        focused: '',
+        dynMin: null,
+        dynMax: null,
+        months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+
+        init() {
+            this.showMonthOf(this.parse(this.value) ?? new Date());
+            this.$watch('value', (value) => {
+                const date = this.parse(value);
+                if (date && ! this.open) {
+                    this.showMonthOf(date);
+                }
+            });
+        },
+
+        iso(date) {
+            const pad = (n) => String(n).padStart(2, '0');
+
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+        },
+        parse(value) {
+            const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value ?? '');
+
+            return match ? new Date(+match[1], +match[2] - 1, +match[3]) : null;
+        },
+        todayIso() {
+            return this.iso(new Date());
+        },
+        display(value) {
+            const date = this.parse(value);
+
+            return date ? date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+        },
+        get min() {
+            return [options.min, this.dynMin].filter(Boolean).sort().pop() ?? null;
+        },
+        get max() {
+            return [options.max, this.dynMax].filter(Boolean).sort().shift() ?? null;
+        },
+        allowed(iso) {
+            return (! this.min || iso >= this.min) && (! this.max || iso <= this.max);
+        },
+
+        showMonthOf(date) {
+            this.viewYear = date.getFullYear();
+            this.viewMonth = date.getMonth();
+        },
+        get caption() {
+            return `${this.months[this.viewMonth]} ${this.viewYear}`;
+        },
+        step(months) {
+            const date = new Date(this.viewYear, this.viewMonth + months, 1);
+            this.showMonthOf(date);
+        },
+
+        /** Six weeks from the Sunday on or before the 1st, so the grid never jumps in height. */
+        get cells() {
+            const first = new Date(this.viewYear, this.viewMonth, 1);
+            const start = new Date(this.viewYear, this.viewMonth, 1 - first.getDay());
+            const today = this.todayIso();
+
+            return Array.from({ length: 42 }, (_, i) => {
+                const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+                const iso = this.iso(date);
+
+                return {
+                    iso,
+                    day: date.getDate(),
+                    outside: date.getMonth() !== this.viewMonth,
+                    today: iso === today,
+                    selected: iso === this.value,
+                    disabled: ! this.allowed(iso),
+                };
+            });
+        },
+
+        monthAllowed(month) {
+            const first = this.iso(new Date(this.panelYear, month, 1));
+            const last = this.iso(new Date(this.panelYear, month + 1, 0));
+
+            return (! this.max || first <= this.max) && (! this.min || last >= this.min);
+        },
+        chooseMonth(month) {
+            this.viewYear = this.panelYear;
+            this.viewMonth = month;
+            this.mode = 'days';
+        },
+        toggleMonths() {
+            this.panelYear = this.viewYear;
+            this.mode = this.mode === 'days' ? 'months' : 'days';
+        },
+
+        toggle() {
+            this.open ? this.close(true) : this.show();
+        },
+        show() {
+            this.showMonthOf(this.parse(this.value) ?? this.parse(this.max) ?? new Date());
+            this.mode = 'days';
+            this.open = true;
+            this.focused = this.value || (this.allowed(this.todayIso()) ? this.todayIso() : (this.max ?? this.min ?? this.todayIso()));
+            this.$nextTick(() => this.focusDay());
+        },
+        close(returnFocus = false) {
+            if (! this.open) {
+                return;
+            }
+            this.open = false;
+            if (returnFocus) {
+                this.$refs.trigger?.focus();
+            }
+        },
+        pick(iso) {
+            if (iso !== '' && ! this.allowed(iso)) {
+                return;
+            }
+            this.value = iso;
+            this.close(true);
+        },
+
+        focusDay() {
+            this.$refs.grid?.querySelector(`[data-iso="${this.focused}"]`)?.focus();
+        },
+        /** Arrow keys walk the days (and the months, at the edges); Enter picks. */
+        keydown(event) {
+            const moves = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+            if (! (event.key in moves)) {
+                return;
+            }
+            event.preventDefault();
+            const date = this.parse(this.focused) ?? new Date();
+            const next = new Date(date.getFullYear(), date.getMonth(), date.getDate() + moves[event.key]);
+            this.focused = this.iso(next);
+            if (next.getMonth() !== this.viewMonth || next.getFullYear() !== this.viewYear) {
+                this.showMonthOf(next);
+            }
+            this.$nextTick(() => this.focusDay());
+        },
+    }));
+
     window.Alpine.data('emsSelect', () => ({
         open: false,
         options: [],

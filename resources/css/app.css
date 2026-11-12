@@ -1891,8 +1891,9 @@
     }
     .d-btn:not(.d-btn-sm):not(.d-btn-xs) svg { width: 0.875rem; height: 0.875rem; }
 
-    /* Labels above fields and filters: 13px, not 16px. */
-    .d-fieldset-legend { font-size: 0.8125rem; }
+    /* Labels above fields and filters, and the help lines under them: 13px,
+       not 15-16px - a help line set bigger than the field it explains. */
+    .d-fieldset-legend, .d-label { font-size: 0.8125rem; }
 
     /* A strip of tabs - Everyone / Active / Deactivated - reads as one control,
        not a row of buttons: 34px, with the label at 13px. */

@@ -82,12 +82,12 @@
         <div class="grid w-full grid-cols-2 gap-3 sm:contents">
             <div class="flex min-w-0 flex-col gap-1 sm:min-h-11 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:gap-2">
                 <label for="filter-from" class="d-fieldset-legend mb-0 shrink-0 py-0">From</label>
-                <input id="filter-from" type="date" wire:model.live="dateFrom" class="d-input datum w-full min-w-0 sm:w-auto">
+                <x-ui.date-picker id="filter-from" wire:model.live="dateFrom" max-from="$wire.dateTo" class="min-w-0 sm:w-44" />
             </div>
 
             <div class="flex min-w-0 flex-col gap-1 sm:min-h-11 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:gap-2">
                 <label for="filter-to" class="d-fieldset-legend mb-0 shrink-0 py-0">To</label>
-                <input id="filter-to" type="date" wire:model.live="dateTo" class="d-input datum w-full min-w-0 sm:w-auto">
+                <x-ui.date-picker id="filter-to" wire:model.live="dateTo" min-from="$wire.dateFrom" class="min-w-0 sm:w-44" />
             </div>
         </div>
 
