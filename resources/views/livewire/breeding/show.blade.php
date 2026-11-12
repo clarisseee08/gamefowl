@@ -194,10 +194,9 @@
 
                     <div>
                         <label for="generateDateHatched" class="d-fieldset-legend">Date hatched</label>
-                        <input id="generateDateHatched" type="date" wire:model="generateDateHatched"
-                               max="{{ today()->toDateString() }}"
-                               @error('generateDateHatched') aria-invalid="true" aria-describedby="generateDateHatched-error" @enderror
-                               class="d-input w-full datum mt-1 @error('generateDateHatched') d-input-error @enderror">
+                        <x-ui.date-picker id="generateDateHatched" wire:model="generateDateHatched" max="today"
+                                           :describedby="$errors->has('generateDateHatched') ? 'generateDateHatched-error' : null"
+                                           class="mt-1" />
                         @error('generateDateHatched') <p id="generateDateHatched-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 

@@ -58,6 +58,16 @@
          wire:key="{{ $id }}-{{ $active }}"
          x-data="{
              current: @js((string) $active),
+             {{-- On a phone a strip of tabs is wider than the screen and
+                  scrolls. A fade on whichever edge has more tabs behind it
+                  says so - a tab cut in half by the edge reads as broken -
+                  and the chosen tab is scrolled into view to start with. --}}
+             more: { start: false, end: false },
+             measure() {
+                 const el = $el;
+                 this.more.start = el.scrollLeft > 1;
+                 this.more.end = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
+             },
              move(step) {
                  const tabs = [...$el.querySelectorAll('[role=tab]')];
                  const at = tabs.indexOf(document.activeElement);
@@ -66,6 +76,14 @@
                  tabs[next].click();
              }
          }"
+         x-init="$nextTick(() => {
+             const chosen = $el.querySelector('[role=tab][aria-selected=true]');
+             if (chosen) { $el.scrollLeft = Math.max(0, chosen.offsetLeft - ($el.clientWidth - chosen.offsetWidth) / 2); }
+             measure();
+         })"
+         x-on:scroll.passive="measure()"
+         x-on:resize.window.debounce.150ms="measure()"
+         x-bind:class="{ 'tabs-more-start': more.start, 'tabs-more-end': more.end }"
          x-on:keydown.arrow-right.prevent="move(1)"
          x-on:keydown.arrow-left.prevent="move(-1)"
          x-on:keydown.home.prevent="move('first')"

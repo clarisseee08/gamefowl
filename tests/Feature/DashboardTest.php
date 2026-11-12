@@ -253,4 +253,21 @@ final class DashboardTest extends TestCase
         $this->assertSame(1, $overall['matings']);
         $this->assertSame(50.0, $overall['fertility']);
     }
+
+    /**
+     * The dashboard's add actions are a Quick actions card under the figures,
+     * not one button above them: the four things staff record most.
+     */
+    public function test_quick_actions_offer_the_four_things_staff_record_most(): void
+    {
+        $this->actingAs(User::factory()->staff()->create())
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSeeInOrder(['Quick actions', 'Add gamefowl', 'Record a mating', 'Add health record', 'Record a death'])
+            ->assertSee(route('breeding.create'), escape: false)
+            ->assertSee(route('health.create'), escape: false)
+            ->assertSee(route('mortality.create'), escape: false)
+            // Add gamefowl still opens its dialog on this page.
+            ->assertSee("\$dispatch('ems-dialog', 'broodcocks-form')", escape: false);
+    }
 }

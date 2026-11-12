@@ -63,6 +63,8 @@
     x-data="{
         cols: (() => { try { return JSON.parse(localStorage.getItem('gfms-bc-cols') || 'null'); } catch (e) { return null; } })() ?? @js(array_fill_keys(array_keys($optionalColumns), true)),
         colsOpen: false,
+        view: $persist(gfmsDefaultView()).as('gfms-view-gamefowl'),
+        filtersOpen: false,
         save() { try { localStorage.setItem('gfms-bc-cols', JSON.stringify(this.cols)); } catch (e) {} },
     }"
 >
@@ -90,7 +92,7 @@
          containing block for fixed children, and every select's open list
          is fixed-positioned - it would land in the corner of the row. --}}
     <div class="mt-6 flex flex-wrap items-center gap-2" role="search" aria-label="Find a broodcock">
-        <div class="relative min-w-40 flex-1 basis-full min-[76rem]:basis-40">
+        <div class="relative min-w-0 flex-1 basis-0 md:min-w-40 md:basis-full min-[76rem]:basis-40">
             <label for="search" class="sr-only">Search</label>
             <svg class="pointer-events-none absolute left-3 top-1/2 z-[1] h-4 w-4 -translate-y-1/2 text-muted-foreground" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
@@ -104,6 +106,15 @@
             >
         </div>
 
+        @php
+            $setFilters = collect([$status !== '', $class !== '', $sex !== '', $bloodline !== '', $ownership !== 'farm'])->filter()->count();
+        @endphp
+        <x-ui.filters-toggle :count="$setFilters" />
+
+        {{-- On a phone the five filters fold into a panel behind
+             the Filters button; from md up `md:contents` dissolves this
+             wrapper and they sit in the row as they always have. --}}
+        <div class="w-full grid-cols-1 gap-2 sm:grid-cols-2 md:contents" x-bind:class="filtersOpen ? 'grid' : 'hidden'">
         <x-filter-select :compact="true" id="status" label="Status" wire:model.live="status">
             <option value="">All statuses</option>
             @foreach ($this->statusOptions() as $option)
@@ -142,10 +153,13 @@
             <option value="outside">Outside birds only</option>
             <option value="all">Both</option>
         </x-filter-select>
+        </div>
 
         {{-- Column visibility. Which columns matter depends on what you came
              here to do, and a laptop has room for fewer than a monitor. --}}
-        <div class="relative hidden sm:block">
+        <x-ui.view-toggle />
+
+        <div class="relative hidden md:block" x-show="view === 'table'">
             <button type="button" @click="colsOpen = ! colsOpen"
                     class="d-btn d-btn-outline"
                     :aria-expanded="colsOpen ? 'true' : 'false'"
@@ -212,72 +226,14 @@
             </x-empty-state>
         @endif
     @else
-        {{-- PHONES: stacked rows. Farm staff are mostly on phones, outdoors; a
-             table that scrolls sideways hides the column they came for. Each
-             row is one tap target: band and name, then bloodline, sex and age. --}}
-        <ul class="mt-4 divide-y divide-border border-y border-border sm:hidden"
-            wire:loading.remove wire:target="{{ $filterTargets }}">
-            @foreach ($birds as $bird)
-                <li wire:key="bc-m-{{ $bird->id }}">
-                    <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate
-                       class="flex min-h-11 items-center gap-3 py-3 hover:bg-muted/60">
-                        <span class="block w-11 shrink-0 overflow-hidden rounded-[6px] bg-muted aspect-[4/5]">
-                            @if ($bird->primaryPhoto)
-                                <img src="{{ route('photos.show', ['photo' => $bird->primaryPhoto, 'size' => 'thumb']) }}" alt=""
-                                     width="44" height="55" loading="lazy" decoding="async" class="h-full w-full object-cover">
-                            @else
-                                <span class="flex h-full w-full items-center justify-center"><x-band-dot :bloodline="$bird->bloodline" /></span>
-                            @endif
-                        </span>
-
-                        <span class="min-w-0 flex-1">
-                            <span class="flex items-baseline gap-2">
-                                @if ($bird->band_number)
-                                    <span class="datum font-display text-[17px] lg:text-sm font-semibold text-foreground">{{ $bird->band_number }}</span>
-                                    <span class="truncate text-[15px] lg:text-xs text-muted-foreground">{{ $bird->name }}</span>
-                                @else
-                                    <span class="truncate font-display text-[17px] lg:text-sm font-semibold text-foreground">{{ $bird->name }}</span>
-                                    <span class="shrink-0 text-[14px] lg:text-xs text-muted-foreground">Not yet banded</span>
-                                @endif
-                            </span>
-                            <span class="mt-0.5 flex items-center gap-1.5 truncate text-[14px] lg:text-xs text-muted-foreground">
-                                <x-band-dot :bloodline="$bird->bloodline" />
-                                <span class="truncate">{{ $bird->bloodline ?? 'Bloodline not recorded' }} &middot; {{ $bird->sex->label() }} &middot; <span class="datum">{{ $bird->ageLabel() ?? 'Age unknown' }}</span></span>
-                            </span>
-                        </span>
-
-                        <span class="flex shrink-0 flex-col items-end gap-1">
-                            <span class="d-badge d-badge-soft {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
-                            @if ($bird->is_external && $ownership !== 'outside')
-                                <span class="d-badge d-badge-soft d-badge-neutral">Outside</span>
-                            @endif
-                        </span>
-                    </a>
-                </li>
-            @endforeach
-        </ul>
-
-        {{-- Phone loading: the shape of the answer, replacing the old one. --}}
-        <div class="sm:hidden" wire:loading.block wire:target="{{ $filterTargets }}" aria-hidden="true">
-            @for ($i = 0; $i < 5; $i++)
-                <div class="flex items-center gap-3 border-b border-border py-3">
-                    <div class="d-skeleton aspect-[4/5] w-11 shrink-0"></div>
-                    <div class="flex-1 space-y-2">
-                        <div class="d-skeleton h-3 {{ ['w-1/2', 'w-2/3', 'w-2/5'][$i % 3] }}"></div>
-                        <div class="d-skeleton h-3 {{ ['w-3/4', 'w-1/2', 'w-3/5'][$i % 3] }}"></div>
-                    </div>
-                </div>
-            @endfor
-        </div>
-
-        {{-- TABLETS AND UP: the table. No overflow wrapper - the content region
+        {{-- TABLETS AND UP, WHEN CHOSEN: the table. No overflow wrapper - the content region
              is the scroll container, so `sticky top-0` on the head pins to it
              and the column names stay put through a long list. An overflow
              wrapper would become the sticky container and quietly break that;
              secondary columns drop at narrower widths instead. --}}
         {{-- EMS: a wide table scrolls inside its own container; the page never does. --}}
-        <div class="mt-4 overflow-x-auto">
-            <table class="d-table hidden w-full border-b border-border sm:table">
+        <div class="mt-4 hidden overflow-x-auto md:block" x-show="view === 'table'">
+            <table class="d-table w-full border-b border-border">
                 <thead class="sticky top-0 z-10 bg-background">
                     <tr class="border-b border-border">
                         <th scope="col" class="w-12 py-0 pl-0 pr-1 text-left">
@@ -456,6 +412,64 @@
 
                 <x-table-skeleton :cols="10" wire:loading wire:target="{{ $filterTargets }}" />
             </table>
+        </div>
+
+        {{-- CARDS: the same birds, the same actions. Always on a phone, where a
+             table read sideways hides the column you came for; from md up only
+             when the switch says so. --}}
+        <div x-bind:class="view === 'cards' ? '' : 'md:hidden'" x-cloak>
+            <ul class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+                wire:loading.remove wire:target="{{ $filterTargets }}">
+                @foreach ($birds as $bird)
+                    <li wire:key="bc-card-{{ $bird->id }}">
+                        <x-ui.record-card :href="route('broodcocks.show', $bird)">
+                            <x-slot:media>
+                                <span class="block w-12 overflow-hidden rounded-[6px] bg-muted aspect-[4/5]">
+                                    @if ($bird->primaryPhoto)
+                                        <img src="{{ route('photos.show', ['photo' => $bird->primaryPhoto, 'size' => 'thumb']) }}" alt=""
+                                             width="48" height="60" loading="lazy" decoding="async" class="h-full w-full object-cover">
+                                    @else
+                                        <span class="flex h-full w-full items-center justify-center"><x-band-dot :bloodline="$bird->bloodline" /></span>
+                                    @endif
+                                </span>
+                            </x-slot:media>
+                            <x-slot:title>
+                                <span class="datum">{{ $bird->band_number ?? $bird->name }}</span>
+                            </x-slot:title>
+                            <x-slot:subtitle>{{ $bird->band_number ? $bird->name : 'Not yet banded' }}</x-slot:subtitle>
+                            <x-slot:badge>
+                                <span class="d-badge d-badge-soft {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
+                                @if ($bird->is_external && $ownership !== 'outside')
+                                    <span class="d-badge d-badge-soft d-badge-neutral">Outside</span>
+                                @endif
+                            </x-slot:badge>
+
+                            <dl class="grid grid-cols-3 gap-3">
+                                <x-ui.fact label="Bloodline">
+                                    <span class="inline-flex items-center gap-1.5"><x-band-dot :bloodline="$bird->bloodline" /> {{ $bird->bloodline ?? 'Not recorded' }}</span>
+                                </x-ui.fact>
+                                <x-ui.fact label="Sex">{{ $bird->sex->label() }}</x-ui.fact>
+                                <x-ui.fact label="Age"><span class="datum">{{ $bird->ageLabel() ?? 'Unknown' }}</span></x-ui.fact>
+                            </dl>
+
+                            <x-slot:meta>
+                                <span class="d-badge d-badge-soft {{ $bird->class->badgeClasses() }}">{{ $bird->class->label() }}</span>
+                            </x-slot:meta>
+                            <x-slot:actions>
+                                <x-ui.row-action icon="eye" :label="'View '.$bird->name" :href="route('broodcocks.show', $bird)" wire:navigate />
+                                @can('update', $bird)
+                                    <x-ui.row-action icon="pencil" :label="'Edit '.$bird->name" :href="route('broodcocks.edit', $bird)" wire:click.prevent="openForm({{ $bird->id }})" x-on:click="$dispatch('ems-dialog', { id: 'broodcocks-form', wait: true })" />
+                                @endcan
+                                @can('delete', $bird)
+                                    <x-ui.row-action icon="trash-2" :label="'Archive '.$bird->name" :destructive="true"
+                                                     x-on:click="const w = $wire; w.$set('selected', [{{ \Illuminate\Support\Js::from((string) $bird->id) }}]).then(() => w.confirmDeleteSelected())" />
+                                @endcan
+                            </x-slot:actions>
+                        </x-ui.record-card>
+                    </li>
+                @endforeach
+            </ul>
+            <x-ui.cards-skeleton class="mt-4" wire:loading.grid wire:target="{{ $filterTargets }}" />
         </div>
 
         <x-ui.table-pagination :paginator="$birds" class="mt-4" />

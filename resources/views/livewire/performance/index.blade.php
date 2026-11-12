@@ -53,7 +53,7 @@
     ];
 @endphp
 
-<div>
+<div x-data="{ view: $persist(gfmsDefaultView()).as('gfms-view-performance') }">
     <x-anchor-block eyebrow="Manage" title="Performance Records"
                     :figure="number_format($total)"
                     :figure-label="Str::plural('record', $total).($filtered ? ' matching your filters' : ' on file')">
@@ -89,7 +89,7 @@
     </div>
 
     {{-- Search, result and date range. --}}
-    <x-filter-bar class="mt-5" :active="$filtered"
+    <x-filter-bar :count="collect([$result, $from, $to])->filter(fn ($value) => filled($value))->count()" class="mt-5" :active="$filtered"
                   clear="clearFilters"
                   :summary="'Showing '.number_format($total).' '.Str::plural('record', $total).' matching your filters.'">
         <x-slot:search>
@@ -106,16 +106,22 @@
         </x-filter-select>
 
         {{-- The two dates are one control in two halves, so they stay together
-             on a wrap and read as a range rather than two unrelated fields. --}}
-        <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="from" class="d-fieldset-legend mb-0 shrink-0 py-0">From Date</label>
-            <input id="from" type="date" wire:model.live="from" class="d-input datum w-full sm:w-auto">
+             on a wrap and read as a range rather than two unrelated fields.
+             On phones they sit side by side, each label above its field; from
+             sm up the wrapper dissolves and each pair is inline in the bar. --}}
+        <div class="grid w-full grid-cols-2 gap-3 sm:contents">
+            <div class="flex min-w-0 flex-col gap-1 sm:min-h-11 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:gap-2">
+                <label for="from" class="d-fieldset-legend mb-0 shrink-0 py-0">From Date</label>
+                <x-ui.date-picker id="from" wire:model.live="from" max-from="$wire.to" class="min-w-0 sm:w-44" />
+            </div>
+
+            <div class="flex min-w-0 flex-col gap-1 sm:min-h-11 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:gap-2">
+                <label for="to" class="d-fieldset-legend mb-0 shrink-0 py-0">To Date</label>
+                <x-ui.date-picker id="to" wire:model.live="to" min-from="$wire.from" class="min-w-0 sm:w-44" />
+            </div>
         </div>
 
-        <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="to" class="d-fieldset-legend mb-0 shrink-0 py-0">To Date</label>
-            <input id="to" type="date" wire:model.live="to" class="d-input datum w-full sm:w-auto">
-        </div>
+        <x-ui.view-toggle class="ml-auto" />
 
         <x-slot:loading>
             <span wire:loading wire:target="search,eventType,result,from,to">Searching&hellip;</span>
@@ -141,72 +147,10 @@
             </x-empty-state>
         @endif
     @else
-        {{-- Phones and small tablets: one block per record - the bird on the
-             first line, what happened on the second. Farm staff are mostly on
-             phones, and a nine-column table there is a sideways scrollbar. --}}
-        <ul class="divide-y divide-border border-y border-border md:hidden"
-            wire:loading.class="opacity-60" wire:target="{{ $loadingTargets }}">
-            @foreach ($records as $record)
-                <li wire:key="perf-row-{{ $record->id }}" class="py-4">
-                    <div class="flex items-start justify-between gap-3">
-                        <div class="min-w-0">
-                            @if ($record->broodcock !== null)
-                                <a href="{{ route('broodcocks.show', $record->broodcock) }}" wire:navigate
-                                   class="inline-flex min-h-11 max-w-full items-center gap-2 text-[16px] lg:text-xs font-medium text-foreground">
-                                    <x-band-tag :bloodline="$record->broodcock->bloodline"
-                                                :band="$record->broodcock->band_number" size="xs" />
-                                    <span class="truncate">{{ $record->broodcock->name }}</span>
-                                </a>
-                            @else
-                                <p class="flex min-h-11 items-center text-[16px] lg:text-xs text-muted-foreground">Bird removed</p>
-                            @endif
-                        </div>
-                        <p class="datum shrink-0 pt-3 text-[14px] lg:text-xs text-muted-foreground">{{ $record->event_date->format('d M Y') }}</p>
-                    </div>
-
-                    <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-2 text-[14px] lg:text-xs text-muted-foreground">
-                        <span class="d-badge d-badge-soft {{ $record->event_type->badgeClasses() }}">{{ $record->event_type->label() }}</span>
-                        @if ($record->result->countsTowardRecord())
-                            <span class="d-badge d-badge-soft {{ $record->result->badgeClasses() }}">{{ $record->result->label() }}</span>
-                        @endif
-                        <span @class(['datum' => $record->weight !== null])>{{ $record->weight !== null ? $record->weight.' kg' : 'Not recorded' }}</span>
-                        <span aria-hidden="true">&middot;</span>
-                        <span @class(['datum' => $record->durationLabel() !== null])>{{ $record->durationLabel() ?? 'Not recorded' }}</span>
-                        <span aria-hidden="true">&middot;</span>
-                        <span class="datum">{{ $record->rating !== null ? $record->rating.' of 5' : 'Not rated' }}</span>
-                    </div>
-
-                    <div class="mt-2 flex flex-wrap items-center gap-x-6">
-                        <button type="button" x-on:click="$dispatch('performance-view', {{ Js::from($viewPayload($record)) }}); $dispatch('ems-dialog', 'performance-view')"
-                                class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
-                            View<span class="sr-only">, {{ $record->event_type->label() }} record</span>
-                        </button>
-                    @canany(['update', 'delete'], $record)
-                        <div class="contents">
-                            @can('update', $record)
-                                <a href="{{ route('performance.edit', $record) }}" wire:click.prevent="openForm({{ $record->id }})" x-on:click="$dispatch('ems-dialog', { id: 'performance-form', wait: true })"
-                                   class="d-link d-link-hover d-link-primary inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
-                                    Edit<span class="sr-only">, {{ $record->event_type->label() }} record</span>
-                                </a>
-                            @endcan
-                            @can('delete', $record)
-                                <button type="button" wire:click="confirmDelete({{ $record->id }})"
-                                        class="d-link d-link-hover d-link-error inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
-                                    Delete<span class="sr-only">, {{ $record->event_type->label() }} record</span>
-                                </button>
-                            @endcan
-                        </div>
-                    @endcanany
-                    </div>
-                </li>
-            @endforeach
-        </ul>
-
-        {{-- Wider screens: the ledger. No horizontal scroll wrapper - that would
-             make its own scroll box and stop the header sticking - so the
-             least load-bearing columns drop out below xl and 2xl instead. --}}
+        {{-- Wider screens: the ledger, from md up when the switch says table.
+             The least load-bearing columns drop out below xl and 2xl. --}}
         {{-- EMS: a wide table scrolls inside its own container; the page never does. --}}
-        <div class="overflow-x-auto">
+        <div class="hidden overflow-x-auto md:block" x-show="view === 'table'">
             <table class="d-table hidden w-full md:table [&_td]:border-border [&_th]:border-border">
                 <thead>
                     <tr>
@@ -336,6 +280,58 @@
 
                 <x-table-skeleton :cols="6" wire:loading wire:target="{{ $loadingTargets }}" />
             </table>
+        </div>
+
+        {{-- AS CARDS: the same records, the same actions. Always on phones, one
+             column; from md up only when the switch says cards. --}}
+        <div x-bind:class="view === 'cards' ? '' : 'md:hidden'" x-cloak>
+            <ul class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+                wire:loading.remove wire:target="{{ $loadingTargets }}">
+                @foreach ($records as $record)
+                    <li wire:key="perf-card-{{ $record->id }}">
+                        <x-ui.record-card :href="$record->broodcock !== null ? route('broodcocks.show', $record->broodcock) : null">
+                            <x-slot:title>{{ $record->broodcock?->name ?? 'Bird removed' }}</x-slot:title>
+                            @if ($record->broodcock !== null)
+                                <x-slot:subtitle>
+                                    <x-band-tag :bloodline="$record->broodcock->bloodline"
+                                                :band="$record->broodcock->band_number" size="xs" />
+                                </x-slot:subtitle>
+                            @endif
+                            <x-slot:badge>
+                                <span class="d-badge d-badge-soft {{ $record->event_type->badgeClasses() }}">{{ $record->event_type->label() }}</span>
+                                <span class="d-badge d-badge-soft {{ $record->result->badgeClasses() }}">{{ $record->result->label() }}</span>
+                            </x-slot:badge>
+
+                            <dl class="grid grid-cols-3 gap-3">
+                                <x-ui.fact label="Weight">
+                                    <span @class(['datum' => $record->weight !== null, 'text-muted-foreground' => $record->weight === null])>{{ $record->weight !== null ? $record->weight.' kg' : 'Not recorded' }}</span>
+                                </x-ui.fact>
+                                <x-ui.fact label="Duration">
+                                    <span @class(['datum' => $record->durationLabel() !== null, 'text-muted-foreground' => $record->durationLabel() === null])>{{ $record->durationLabel() ?? 'Not recorded' }}</span>
+                                </x-ui.fact>
+                                <x-ui.fact label="Rating">
+                                    <span @class(['datum' => $record->rating !== null, 'text-muted-foreground' => $record->rating === null])>{{ $record->rating !== null ? $record->rating.' of 5' : 'Not rated' }}</span>
+                                </x-ui.fact>
+                            </dl>
+
+                            <x-slot:meta>
+                                <span class="datum">{{ $record->event_date->format('d M Y') }}</span>
+                            </x-slot:meta>
+                            <x-slot:actions>
+                                <x-ui.row-action icon="eye" :label="'View the '.$record->event_type->label().' record'"
+                                                 x-on:click="$dispatch('performance-view', {{ Js::from($viewPayload($record)) }}); $dispatch('ems-dialog', 'performance-view')" />
+                                @can('update', $record)
+                                    <x-ui.row-action icon="pencil" :label="'Edit the '.$record->event_type->label().' record'" :href="route('performance.edit', $record)" wire:click.prevent="openForm({{ $record->id }})" x-on:click="$dispatch('ems-dialog', { id: 'performance-form', wait: true })" />
+                                @endcan
+                                @can('delete', $record)
+                                    <x-ui.row-action icon="trash-2" :label="'Archive the '.$record->event_type->label().' record'" :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
+                                @endcan
+                            </x-slot:actions>
+                        </x-ui.record-card>
+                    </li>
+                @endforeach
+            </ul>
+            <x-ui.cards-skeleton wire:loading.grid wire:target="{{ $loadingTargets }}" />
         </div>
 
         <x-ui.table-pagination :paginator="$records" class="mt-4" />

@@ -7,6 +7,7 @@ namespace App\Livewire\Users;
 use App\Enums\UserRole;
 use App\Http\Requests\StoreUserRequest;
 use App\Models\User;
+use App\Support\FarmPositions;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Locked;
@@ -37,6 +38,14 @@ final class Form extends Component
 
     public ?string $position = null;
 
+    /**
+     * The Position dropdown: a listed position, FarmPositions::OTHER, or blank.
+     * save() turns it, and what was typed under Other, into $position.
+     */
+    public string $position_choice = '';
+
+    public string $position_other = '';
+
     public bool $is_active = true;
 
     public function mount(?User $user = null): void
@@ -54,6 +63,8 @@ final class Form extends Component
                 'position' => $user->position,
                 'is_active' => $user->is_active,
             ]);
+            $this->position_choice = FarmPositions::choiceFor($user->position);
+            $this->position_other = $this->position_choice === FarmPositions::OTHER ? (string) $user->position : '';
 
             return;
         }
@@ -92,6 +103,10 @@ final class Form extends Component
 
     public function save(): void
     {
+        $this->position = $this->position_choice === FarmPositions::OTHER
+            ? trim($this->position_other)
+            : $this->position_choice;
+
         $data = $this->validate();
 
         $existing = $this->editing();

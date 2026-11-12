@@ -6,9 +6,9 @@
     segmented strip over the existing $recordType filter; the rest of the
     filters stay in the filter bar.
 
-    ONE COPY OF EVERY ROW. Below `md` the table's rows, cells and body drop to
-    display:block, so a phone gets a stacked row - the bird first, the record
-    and its dates beneath in muted type - and never a sideways-scrolling table.
+    PHONES ALWAYS GET THE CARDS. Below `md` the table is hidden and the cards
+    grid shows in one column, whatever the saved view; from `md` up the
+    table / cards switch decides.
 
     NO overflow wrapper around the table, and that is load-bearing: <main> is
     the scroll container, and an overflow-x box between the two would pin the
@@ -29,7 +29,7 @@
     $th = 'sticky top-0 z-10 h-10 border-b lg:h-9 border-border bg-background px-4 text-left align-middle text-[13px] lg:text-[11px] font-semibold text-muted-foreground';
     $td = 'border-b-0 p-0 md:table-cell md:border-b md:border-border md:px-4 md:py-3.5 md:align-top';
 @endphp
-<div>
+<div x-data="{ view: $persist(gfmsDefaultView()).as('gfms-view-health') }">
     <x-anchor-block eyebrow="Manage" title="Health Records"
                     :figure="number_format($total)"
                     :figure-label="$isFiltered ? 'matching your filters' : Str::plural('record', $total).' on file'">
@@ -56,7 +56,7 @@
 
     {{-- Every filter is optional; leaving a box blank means "all". The count
          only appears once a filter is actually narrowing the list. --}}
-    <x-filter-bar class="mt-1" :active="$isFiltered"
+    <x-filter-bar :count="collect([$broodcockId, $dateFrom, $dateTo])->filter(fn ($value) => filled($value))->count()" class="mt-1" :active="$isFiltered"
                   clear="clearFilters"
                   :summary="'Showing '.number_format($total).' '.Str::plural('record', $total).'.'">
         <x-slot:search>
@@ -76,16 +76,22 @@
         </x-filter-select>
 
         {{-- The two dates are one control in two halves, so they stay together
-             on a wrap and read as a range rather than as two unrelated fields. --}}
-        <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="filter-from" class="d-fieldset-legend mb-0 shrink-0 py-0">From</label>
-            <input id="filter-from" type="date" wire:model.live="dateFrom" class="d-input datum w-full sm:w-auto">
+             on a wrap and read as a range rather than as two unrelated fields.
+             On phones they sit side by side, each label above its field; from
+             sm up the wrapper dissolves and each pair is inline in the bar. --}}
+        <div class="grid w-full grid-cols-2 gap-3 sm:contents">
+            <div class="flex min-w-0 flex-col gap-1 sm:min-h-11 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:gap-2">
+                <label for="filter-from" class="d-fieldset-legend mb-0 shrink-0 py-0">From</label>
+                <x-ui.date-picker id="filter-from" wire:model.live="dateFrom" max-from="$wire.dateTo" class="min-w-0 sm:w-44" />
+            </div>
+
+            <div class="flex min-w-0 flex-col gap-1 sm:min-h-11 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:gap-2">
+                <label for="filter-to" class="d-fieldset-legend mb-0 shrink-0 py-0">To</label>
+                <x-ui.date-picker id="filter-to" wire:model.live="dateTo" min-from="$wire.dateFrom" class="min-w-0 sm:w-44" />
+            </div>
         </div>
 
-        <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="filter-to" class="d-fieldset-legend mb-0 shrink-0 py-0">To</label>
-            <input id="filter-to" type="date" wire:model.live="dateTo" class="d-input datum w-full sm:w-auto">
-        </div>
+        <x-ui.view-toggle />
 
         {{-- The search is debounced and the round trip is long, so without this
              the bar looks dead between a keystroke and its result. --}}
@@ -110,143 +116,224 @@
             @endif
         </x-empty-state>
     @else
-        <table class="d-table block w-full border-separate border-spacing-0 text-left md:table">
-            <thead class="hidden md:table-header-group">
-                <tr>
-                    <th scope="col" class="{{ $th }}">Bird</th>
+        {{-- From md up, when the switch says table. Phones always get the cards. --}}
+        <div class="hidden md:block" x-show="view === 'table'">
+            <table class="d-table block w-full border-separate border-spacing-0 text-left md:table">
+                <thead class="hidden md:table-header-group">
+                    <tr>
+                        <th scope="col" class="{{ $th }}">Bird</th>
 
-                    {{-- Bird and actions stay plain: the bird sorts by a
-                         relationship, not a column, so it cannot be handed to
-                         orderBy(). A header that looks pressable and does
-                         nothing is worse than one that plainly is not. --}}
-                    @foreach (['record_type' => 'Record type', 'checkup_date' => 'Check-up date', 'next_due_date' => 'Next due date'] as $column => $heading)
+                        {{-- Bird and actions stay plain: the bird sorts by a
+                             relationship, not a column, so it cannot be handed to
+                             orderBy(). A header that looks pressable and does
+                             nothing is worse than one that plainly is not. --}}
+                        @foreach (['record_type' => 'Record type', 'checkup_date' => 'Check-up date', 'next_due_date' => 'Next due date'] as $column => $heading)
+                            @php
+                                $isSorted = $sortBy === $column;
+                                $isAscending = $sortDirection === 'asc';
+                            @endphp
+                            <th scope="col" class="{{ $th }}"
+                                aria-sort="{{ $isSorted ? ($isAscending ? 'ascending' : 'descending') : 'none' }}">
+                                <button type="button" wire:click="sort('{{ $column }}')"
+                                        @class(['-mx-1.5 inline-flex min-h-11 items-center gap-1 rounded-[6px] px-1.5 hover:text-foreground', 'text-foreground' => $isSorted])>
+                                    {{ $heading }}
+                                    @if ($isSorted)
+                                        <svg class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="{{ $isAscending ? 'm4.5 15.75 7.5-7.5 7.5 7.5' : 'm19.5 8.25-7.5 7.5-7.5-7.5' }}"/>
+                                        </svg>
+                                        <span class="sr-only">sorted {{ $isAscending ? 'ascending' : 'descending' }}</span>
+                                    @endif
+                                </button>
+                            </th>
+                        @endforeach
+
+                        <th scope="col" class="{{ $th }} text-right">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody class="block md:table-row-group" wire:loading.remove wire:target="search,recordType,broodcockId,dateFrom,dateTo,sort,perPage,gotoPage,nextPage,previousPage">
+                    @foreach ($this->rows as $record)
                         @php
-                            $isSorted = $sortBy === $column;
-                            $isAscending = $sortDirection === 'asc';
+                            $bird = $record->broodcock;
+                            // A deleted bird keeps its health history, so the row still
+                            // names it - greyed and unlinked, because its page is gone.
+                            $birdName = $bird?->name ?? 'a removed bird';
+                            $state = $record->scheduleState();
+                            // The status washes are the only colour besides a band, and
+                            // the word itself carries the state - never hue alone.
+                            $stateClasses = match ($state) {
+                                'Overdue' => 'd-badge-error',
+                                'Due soon' => 'd-badge-warning',
+                                'Scheduled' => 'd-badge-info',
+                                default => 'd-badge-neutral',
+                            };
                         @endphp
-                        <th scope="col" class="{{ $th }}"
-                            aria-sort="{{ $isSorted ? ($isAscending ? 'ascending' : 'descending') : 'none' }}">
-                            <button type="button" wire:click="sort('{{ $column }}')"
-                                    @class(['-mx-1.5 inline-flex min-h-11 items-center gap-1 rounded-[6px] px-1.5 hover:text-foreground', 'text-foreground' => $isSorted])>
-                                {{ $heading }}
-                                @if ($isSorted)
-                                    <svg class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="{{ $isAscending ? 'm4.5 15.75 7.5-7.5 7.5 7.5' : 'm19.5 8.25-7.5 7.5-7.5-7.5' }}"/>
-                                    </svg>
-                                    <span class="sr-only">sorted {{ $isAscending ? 'ascending' : 'descending' }}</span>
+
+                        {{-- Resting on a row shows its bird's photo beside the bird's cell. --}}
+                        <tr wire:key="record-{{ $record->id }}" class="block border-b border-border py-4 transition-colors hover:bg-muted/60 md:table-row md:border-0 md:py-0"
+                            x-data="{ preview: false, timer: null }"
+                            x-on:mouseenter="if (matchMedia('(hover: hover)').matches) { timer = setTimeout(() => preview = true, 350) }"
+                            x-on:mouseleave="clearTimeout(timer); preview = false">
+                            {{-- Bird: the band is the identifier a keeper scans for, the
+                                 dot its bloodline, and the bloodline is written beside
+                                 the name so colour is never the only channel. --}}
+                            <td class="block {{ $td }}">
+                                @if ($bird === null)
+                                    <p class="flex min-h-11 items-center text-[15px] lg:text-xs text-muted-foreground">Bird removed</p>
+                                @elseif ($bird->trashed())
+                                    <span class="-my-1 inline-flex min-h-11 items-center gap-2.5">
+                                        <x-band-dot :bloodline="$bird->bloodline" />
+                                        <span class="min-w-0">
+                                            <span class="datum block text-[15px] lg:text-xs font-medium text-muted-foreground">{{ $bird->displayBand() }}</span>
+                                            <span class="block text-[13px] lg:text-[11px] leading-snug text-muted-foreground">{{ $bird->name }} &middot; removed</span>
+                                        </span>
+                                    </span>
+                                @else
+                                    <span class="relative inline-flex">
+                                        <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate
+                                           class="group -my-1 inline-flex min-h-11 items-center gap-2.5">
+                                            <x-band-dot :bloodline="$bird->bloodline" />
+                                            <span class="min-w-0">
+                                                <span class="datum block text-[15px] lg:text-xs font-medium text-foreground">{{ $bird->displayBand() }}</span>
+                                                <span class="block text-[13px] lg:text-[11px] leading-snug text-muted-foreground">{{ $bird->name }}@if ($bird->bloodline) &middot; {{ $bird->bloodline }}@endif</span>
+                                            </span>
+                                        </a>
+                                        <x-bird-hover-card :bird="$bird" />
+                                    </span>
                                 @endif
-                            </button>
-                        </th>
+                            </td>
+
+                            <td class="mt-2 block md:mt-0 {{ $td }}">
+                                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                    <span class="d-badge d-badge-soft {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
+                                    <span class="text-[15px] lg:text-xs leading-snug text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
+                                </div>
+                                @if ($record->dosage)
+                                    <p class="mt-1 text-[13px] lg:text-[11px] text-muted-foreground">Dosage: <span class="datum">{{ $record->dosage }}</span></p>
+                                @endif
+                                @if ($record->condition)
+                                    <p class="mt-0.5 text-[13px] lg:text-[11px] text-muted-foreground">Condition: {{ $record->condition }}</p>
+                                @endif
+                                {{-- Internal remarks. Customers are promised health STATUS,
+                                     never the farm's private notes - the Policy decides. --}}
+                                @can('viewRemarks', $record)
+                                    @if ($record->remarks)
+                                        <p class="mt-1.5 max-w-[46ch] border-l border-border pl-2 text-[13px] lg:text-[11px] leading-snug text-muted-foreground"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
+                                    @endif
+                                @endcan
+                            </td>
+
+                            <td class="mt-3 mr-6 inline-block align-top md:mt-0 md:mr-0 md:whitespace-nowrap {{ $td }}">
+                                <span class="block text-[13px] lg:text-[11px] text-muted-foreground md:hidden">Check-up date</span>
+                                <span class="datum text-[15px] lg:text-xs text-foreground">{{ $record->checkup_date->format('d M Y') }}</span>
+                            </td>
+
+                            <td class="mt-3 inline-block align-top md:mt-0 md:whitespace-nowrap {{ $td }}">
+                                <span class="block text-[13px] lg:text-[11px] text-muted-foreground md:hidden">Next due date</span>
+                                @if ($record->next_due_date)
+                                    <span class="datum text-[15px] lg:text-xs text-foreground">{{ $record->next_due_date->format('d M Y') }}</span>
+                                    <span class="d-badge d-badge-soft {{ $stateClasses }} ml-1.5 md:ml-0 md:mt-1.5 md:flex md:w-fit">{{ $state }}</span>
+                                @else
+                                    <span class="text-[15px] lg:text-xs text-muted-foreground">None</span>
+                                @endif
+                            </td>
+
+                            <td class="mt-3 block border-b-0 p-0 md:mt-0 md:table-cell md:border-b md:border-border md:px-4 md:py-2 md:text-right md:align-top md:whitespace-nowrap">
+                                <div class="-ml-3 flex gap-0.5 md:ml-0 md:justify-end">
+                                    @php $what = $record->record_type->label().' for '.$birdName.' on '.$record->checkup_date->format('d M Y'); @endphp
+                                    @can('update', $record)
+                                        <x-ui.row-action icon="pencil" :label="'Edit the '.$what" wire:click="openForm({{ $record->id }})" x-on:click="$dispatch('ems-dialog', { id: 'health-form', wait: true })" />
+                                    @endcan
+                                    @can('delete', $record)
+                                        <x-ui.row-action icon="trash-2" :label="'Archive the '.$what" :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
+                                    @endcan
+                                </div>
+                            </td>
+                        </tr>
                     @endforeach
+                </tbody>
 
-                    <th scope="col" class="{{ $th }} text-right">Actions</th>
-                </tr>
-            </thead>
+                <x-table-skeleton :cols="5" wire:loading wire:target="search,recordType,broodcockId,dateFrom,dateTo,sort,perPage,gotoPage,nextPage,previousPage" />
+            </table>
+        </div>
 
-            <tbody class="block md:table-row-group" wire:loading.remove wire:target="search,recordType,broodcockId,dateFrom,dateTo,sort,perPage,gotoPage,nextPage,previousPage">
+        {{-- AS CARDS: the same records, the same actions. Always on phones, one
+             column; from md up only when the switch says cards. --}}
+        <div x-bind:class="view === 'cards' ? '' : 'md:hidden'" x-cloak>
+            <ul class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+                wire:loading.remove wire:target="search,recordType,broodcockId,dateFrom,dateTo,sort,perPage,gotoPage,nextPage,previousPage">
                 @foreach ($this->rows as $record)
                     @php
                         $bird = $record->broodcock;
-                        // A deleted bird keeps its health history, so the row still
-                        // names it - greyed and unlinked, because its page is gone.
                         $birdName = $bird?->name ?? 'a removed bird';
                         $state = $record->scheduleState();
-                        // The status washes are the only colour besides a band, and
-                        // the word itself carries the state - never hue alone.
                         $stateClasses = match ($state) {
                             'Overdue' => 'd-badge-error',
                             'Due soon' => 'd-badge-warning',
                             'Scheduled' => 'd-badge-info',
                             default => 'd-badge-neutral',
                         };
+                        $what = $record->record_type->label().' for '.$birdName.' on '.$record->checkup_date->format('d M Y');
                     @endphp
-
-                    {{-- Resting on a row shows its bird's photo beside the bird's cell. --}}
-                    <tr wire:key="record-{{ $record->id }}" class="block border-b border-border py-4 transition-colors hover:bg-muted/60 md:table-row md:border-0 md:py-0"
-                        x-data="{ preview: false, timer: null }"
-                        x-on:mouseenter="if (matchMedia('(hover: hover)').matches) { timer = setTimeout(() => preview = true, 350) }"
-                        x-on:mouseleave="clearTimeout(timer); preview = false">
-                        {{-- Bird: the band is the identifier a keeper scans for, the
-                             dot its bloodline, and the bloodline is written beside
-                             the name so colour is never the only channel. --}}
-                        <td class="block {{ $td }}">
-                            @if ($bird === null)
-                                <p class="flex min-h-11 items-center text-[15px] lg:text-xs text-muted-foreground">Bird removed</p>
-                            @elseif ($bird->trashed())
-                                <span class="-my-1 inline-flex min-h-11 items-center gap-2.5">
-                                    <x-band-dot :bloodline="$bird->bloodline" />
-                                    <span class="min-w-0">
-                                        <span class="datum block text-[15px] lg:text-xs font-medium text-muted-foreground">{{ $bird->displayBand() }}</span>
-                                        <span class="block text-[13px] lg:text-[11px] leading-snug text-muted-foreground">{{ $bird->name }} &middot; removed</span>
-                                    </span>
-                                </span>
-                            @else
-                                <span class="relative inline-flex">
-                                    <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate
-                                       class="group -my-1 inline-flex min-h-11 items-center gap-2.5">
-                                        <x-band-dot :bloodline="$bird->bloodline" />
-                                        <span class="min-w-0">
-                                            <span class="datum block text-[15px] lg:text-xs font-medium text-foreground">{{ $bird->displayBand() }}</span>
-                                            <span class="block text-[13px] lg:text-[11px] leading-snug text-muted-foreground">{{ $bird->name }}@if ($bird->bloodline) &middot; {{ $bird->bloodline }}@endif</span>
-                                        </span>
-                                    </a>
-                                    <x-bird-hover-card :bird="$bird" />
-                                </span>
+                    <li wire:key="record-card-{{ $record->id }}">
+                        {{-- The bird's page, as the table links it; a removed bird's page is gone. --}}
+                        <x-ui.record-card :href="$bird && ! $bird->trashed() ? route('broodcocks.show', $bird) : null">
+                            @if ($bird)
+                                <x-slot:media>
+                                    <span class="flex h-5 items-center"><x-band-dot :bloodline="$bird->bloodline" /></span>
+                                </x-slot:media>
                             @endif
-                        </td>
-
-                        <td class="mt-2 block md:mt-0 {{ $td }}">
-                            <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                <span class="d-badge d-badge-soft {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
-                                <span class="text-[15px] lg:text-xs leading-snug text-foreground">{{ $record->product_name ?: 'Not recorded' }}</span>
-                            </div>
-                            @if ($record->dosage)
-                                <p class="mt-1 text-[13px] lg:text-[11px] text-muted-foreground">Dosage: <span class="datum">{{ $record->dosage }}</span></p>
-                            @endif
-                            @if ($record->condition)
-                                <p class="mt-0.5 text-[13px] lg:text-[11px] text-muted-foreground">Condition: {{ $record->condition }}</p>
-                            @endif
-                            {{-- Internal remarks. Customers are promised health STATUS,
-                                 never the farm's private notes - the Policy decides. --}}
-                            @can('viewRemarks', $record)
-                                @if ($record->remarks)
-                                    <p class="mt-1.5 max-w-[46ch] border-l border-border pl-2 text-[13px] lg:text-[11px] leading-snug text-muted-foreground"><span class="font-medium">Remarks:</span> {{ $record->remarks }}</p>
+                            <x-slot:title>
+                                @if ($bird === null)
+                                    <span class="text-muted-foreground">Bird removed</span>
+                                @else
+                                    <span @class(['datum', 'text-muted-foreground' => $bird->trashed()])>{{ $bird->displayBand() }}</span>
                                 @endif
-                            @endcan
-                        </td>
-
-                        <td class="mt-3 mr-6 inline-block align-top md:mt-0 md:mr-0 md:whitespace-nowrap {{ $td }}">
-                            <span class="block text-[13px] lg:text-[11px] text-muted-foreground md:hidden">Check-up date</span>
-                            <span class="datum text-[15px] lg:text-xs text-foreground">{{ $record->checkup_date->format('d M Y') }}</span>
-                        </td>
-
-                        <td class="mt-3 inline-block align-top md:mt-0 md:whitespace-nowrap {{ $td }}">
-                            <span class="block text-[13px] lg:text-[11px] text-muted-foreground md:hidden">Next due date</span>
-                            @if ($record->next_due_date)
-                                <span class="datum text-[15px] lg:text-xs text-foreground">{{ $record->next_due_date->format('d M Y') }}</span>
-                                <span class="d-badge d-badge-soft {{ $stateClasses }} ml-1.5 md:ml-0 md:mt-1.5 md:flex md:w-fit">{{ $state }}</span>
-                            @else
-                                <span class="text-[15px] lg:text-xs text-muted-foreground">None</span>
+                            </x-slot:title>
+                            @if ($bird)
+                                <x-slot:subtitle>
+                                    @if ($bird->trashed())
+                                        {{ $bird->name }} &middot; removed
+                                    @else
+                                        {{ $bird->name }}@if ($bird->bloodline) &middot; {{ $bird->bloodline }}@endif
+                                    @endif
+                                </x-slot:subtitle>
                             @endif
-                        </td>
+                            <x-slot:badge>
+                                <span class="d-badge d-badge-soft {{ $record->record_type->badgeClasses() }}">{{ $record->record_type->label() }}</span>
+                            </x-slot:badge>
 
-                        <td class="mt-3 block border-b-0 p-0 md:mt-0 md:table-cell md:border-b md:border-border md:px-4 md:py-2 md:text-right md:align-top md:whitespace-nowrap">
-                            <div class="-ml-3 flex gap-0.5 md:ml-0 md:justify-end">
-                                @php $what = $record->record_type->label().' for '.$birdName.' on '.$record->checkup_date->format('d M Y'); @endphp
+                            <dl class="grid grid-cols-3 gap-3">
+                                <x-ui.fact label="Product">{{ $record->product_name ?: 'Not recorded' }}</x-ui.fact>
+                                <x-ui.fact label="Check-up date"><span class="datum">{{ $record->checkup_date->format('d M Y') }}</span></x-ui.fact>
+                                <x-ui.fact label="Next due date">
+                                    @if ($record->next_due_date)
+                                        <span class="datum">{{ $record->next_due_date->format('d M Y') }}</span>
+                                    @else
+                                        <span class="text-muted-foreground">None</span>
+                                    @endif
+                                </x-ui.fact>
+                            </dl>
+
+                            @if ($record->next_due_date)
+                                <x-slot:meta>
+                                    <span class="d-badge d-badge-soft {{ $stateClasses }}">{{ $state }}</span>
+                                </x-slot:meta>
+                            @endif
+                            <x-slot:actions>
                                 @can('update', $record)
                                     <x-ui.row-action icon="pencil" :label="'Edit the '.$what" wire:click="openForm({{ $record->id }})" x-on:click="$dispatch('ems-dialog', { id: 'health-form', wait: true })" />
                                 @endcan
                                 @can('delete', $record)
                                     <x-ui.row-action icon="trash-2" :label="'Archive the '.$what" :destructive="true" wire:click="confirmDelete({{ $record->id }})" />
                                 @endcan
-                            </div>
-                        </td>
-                    </tr>
+                            </x-slot:actions>
+                        </x-ui.record-card>
+                    </li>
                 @endforeach
-            </tbody>
-
-            <x-table-skeleton :cols="5" wire:loading wire:target="search,recordType,broodcockId,dateFrom,dateTo,sort,perPage,gotoPage,nextPage,previousPage" />
-        </table>
+            </ul>
+            <x-ui.cards-skeleton class="mt-4" wire:loading.grid wire:target="search,recordType,broodcockId,dateFrom,dateTo,sort,perPage,gotoPage,nextPage,previousPage" />
+        </div>
 
         @if ($this->rows->total() > 0)
             <x-ui.table-pagination :paginator="$this->rows" class="mt-4" />

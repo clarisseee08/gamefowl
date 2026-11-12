@@ -99,11 +99,11 @@
             <div class="flex flex-wrap items-end gap-3 px-5 py-4">
                 <div>
                     <label for="from" class="d-fieldset-legend">From</label>
-                    <input id="from" type="date" x-model="from" x-bind:max="to || null" class="d-input datum w-44">
+                    <x-ui.date-picker id="from" x-model="from" max-from="to" class="w-44" />
                 </div>
                 <div>
                     <label for="to" class="d-fieldset-legend">To</label>
-                    <input id="to" type="date" x-model="to" x-bind:min="from || null" class="d-input datum w-44">
+                    <x-ui.date-picker id="to" x-model="to" min-from="from" class="w-44" />
                 </div>
             </div>
         </div>

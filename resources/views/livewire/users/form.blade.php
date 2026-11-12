@@ -45,11 +45,18 @@
                     </div>
 
                     <div>
-                        <label for="position" class="d-fieldset-legend">Position</label>
-                        <input id="position" type="text" wire:model="position" placeholder="e.g. Farm Caretaker"
-                               @error('position') aria-invalid="true" aria-describedby="position-error" @enderror
-                               class="d-input w-full @error('position') d-input-error @enderror">
-                        @error('position') <p id="position-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
+                        <x-form-select id="position_choice" label="Position" wire:model="position_choice" error="position">
+                            <option value="">-- Choose a position --</option>
+                            @foreach (\App\Support\FarmPositions::all() as $listed)
+                                <option value="{{ $listed }}">{{ $listed }}</option>
+                            @endforeach
+                            <option value="{{ \App\Support\FarmPositions::OTHER }}">Other (type your own)</option>
+                        </x-form-select>
+                        <div x-data x-show="$wire.position_choice === @js(\App\Support\FarmPositions::OTHER)" x-cloak>
+                            <label for="position_other" class="sr-only">The position</label>
+                            <textarea id="position_other" rows="2" wire:model="position_other" maxlength="120"
+                                      placeholder="Type the position" class="d-textarea mt-2 w-full"></textarea>
+                        </div>
                     </div>
 
                     <div>
@@ -119,16 +126,22 @@
                         <label for="password" class="d-fieldset-legend justify-start">
                             Password @unless ($this->isEditing())<span class="text-destructive">*</span>@endunless
                         </label>
-                        <input id="password" type="password" wire:model="password" autocomplete="new-password"
-                               @error('password') aria-invalid="true" aria-describedby="password-error" @enderror
-                               class="d-input w-full @error('password') d-input-error @enderror">
+                        <div class="relative">
+                            <input id="password" type="password" wire:model="password" autocomplete="new-password"
+                                   @error('password') aria-invalid="true" aria-describedby="password-error" @enderror
+                                   class="d-input w-full pr-12 lg:pr-9 @error('password') d-input-error @enderror">
+                            <x-password-reveal for="password" />
+                        </div>
                         @error('password') <p id="password-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label for="password_confirmation" class="d-fieldset-legend">Confirm Password</label>
-                        <input id="password_confirmation" type="password" wire:model="password_confirmation"
-                               autocomplete="new-password" class="d-input w-full">
+                        <div class="relative">
+                            <input id="password_confirmation" type="password" wire:model="password_confirmation"
+                                   autocomplete="new-password" class="d-input w-full pr-12 lg:pr-9">
+                            <x-password-reveal for="password_confirmation" />
+                        </div>
                     </div>
                 </div>
             </section>

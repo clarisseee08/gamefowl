@@ -22,10 +22,13 @@
 
         <div class="rise-in" style="--rise-delay: 360ms">
             <label for="password" class="d-fieldset-legend">New password</label>
-            <input id="password" type="password" name="password" required autocomplete="new-password"
-                   aria-describedby="password-help @error('password') password-error @enderror"
-                   @error('password') aria-invalid="true" @enderror
-                   class="d-input w-full @error('password') d-input-error @enderror">
+            <div class="relative">
+                <input id="password" type="password" name="password" required autocomplete="new-password"
+                       aria-describedby="password-help @error('password') password-error @enderror"
+                       @error('password') aria-invalid="true" @enderror
+                       class="d-input w-full pr-12 @error('password') d-input-error @enderror">
+                <x-password-reveal for="password" :compact="false" />
+            </div>
             <p id="password-help" class="d-label mt-1">At least 8 characters.</p>
             @error('password')
                 <p id="password-error" class="mt-1.5 text-[13px] font-medium text-error" role="alert">{{ $message }}</p>
@@ -34,8 +37,11 @@
 
         <div class="rise-in" style="--rise-delay: 420ms">
             <label for="password_confirmation" class="d-fieldset-legend">Confirm new password</label>
-            <input id="password_confirmation" type="password" name="password_confirmation"
-                   required autocomplete="new-password" class="d-input w-full">
+            <div class="relative">
+                <input id="password_confirmation" type="password" name="password_confirmation"
+                       required autocomplete="new-password" class="d-input w-full pr-12">
+                <x-password-reveal for="password_confirmation" :compact="false" />
+            </div>
         </div>
 
         <button type="submit" class="d-btn d-btn-primary rise-in w-full" style="--rise-delay: 480ms">Save new password</button>

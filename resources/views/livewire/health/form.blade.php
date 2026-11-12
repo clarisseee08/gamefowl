@@ -137,26 +137,20 @@
                 <div class="mt-5 space-y-6 border-t border-border pt-6">
                     <div>
                         <label for="checkup_date" class="d-fieldset-legend">Check-up Date <span class="text-destructive">*</span></label>
-                        <input id="checkup_date"
-                               type="date"
-                               wire:model.live="checkup_date"
-                               max="{{ today()->toDateString() }}"
-                               aria-describedby="{{ $describedBy('checkup_date') }}"
-                               @error('checkup_date') aria-invalid="true" @enderror
-                               @class(['d-input w-full datum max-w-[16rem]', 'd-input-error' => $errors->has('checkup_date')])>
+                        <x-ui.date-picker id="checkup_date" wire:model.live="checkup_date" max="today" :clearable="false"
+                                           :describedby="$describedBy('checkup_date')"
+                                           class="max-w-[16rem]" />
                         <p id="checkup_date-help" class="d-label mt-1">The day this was actually done. It cannot be in the future.</p>
                         @error('checkup_date') <p id="checkup_date-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label for="next_due_date" class="d-fieldset-legend">Next Due Date</label>
-                        <input id="next_due_date"
-                               type="date"
-                               wire:model="next_due_date"
-                               min="{{ $checkup_date ?: today()->toDateString() }}"
-                               aria-describedby="{{ $describedBy('next_due_date') }}"
-                               @error('next_due_date') aria-invalid="true" @enderror
-                               @class(['d-input w-full datum max-w-[16rem]', 'd-input-error' => $errors->has('next_due_date')])>
+                        <x-ui.date-picker id="next_due_date" wire:model="next_due_date"
+                                           :min="$checkup_date ?: today()->toDateString()"
+                                           wire:key="next-due-{{ $checkup_date ?: 'today' }}"
+                                           :describedby="$describedBy('next_due_date')"
+                                           class="max-w-[16rem]" />
 
                         {{-- A nudge, not a rule. Vaccinations and dewormings recur, so
                              leaving this blank is usually a mistake - but a one-off

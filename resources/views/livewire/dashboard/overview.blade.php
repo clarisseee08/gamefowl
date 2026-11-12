@@ -42,12 +42,6 @@
 <div class="space-y-6">
     <x-ui.page-header :title="$greeting" :figure="number_format($flock['on_farm'])" figure-label="birds on the farm">
         {{ now()->format('l, j F Y') }} &middot; {{ $user->role->label() }}
-
-        @can('create', App\Models\Broodcock::class)
-            <x-slot:actions>
-                <x-ui.button :href="route('broodcocks.create')" x-on:click.prevent="$dispatch('ems-dialog', 'broodcocks-form')"><x-ui.icon name="plus" /> Add gamefowl</x-ui.button>
-            </x-slot:actions>
-        @endcan
     </x-ui.page-header>
 
     {{-- Headline figures: EMS KPI tiles. The overdue tile is the one alarm on
@@ -72,6 +66,45 @@
                            ? ($scheduled - $this->overdueCount).' of '.$scheduled.' scheduled follow-ups are not overdue'
                            : 'Nothing is scheduled in the window.'" />
     </x-ui.kpi-row>
+
+    {{-- QUICK ACTIONS, under the figures rather than one button above them:
+         the four things staff record most, one tap each. Add gamefowl opens
+         its form here, in the dialog this page already holds; the others go to
+         their forms. Each shows only to those the Policy lets record it. --}}
+    @php
+        $quickActions = array_values(array_filter([
+            Gate::allows('create', App\Models\Broodcock::class)
+                ? ['label' => 'Add gamefowl', 'hint' => 'Register a bird', 'href' => route('broodcocks.create'), 'dialog' => 'broodcocks-form'] : null,
+            Gate::allows('create', App\Models\BreedingRecord::class)
+                ? ['label' => 'Record a mating', 'hint' => 'Pair, eggs and hatch', 'href' => route('breeding.create'), 'dialog' => null] : null,
+            Gate::allows('create', App\Models\HealthRecord::class)
+                ? ['label' => 'Add health record', 'hint' => 'Vaccine, medicine or check-up', 'href' => route('health.create'), 'dialog' => null] : null,
+            Gate::allows('create', App\Models\MortalityRecord::class)
+                ? ['label' => 'Record a death', 'hint' => 'Date, cause and disposal', 'href' => route('mortality.create'), 'dialog' => null] : null,
+        ]));
+    @endphp
+    @if ($quickActions !== [])
+        <section aria-labelledby="quick-actions-heading">
+            <h2 id="quick-actions-heading" class="text-sm font-semibold text-foreground lg:text-xs">Quick actions</h2>
+            <ul class="mt-2.5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+                @foreach ($quickActions as $action)
+                    <li>
+                        <a href="{{ $action['href'] }}"
+                           @if ($action['dialog']) x-on:click.prevent="$dispatch('ems-dialog', @js($action['dialog']))" @else wire:navigate @endif
+                           class="group flex h-full items-center gap-3 rounded-md border border-border bg-card p-3 outline-none transition-[border-color,transform] duration-150 hover:-translate-y-px hover:border-ring/60 focus-visible:ring-2 focus-visible:ring-ring/50">
+                            <span class="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary lg:size-8" aria-hidden="true">
+                                <x-ui.icon name="plus" class="size-4" />
+                            </span>
+                            <span class="min-w-0">
+                                <span class="block text-[13px] leading-snug font-semibold text-foreground lg:truncate lg:text-xs">{{ $action['label'] }}</span>
+                                <span class="mt-0.5 hidden truncate text-[11px] text-muted-foreground sm:block">{{ $action['hint'] }}</span>
+                            </span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
 
     <div class="grid gap-4 lg:grid-cols-3">
         {{-- ============ What needs doing, and how breeding is going ============ --}}

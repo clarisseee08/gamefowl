@@ -239,8 +239,15 @@ The short version:
   Registry data — every band number, date, weight, count, rate and percentage —
   gets `.datum` (tabular figures) so digits align in a column.
 - **Console minimums** (staff screens, used outdoors on phones): 7:1 contrast
-  at every width. **Below `lg`: 44px touch targets, 16px inputs. From `lg` up:
-  EMS compact controls — 28px, 12px text.** Catalog is 4.5:1. Nothing under 11px.
+  at every width. **Below `lg`: 36px fields and icon buttons, 32px text
+  buttons, 34px tab strips, 14px field text, 13px labels. From `lg` up: EMS
+  compact controls — 28px, 12px text.** It was 44px / 16px until 12 Nov 2026,
+  when the owner found phones too big; views still write `h-11`/`size-11`,
+  and the density block at the end of app.css maps them below `lg`. 14px
+  field text is safe only because app.js adds `maximum-scale=1` on iOS (it
+  stops Safari's zoom-on-focus; iOS still allows pinch-zoom). On phones a
+  list's filters fold behind a "Filters" button (x-filter-bar, x-ui.filters-toggle)
+  instead of stacking. Catalog is 4.5:1. Nothing under 11px.
 - **EMS effects are allowed where EMS specifies them**: bold page and dialog
   titles and KPI values, gradients drawn in the green, blurred dialog backdrops.
 - **Shadows are EMS's scale** — Tailwind's `shadow-xs` … `shadow-2xl`, per
