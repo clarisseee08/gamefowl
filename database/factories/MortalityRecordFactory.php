@@ -36,7 +36,7 @@ class MortalityRecordFactory extends Factory
     public const DISPOSAL_METHODS = [
         'Buried',
         'Burned',
-        'Composted',
+        'Discarded',
         'Sent for laboratory examination',
     ];
 
