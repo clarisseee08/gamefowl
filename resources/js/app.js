@@ -1204,7 +1204,70 @@ const latestNavigation = (() => {
     };
 })();
 
+/**
+ * UNSAVED CHANGES - ask before leaving.
+ *
+ * A form marked data-unsaved-guard holds a [data-unsaved-flag] that Livewire's
+ * wire:dirty shows while a field differs from what was last saved. Leaving the
+ * page while any flag is showing stops and asks, in the console's own confirm
+ * dialog; "Leave Without Saving" goes on to the page that was asked for.
+ * Closing or reloading the tab gets the browser's own warning, which is the
+ * only thing a page may show there.
+ *
+ * Back and forward are not stopped: the address has already changed by the
+ * time Livewire hears of it, and cancelling would leave the page and the
+ * address disagreeing.
+ */
+const unsavedChanges = (() => {
+    let leaving = false;
+
+    const pending = () => [...document.querySelectorAll('[data-unsaved-guard] [data-unsaved-flag]')]
+        .some((flag) => getComputedStyle(flag).display !== 'none');
+
+    document.addEventListener('livewire:navigate', (event) => {
+        if (leaving || event.detail?.history || ! pending()) {
+            leaving = false;
+
+            return;
+        }
+
+        event.preventDefault();
+
+        const url = event.detail?.url;
+        window.dispatchEvent(new CustomEvent('ems-confirm', {
+            detail: {
+                title: 'Leave without saving?',
+                description: 'Your changes on this page have not been saved. If you leave now, they are lost.',
+                confirmLabel: 'Leave Without Saving',
+                cancelLabel: 'Stay on This Page',
+                tone: 'danger',
+                run: () => {
+                    leaving = true;
+                    // After the dialog has closed itself: a page that is already
+                    // fetched swaps in at once, and the dialog would be gone
+                    // before it could close.
+                    setTimeout(() => window.Livewire.navigate(url instanceof URL ? url.href : String(url)));
+                },
+            },
+        }));
+    });
+
+    window.addEventListener('beforeunload', (event) => {
+        if (pending()) {
+            event.preventDefault();
+            event.returnValue = '';
+        }
+    });
+
+    return { pending };
+})();
+
 document.addEventListener('livewire:navigate', (event) => {
+    // Cancelled - by the unsaved-changes guard above, say: nothing is leaving.
+    if (event.defaultPrevented) {
+        return;
+    }
+
     // Synchronously, before Livewire starts this page's own request.
     if (event.detail?.url instanceof URL) {
         latestNavigation.begin(event.detail.url);

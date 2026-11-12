@@ -7,6 +7,7 @@ namespace App\Livewire\Profile;
 use App\Actions\Photos\StorePhoto;
 use App\Http\Requests\StoreBroodcockPhotoRequest;
 use App\Models\User;
+use App\Support\FarmPositions;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -38,6 +39,16 @@ final class Edit extends Component
 
     public string $position = '';
 
+    /**
+     * The Position dropdown: a listed position, FarmPositions::OTHER, or blank.
+     * Deferred like the other fields, so an unsaved choice still counts as an
+     * unsaved change; save() turns it into $position.
+     */
+    public string $position_choice = '';
+
+    /** What was typed under Other. */
+    public string $position_other = '';
+
     public ?TemporaryUploadedFile $photo = null;
 
     public string $current_password = '';
@@ -57,6 +68,8 @@ final class Edit extends Component
         $this->contact_number = $user->contact_number ?? '';
         $this->address = $user->address ?? '';
         $this->position = $user->position ?? '';
+        $this->position_choice = FarmPositions::choiceFor($user->position);
+        $this->position_other = $this->position_choice === FarmPositions::OTHER ? $this->position : '';
     }
 
     /** @return array<string, mixed> */
@@ -68,6 +81,7 @@ final class Edit extends Component
             'contact_number' => ['nullable', 'string', 'max:40'],
             'address' => ['nullable', 'string', 'max:255'],
             'position' => ['nullable', 'string', 'max:120'],
+            'position_other' => ['nullable', 'string', 'max:120'],
             // Same limits and the same accepted types as every other upload in
             // the system, read from config rather than restated. A phone photo
             // is routinely 8 MB, so the limit has to be shown in the UI as well
@@ -115,6 +129,10 @@ final class Edit extends Component
         // never invoked is an ability nobody maintains, and the day this screen
         // grows a parameter the check needs to already be here.
         $this->authorize('updateOwnProfile', $user);
+
+        $this->position = $this->position_choice === FarmPositions::OTHER
+            ? trim($this->position_other)
+            : $this->position_choice;
 
         $data = $this->validate();
 

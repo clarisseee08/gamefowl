@@ -7,6 +7,7 @@ namespace Tests\Feature\Profile;
 use App\Actions\Photos\StorePhoto;
 use App\Livewire\Profile\Edit;
 use App\Models\User;
+use App\Support\FarmPositions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
@@ -48,7 +49,8 @@ final class ProfileTest extends TestCase
         Livewire::actingAs($user)
             ->test(Edit::class)
             ->set('full_name', 'New Name')
-            ->set('position', 'Head Keeper')
+            ->set('position_choice', FarmPositions::OTHER)
+            ->set('position_other', 'Head Keeper')
             ->call('save')
             ->assertHasNoErrors()
             ->assertDispatched('toast', message: 'Your profile has been updated.', tone: 'ok');
