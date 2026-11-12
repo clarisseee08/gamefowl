@@ -37,6 +37,8 @@
         $filtering = $this->hasFilters();
         $canDelete = $this->canDelete;
         $loadingTargets = 'from,to,cause';
+        // The rows also wait on sorting and paging; the "Searching…" line does not.
+        $tableTargets = $loadingTargets.',sort,perPage,gotoPage,nextPage,previousPage';
 
         $figure = number_format($summary['this_year']);
         $figureLabel = 'recorded in '.now()->year;
@@ -126,7 +128,7 @@
         {{-- Phones: one block per record - the bird and the date first, the
              cause under it. Phones are what the farm staff actually carry. --}}
         <ul class="divide-y divide-border border-y border-border md:hidden"
-            wire:loading.remove wire:target="{{ $loadingTargets }}">
+            wire:loading.remove wire:target="{{ $tableTargets }}">
             @foreach ($rows as $record)
                 <li class="py-4" wire:key="card-{{ $record->id }}">
                     <div class="flex items-start justify-between gap-3">
@@ -175,7 +177,7 @@
         </ul>
 
         <div class="space-y-5 border-y border-border py-5 md:hidden" aria-hidden="true"
-             wire:loading.block wire:target="{{ $loadingTargets }}">
+             wire:loading.block wire:target="{{ $tableTargets }}">
             @for ($i = 0; $i < 4; $i++)
                 <div>
                     <div class="d-skeleton h-3 {{ ['w-3/4', 'w-2/3', 'w-4/5', 'w-1/2'][$i] }}"></div>
@@ -205,7 +207,7 @@
                 </tr>
             </thead>
 
-            <tbody wire:loading.remove wire:target="{{ $loadingTargets }}">
+            <tbody wire:loading.remove wire:target="{{ $tableTargets }}">
                 @foreach ($rows as $record)
                     <tr wire:key="row-{{ $record->id }}" class="row-hover align-top *:align-top"
                         x-data="{ preview: false, timer: null }"
@@ -250,7 +252,7 @@
                 @endforeach
             </tbody>
 
-            <x-table-skeleton :cols="$canDelete ? 7 : 6" wire:loading wire:target="{{ $loadingTargets }}" />
+            <x-table-skeleton :cols="$canDelete ? 7 : 6" wire:loading wire:target="{{ $tableTargets }}" />
         </table>
 
         <x-ui.table-pagination :paginator="$rows" class="mt-4" />

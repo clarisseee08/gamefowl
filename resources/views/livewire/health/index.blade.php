@@ -143,7 +143,7 @@
                 </tr>
             </thead>
 
-            <tbody class="block md:table-row-group" wire:loading.remove wire:target="search,recordType,broodcockId,dateFrom,dateTo">
+            <tbody class="block md:table-row-group" wire:loading.remove wire:target="search,recordType,broodcockId,dateFrom,dateTo,sort,perPage,gotoPage,nextPage,previousPage">
                 @foreach ($this->rows as $record)
                     @php
                         $bird = $record->broodcock;
@@ -245,7 +245,7 @@
                 @endforeach
             </tbody>
 
-            <x-table-skeleton :cols="5" wire:loading wire:target="search,recordType,broodcockId,dateFrom,dateTo" />
+            <x-table-skeleton :cols="5" wire:loading wire:target="search,recordType,broodcockId,dateFrom,dateTo,sort,perPage,gotoPage,nextPage,previousPage" />
         </table>
 
         @if ($this->rows->total() > 0)

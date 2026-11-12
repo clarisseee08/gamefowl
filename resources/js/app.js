@@ -1064,8 +1064,167 @@ const loadingLine = (() => {
     };
 })();
 
+/**
+ * THE PAGE SKELETON, for wire:navigate.
+ *
+ * The line above says something is happening; this says what is coming. The
+ * moment a link is pressed the page being left is hidden and a skeleton shaped
+ * like the destination takes its place - a list, a record, a form or the
+ * dashboard, picked by the address - so the click is answered at once rather
+ * than when the server finishes. The real page replaces the whole body when
+ * it lands, skeleton and all.
+ *
+ * The old page is hidden, not removed: if the page never arrives, it comes
+ * back. Back and forward come from Livewire's cache and are instant, so they
+ * get no skeleton.
+ */
+const pageSkeleton = (() => {
+    // Generous: a free instance waking from sleep takes up to a minute.
+    const GIVE_UP_AFTER_MS = 90_000;
+    let giveUp = null;
+
+    const kindFor = (url) => {
+        const path = url.pathname.replace(/\/+$/, '') || '/';
+
+        if (path === '/dashboard') {
+            return 'dashboard';
+        }
+        if (/\/(create|edit)(\/|$)/.test(path) || path === '/profile' || path === '/settings') {
+            return 'form';
+        }
+        if (/^\/(broodcocks|breeding)\/\d+(\/pedigree)?$/.test(path)) {
+            return 'detail';
+        }
+
+        return 'list';
+    };
+
+    const restore = () => {
+        clearTimeout(giveUp);
+        document.querySelector('[data-page-skeleton]')?.remove();
+        const content = document.querySelector('[data-page-content]');
+        if (content) {
+            content.hidden = false;
+        }
+    };
+
+    return {
+        show(url) {
+            const content = document.querySelector('[data-page-content]');
+            const template = document.querySelector(`template[data-page-skeleton-template="${kindFor(url)}"]`);
+            if (! content || ! template) {
+                return;
+            }
+
+            restore();
+            const skeleton = template.content.firstElementChild.cloneNode(true);
+            skeleton.setAttribute('data-page-skeleton', '');
+            content.hidden = true;
+            content.after(skeleton);
+            content.closest('main')?.scrollTo({ top: 0 });
+            giveUp = setTimeout(restore, GIVE_UP_AFTER_MS);
+        },
+
+        done() {
+            clearTimeout(giveUp);
+        },
+    };
+})();
+
+/**
+ * ONLY THE LAST CLICK COUNTS.
+ *
+ * Livewire never cancels a page request. Press Health, then Mortality, then
+ * Dashboard while the server is slow, and all three pages arrive and are
+ * shown in turn - Health, then Mortality, then finally Dashboard - each one
+ * replacing the last. So when a page change starts, every other page request
+ * still on its way is aborted, and Livewire drops an aborted request without
+ * a word (requestWasCancelled).
+ *
+ * The subtle part: a wire:navigate link starts fetching on mousedown, and
+ * the click then waits on that fetch. When it is aborted Livewire falls back
+ * to fetching the same page again - which would bring the overtaken page
+ * straight back. So a destination that has been overtaken is remembered,
+ * and any request for it is aborted the moment it starts, until it is
+ * clicked again.
+ */
+const latestNavigation = (() => {
+    const inFlight = new Map();
+    const overtaken = new Set();
+    let latest = null;
+
+    const keyFor = (url) => url.pathname + url.search + url.hash;
+
+    const watchRequests = () => {
+        window.Livewire.hook('navigate.request', ({ uri, options }) => {
+            const controller = new AbortController();
+            options.signal = AbortSignal.any && options.signal
+                ? AbortSignal.any([options.signal, controller.signal])
+                : controller.signal;
+
+            if (overtaken.has(uri) && uri !== latest) {
+                controller.abort();
+
+                return;
+            }
+
+            inFlight.set(uri, controller);
+        });
+    };
+
+    if (window.Livewire) {
+        watchRequests();
+    } else {
+        document.addEventListener('livewire:init', watchRequests);
+    }
+
+    return {
+        begin(url) {
+            latest = keyFor(url);
+            overtaken.delete(latest);
+
+            inFlight.forEach((controller, uri) => {
+                if (uri !== latest) {
+                    controller.abort();
+                    overtaken.add(uri);
+                }
+            });
+            [...inFlight.keys()].forEach((uri) => uri !== latest && inFlight.delete(uri));
+        },
+
+        done() {
+            latest = null;
+            inFlight.clear();
+
+            // A fallback for an overtaken page follows its abort at once, so a
+            // second is plenty; after that, hovering the link may prefetch it.
+            const stale = [...overtaken];
+            setTimeout(() => stale.forEach((uri) => overtaken.delete(uri)), 1000);
+        },
+    };
+})();
+
 document.addEventListener('livewire:navigate', (event) => {
+    // Synchronously, before Livewire starts this page's own request.
+    if (event.detail?.url instanceof URL) {
+        latestNavigation.begin(event.detail.url);
+    }
+
     // Wait a tick: a listener that cancels the navigation runs after this one.
-    setTimeout(() => event.defaultPrevented || loadingLine.start());
+    setTimeout(() => {
+        if (event.defaultPrevented) {
+            return;
+        }
+
+        loadingLine.start();
+
+        if (! event.detail?.cached && event.detail?.url instanceof URL) {
+            pageSkeleton.show(event.detail.url);
+        }
+    });
 });
-document.addEventListener('livewire:navigated', () => loadingLine.done());
+document.addEventListener('livewire:navigated', () => {
+    loadingLine.done();
+    pageSkeleton.done();
+    latestNavigation.done();
+});
