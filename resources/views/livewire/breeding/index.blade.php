@@ -17,7 +17,7 @@
     $tableTargets = $loadingTargets.',sort,perPage,gotoPage,nextPage,previousPage';
 @endphp
 
-<div x-data="{ view: $persist('table').as('gfms-view-breeding') }">
+<div x-data="{ view: $persist(gfmsDefaultView()).as('gfms-view-breeding') }">
     <x-anchor-block eyebrow="Manage" title="Breeding Records" :figure="$figure" :figure-label="$figureLabel">
         Matings, egg counts and hatch results. Fertility and hatch rates are worked
         out automatically from the egg numbers.
@@ -55,15 +55,19 @@
         </x-slot:search>
 
         {{-- The two dates are one control in two halves, so they stay together
-             on a wrap and read as a range rather than as two unrelated fields. --}}
-        <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="from" class="d-fieldset-legend mb-0 shrink-0 py-0 lg:text-xs">Mated from</label>
-            <input id="from" type="date" wire:model.live="from" class="d-input datum w-full sm:w-auto">
-        </div>
+             on a wrap and read as a range rather than as two unrelated fields.
+             On a phone they sit side by side, each label above its field; from
+             sm up the wrapper dissolves and each is an inline label + field. --}}
+        <div class="grid w-full grid-cols-2 gap-3 sm:contents">
+            <div class="flex min-h-11 min-w-0 flex-col gap-1 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:gap-2">
+                <label for="from" class="d-fieldset-legend mb-0 shrink-0 py-0 lg:text-xs">Mated from</label>
+                <input id="from" type="date" wire:model.live="from" class="d-input datum w-full sm:w-auto">
+            </div>
 
-        <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="to" class="d-fieldset-legend mb-0 shrink-0 py-0 lg:text-xs">Mated up to</label>
-            <input id="to" type="date" wire:model.live="to" class="d-input datum w-full sm:w-auto">
+            <div class="flex min-h-11 min-w-0 flex-col gap-1 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:gap-2">
+                <label for="to" class="d-fieldset-legend mb-0 shrink-0 py-0 lg:text-xs">Mated up to</label>
+                <input id="to" type="date" wire:model.live="to" class="d-input datum w-full sm:w-auto">
+            </div>
         </div>
 
         <x-filter-select id="bloodline" label="Bloodline (sire)" wire:model.live="bloodline">
@@ -101,77 +105,14 @@
         @endif
     @else
         {{-- ---------------------------------------------------------------
-             PHONES: one block per mating. The pair on the first line, the
-             date and the egg funnel on the second. A nine-column table read
-             sideways on a phone is a table nobody reads.
-        --------------------------------------------------------------- --}}
-        <ul class="divide-y divide-border border-y border-border md:hidden"
-            wire:loading.remove wire:target="{{ $tableTargets }}">
-            @foreach ($records as $record)
-                <li class="py-4" wire:key="m-{{ $record->id }}">
-                    <a href="{{ route('breeding.show', $record) }}" wire:navigate
-                       class="flex min-h-11 items-start justify-between gap-3">
-                        <span class="min-w-0 text-[16px] lg:text-xs font-medium text-foreground">
-                            {{ $record->sire?->name ?? 'Bird removed' }}@if ($record->sire?->trashed()) <span class="text-muted-foreground">(removed)</span>@endif
-                            <span class="text-muted-foreground" aria-hidden="true">&times;</span>
-                            <span class="sr-only">with</span>
-                            {{ $record->dam?->name ?? 'Bird removed' }}@if ($record->dam?->trashed()) <span class="text-muted-foreground">(removed)</span>@endif
-                        </span>
-                        <span class="datum shrink-0 pt-0.5 text-[14px] lg:text-xs text-muted-foreground">{{ $record->mating_date->format('j M Y') }}</span>
-                    </a>
-
-                    <p class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px] lg:text-xs text-muted-foreground">
-                        @foreach (array_filter([$record->sire, $record->dam]) as $parent)
-                            <span class="inline-flex items-center gap-1.5">
-                                <x-band-dot :bloodline="$parent->bloodline" />
-                                @if ($parent->band_number)
-                                    <span class="datum">{{ $parent->band_number }}</span>
-                                @else
-                                    Not yet banded
-                                @endif
-                            </span>
-                        @endforeach
-                    </p>
-
-                    <p class="mt-2 text-[14px] lg:text-xs text-muted-foreground">
-                        <span class="datum text-foreground">{{ $record->eggs_set }}</span> set
-                        &middot; <span class="datum text-foreground">{{ $record->eggs_fertile }}</span> fertile
-                        &middot; <span class="datum text-foreground">{{ $record->eggs_hatched }}</span> hatched
-                        @if ($record->hatchRate() !== null)
-                            &middot; <span class="datum text-foreground">{{ $record->hatchRate() }}%</span> hatch rate
-                        @endif
-                    </p>
-
-                    @if ($record->hasUnregisteredOffspring())
-                        <p class="mt-2">
-                            <span class="d-badge d-badge-soft d-badge-warning">
-                                <span class="datum">{{ $record->unregisteredOffspring() }}</span>&nbsp;to register
-                            </span>
-                        </p>
-                    @endif
-                </li>
-            @endforeach
-        </ul>
-
-        <div class="space-y-5 border-y border-border py-5 md:hidden" aria-hidden="true"
-             wire:loading.block wire:target="{{ $tableTargets }}">
-            @for ($i = 0; $i < 4; $i++)
-                <div>
-                    <div class="d-skeleton h-3 {{ ['w-3/4', 'w-2/3', 'w-4/5', 'w-1/2'][$i] }}"></div>
-                    <div class="d-skeleton mt-3 h-3 w-2/5"></div>
-                </div>
-            @endfor
-        </div>
-
-        {{-- ---------------------------------------------------------------
-             WIDER SCREENS: a ledger. No overflow wrapper on purpose - a
+             WIDER SCREENS, WHEN CHOSEN: a ledger. No overflow wrapper on purpose - a
              scrolling ancestor would stop the header sticking under the
              topbar. The table is separate-bordered so the header's hairline
              travels with it when it sticks; a collapsed border stays behind.
         --------------------------------------------------------------- --}}
         {{-- EMS: a wide table scrolls inside its own container; the page never does. --}}
-        <div class="overflow-x-auto" x-show="view === 'table'">
-            <table class="d-table hidden w-full border-separate border-spacing-0 text-[15px] lg:text-xs md:table">
+        <div class="hidden overflow-x-auto md:block" x-show="view === 'table'">
+            <table class="d-table w-full border-separate border-spacing-0 text-[15px] lg:text-xs">
                 <thead class="sticky top-0 z-10 bg-background">
                     <tr>
                         {{-- The date and the three egg counts sort. Fertility and
@@ -271,15 +212,22 @@
             </table>
         </div>
 
-        {{-- WIDER SCREENS, AS CARDS: the same matings, the same action. --}}
-        <div class="hidden md:block" x-show="view === 'cards'" x-cloak>
+        {{-- CARDS: the same matings, the same action. Always on a phone, where a
+             nine-column table read sideways is a table nobody reads; from md up
+             only when the switch says so. --}}
+        <div x-bind:class="view === 'cards' ? '' : 'md:hidden'" x-cloak>
             <ul class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
                 wire:loading.remove wire:target="{{ $tableTargets }}">
                 @foreach ($records as $record)
-                    @php $pairName = ($record->sire?->name ?? 'Bird removed').' × '.($record->dam?->name ?? 'Bird removed'); @endphp
+                    @php
+                        $pairName = ($record->sire?->name ?? 'Bird removed').' × '.($record->dam?->name ?? 'Bird removed');
+                        // As the table says it: a parent that was archived is named, then marked.
+                        $cardTitle = ($record->sire?->name ?? 'Bird removed').($record->sire?->trashed() ? ' (removed)' : '')
+                            .' × '.($record->dam?->name ?? 'Bird removed').($record->dam?->trashed() ? ' (removed)' : '');
+                    @endphp
                     <li wire:key="m-card-{{ $record->id }}">
                         <x-ui.record-card :href="route('breeding.show', $record)">
-                            <x-slot:title>{{ $pairName }}</x-slot:title>
+                            <x-slot:title>{{ $cardTitle }}</x-slot:title>
                             <x-slot:subtitle>
                                 @foreach ([$record->sire, $record->dam] as $parent)
                                     @if (! $loop->first)

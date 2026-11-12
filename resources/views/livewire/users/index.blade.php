@@ -23,7 +23,7 @@
     $loadingTargets = 'search,role,status,sort,perPage,gotoPage,nextPage,previousPage';
 @endphp
 
-<div x-data="{ view: $persist('table').as('gfms-view-users') }">
+<div x-data="{ view: $persist(gfmsDefaultView()).as('gfms-view-users') }">
     <x-ui.page-header title="User Accounts"
                       :figure="number_format($total)"
                       :figure-label="Str::plural('account', $total).($filtered ? ' matching your filters' : '')">
@@ -82,60 +82,11 @@
             <button type="button" wire:click="clearFilters" class="d-btn d-btn-outline">Clear filters</button>
         </x-empty-state>
     @else
-        {{-- Phones: one block per person - name and email, then role and
-             status. Read one-handed, so no sideways scroll. The avatar is
-             initials only: a photo URL costs a storage round trip per row. --}}
-        {{-- In cards view the card steps aside from md up only: phones keep
-             their stacked list whichever view was last chosen. --}}
-        <x-ui.card :flush="true" x-bind:class="{ 'md:hidden': view === 'cards' }">
-        <ul class="divide-y divide-border px-5 md:hidden"
-            wire:loading.class="opacity-60" wire:target="{{ $loadingTargets }}">
-            @foreach ($people as $person)
-                <li wire:key="user-card-{{ $person->id }}" class="py-4">
-                    <div class="flex items-start gap-3">
-                        <x-ui.avatar :name="$person->full_name" class="mt-0.5 shrink-0" />
-                        <div class="min-w-0 flex-1">
-                            <p class="text-[16px] lg:text-xs font-medium text-foreground">
-                                {{ $person->full_name }}
-                                @if ($person->is(auth()->user()))
-                                    <span class="text-[14px] lg:text-xs font-normal text-muted-foreground">(you)</span>
-                                @endif
-                            </p>
-                            <p class="mt-0.5 break-all text-[14px] lg:text-xs text-muted-foreground">{{ $person->email }}</p>
-
-                            <div class="mt-2 flex flex-wrap items-center gap-2">
-                                <span class="d-badge d-badge-soft d-badge-neutral">{{ $person->role->label() }}</span>
-                                @if ($person->is_active)
-                                    <span class="d-badge d-badge-soft d-badge-success">Active</span>
-                                @else
-                                    <span class="d-badge d-badge-soft d-badge-neutral">Deactivated</span>
-                                @endif
-                                <span class="text-[14px] lg:text-xs text-muted-foreground">{{ $person->position ?? 'No position recorded' }}</span>
-                            </div>
-
-                            @canany(['update', 'deactivate'], $person)
-                                <div class="mt-1 flex flex-wrap items-center gap-x-6">
-                                    @can('update', $person)
-                                        <a href="{{ route('users.edit', $person) }}" wire:click.prevent="openForm({{ $person->id }})" x-on:click="$dispatch('ems-dialog', { id: 'users-form', wait: true })"
-                                           class="d-link d-link-primary d-link-hover inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium">
-                                            Edit<span class="sr-only">, {{ $person->full_name }}</span>
-                                        </a>
-                                    @endcan
-                                    @can('deactivate', $person)
-                                        <button type="button" wire:click="confirmToggle({{ $person->id }})"
-                                                class="d-link d-link-hover inline-flex min-h-11 items-center text-[15px] lg:text-xs font-medium {{ $person->is_active ? 'd-link-error' : 'd-link-primary' }}">
-                                            {{ $person->is_active ? 'Deactivate' : 'Reactivate' }}<span class="sr-only">, {{ $person->full_name }}</span>
-                                        </button>
-                                    @endcan
-                                </div>
-                            @endcanany
-                        </div>
-                    </div>
-                </li>
-            @endforeach
-        </ul>
-
-        {{-- Wider screens: the ledger. No horizontal scroll wrapper, so the
+        {{-- The ledger is tablets and up, in table view only. Phones always
+             read the cards below, whichever view was last chosen. md:flex, not
+             md:block: the card is a flex column. --}}
+        <x-ui.card :flush="true" class="hidden md:flex" x-show="view === 'table'">
+        {{-- The ledger. No horizontal scroll wrapper, so the
              header can stick; Position and Contact drop out where there is no
              room for them. --}}
         <table class="d-table hidden w-full rounded-none md:table [&_td]:border-border [&_th]:border-border">
@@ -227,8 +178,9 @@
         </div>
         </x-ui.card>
 
-        {{-- TABLETS AND UP, AS CARDS: the same people, the same actions. --}}
-        <div class="hidden md:block" x-show="view === 'cards'" x-cloak>
+        {{-- AS CARDS: the same people, the same actions. Always on phones
+             (one column); from md up, only in cards view. --}}
+        <div x-bind:class="view === 'cards' ? '' : 'md:hidden'" x-cloak>
             <ul class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
                 wire:loading.remove wire:target="{{ $loadingTargets }}">
                 @foreach ($people as $person)

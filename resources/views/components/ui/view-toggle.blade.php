@@ -12,8 +12,9 @@
     remembers how it was last read. Pure Alpine: switching asks nothing of the
     server, so it is instant on the slowest connection.
 
-    From md up only. Phones keep their stacked layout, which is already one
-    card per row.
+    From md up only. Below md a list always shows its cards, one to a row:
+    a table does not fit a phone. Before anyone has chosen, a list opens as
+    cards below lg and as a table from lg up (gfmsDefaultView in app.js).
 --}}
 <div role="group" aria-label="{{ $label }}"
      {{ $attributes->class('hidden shrink-0 items-center gap-0.5 rounded-md border border-border bg-card p-0.5 md:inline-flex') }}>

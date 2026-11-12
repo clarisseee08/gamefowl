@@ -1065,6 +1065,15 @@ const loadingLine = (() => {
 })();
 
 /**
+ * TABLE OR CARDS, before anyone has chosen (x-ui.view-toggle).
+ *
+ * A list opens as cards below lg - phones and tablets, where a wide table is
+ * cramped or turns sideways - and as a table on a laptop or monitor. Each
+ * list then remembers whatever its reader picks.
+ */
+window.gfmsDefaultView = () => (window.matchMedia('(min-width: 64rem)').matches ? 'table' : 'cards');
+
+/**
  * THE PAGE SKELETON, for wire:navigate.
  *
  * The line above says something is happening; this says what is coming. The

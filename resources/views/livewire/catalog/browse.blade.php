@@ -49,7 +49,9 @@
                    placeholder="Name, band number or bloodline" class="d-input w-full pl-9">
         </div>
 
-        <div class="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center">
+        {{-- One filter to a row on a phone: two side by side, each with its
+             label inside, left the chosen value cut to "A..." and "Coc...". --}}
+        <div class="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center">
             <x-filter-select id="bloodline" label="Bloodline" wire:model.live="bloodline">
                 <option value="">All bloodlines</option>
                 @foreach ($this->bloodlineOptions as $option)

@@ -63,7 +63,7 @@
     x-data="{
         cols: (() => { try { return JSON.parse(localStorage.getItem('gfms-bc-cols') || 'null'); } catch (e) { return null; } })() ?? @js(array_fill_keys(array_keys($optionalColumns), true)),
         colsOpen: false,
-        view: $persist('table').as('gfms-view-gamefowl'),
+        view: $persist(gfmsDefaultView()).as('gfms-view-gamefowl'),
         save() { try { localStorage.setItem('gfms-bc-cols', JSON.stringify(this.cols)); } catch (e) {} },
     }"
 >
@@ -146,9 +146,9 @@
 
         {{-- Column visibility. Which columns matter depends on what you came
              here to do, and a laptop has room for fewer than a monitor. --}}
-        <x-ui.view-toggle class="sm:inline-flex" />
+        <x-ui.view-toggle />
 
-        <div class="relative hidden sm:block" x-show="view === 'table'">
+        <div class="relative hidden md:block" x-show="view === 'table'">
             <button type="button" @click="colsOpen = ! colsOpen"
                     class="d-btn d-btn-outline"
                     :aria-expanded="colsOpen ? 'true' : 'false'"
@@ -215,72 +215,14 @@
             </x-empty-state>
         @endif
     @else
-        {{-- PHONES: stacked rows. Farm staff are mostly on phones, outdoors; a
-             table that scrolls sideways hides the column they came for. Each
-             row is one tap target: band and name, then bloodline, sex and age. --}}
-        <ul class="mt-4 divide-y divide-border border-y border-border sm:hidden"
-            wire:loading.remove wire:target="{{ $filterTargets }}">
-            @foreach ($birds as $bird)
-                <li wire:key="bc-m-{{ $bird->id }}">
-                    <a href="{{ route('broodcocks.show', $bird) }}" wire:navigate
-                       class="flex min-h-11 items-center gap-3 py-3 hover:bg-muted/60">
-                        <span class="block w-11 shrink-0 overflow-hidden rounded-[6px] bg-muted aspect-[4/5]">
-                            @if ($bird->primaryPhoto)
-                                <img src="{{ route('photos.show', ['photo' => $bird->primaryPhoto, 'size' => 'thumb']) }}" alt=""
-                                     width="44" height="55" loading="lazy" decoding="async" class="h-full w-full object-cover">
-                            @else
-                                <span class="flex h-full w-full items-center justify-center"><x-band-dot :bloodline="$bird->bloodline" /></span>
-                            @endif
-                        </span>
-
-                        <span class="min-w-0 flex-1">
-                            <span class="flex items-baseline gap-2">
-                                @if ($bird->band_number)
-                                    <span class="datum font-display text-[17px] lg:text-sm font-semibold text-foreground">{{ $bird->band_number }}</span>
-                                    <span class="truncate text-[15px] lg:text-xs text-muted-foreground">{{ $bird->name }}</span>
-                                @else
-                                    <span class="truncate font-display text-[17px] lg:text-sm font-semibold text-foreground">{{ $bird->name }}</span>
-                                    <span class="shrink-0 text-[14px] lg:text-xs text-muted-foreground">Not yet banded</span>
-                                @endif
-                            </span>
-                            <span class="mt-0.5 flex items-center gap-1.5 truncate text-[14px] lg:text-xs text-muted-foreground">
-                                <x-band-dot :bloodline="$bird->bloodline" />
-                                <span class="truncate">{{ $bird->bloodline ?? 'Bloodline not recorded' }} &middot; {{ $bird->sex->label() }} &middot; <span class="datum">{{ $bird->ageLabel() ?? 'Age unknown' }}</span></span>
-                            </span>
-                        </span>
-
-                        <span class="flex shrink-0 flex-col items-end gap-1">
-                            <span class="d-badge d-badge-soft {{ $bird->status->badgeClasses() }}">{{ $bird->status->label() }}</span>
-                            @if ($bird->is_external && $ownership !== 'outside')
-                                <span class="d-badge d-badge-soft d-badge-neutral">Outside</span>
-                            @endif
-                        </span>
-                    </a>
-                </li>
-            @endforeach
-        </ul>
-
-        {{-- Phone loading: the shape of the answer, replacing the old one. --}}
-        <div class="sm:hidden" wire:loading.block wire:target="{{ $filterTargets }}" aria-hidden="true">
-            @for ($i = 0; $i < 5; $i++)
-                <div class="flex items-center gap-3 border-b border-border py-3">
-                    <div class="d-skeleton aspect-[4/5] w-11 shrink-0"></div>
-                    <div class="flex-1 space-y-2">
-                        <div class="d-skeleton h-3 {{ ['w-1/2', 'w-2/3', 'w-2/5'][$i % 3] }}"></div>
-                        <div class="d-skeleton h-3 {{ ['w-3/4', 'w-1/2', 'w-3/5'][$i % 3] }}"></div>
-                    </div>
-                </div>
-            @endfor
-        </div>
-
-        {{-- TABLETS AND UP: the table. No overflow wrapper - the content region
+        {{-- TABLETS AND UP, WHEN CHOSEN: the table. No overflow wrapper - the content region
              is the scroll container, so `sticky top-0` on the head pins to it
              and the column names stay put through a long list. An overflow
              wrapper would become the sticky container and quietly break that;
              secondary columns drop at narrower widths instead. --}}
         {{-- EMS: a wide table scrolls inside its own container; the page never does. --}}
-        <div class="mt-4 overflow-x-auto" x-show="view === 'table'">
-            <table class="d-table hidden w-full border-b border-border sm:table">
+        <div class="mt-4 hidden overflow-x-auto md:block" x-show="view === 'table'">
+            <table class="d-table w-full border-b border-border">
                 <thead class="sticky top-0 z-10 bg-background">
                     <tr class="border-b border-border">
                         <th scope="col" class="w-12 py-0 pl-0 pr-1 text-left">
@@ -461,8 +403,10 @@
             </table>
         </div>
 
-        {{-- TABLETS AND UP, AS CARDS: the same birds, the same actions. --}}
-        <div class="hidden sm:block" x-show="view === 'cards'" x-cloak>
+        {{-- CARDS: the same birds, the same actions. Always on a phone, where a
+             table read sideways hides the column you came for; from md up only
+             when the switch says so. --}}
+        <div x-bind:class="view === 'cards' ? '' : 'md:hidden'" x-cloak>
             <ul class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
                 wire:loading.remove wire:target="{{ $filterTargets }}">
                 @foreach ($birds as $bird)

@@ -48,7 +48,7 @@ final class CardViewTest extends TestCase
             ->assertOk()
             ->assertSee('aria-label="Table"', false)
             ->assertSee('aria-label="Cards"', false)
-            ->assertSee("\$persist('table').as('gfms-view-{$key}')", false);
+            ->assertSee("\$persist(gfmsDefaultView()).as('gfms-view-{$key}')", false);
     }
 
     #[DataProvider('lists')]

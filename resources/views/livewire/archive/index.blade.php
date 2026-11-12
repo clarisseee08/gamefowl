@@ -12,7 +12,7 @@
     $td = 'px-4 py-3 align-middle text-[15px] lg:text-xs text-foreground';
     $archiveTargets = 'tab,search,perPage,gotoPage,nextPage,previousPage';
 @endphp
-<div x-data="{ view: $persist('table').as('gfms-view-archive') }">
+<div x-data="{ view: $persist(gfmsDefaultView()).as('gfms-view-archive') }">
     <x-ui.page-header title="Archive"
                       :figure="number_format($total)"
                       :figure-label="Str::plural('archived record', $total)">
@@ -45,10 +45,10 @@
     {{-- Switching kind of record, searching or paging waits for the server.
          The old rows - or "Nothing archived here" - leave at once, and the
          shape of a list stands in until the new ones land. --}}
-    <div x-bind:class="{ 'md:hidden': view === 'cards' }">
+    <div class="hidden md:block" x-show="view === 'table'">
         <x-ui.rows-skeleton class="mt-5 hidden" :cols="5" wire:loading.block wire:target="{{ $archiveTargets }}" />
     </div>
-    <div class="hidden md:block" x-show="view === 'cards'" x-cloak>
+    <div x-bind:class="view === 'cards' ? '' : 'md:hidden'" x-cloak>
         <x-ui.cards-skeleton class="mt-5" wire:loading.grid wire:target="{{ $archiveTargets }}" />
     </div>
 
@@ -58,9 +58,10 @@
                        :description="$search !== '' ? 'Try another name or band number.' : 'Records you archive appear here, where they can be restored.'"
                        icon="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
     @else
-        {{-- The table steps aside in cards view from md up only: below md
-             there is no switch, so a phone always reads the table. --}}
-        <x-ui.card :flush="true" class="mt-5" x-bind:class="{ 'md:hidden': view === 'cards' }">
+        {{-- The table is tablets and up, in table view only. Below md there
+             is no switch, so a phone always reads the cards. md:flex, not
+             md:block: the card is a flex column. --}}
+        <x-ui.card :flush="true" class="mt-5 hidden md:flex" x-show="view === 'table'">
             <div class="overflow-x-auto" data-scroll-x>
                 <table class="w-full">
                     <thead>
@@ -146,8 +147,9 @@
             </div>
         </x-ui.card>
 
-        {{-- TABLETS AND UP, AS CARDS: the same records, the same Restore. --}}
-        <div class="hidden md:block" x-show="view === 'cards'" x-cloak>
+        {{-- AS CARDS: the same records, the same Restore. Always on phones
+             (one column); from md up, only in cards view. --}}
+        <div x-bind:class="view === 'cards' ? '' : 'md:hidden'" x-cloak>
             <ul class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
                 wire:loading.remove wire:target="{{ $archiveTargets }}">
                 @foreach ($rows as $row)

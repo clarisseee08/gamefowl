@@ -9,11 +9,11 @@
     eager-loaded in the component - Supabase is a network hop away, so an N+1
     would be felt, not measured.
 --}}
-<div x-data="{ view: $persist('table').as('gfms-view-mortality') }">
+<div x-data="{ view: $persist(gfmsDefaultView()).as('gfms-view-mortality') }">
     @php
         /**
          * Age at death, in words. Defined once here rather than repeated in
-         * the phone row and the table row.
+         * the card and the table row.
          */
         $ageLabel = function (?int $months): string {
             if ($months === null) {
@@ -83,14 +83,18 @@
          Filters
     ---------------------------------------------------------------- --}}
     <x-filter-bar class="mt-8" :active="$filtering" clear="clearFilters">
-        <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="filter-from" class="d-fieldset-legend mb-0 shrink-0 py-0">Died on or after</label>
-            <input id="filter-from" type="date" wire:model.live="from" class="d-input datum w-full sm:w-auto">
-        </div>
+        {{-- On phones the two dates sit side by side, each label above its
+             field; from sm up the wrapper dissolves and each pair is inline. --}}
+        <div class="grid w-full grid-cols-2 gap-3 sm:contents">
+            <div class="flex min-w-0 flex-col gap-1 sm:min-h-11 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:gap-2">
+                <label for="filter-from" class="d-fieldset-legend mb-0 shrink-0 py-0">Died on or after</label>
+                <input id="filter-from" type="date" wire:model.live="from" class="d-input datum w-full min-w-0 sm:w-auto">
+            </div>
 
-        <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="filter-to" class="d-fieldset-legend mb-0 shrink-0 py-0">Died on or before</label>
-            <input id="filter-to" type="date" wire:model.live="to" class="d-input datum w-full sm:w-auto">
+            <div class="flex min-w-0 flex-col gap-1 sm:min-h-11 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:gap-2">
+                <label for="filter-to" class="d-fieldset-legend mb-0 shrink-0 py-0">Died on or before</label>
+                <input id="filter-to" type="date" wire:model.live="to" class="d-input datum w-full min-w-0 sm:w-auto">
+            </div>
         </div>
 
         <x-filter-select id="filter-cause" label="Cause" wire:model.live="cause">
@@ -127,70 +131,10 @@
             </x-empty-state>
         @endif
     @else
-        {{-- Phones: one block per record - the bird and the date first, the
-             cause under it. Phones are what the farm staff actually carry. --}}
-        <ul class="divide-y divide-border border-y border-border md:hidden"
-            wire:loading.remove wire:target="{{ $tableTargets }}">
-            @foreach ($rows as $record)
-                <li class="py-4" wire:key="card-{{ $record->id }}">
-                    <div class="flex items-start justify-between gap-3">
-                        <p class="min-w-0 truncate text-[16px] lg:text-xs font-medium text-foreground">{{ $record->broodcock?->name ?? 'Unknown bird' }}</p>
-                        <p class="datum shrink-0 pt-0.5 text-[14px] lg:text-xs text-muted-foreground">{{ $record->date_of_death->format('d M Y') }}</p>
-                    </div>
-
-                    <p class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[14px] lg:text-xs text-muted-foreground">
-                        @if ($record->broodcock)
-                            <span class="inline-flex items-center gap-1.5">
-                                <x-band-dot :bloodline="$record->broodcock->bloodline" />
-                                @if ($record->broodcock->band_number)
-                                    <span class="datum">{{ $record->broodcock->band_number }}</span>
-                                @else
-                                    Not yet banded
-                                @endif
-                            </span>
-                        @endif
-                        <span class="datum">{{ $ageLabel($record->ageAtDeathInMonths()) }}</span>
-                    </p>
-
-                    <dl class="mt-2 space-y-1 text-[15px] lg:text-xs">
-                        <div class="flex gap-2">
-                            <dt class="shrink-0 text-muted-foreground">Cause:</dt>
-                            <dd class="text-foreground">{{ $record->cause_of_death }}</dd>
-                        </div>
-                        <div class="flex gap-2">
-                            <dt class="shrink-0 text-muted-foreground">Disposal:</dt>
-                            <dd class="text-foreground">{{ $record->disposal_method ?: 'Not recorded' }}</dd>
-                        </div>
-                        <div class="flex gap-2">
-                            <dt class="shrink-0 text-muted-foreground">Recorded by:</dt>
-                            <dd class="text-foreground">{{ $record->recordedBy?->full_name ?? 'Not recorded' }}</dd>
-                        </div>
-                    </dl>
-
-                    @if ($canDelete)
-                        <button type="button"
-                                wire:click="confirmDelete({{ $record->id }})"
-                                class="d-btn d-btn-ghost mt-3 -ml-3 text-destructive">
-                            Archive Record
-                        </button>
-                    @endif
-                </li>
-            @endforeach
-        </ul>
-
-        <div class="space-y-5 border-y border-border py-5 md:hidden" aria-hidden="true"
-             wire:loading.block wire:target="{{ $tableTargets }}">
-            @for ($i = 0; $i < 4; $i++)
-                <div>
-                    <div class="d-skeleton h-3 {{ ['w-3/4', 'w-2/3', 'w-4/5', 'w-1/2'][$i] }}"></div>
-                    <div class="d-skeleton mt-3 h-3 w-2/5"></div>
-                </div>
-            @endfor
-        </div>
-
-        {{-- Wider screens: a ledger with a header that stays in view. No
-             overflow wrapper - a scrolling ancestor would stop it sticking. --}}
-        <div x-show="view === 'table'">
+        {{-- Wider screens: a ledger with a header that stays in view, from md
+             up when the switch says table. No overflow wrapper - a scrolling
+             ancestor would stop it sticking. --}}
+        <div class="hidden md:block" x-show="view === 'table'">
             <table class="d-table hidden w-full border-separate border-spacing-0 text-[15px] lg:text-xs md:table">
                 <thead class="sticky top-0 z-10 bg-background">
                     <tr>
@@ -259,8 +203,9 @@
             </table>
         </div>
 
-        {{-- TABLETS AND UP, AS CARDS: the same deaths, the same actions. --}}
-        <div class="hidden md:block" x-show="view === 'cards'" x-cloak>
+        {{-- AS CARDS: the same deaths, the same actions. Always on phones, one
+             column; from md up only when the switch says cards. --}}
+        <div x-bind:class="view === 'cards' ? '' : 'md:hidden'" x-cloak>
             <ul class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
                 wire:loading.remove wire:target="{{ $tableTargets }}">
                 @foreach ($rows as $record)
@@ -290,6 +235,8 @@
 
                             <x-slot:meta>
                                 <span class="datum">{{ $record->date_of_death->format('d M Y') }}</span>
+                                <span aria-hidden="true">&middot;</span>
+                                Recorded by {{ $record->recordedBy?->full_name ?? 'Not recorded' }}
                             </x-slot:meta>
                             @if ($canDelete)
                                 <x-slot:actions>

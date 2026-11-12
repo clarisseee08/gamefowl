@@ -6,9 +6,9 @@
     segmented strip over the existing $recordType filter; the rest of the
     filters stay in the filter bar.
 
-    ONE COPY OF EVERY ROW. Below `md` the table's rows, cells and body drop to
-    display:block, so a phone gets a stacked row - the bird first, the record
-    and its dates beneath in muted type - and never a sideways-scrolling table.
+    PHONES ALWAYS GET THE CARDS. Below `md` the table is hidden and the cards
+    grid shows in one column, whatever the saved view; from `md` up the
+    table / cards switch decides.
 
     NO overflow wrapper around the table, and that is load-bearing: <main> is
     the scroll container, and an overflow-x box between the two would pin the
@@ -29,7 +29,7 @@
     $th = 'sticky top-0 z-10 h-10 border-b lg:h-9 border-border bg-background px-4 text-left align-middle text-[13px] lg:text-[11px] font-semibold text-muted-foreground';
     $td = 'border-b-0 p-0 md:table-cell md:border-b md:border-border md:px-4 md:py-3.5 md:align-top';
 @endphp
-<div x-data="{ view: $persist('table').as('gfms-view-health') }">
+<div x-data="{ view: $persist(gfmsDefaultView()).as('gfms-view-health') }">
     <x-anchor-block eyebrow="Manage" title="Health Records"
                     :figure="number_format($total)"
                     :figure-label="$isFiltered ? 'matching your filters' : Str::plural('record', $total).' on file'">
@@ -76,15 +76,19 @@
         </x-filter-select>
 
         {{-- The two dates are one control in two halves, so they stay together
-             on a wrap and read as a range rather than as two unrelated fields. --}}
-        <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="filter-from" class="d-fieldset-legend mb-0 shrink-0 py-0">From</label>
-            <input id="filter-from" type="date" wire:model.live="dateFrom" class="d-input datum w-full sm:w-auto">
-        </div>
+             on a wrap and read as a range rather than as two unrelated fields.
+             On phones they sit side by side, each label above its field; from
+             sm up the wrapper dissolves and each pair is inline in the bar. --}}
+        <div class="grid w-full grid-cols-2 gap-3 sm:contents">
+            <div class="flex min-w-0 flex-col gap-1 sm:min-h-11 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:gap-2">
+                <label for="filter-from" class="d-fieldset-legend mb-0 shrink-0 py-0">From</label>
+                <input id="filter-from" type="date" wire:model.live="dateFrom" class="d-input datum w-full min-w-0 sm:w-auto">
+            </div>
 
-        <div class="flex min-h-11 w-full items-center gap-2 sm:w-auto sm:shrink-0">
-            <label for="filter-to" class="d-fieldset-legend mb-0 shrink-0 py-0">To</label>
-            <input id="filter-to" type="date" wire:model.live="dateTo" class="d-input datum w-full sm:w-auto">
+            <div class="flex min-w-0 flex-col gap-1 sm:min-h-11 sm:w-auto sm:shrink-0 sm:flex-row sm:items-center sm:gap-2">
+                <label for="filter-to" class="d-fieldset-legend mb-0 shrink-0 py-0">To</label>
+                <input id="filter-to" type="date" wire:model.live="dateTo" class="d-input datum w-full min-w-0 sm:w-auto">
+            </div>
         </div>
 
         <x-ui.view-toggle />
@@ -112,8 +116,8 @@
             @endif
         </x-empty-state>
     @else
-        {{-- Phones always get the table's stacked rows; the cards switch hides it from md up only. --}}
-        <div x-bind:class="{ 'md:hidden': view === 'cards' }">
+        {{-- From md up, when the switch says table. Phones always get the cards. --}}
+        <div class="hidden md:block" x-show="view === 'table'">
             <table class="d-table block w-full border-separate border-spacing-0 text-left md:table">
                 <thead class="hidden md:table-header-group">
                     <tr>
@@ -253,8 +257,9 @@
             </table>
         </div>
 
-        {{-- WIDER SCREENS, AS CARDS: the same records, the same actions. --}}
-        <div class="hidden md:block" x-show="view === 'cards'" x-cloak>
+        {{-- AS CARDS: the same records, the same actions. Always on phones, one
+             column; from md up only when the switch says cards. --}}
+        <div x-bind:class="view === 'cards' ? '' : 'md:hidden'" x-cloak>
             <ul class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
                 wire:loading.remove wire:target="search,recordType,broodcockId,dateFrom,dateTo,sort,perPage,gotoPage,nextPage,previousPage">
                 @foreach ($this->rows as $record)
