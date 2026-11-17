@@ -178,7 +178,7 @@ class ReportController extends Controller
         return $this->registry->make($report)->withFilters(
             $request->only([
                 'from', 'to',
-                'status', 'class', 'sex', 'bloodline', 'breed', 'pen_id',
+                'status', 'class', 'sex', 'bloodline', 'breed',
                 'record_type', 'compliance',
                 'event_type', 'result', 'broodcock_id',
                 'sire_id', 'dam_id',

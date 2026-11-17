@@ -173,7 +173,7 @@
                     family tree straight away. You can rename and band them afterwards.
                 </p>
 
-                <div class="mt-4 grid max-w-3xl gap-4 sm:grid-cols-2">
+                <div class="mt-4 grid max-w-3xl gap-4 sm:grid-cols-3">
                     <div>
                         <label for="generateCount" class="d-fieldset-legend">How many</label>
                         <input id="generateCount" type="number" min="1" max="{{ max(1, $unregistered) }}" inputmode="numeric"
@@ -198,15 +198,6 @@
                                            :describedby="$errors->has('generateDateHatched') ? 'generateDateHatched-error' : null"
                                            class="mt-1" />
                         @error('generateDateHatched') <p id="generateDateHatched-error" class="mt-1.5 text-[13px] lg:text-[11px] font-medium text-error" role="alert">{{ $message }}</p> @enderror
-                    </div>
-
-                    <div>
-                        <x-form-select id="generatePenId" label="Pen" wire:model="generatePenId">
-                            <option value="">Not assigned</option>
-                            @foreach ($this->pens as $pen)
-                                <option value="{{ $pen->id }}">{{ $pen->code }} - {{ $pen->name }}</option>
-                            @endforeach
-                        </x-form-select>
                     </div>
                 </div>
 

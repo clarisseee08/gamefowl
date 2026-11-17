@@ -285,10 +285,11 @@ The short version:
 - **`BroodcockStatus::onFarmValues()`** is the one source for the on-farm status
   list. It used to be hand-written in `scopeOnFarm` and the dashboard.
 
-- **Pens have no screens.** The CRUD was removed; pens remain as data
-  (`broodcocks.pen_id`, the `Pen` model, the report column, the pen selector when
-  registering a hatch). New pens come from `PenSeeder`, not the UI. The full
-  reasoning is in `routes/web.php` where the route group used to be.
+- **Pens are gone, completely** (18 Nov 2026, migration `drop_pens`). No
+  `pens` table, no `broodcocks.pen_id`, no `Pen` model, no pen field anywhere -
+  their screens went in September and the leftover data was the half-removal the
+  diagrams kept describing. `PensRemovedTest` pins it. "Pen" in seed notes means
+  the farm's physical pens, not a feature. Reasoning in `routes/web.php`.
 - **Outside birds are not farm stock.** `Broodcock::scopeFarmStock()` is now
   actually called — dashboard counts, the catalogue and the inventory report all
   exclude `is_external` birds. The broodcock list defaults to farm stock with an

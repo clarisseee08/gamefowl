@@ -14,8 +14,8 @@ use Illuminate\Support\Facades\DB;
  * Two properties matter here and both are deliberate:
  *
  * 1. IDEMPOTENT. `php artisan db:seed` can be run twice without duplicating a
- *    row or tripping a UNIQUE index. Users and pens are keyed on their natural
- *    unique column; the bulk tables are guarded by a sentinel check and return
+ *    row or tripping a UNIQUE index. Users are keyed on their natural unique
+ *    column; the bulk tables are guarded by a sentinel check and return
  *    early once seeded.
  *
  * 2. FEW ROUND TRIPS. The database is a Supabase Postgres in Tokyo, so every
@@ -49,7 +49,6 @@ final class DatabaseSeeder extends Seeder
         // sidebar, every PDF and the public Visit section all read. First
         // because it is what the shell around every other screen renders.
         FarmProfileSeeder::class,
-        PenSeeder::class,
         BroodcockSeeder::class,
         HealthRecordSeeder::class,
         BreedingRecordSeeder::class,

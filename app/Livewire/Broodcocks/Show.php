@@ -85,7 +85,7 @@ final class Show extends Component
     #[Computed]
     public function bird(): Broodcock
     {
-        // Cached: the bird, its two generations, pen, photos and death record
+        // Cached: the bird, its two generations, photos and death record
         // took ten round trips to Tokyo on every open and every tab change.
         // Any write to a farm record clears it (InvalidatesRecordCache).
         return RecordCache::remember('bird:'.$this->broodcock->id, function () {
@@ -100,7 +100,6 @@ final class Show extends Component
                     'sire.dam:id,name,band_number,bloodline,sex,is_external',
                     'dam.sire:id,name,band_number,bloodline,sex,is_external',
                     'dam.dam:id,name,band_number,bloodline,sex,is_external',
-                    'pen:id,code,name',
                     'primaryPhoto',
                     // The gallery at the top of the page: the main photograph first.
                     'photos' => fn ($query) => $query->orderByDesc('is_primary')->orderBy('id'),

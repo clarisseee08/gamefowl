@@ -12,7 +12,6 @@ use App\Models\BreedingRecord;
 use App\Models\Broodcock;
 use App\Models\HealthRecord;
 use App\Models\MortalityRecord;
-use App\Models\Pen;
 use App\Models\PerformanceRecord;
 use App\Models\User;
 use Database\Seeders\BroodcockSeeder;
@@ -33,7 +32,6 @@ final class SeederTest extends TestCase
     /** @var array<class-string, int> */
     private const EXPECTED_COUNTS = [
         User::class => 2,
-        Pen::class => 4,
         Broodcock::class => 30,
         HealthRecord::class => 60,
         BreedingRecord::class => 16,
