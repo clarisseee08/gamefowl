@@ -8,7 +8,6 @@ use App\Enums\BroodcockClass;
 use App\Enums\BroodcockStatus;
 use App\Enums\Sex;
 use App\Models\Broodcock;
-use App\Models\Pen;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -43,7 +42,7 @@ final class BroodcockInventoryReport implements ReportDefinition
 
     public function description(): string
     {
-        return 'A complete census of the flock, showing how the birds are distributed by status, class, bloodline and pen.';
+        return 'A complete census of the flock, showing how the birds are distributed by status, class and bloodline.';
     }
 
     public function withFilters(array $filters): static
@@ -68,12 +67,6 @@ final class BroodcockInventoryReport implements ReportDefinition
             if ($value !== null) {
                 $this->filters[$field] = $value;
             }
-        }
-
-        $penId = $this->scalar($filters['pen_id'] ?? null);
-
-        if ($penId !== null && ctype_digit($penId)) {
-            $this->filters['pen_id'] = $penId;
         }
 
         foreach (['from', 'to'] as $field) {
@@ -124,10 +117,6 @@ final class BroodcockInventoryReport implements ReportDefinition
             $parts[] = 'Breed: '.$this->filters['breed'];
         }
 
-        if (isset($this->filters['pen_id'])) {
-            $parts[] = 'Pen: '.($this->penLabel() ?? '#'.$this->filters['pen_id']);
-        }
-
         $from = $this->filters['from'] ?? null;
         $to = $this->filters['to'] ?? null;
 
@@ -158,7 +147,6 @@ final class BroodcockInventoryReport implements ReportDefinition
             'date_hatched' => 'Date Hatched',
             'date_acquired' => 'Date Acquired',
             'weight' => 'Weight (kg)',
-            'pen' => 'Pen',
             'sire' => 'Sire',
             'dam' => 'Dam',
         ];
@@ -168,9 +156,9 @@ final class BroodcockInventoryReport implements ReportDefinition
     {
         return $this->query()
             // Model::shouldBeStrict() turns a lazy load into an exception, and
-            // this loop reads all three relations on every row - so all three
-            // are loaded up front, in three queries regardless of flock size.
-            ->with(['pen', 'sire', 'dam'])
+            // this loop reads both parents on every row - so both are loaded
+            // up front, in two queries regardless of flock size.
+            ->with(['sire', 'dam'])
             ->orderBy('band_number')
             ->orderBy('name')
             ->get()
@@ -189,7 +177,6 @@ final class BroodcockInventoryReport implements ReportDefinition
                 'date_hatched' => $bird->date_hatched?->format('j M Y') ?? 'Unknown',
                 'date_acquired' => $bird->date_acquired?->format('j M Y') ?? '—',
                 'weight' => $bird->weight !== null ? number_format((float) $bird->weight, 2) : '—',
-                'pen' => $bird->pen?->code ?? 'Unassigned',
                 'sire' => $bird->sire?->name ?? 'Unknown',
                 'dam' => $bird->dam?->name ?? 'Unknown',
             ])
@@ -287,7 +274,6 @@ final class BroodcockInventoryReport implements ReportDefinition
             ->sex($this->filters['sex'] ?? null)
             ->bloodline($this->filters['bloodline'] ?? null)
             ->breed($this->filters['breed'] ?? null)
-            ->pen($this->filters['pen_id'] ?? null)
             ->when(
                 isset($this->filters['from']),
                 fn (Builder $q) => $q->whereDate('date_acquired', '>=', $this->filters['from'])
@@ -317,14 +303,6 @@ final class BroodcockInventoryReport implements ReportDefinition
                 'share' => $total > 0 ? round((int) $row->aggregate / $total * 100, 1) : 0.0,
             ])
             ->values();
-    }
-
-    /** The pen's code, for the filter line. Null when the pen no longer exists. */
-    private function penLabel(): ?string
-    {
-        $code = Pen::query()->whereKey($this->filters['pen_id'])->value('code');
-
-        return $code === null ? null : (string) $code;
     }
 
     private function humanDate(string $date): string

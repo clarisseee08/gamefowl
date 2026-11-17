@@ -28,7 +28,7 @@ final class GenerateOffspring
 {
     /**
      * @param  int  $count  How many chicks to register.
-     * @param  array<string, mixed>  $defaults  Shared attributes (bloodline, pen, class...).
+     * @param  array<string, mixed>  $defaults  Shared attributes (sex, date hatched, bloodline, class...).
      * @return Collection<int, Broodcock>
      */
     public function handle(BreedingRecord $record, int $count, array $defaults = []): Collection
@@ -94,7 +94,6 @@ final class GenerateOffspring
                     'status' => BroodcockStatus::Active,
                     'sire_id' => $locked->sire_id,
                     'dam_id' => $locked->dam_id,
-                    'pen_id' => $defaults['pen_id'] ?? null,
                     'notes' => "Registered automatically from the hatch recorded on {$locked->mating_date->format('j M Y')}.",
                 ]));
             }

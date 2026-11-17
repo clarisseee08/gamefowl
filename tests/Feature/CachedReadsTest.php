@@ -13,7 +13,6 @@ use App\Models\BroodcockPhoto;
 use App\Models\Concerns\InvalidatesRecordCache;
 use App\Models\HealthRecord;
 use App\Models\MortalityRecord;
-use App\Models\Pen;
 use App\Models\PerformanceRecord;
 use App\Models\User;
 use App\Support\CachedUserProvider;
@@ -39,7 +38,7 @@ final class CachedReadsTest extends TestCase
 
     public function test_every_farm_record_model_clears_the_cache_when_written(): void
     {
-        foreach ([Broodcock::class, BroodcockPhoto::class, HealthRecord::class, BreedingRecord::class, MortalityRecord::class, PerformanceRecord::class, Pen::class] as $model) {
+        foreach ([Broodcock::class, BroodcockPhoto::class, HealthRecord::class, BreedingRecord::class, MortalityRecord::class, PerformanceRecord::class] as $model) {
             $this->assertContains(
                 InvalidatesRecordCache::class,
                 class_uses_recursive($model),

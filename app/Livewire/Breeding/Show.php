@@ -9,7 +9,6 @@ use App\Enums\BroodcockClass;
 use App\Enums\Sex;
 use App\Models\BreedingRecord;
 use App\Models\Broodcock;
-use App\Models\Pen;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\Rule;
@@ -29,8 +28,6 @@ final class Show extends Component
     public string $generateSex = '';
 
     public ?string $generateDateHatched = null;
-
-    public ?string $generatePenId = null;
 
     /**
      * The edit form, open in a side sheet over this page rather than on a page
@@ -140,13 +137,6 @@ final class Show extends Component
             ->get(['id', 'name', 'band_number', 'bloodline', 'sex', 'status', 'date_hatched']);
     }
 
-    /** @return Collection<int, Pen> */
-    #[Computed]
-    public function pens(): Collection
-    {
-        return Pen::query()->orderBy('code')->get(['id', 'code', 'name']);
-    }
-
     public function startGenerating(): void
     {
         $this->authorize('generateOffspring', $this->record);
@@ -164,7 +154,6 @@ final class Show extends Component
             'generateCount' => ['required', 'integer', 'min:1', 'max:'.max(1, $this->record->unregisteredOffspring())],
             'generateSex' => ['required', Rule::enum(Sex::class)],
             'generateDateHatched' => ['nullable', 'date', 'before_or_equal:today'],
-            'generatePenId' => ['nullable', 'integer', 'exists:pens,id'],
         ], [
             'generateCount.max' => 'You cannot register more chicks than this hatch produced.',
         ]);
@@ -173,7 +162,6 @@ final class Show extends Component
             $created = $action->handle($this->record, $this->generateCount, [
                 'sex' => Sex::from($this->generateSex),
                 'date_hatched' => $this->generateDateHatched,
-                'pen_id' => $this->generatePenId ?: null,
                 'class' => BroodcockClass::Ordinary,
             ]);
         } catch (RuntimeException $e) {

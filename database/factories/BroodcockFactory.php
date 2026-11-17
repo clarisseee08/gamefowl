@@ -56,7 +56,6 @@ class BroodcockFactory extends Factory
             'status' => BroodcockStatus::Active,
             'sire_id' => null,
             'dam_id' => null,
-            'pen_id' => null,
             'notes' => fake()->optional(0.3)->sentence(),
         ];
     }

@@ -25,8 +25,7 @@ use Illuminate\Support\Facades\DB;
  * loads the five birds the farm provided — nothing here is invented except
  * where explicitly marked below.
  *
- * USER ACCOUNTS AND PENS ARE KEPT. Wiping accounts would lock everyone out of
- * the system, and pens are farm infrastructure rather than sample data.
+ * USER ACCOUNTS ARE KEPT. Wiping them would lock everyone out of the system.
  *
  * ---------------------------------------------------------------------------
  * WHAT THE FARM'S DATA DID NOT INCLUDE, AND WHAT WAS DONE ABOUT IT
@@ -101,7 +100,7 @@ final class FarmRecordsSeeder extends Seeder
     }
 
     /**
-     * Clears every record table, keeping users and pens.
+     * Clears every record table, keeping the users.
      *
      * Ordered child-first so foreign keys never block a delete. Truncate is
      * avoided deliberately: these tables use soft deletes and foreign keys, and

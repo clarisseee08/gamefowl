@@ -174,7 +174,7 @@ Route::middleware(['auth', 'active'])->group(function (): void {
      *
      * Removed with it: the model, policy, status enum, factory, seeder and the
      * three test files, plus the table (2026_09_15_090000). This is deliberately
-     * the whole feature and not the half-removal the pens note below describes,
+     * the whole feature and not a half-removal like the one pens were left in,
      * because that was the lesson. It is one `git revert` from coming back.
      */
 
@@ -197,21 +197,16 @@ Route::middleware(['auth', 'active'])->group(function (): void {
     });
 
     /*
-     * PENS HAVE NO SCREENS, DELIBERATELY.
+     * PENS ARE GONE, COMPLETELY (18 Nov 2026).
      *
-     * Pens are still real data - `broodcocks.pen_id`, the Pen model, the Pen
-     * column and filter on the inventory report, and the pen selector when
-     * registering a hatch on /breeding/{record}. What was removed is the CRUD
-     * around them, which had been dropped from the sidebar in 0f8c244 while its
-     * routes stayed live: reachable by typing a URL, covered by 34 tests, and
-     * findable by nobody. Half-removed was the worst of both.
-     *
-     * CONSEQUENCE, stated plainly: pens can no longer be created or renamed
-     * through the interface. They come from PenSeeder. If the farm needs a new
-     * pen, that is a seeder change and a deploy - which is the right trade
-     * while pens are a fixed handful, and the wrong one the day they are not.
-     * Restoring the screens means restoring this group and the four components
-     * with it; they are in the history at 0f8c244.
+     * Their screens went in September, but the data stayed: the table,
+     * broodcocks.pen_id, a Pen dropdown when registering chicks and a column on
+     * the inventory report - while a pen's location and capacity were shown
+     * and editable nowhere, and the class diagram still drew them. Half-removed
+     * was the worst of both, so the owner chose the whole removal: migration
+     * 2026_11_18_020121_drop_pens, with the model, factory and seeder. No live
+     * bird had a pen. The screens are in the history at 0f8c244, the rest at
+     * the commit that removed it.
      */
 
     /*

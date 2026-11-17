@@ -71,7 +71,6 @@ class Broodcock extends Model
         'is_external',
         'sire_id',
         'dam_id',
-        'pen_id',
         'notes',
     ];
 
@@ -97,7 +96,7 @@ class Broodcock extends Model
                 'band_number', 'name', 'breed', 'bloodline', 'class', 'sex',
                 'date_hatched', 'date_acquired', 'weight', 'color', 'comb_type',
                 'leg_color', 'distinguishing_marks', 'status', 'sire_id',
-                'dam_id', 'pen_id', 'notes',
+                'dam_id', 'notes',
             ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
@@ -154,12 +153,6 @@ class Broodcock extends Model
     public function dam(): BelongsTo
     {
         return $this->belongsTo(self::class, 'dam_id');
-    }
-
-    /** @return BelongsTo<Pen, $this> */
-    public function pen(): BelongsTo
-    {
-        return $this->belongsTo(Pen::class);
     }
 
     /** @return HasMany<Broodcock, $this> */
@@ -326,16 +319,6 @@ class Broodcock extends Model
         }
 
         $query->where('breed', $breed);
-    }
-
-    /** @param Builder<Broodcock> $query */
-    public function scopePen(Builder $query, int|string|null $penId): void
-    {
-        if ($penId === null || $penId === '') {
-            return;
-        }
-
-        $query->where('pen_id', $penId);
     }
 
     /**

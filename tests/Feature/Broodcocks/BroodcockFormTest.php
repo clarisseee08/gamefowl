@@ -9,7 +9,6 @@ use App\Enums\BroodcockStatus;
 use App\Enums\Sex;
 use App\Livewire\Broodcocks\Form;
 use App\Models\Broodcock;
-use App\Models\Pen;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -74,17 +73,15 @@ final class BroodcockFormTest extends TestCase
     }
 
     /**
-     * The form no longer shows Breed or Pen, but the columns still hold data.
-     * An edit must leave them alone rather than blanking them, which is exactly
-     * what would happen if they were still in the validated payload as nulls.
+     * The form no longer shows Breed, but the column still holds data. An
+     * edit must leave it alone rather than blanking it, which is exactly what
+     * would happen if it were still in the validated payload as a null.
      */
     public function test_editing_a_bird_does_not_wipe_the_columns_the_form_no_longer_shows(): void
     {
-        $pen = Pen::factory()->create();
         $bird = Broodcock::factory()->create([
             'name' => 'Kept Intact',
             'breed' => 'Asil',
-            'pen_id' => $pen->id,
         ]);
 
         Livewire::actingAs($this->staff())
@@ -97,7 +94,6 @@ final class BroodcockFormTest extends TestCase
 
         $this->assertSame('Renamed', $bird->name);
         $this->assertSame('Asil', $bird->breed, 'The hidden breed value was wiped by an edit.');
-        $this->assertSame($pen->id, $bird->pen_id, 'The hidden pen assignment was wiped by an edit.');
     }
 
     public function test_the_edit_form_loads_the_existing_values(): void

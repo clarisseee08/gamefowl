@@ -7,7 +7,6 @@ namespace Tests\Feature\Reports;
 use App\Enums\BroodcockClass;
 use App\Enums\BroodcockStatus;
 use App\Models\Broodcock;
-use App\Models\Pen;
 use App\Reports\BroodcockInventoryReport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -102,19 +101,20 @@ final class BroodcockInventoryReportTest extends TestCase
         $this->assertNotContains('Excluded', $names);
     }
 
-    public function test_the_pen_filter_excludes_birds_in_other_pens(): void
+    /**
+     * Pens were removed (18 Nov 2026): no Pen column, and a pen_id left in an
+     * old bookmarked link is ignored rather than narrowing the report.
+     */
+    public function test_pens_are_gone_from_the_report(): void
     {
-        $pen = Pen::factory()->create(['code' => 'P-101']);
-        $other = Pen::factory()->create(['code' => 'P-202']);
+        Broodcock::factory()->create(['name' => 'Kept']);
 
-        Broodcock::factory()->create(['name' => 'Kept', 'pen_id' => $pen->id]);
-        Broodcock::factory()->create(['name' => 'Excluded', 'pen_id' => $other->id]);
-        Broodcock::factory()->create(['name' => 'Unpenned', 'pen_id' => null]);
+        $report = $this->report(['pen_id' => '3']);
 
-        $rows = $this->report(['pen_id' => (string) $pen->id])->rows();
-
-        $this->assertSame(['Kept'], $rows->pluck('name')->all());
-        $this->assertSame('P-101', $rows->first()['pen']);
+        $this->assertArrayNotHasKey('pen', $report->columns());
+        $this->assertSame(['Kept'], $report->rows()->pluck('name')->all());
+        $this->assertArrayNotHasKey('pen', $report->rows()->first());
+        $this->assertStringNotContainsString('Pen', (string) $report->filterSummary());
     }
 
     public function test_the_date_range_filters_on_date_acquired(): void
@@ -216,13 +216,12 @@ final class BroodcockInventoryReportTest extends TestCase
         $this->assertSame('26 mos', $row['age']);
     }
 
-    public function test_missing_parents_and_pens_are_labelled_rather_than_left_blank(): void
+    public function test_missing_parents_are_labelled_rather_than_left_blank(): void
     {
         Broodcock::factory()->create([
             'name' => 'Orphan',
             'sire_id' => null,
             'dam_id' => null,
-            'pen_id' => null,
             'weight' => null,
             'breed' => null,
             'bloodline' => null,
@@ -232,7 +231,6 @@ final class BroodcockInventoryReportTest extends TestCase
 
         $this->assertSame('Unknown', $row['sire']);
         $this->assertSame('Unknown', $row['dam']);
-        $this->assertSame('Unassigned', $row['pen']);
 
         foreach ($row as $column => $value) {
             $this->assertNotSame('', (string) $value, "Column [{$column}] rendered an empty cell.");
@@ -346,25 +344,24 @@ final class BroodcockInventoryReportTest extends TestCase
             return $queries;
         };
 
-        $pen = Pen::factory()->create();
         $sire = Broodcock::factory()->male()->create();
         $dam = Broodcock::factory()->female()->create();
 
-        Broodcock::factory()->count(3)->bredFrom($sire, $dam)->create(['pen_id' => $pen->id]);
+        Broodcock::factory()->count(3)->bredFrom($sire, $dam)->create();
         $withThree = $count();
 
-        Broodcock::factory()->count(20)->bredFrom($sire, $dam)->create(['pen_id' => $pen->id]);
+        Broodcock::factory()->count(20)->bredFrom($sire, $dam)->create();
         $withTwentyThree = $count();
 
         $this->assertSame(
             $withThree,
             $withTwentyThree,
             "Listing 5 birds took {$withThree} queries but listing 25 took {$withTwentyThree}. ".
-            'pen, sire and dam must be eager-loaded - something is loading a relation per row.'
+            'sire and dam must be eager-loaded - something is loading a relation per row.'
         );
 
         // One query for the birds plus one per eager-loaded relation.
-        $this->assertLessThanOrEqual(4, $withThree);
+        $this->assertLessThanOrEqual(3, $withThree);
     }
 
     public function test_reading_a_row_never_lazy_loads_a_relation(): void
@@ -373,9 +370,7 @@ final class BroodcockInventoryReportTest extends TestCase
         // than silently costing a query. Building rows must not raise.
         $sire = Broodcock::factory()->male()->create();
         $dam = Broodcock::factory()->female()->create();
-        Broodcock::factory()->bredFrom($sire, $dam)->create([
-            'pen_id' => Pen::factory()->create()->id,
-        ]);
+        Broodcock::factory()->bredFrom($sire, $dam)->create();
 
         $this->assertCount(3, $this->report()->rows());
     }
@@ -400,8 +395,7 @@ final class BroodcockInventoryReportTest extends TestCase
 
     public function test_the_pdf_template_actually_renders(): void
     {
-        $pen = Pen::factory()->create();
-        Broodcock::factory()->count(6)->create(['pen_id' => $pen->id]);
+        Broodcock::factory()->count(6)->create();
         Broodcock::factory()->unbanded()->create(['date_hatched' => null, 'bloodline' => null]);
 
         $bytes = $this->renderPdf($this->report(['status' => 'active']));
