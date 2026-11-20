@@ -7,10 +7,13 @@ namespace App\Providers;
 use App\Models\User;
 use App\Support\CachedUserProvider;
 use App\Support\FarmProfile;
+use App\Support\RowLevelSecurity;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Events\MigrationsEnded;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -78,6 +81,10 @@ class AppServiceProvider extends ServiceProvider
         Auth::provider('cached-eloquent', function (Application $app, array $config): CachedUserProvider {
             return new CachedUserProvider($app['hash'], $config['model']);
         });
+
+        // A table created by a later migration starts with row-level security
+        // off, open to Supabase's data API; lock it as soon as migrate ends.
+        Event::listen(MigrationsEnded::class, fn (): array => RowLevelSecurity::lockOwnedTables(DB::connection()));
 
         // The Archive holds every archived record of every kind, so it belongs
         // to the one role that may archive and restore them all: the owner.

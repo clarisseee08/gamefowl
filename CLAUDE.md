@@ -259,7 +259,7 @@ The short version:
 - **Components are daisyUI 5, prefixed `d-`** (`d-btn d-btn-primary`, `d-input`,
   `d-badge d-badge-soft`, `d-modal`). The old GFMS vocabulary (`.btn-primary`,
   `.input`, `.badge-ok`, `.card`, `.label`) is gone from app.css, and
-  `BadgeVocabularyTest` fails on a leftover. Five PHP enums return badge colours
+  `BadgeVocabularyTest` fails on a leftover. Six PHP enums return badge colours
   (`d-badge-success` …) from `badgeClasses()` — full literal strings only, or the
   production build drops them. Field label = `d-fieldset-legend`, help =
   `d-label`, field error = `text-error` utilities (not `d-label`).
@@ -304,6 +304,16 @@ The short version:
   the laptop (`127.0.0.1`, database and role `gfms`), test data only. Only the
   deployed site uses Supabase. Copying it between machines is
   `docs/handover/project-context.md` 10.7.
+- **Every table has row-level security on** (20 Nov 2026, migration
+  `lock_tables_with_row_level_security`), with no policies: it shuts
+  Supabase's data API (anon key) out, while the app - the tables' owner - is
+  exempt. `AppServiceProvider` re-locks after every `migrate`, so a new table is
+  covered. Never disable it or add a policy to "fix" something; the app does
+  not use that API. See `App\Support\RowLevelSecurity`.
+- **The inbreeding check** (`App\Support\Inbreeding`, `App\Enums\Relatedness`)
+  is Wright's COI from the recorded tree, up to 6 generations, archived birds
+  included. It advises on Record a mating and on the family tree; it never
+  blocks a save - line-breeding is normal practice.
 - **Photos are the one thing that can still reach production.** Uploads follow
   `GFMS_PHOTO_DISK`, not the database. Locally it should be `public`;
   with `supabase` a test upload (or `photos:backfill-thumbnails`) writes into

@@ -130,6 +130,28 @@
                         @endif
                     </div>
 
+                    {{-- The inbreeding check (Wright's COI), once both parents
+                         are farm birds. Advice only: line-breeding is normal
+                         practice, so it never blocks the save. --}}
+                    <div aria-live="polite">
+                        @if ($check = $this->inbreeding)
+                            <div class="rounded-md border border-border bg-muted/40 p-4" data-inbreeding-check>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <p class="text-[14px] font-semibold text-foreground lg:text-xs">Inbreeding Check</p>
+                                    <span class="d-badge d-badge-soft {{ $check['relatedness']->badgeClasses() }}">{{ $check['relatedness']->label() }}</span>
+                                </div>
+                                <p class="mt-2 text-[14px] leading-relaxed text-foreground lg:text-xs">
+                                    Chicks from this pair would be <span class="datum font-semibold">{{ $check['percent'] }}</span> inbred
+                                    (coefficient of inbreeding, COI). {{ $check['relatedness']->explanation() }}
+                                </p>
+                                <p class="mt-1.5 text-[13px] leading-relaxed text-muted-foreground lg:text-[11px]">
+                                    Worked out from the family tree on record, up to {{ App\Support\Inbreeding::GENERATIONS }} generations back,
+                                    so it is only as complete as the parents entered. It does not stop the mating from being saved.
+                                </p>
+                            </div>
+                        @endif
+                    </div>
+
                     <div>
                         <label for="mating_date" class="d-fieldset-legend">Mating Date <span class="text-destructive">*</span></label>
                         <x-ui.date-picker id="mating_date" wire:model="mating_date" max="today" :clearable="false"

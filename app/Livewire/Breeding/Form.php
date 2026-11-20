@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Livewire\Breeding;
 
 use App\Actions\Broodcocks\ResolveExternalParent;
+use App\Enums\Relatedness;
 use App\Enums\Sex;
 use App\Http\Requests\StoreBreedingRecordRequest;
 use App\Models\BreedingRecord;
 use App\Models\Broodcock;
+use App\Support\Inbreeding;
 use App\Support\RecordCache;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -231,6 +233,29 @@ final class Form extends Component
     public function selectedDam(): ?Broodcock
     {
         return $this->chosenParent($this->dam_id);
+    }
+
+    /**
+     * The inbreeding check: how inbred this pair's chicks would be, from the
+     * recorded family tree. Shown once both parents are farm birds chosen from
+     * the list - an outside bird typed by name has no ancestry on file yet.
+     * It advises; nothing here stops the save.
+     *
+     * @return array{percent: string, relatedness: Relatedness}|null
+     */
+    #[Computed]
+    public function inbreeding(): ?array
+    {
+        if ($this->sire_is_external || $this->dam_is_external || ! $this->sire_id || ! $this->dam_id) {
+            return null;
+        }
+
+        $coefficient = Inbreeding::ofOffspring((int) $this->sire_id, (int) $this->dam_id);
+
+        return $coefficient === null ? null : [
+            'percent' => Inbreeding::percent($coefficient),
+            'relatedness' => Relatedness::fromCoefficient($coefficient),
+        ];
     }
 
     private function chosenParent(?string $id): ?Broodcock
