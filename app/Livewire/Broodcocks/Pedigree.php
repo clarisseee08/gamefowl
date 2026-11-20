@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\Broodcocks;
 
+use App\Enums\Relatedness;
 use App\Livewire\Concerns\ChoosesShellByViewer;
 use App\Models\Broodcock;
+use App\Support\Inbreeding;
 use App\Support\RecordCache;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
@@ -182,6 +184,36 @@ final class Pedigree extends Component
             'known' => $known,
             'total' => $total,
             'percent' => $total > 0 ? (int) round(($known / $total) * 100) : 0,
+        ];
+    }
+
+    /**
+     * Set by wire:init once the page has painted. The bird's COI walks up to
+     * Inbreeding::GENERATIONS generations - more than this page draws - so it
+     * is fetched in a follow-up request rather than added to the first one,
+     * which PedigreePerformanceTest holds to a tight query count.
+     */
+    public bool $inbreedingRequested = false;
+
+    public function loadInbreeding(): void
+    {
+        $this->inbreedingRequested = true;
+    }
+
+    /**
+     * The bird's own coefficient of inbreeding, or null when a parent is not
+     * on record (then nothing can be said, which is not the same as 0%).
+     *
+     * @return array{percent: string, relatedness: Relatedness}|null
+     */
+    #[Computed]
+    public function inbreeding(): ?array
+    {
+        $coefficient = Inbreeding::ofBird($this->root);
+
+        return $coefficient === null ? null : [
+            'percent' => Inbreeding::percent($coefficient),
+            'relatedness' => Relatedness::fromCoefficient($coefficient),
         ];
     }
 

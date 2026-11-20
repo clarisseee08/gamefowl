@@ -29,11 +29,16 @@ enum UserRole: string
         };
     }
 
+    /**
+     * Said in terms of archiving, because nothing in the system is ever
+     * deleted: an archived record is hidden and the owner can restore it.
+     * Staff may archive a photo and nothing else (BroodcockPhotoPolicy).
+     */
     public function description(): string
     {
         return match ($this) {
-            self::Owner => 'Full access, including deleting records and managing user accounts.',
-            self::Staff => 'Can add and edit records, but cannot delete anything or manage users.',
+            self::Owner => 'Full access, including archiving and restoring records and managing user accounts.',
+            self::Staff => 'Can add and edit records and archive photos, but cannot archive other records or manage users.',
         };
     }
 

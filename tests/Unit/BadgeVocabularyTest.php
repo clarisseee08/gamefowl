@@ -9,11 +9,12 @@ use App\Enums\BroodcockStatus;
 use App\Enums\HealthRecordType;
 use App\Enums\PerformanceEventType;
 use App\Enums\PerformanceResult;
+use App\Enums\Relatedness;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Five PHP enums return CSS class strings from badgeClasses(), consumed at ~22
+ * Six PHP enums return CSS class strings from badgeClasses(), consumed at ~22
  * call sites across the Blade views. If the CSS vocabulary is renamed without
  * the enums following - or vice versa - the badges render completely unstyled
  * and NOTHING in the test suite notices, because every existing assertion is on
@@ -58,6 +59,7 @@ final class BadgeVocabularyTest extends TestCase
             'health record type' => [HealthRecordType::class],
             'performance event type' => [PerformanceEventType::class],
             'performance result' => [PerformanceResult::class],
+            'relatedness (inbreeding check)' => [Relatedness::class],
         ];
     }
 

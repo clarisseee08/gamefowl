@@ -63,6 +63,23 @@
             <progress class="d-progress d-progress-primary w-full" value="{{ $completeness['percent'] }}" max="100"
                       role="img" aria-label="{{ $completeness['percent'] }}% of the pedigree recorded"></progress>
         </x-ui.card.content>
+        {{-- The bird's own COI, fetched after the page paints (see
+             Pedigree::loadInbreeding). --}}
+        <x-ui.card.footer>
+            <div wire:init="loadInbreeding" aria-live="polite" class="text-[13px] leading-relaxed text-muted-foreground lg:text-xs" data-bird-inbreeding>
+                @if (! $inbreedingRequested)
+                    <span class="d-skeleton inline-block h-4 w-56 align-middle"></span>
+                @elseif ($coi = $this->inbreeding)
+                    <span class="font-semibold text-foreground">Coefficient of Inbreeding (COI):</span>
+                    <span class="datum font-semibold text-foreground">{{ $coi['percent'] }}</span>
+                    <span class="d-badge d-badge-soft d-badge-sm ml-1 {{ $coi['relatedness']->badgeClasses() }}">{{ $coi['relatedness']->label() }}</span>
+                    <span class="mt-1 block">How related this bird's sire and dam are, worked out from the family tree on record up to {{ App\Support\Inbreeding::GENERATIONS }} generations back.</span>
+                @else
+                    <span class="font-semibold text-foreground">Coefficient of Inbreeding (COI):</span>
+                    cannot be worked out until both the sire and the dam are recorded.
+                @endif
+            </div>
+        </x-ui.card.footer>
         @if ($completeness['known'] === 0)
             <x-ui.card.footer>
                 <p class="text-[13px] leading-relaxed text-muted-foreground lg:text-xs">
