@@ -49,3 +49,11 @@ Thumbs.db
 /audit/
 /.playwright-mcp/
 /.taste-skill/
+
+# Thesis and user-manual documents stay on the owner's machine only - never
+# on the remote (the repository is public). Owner's instruction, 21 Nov 2026.
+/docs/thesis/
+/docs/user-manual/
+*.docx
+*.doc
+*.pptx
