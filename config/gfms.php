@@ -135,7 +135,7 @@ return [
      * a deadline.
      */
     'system' => [
-        'name' => env('APP_NAME', 'Digital Broodcock Farm Record Management System'),
+        'name' => env('APP_NAME', 'Digital Gamefowl Breeding Management System'),
         'short' => env('GFMS_SHORT_NAME', 'SSGuad Game Farm'),
         'tagline' => 'Broodcock farm records',
     ],
