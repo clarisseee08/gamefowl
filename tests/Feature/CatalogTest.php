@@ -264,7 +264,9 @@ final class CatalogTest extends TestCase
             ->assertOk()
             ->assertDontSee('Main navigation', escape: false)
             ->assertDontSee('Mortality')
-            ->assertDontSee('Breeding')
+            // The link, not the word: the system's own name ("Digital
+            // Gamefowl Breeding Management System") is in the page's meta tags.
+            ->assertDontSee('href="'.route('breeding.index').'"', false)
             ->assertDontSee('Users');
     }
 

@@ -36,7 +36,7 @@ final class PasswordResetEmailTest extends TestCase
 
     public function test_the_email_comes_from_the_farm_by_name(): void
     {
-        config(['gfms.farm.name' => 'SSGuad Game Farm', 'app.name' => 'Digital Broodcock Farm Record Management System']);
+        config(['gfms.farm.name' => 'SSGuad Game Farm', 'app.name' => 'Digital Gamefowl Breeding Management System']);
 
         $mail = $this->mailFor(User::factory()->create());
         $html = (string) $mail->render();

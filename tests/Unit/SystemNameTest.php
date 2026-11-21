@@ -56,16 +56,15 @@ final class SystemNameTest extends TestCase
      * If the literal string sat in this file, a future grep for "is the old name
      * gone?" would keep finding this test and reporting a false positive.
      *
-     * NOTE ON DIRECTION: this guard used to forbid the Broodcock title and
-     * require the Gamefowl one. The thesis document keeps the Broodcock title,
-     * so the application was moved back to match it rather than the other way
-     * round - the paper is the thing a panel reads, and the internals
-     * (config/gfms.php, the GFMS_* env keys, the repository name) were never
-     * renamed, so this direction leaves everything consistent.
+     * NOTE ON DIRECTION: this guard has flipped twice, always to follow the
+     * thesis. On 21 Nov 2026 the paper standardised on "Digital Gamefowl
+     * Breeding Management System" (a reviewer flagged it alternating with the
+     * Broodcock title), so the Broodcock title is the retired one again - the
+     * PDF reports were still printing it. The paper is what a panel reads.
      */
     private function retiredName(): string
     {
-        return 'Gamefowl'.' '.'Breeding'.' '.'Management';
+        return 'Broodcock'.' '.'Farm'.' '.'Record';
     }
 
     public function test_no_user_facing_file_hardcodes_the_retired_system_name(): void
@@ -107,6 +106,25 @@ final class SystemNameTest extends TestCase
             .implode("\n", $offenders));
     }
 
+    /**
+     * The deployed name is APP_NAME in render.yaml, not the default in
+     * config/gfms.php, so the two must agree or production prints one name
+     * while the paper and the code say the other.
+     *
+     * And the session cookie is pinned there: Laravel derives its name from
+     * APP_NAME, so a rename without the pin signs every user out on deploy.
+     */
+    public function test_the_deployed_name_matches_and_the_session_cookie_survives_a_rename(): void
+    {
+        $blueprint = (string) file_get_contents(__DIR__.'/../../render.yaml');
+
+        preg_match('/-\s*key:\s*APP_NAME\s*\n\s*value:\s*"?([^"\n]+)"?/', $blueprint, $name);
+        preg_match('/-\s*key:\s*SESSION_COOKIE\s*\n\s*value:\s*"?([^"\n]+)"?/', $blueprint, $cookie);
+
+        $this->assertSame('Digital Gamefowl Breeding Management System', $name[1] ?? null);
+        $this->assertSame('digital-broodcock-farm-record-management-system-session', $cookie[1] ?? null);
+    }
+
     /** The name must actually be configured, not left on the framework default. */
     public function test_the_system_name_is_configured(): void
     {
@@ -116,7 +134,7 @@ final class SystemNameTest extends TestCase
 
         // Matches the thesis document exactly. If the paper is ever retitled,
         // this test is the thing that forces the application to follow.
-        $this->assertSame('Digital Broodcock Farm Record Management System', $config['system']['name']);
+        $this->assertSame('Digital Gamefowl Breeding Management System', $config['system']['name']);
         $this->assertSame('SSGuad Game Farm', $config['system']['short']);
         $this->assertNotSame('Laravel', $config['system']['name']);
     }
