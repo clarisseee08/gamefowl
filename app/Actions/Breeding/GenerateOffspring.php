@@ -74,6 +74,7 @@ final class GenerateOffspring
 
             $created = new Collection;
             $startIndex = $locked->offspring_count;
+            $hatched = $defaults['date_hatched'] ?? $locked->mating_date->copy()->addDays(21);
 
             for ($i = 0; $i < $count; $i++) {
                 $created->push(Broodcock::create([
@@ -85,12 +86,14 @@ final class GenerateOffspring
                     'breed' => $defaults['breed'] ?? $sire->breed ?? $dam->breed,
                     'bloodline' => $bloodline,
                     'class' => $defaults['class'] ?? BroodcockClass::Ordinary,
-                    // Sex is unknown at hatch and cannot be guessed; it is
-                    // recorded later. Male is the column default only because
-                    // the enum requires a value - the UI prompts for it.
+                    // One sex for the whole batch: Register chicks asks for
+                    // it, and a mixed hatch is registered in two batches or
+                    // corrected bird by bird later. Male is only the fallback
+                    // for callers that pass none - the column requires a value.
                     'sex' => $defaults['sex'] ?? Sex::Male,
-                    'date_hatched' => $defaults['date_hatched'] ?? $locked->mating_date->copy()->addDays(21),
-                    'date_acquired' => $defaults['date_hatched'] ?? $locked->mating_date->copy()->addDays(21),
+                    'date_hatched' => $hatched,
+                    // A chick hatched on the farm is acquired the day it hatches.
+                    'date_acquired' => $defaults['date_acquired'] ?? $hatched,
                     'status' => BroodcockStatus::Active,
                     'sire_id' => $locked->sire_id,
                     'dam_id' => $locked->dam_id,

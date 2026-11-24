@@ -128,6 +128,25 @@ final class InbreedingCheckTest extends TestCase
         $this->assertIsFloat(Inbreeding::ofOffspring($a->id, $b->id));
     }
 
+    public function test_a_value_cut_short_by_a_loop_is_never_cached(): void
+    {
+        // A two-bird loop written straight to the table, past the forms.
+        $a = $this->founder();
+        $b = $this->chickOf($a, $this->founder(false));
+        DB::table('broodcocks')->where('id', $a->id)->update(['sire_id' => $b->id]);
+
+        $calculation = new Inbreeding;
+        $load = new \ReflectionMethod($calculation, 'load');
+        $load->invoke($calculation, [$a->id, $b->id]);
+        (new \ReflectionMethod($calculation, 'kinshipOf'))->invoke($calculation, $a->id, $b->id);
+
+        $truncations = (new \ReflectionProperty($calculation, 'truncations'))->getValue($calculation);
+        $cache = (new \ReflectionProperty($calculation, 'kinship'))->getValue($calculation);
+
+        $this->assertGreaterThan(0, $truncations, 'The loop should have reached the depth cap.');
+        $this->assertArrayNotHasKey(min($a->id, $b->id).':'.max($a->id, $b->id), $cache);
+    }
+
     public function test_the_cost_is_one_query_per_generation_however_wide_the_tree(): void
     {
         $sire = $this->founder();
