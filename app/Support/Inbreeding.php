@@ -44,6 +44,9 @@ final class Inbreeding
     /** @var array<string, float> */
     private array $kinship = [];
 
+    /** How many times the depth cap cut a branch short (only ever in a loop). */
+    private int $truncations = 0;
+
     /**
      * The COI the chicks of this pair would have, or null when either parent
      * is not chosen.
@@ -143,10 +146,26 @@ final class Inbreeding
             : 0;
     }
 
+    /**
+     * The kinship (coancestry) of $a and $b.
+     *
+     * THE DEPTH CAP. Every step expands one bird into its parents, which
+     * lowers that bird's rank by at least one, so in a loop-free tree the
+     * recursion is at most rankOf($a) + rankOf($b) <= 2 x (GENERATIONS + 1)
+     * deep - well under the cap. The cap is reached only if a loop already
+     * exists in the data (the forms refuse new ones). A value cut short by it
+     * is a guess, so it is never cached: a pair first met deep inside a loop
+     * must not hand its truncated 0 to the same pair met near the top.
+     */
     private function kinshipOf(?int $a, ?int $b, int $depth = 0): float
     {
-        // The depth cap only matters if a loop exists in the data.
-        if ($a === null || $b === null || $depth > 4 * (self::GENERATIONS + 2)) {
+        if ($a === null || $b === null) {
+            return 0.0;
+        }
+
+        if ($depth > 4 * (self::GENERATIONS + 2)) {
+            $this->truncations++;
+
             return 0.0;
         }
 
@@ -169,6 +188,13 @@ final class Inbreeding
 
         [$sire, $dam] = $this->parentsOf($a);
 
-        return $this->kinship[$key] = 0.5 * ($this->kinshipOf($sire, $b, $depth + 1) + $this->kinshipOf($dam, $b, $depth + 1));
+        $truncationsBefore = $this->truncations;
+        $value = 0.5 * ($this->kinshipOf($sire, $b, $depth + 1) + $this->kinshipOf($dam, $b, $depth + 1));
+
+        if ($this->truncations === $truncationsBefore) {
+            $this->kinship[$key] = $value;
+        }
+
+        return $value;
     }
 }

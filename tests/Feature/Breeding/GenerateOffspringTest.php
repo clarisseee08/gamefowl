@@ -48,6 +48,17 @@ final class GenerateOffspringTest extends TestCase
         }
     }
 
+    public function test_the_hatch_date_is_the_acquisition_date_unless_one_is_given(): void
+    {
+        $record = BreedingRecord::factory()->withUnregisteredOffspring(2)->create();
+
+        $default = $this->action()->handle($record, 1, ['date_hatched' => '2026-03-01'])->first();
+        $given = $this->action()->handle($record->fresh(), 1, ['date_hatched' => '2026-03-01', 'date_acquired' => '2026-03-05'])->first();
+
+        $this->assertSame('2026-03-01', $default->date_acquired->toDateString());
+        $this->assertSame('2026-03-05', $given->date_acquired->toDateString(), 'A given acquisition date was ignored.');
+    }
+
     public function test_generating_offspring_increments_the_registered_count(): void
     {
         $record = BreedingRecord::factory()->withUnregisteredOffspring(5)->create();

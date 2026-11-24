@@ -124,6 +124,30 @@ final class PedigreeLoopTest extends TestCase
             ->assertHasErrors('sire_id');
     }
 
+    /**
+     * An ARCHIVED bird in between still closes the loop.
+     *
+     * Archived birds stay links in the family tree - they can be restored, and
+     * the inbreeding check reads them - so a walk that skipped them (as a
+     * thesis reviewer found it did) let a loop be closed through an archived
+     * father.
+     */
+    public function test_the_check_follows_the_line_through_an_archived_bird(): void
+    {
+        $grandfather = Broodcock::factory()->male()->create();
+        $father = Broodcock::factory()->male()->create(['sire_id' => $grandfather->id]);
+        $grandson = Broodcock::factory()->male()->create(['sire_id' => $father->id]);
+
+        $father->delete();
+
+        $this->editing($grandfather)
+            ->set('sire_id', (string) $grandson->id)
+            ->call('save')
+            ->assertHasErrors('sire_id');
+
+        $this->assertNull($grandfather->fresh()->sire_id);
+    }
+
     // -----------------------------------------------------------------
     // What must still be allowed
     // -----------------------------------------------------------------

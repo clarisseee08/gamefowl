@@ -156,21 +156,31 @@ class StoreBroodcockRequest extends FormRequest
     }
 
     /**
-     * Is $candidateId the bird $selfId, or descended from it?
+     * Is $proposedParentId the bird $birdId itself, or one of its descendants?
      *
-     * Walks UP from the candidate one generation per query rather than down
-     * from the bird: ancestors are a bounded set that narrows, whereas
-     * descendants fan out without limit on a productive cock.
+     * $proposedParentId is the sire or dam being chosen; $birdId is the bird
+     * being edited. If the proposed parent descends from the bird, saving it
+     * would make the bird its own ancestor.
+     *
+     * Walks UP from the proposed parent, one generation per query, looking for
+     * $birdId among its ancestors - rather than down from the bird: ancestors
+     * are a bounded set that narrows, whereas descendants fan out without
+     * limit on a productive cock.
+     *
+     * ARCHIVED BIRDS COUNT (withTrashed). An archived bird is still a link in
+     * the family tree - it can be restored, and the inbreeding check reads it -
+     * so a walk that skipped it would let a loop be closed through an archived
+     * grandparent.
      *
      * The visited set is not defensive padding. If a cycle already exists in
      * the data - written before this rule did - walking it without one never
      * terminates, and the first thing a keeper would do on discovering a cycle
      * is open the form to correct it.
      */
-    public static function isSelfOrDescendedFrom(int $candidateId, int $selfId): bool
+    public static function isSelfOrDescendedFrom(int $proposedParentId, int $birdId): bool
     {
         $seen = [];
-        $frontier = [$candidateId];
+        $frontier = [$proposedParentId];
 
         while ($frontier !== []) {
             $frontier = array_values(array_diff(array_unique($frontier), $seen));
@@ -179,13 +189,13 @@ class StoreBroodcockRequest extends FormRequest
                 return false;
             }
 
-            if (in_array($selfId, $frontier, true)) {
+            if (in_array($birdId, $frontier, true)) {
                 return true;
             }
 
             $seen = [...$seen, ...$frontier];
 
-            $frontier = Broodcock::query()
+            $frontier = Broodcock::withTrashed()
                 ->whereIn('id', $frontier)
                 ->get(['sire_id', 'dam_id'])
                 ->flatMap(fn (Broodcock $bird): array => array_filter([$bird->sire_id, $bird->dam_id]))
